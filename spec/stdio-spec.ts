@@ -1,6 +1,6 @@
 import {expect} from 'chai';
-import Stdio = require("../../lib/drivers/stdio");
-import {Driver, DriverState} from "../../lib/drivers";
+import Stdio = require("../lib/drivers/stdio");
+import {Driver, DriverState} from "../lib/drivers";
 
 declare var xdescribe: Function;
 

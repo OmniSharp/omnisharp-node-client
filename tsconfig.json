@@ -2,8 +2,8 @@
     "version": "1.4.1",
     "compilerOptions": {
         "target": "es5",
-        "module": "commonjs",
         "declaration": false,
+        "module": "commonjs",
         "noImplicitAny": false,
         "removeComments": true,
         "noLib": false
@@ -19,8 +19,8 @@
         "./lib/drivers/stdio.ts",
         "./lib/drivers/websocket.ts",
         "./lib/omnisharp-server.ts",
-        "./spec/drivers/stdio-spec.ts",
         "./spec/omnisharp-server-spec.ts",
+        "./spec/stdio-spec.ts",
         "./spec/tsd.d.ts",
         "./tsd.d.ts"
     ]

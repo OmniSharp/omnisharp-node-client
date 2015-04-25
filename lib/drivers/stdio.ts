@@ -7,6 +7,7 @@ var omnisharpReleaseLocation = require('omnisharp-server-roslyn-binaries');
 import {resolve} from 'path';
 var omnisharpDebugLocation = resolve(__dirname, '../../node_modules/omnisharp-server-roslyn-binaries/omnisharp-roslyn/scripts/' + (process.platform === 'win32' ? 'omnisharp.cmd' : 'omnisharp'))
 
+
 class StdioDriver implements IDriver {
     private _seq: number = 0;
     private _process: ChildProcess;
