@@ -18,54 +18,6 @@ describe("Omnisharp Server", function() {
         });
     });
 
-    xdescribe('state', function() {
-
-        it("must connect", function(done) {
-            this.timeout(10000);
-            var server = new OmnisharpServer({
-                driver: Driver.Stdio,
-                projectPath: process.cwd()
-            });
-
-            expect(server.currentState).to.be.eq(DriverState.Disconnected);
-
-            server.connect();
-            expect(server.currentState).to.be.eq(DriverState.Connecting);
-
-            server.state.subscribe(state => {
-                expect(server.currentState).to.be.eq(DriverState.Connected);
-                done();
-            });
-        });
-
-        it("must disconnect", function(done) {
-            this.timeout(10000);
-
-            var server = new OmnisharpServer({
-                driver: Driver.Stdio,
-                projectPath: process.cwd()
-            });
-
-            expect(server.currentState).to.be.eq(DriverState.Disconnected);
-
-            server.connect();
-            expect(server.currentState).to.be.eq(DriverState.Connecting);
-
-            var sub1 = server.state.subscribe(state => {
-                expect(server.currentState).to.be.eq(DriverState.Connected);
-                sub1.dispose();
-
-                var sub2 = server.state.subscribe(state => {
-                    expect(server.currentState).to.be.eq(DriverState.Disconnected);
-                    done();
-                    sub2.dispose();
-                });
-
-                server.disconnect();
-            });
-        });
-    });
-
     describe("Commands", function() {
         var server: OmnisharpServer;
         beforeEach(function() {
