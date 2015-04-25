@@ -19,6 +19,7 @@
         "./lib/drivers/stdio.ts",
         "./lib/drivers/websocket.ts",
         "./lib/omnisharp-server.ts",
+        "./spec/omnisharp-server-commands.ts",
         "./spec/omnisharp-server-spec.ts",
         "./spec/stdio-spec.ts",
         "./spec/tsd.d.ts",

@@ -16,10 +16,14 @@ export interface OmnisharpServerStatus {
     hasOutgoingRequests: boolean;
 }
 
+export class CommandWrapper<T> {
+    constructor(public command: string, public value: T) { }
+}
+
 export class OmnisharpServer implements OmniSharp.Api, IDriver {
     private _driver: IDriver;
-    private _requestStream = new Subject<any>();
-    private _responseStream = new Subject<any>();
+    private _requestStream = new Subject<CommandWrapper<any>>();
+    private _responseStream = new Subject<CommandWrapper<any>>();
     private _statusStream: Observable<OmnisharpServerStatus>;
 
     constructor(private _options: OmnisharpServerOptions) {
@@ -60,6 +64,8 @@ export class OmnisharpServer implements OmniSharp.Api, IDriver {
                 outgoingRequests: this._driver.outstandingRequests,
                 hasOutgoingRequests: this._driver.outstandingRequests > 0
             }));
+
+        this.setupObservers();
     }
 
     public connect() {
@@ -79,16 +85,73 @@ export class OmnisharpServer implements OmniSharp.Api, IDriver {
     public get requests(): Observable<any> { return this._requestStream; }
     public get responses(): Observable<any> { return this._responseStream; }
 
+    private setupObservers() {
+        this.observeUpdatebuffer = this._responseStream.where(z => z.command == "updatebuffer").map<any>(z => z.value);
+        this.observeChangebuffer = this._responseStream.where(z => z.command == "changebuffer").map<any>(z => z.value);
+        this.observeCodecheck = this._responseStream.where(z => z.command == "codecheck").map<OmniSharp.Models.QuickFixResponse>(z => z.value);
+        this.observeFormatAfterKeystroke = this._responseStream.where(z => z.command == "formatafterkeystroke").map<OmniSharp.Models.FormatRangeResponse>(z => z.value);
+        this.observeFormatRange = this._responseStream.where(z => z.command == "formatrange").map<OmniSharp.Models.FormatRangeResponse>(z => z.value);
+        this.observeCodeformat = this._responseStream.where(z => z.command == "codeformat").map<OmniSharp.Models.CodeFormatResponse>(z => z.value);
+        this.observeAutocomplete = this._responseStream.where(z => z.command == "autocomplete").map<OmniSharp.Models.AutoCompleteResponse[]>(z => z.value);
+        this.observeFindimplementations = this._responseStream.where(z => z.command == "findimplementations").map<OmniSharp.Models.QuickFixResponse>(z => z.value);
+        this.observeFindsymbols = this._responseStream.where(z => z.command == "findsymbols").map<OmniSharp.Models.QuickFixResponse>(z => z.value);
+        this.observeFindusages = this._responseStream.where(z => z.command == "findusages").map<OmniSharp.Models.QuickFixResponse>(z => z.value);
+        this.observeGotodefinition = this._responseStream.where(z => z.command == "gotodefinition").map<any>(z => z.value);
+        this.observeNavigateup = this._responseStream.where(z => z.command == "navigateup").map<OmniSharp.Models.NavigateResponse>(z => z.value);
+        this.observeNavigatedown = this._responseStream.where(z => z.command == "navigatedown").map<OmniSharp.Models.NavigateResponse>(z => z.value);
+        this.observeRename = this._responseStream.where(z => z.command == "rename").map<OmniSharp.Models.RenameResponse>(z => z.value);
+        this.observeSignatureHelp = this._responseStream.where(z => z.command == "signaturehelp").map<OmniSharp.Models.SignatureHelp>(z => z.value);
+        this.observeCheckalivestatus = this._responseStream.where(z => z.command == "checkalivestatus").map<boolean>(z => z.value);
+        this.observeCheckreadystatus = this._responseStream.where(z => z.command == "checkreadystatus").map<boolean>(z => z.value);
+        this.observeCurrentfilemembersastree = this._responseStream.where(z => z.command == "currentfilemembersastree").map<any>(z => z.value);
+        this.observeCurrentfilemembersasflat = this._responseStream.where(z => z.command == "currentfilemembersasflat").map<any>(z => z.value);
+        this.observeTypelookup = this._responseStream.where(z => z.command == "typelookup").map<any>(z => z.value);
+        this.observeFilesChanged = this._responseStream.where(z => z.command == "fileschanged").map<boolean>(z => z.value);
+        this.observeProjects = this._responseStream.where(z => z.command == "projects").map<OmniSharp.Models.WorkspaceInformationResponse>(z => z.value);
+        this.observeProject = this._responseStream.where(z => z.command == "project").map<OmniSharp.Models.ProjectInformationResponse>(z => z.value);
+        this.observeGetcodeactions = this._responseStream.where(z => z.command == "getcodeactions").map<OmniSharp.Models.GetCodeActionsResponse>(z => z.value);
+        this.observeRuncodeaction = this._responseStream.where(z => z.command == "runcodeaction").map<OmniSharp.Models.RunCodeActionResponse>(z => z.value);
+        this.observeGettestcontext = this._responseStream.where(z => z.command == "gettestcontext").map<OmniSharp.Models.GetTestCommandResponse>(z => z.value);
+    }
+
+    public observeUpdatebuffer: Rx.Observable<any>;
+    public observeChangebuffer: Rx.Observable<any>;
+    public observeCodecheck: Rx.Observable<OmniSharp.Models.QuickFixResponse>;
+    public observeFormatAfterKeystroke: Rx.Observable<OmniSharp.Models.FormatRangeResponse>;
+    public observeFormatRange: Rx.Observable<OmniSharp.Models.FormatRangeResponse>;
+    public observeCodeformat: Rx.Observable<OmniSharp.Models.CodeFormatResponse>;
+    public observeAutocomplete: Rx.Observable<OmniSharp.Models.AutoCompleteResponse[]>;
+    public observeFindimplementations: Rx.Observable<OmniSharp.Models.QuickFixResponse>;
+    public observeFindsymbols: Rx.Observable<OmniSharp.Models.QuickFixResponse>;
+    public observeFindusages: Rx.Observable<OmniSharp.Models.QuickFixResponse>;
+    public observeGotodefinition: Rx.Observable<any>;
+    public observeNavigateup: Rx.Observable<OmniSharp.Models.NavigateResponse>;
+    public observeNavigatedown: Rx.Observable<OmniSharp.Models.NavigateResponse>;
+    public observeRename: Rx.Observable<OmniSharp.Models.RenameResponse>;
+    public observeSignatureHelp: Rx.Observable<OmniSharp.Models.SignatureHelp>;
+    public observeCheckalivestatus: Rx.Observable<boolean>;
+    public observeCheckreadystatus: Rx.Observable<boolean>;
+    public observeCurrentfilemembersastree: Rx.Observable<any>;
+    public observeCurrentfilemembersasflat: Rx.Observable<any>;
+    public observeTypelookup: Rx.Observable<any>;
+    public observeFilesChanged: Rx.Observable<boolean>;
+    public observeProjects: Rx.Observable<OmniSharp.Models.WorkspaceInformationResponse>;
+    public observeProject: Rx.Observable<OmniSharp.Models.ProjectInformationResponse>;
+    public observeGetcodeactions: Rx.Observable<OmniSharp.Models.GetCodeActionsResponse>;
+    public observeRuncodeaction: Rx.Observable<OmniSharp.Models.RunCodeActionResponse>;
+    public observeGettestcontext: Rx.Observable<OmniSharp.Models.GetTestCommandResponse>;
+
+
     public request<TRequest, TResponse>(action: string, request?: TRequest): Observable<TResponse> {
         if (this.currentState !== DriverState.Connected) {
             // Q: Should this throw?
             return Observable.throwError<TResponse>("Server is not connected");
         }
         var result = this._driver.request<TRequest, TResponse>(action, request);
-        this._requestStream.onNext(request);
+        this._requestStream.onNext(new CommandWrapper(action, request));
         var sub = result.subscribe((data) => {
             sub.dispose();
-            this._responseStream.onNext(data);
+            this._responseStream.onNext(new CommandWrapper(action, data));
         });
         return result;
     }
