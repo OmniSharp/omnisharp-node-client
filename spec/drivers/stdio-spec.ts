@@ -54,4 +54,27 @@ describe("Omnisharp Local - Stdio", function() {
             server.disconnect();
         });
     });
+
+    describe("properties", function() {
+        this.timeout(10000);
+        it('should implement the interface', function(done) {
+            var server = new Stdio({
+                driver: Driver.Stdio,
+                projectPath: process.cwd()
+            });
+
+            server.connect();
+            server.state.subscribe(state => {
+                expect(server.currentState).to.be.not.null;
+                expect(server.commands).to.be.not.null;
+                expect(server.events).to.be.not.null;
+                expect(server.state).to.be.not.null;
+                expect(server.outstandingRequests).to.be.not.null;
+            });
+
+            done();
+        })
+
+
+    })
 });

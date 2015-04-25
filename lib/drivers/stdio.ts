@@ -55,7 +55,7 @@ class StdioDriver implements IDriver {
         this._connectionStream.onError(friendlyMessage);
     }
 
-    public parseError(data) {
+    private parseError(data) {
         var message = data.toString();
         if (data.code === 'ENOENT' && data.path === 'mono') {
             message = 'mono could not be found, please ensure it is installed and in your path';
