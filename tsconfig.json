@@ -1,0 +1,26 @@
+{
+    "version": "1.4.1",
+    "compilerOptions": {
+        "target": "es5",
+        "module": "commonjs",
+        "declaration": false,
+        "noImplicitAny": false,
+        "removeComments": true,
+        "noLib": false
+    },
+    "filesGlob": [
+        "./**/*.ts",
+        "!./typings/**/*.d.ts",
+        "!./node_modules/**/*.ts"
+    ],
+    "files": [
+        "./lib/drivers.ts",
+        "./lib/drivers/http.ts",
+        "./lib/drivers/stdio.ts",
+        "./lib/drivers/websocket.ts",
+        "./lib/omnisharp-server.ts",
+        "./spec/omnisharp-server-spec.ts",
+        "./spec/tsd.d.ts",
+        "./tsd.d.ts"
+    ]
+}
