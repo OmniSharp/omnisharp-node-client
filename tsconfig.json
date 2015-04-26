@@ -22,7 +22,6 @@
         "./lib/omnisharp-client.ts",
         "./spec/omnisharp-client-commands.ts",
         "./spec/omnisharp-client-spec.ts",
-        "./spec/omnisharp-server-spec.ts",
         "./spec/stdio-spec.ts",
         "./spec/tsd.d.ts",
         "./tsd.d.ts"
