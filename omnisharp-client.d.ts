@@ -11,7 +11,7 @@ declare module OmnisharpClient {
         Connected = 2,
     }
     export interface IDriverOptions {
-        projectPath: string;
+        projectPath?: string;
         remote?: boolean;
         debug?: boolean;
         serverPath?: boolean;
@@ -39,9 +39,9 @@ declare module OmnisharpClient {
         response: TResponse;
     }
     export class OmnisharpClient {
-        constructor(_options: OmnisharpClientOptions);
+        constructor(_options?: OmnisharpClientOptions);
         id: string;
-        connect(): void;
+        connect(_options?: OmnisharpClientOptions): void;
         disconnect(): void;
         currentState: DriverState;
         events: Rx.Observable<OmniSharp.Stdio.Protocol.EventPacket>;

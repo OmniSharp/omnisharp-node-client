@@ -1,6 +1,7 @@
 import {Observable, Subject} from "rx";
 import {IDriver, IStaticDriver, IDriverOptions} from "./drivers";
 import {assert} from "chai";
+import {extend} from "lodash";
 
 export enum Driver {
     Http,
@@ -54,12 +55,10 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
     private _errorStream = new Subject<CommandWrapper<any>>();
     public get id() { return this._driver.id; }
 
-    constructor(private _options: OmnisharpClientOptions) {
-        if (!_options.driver) _options.driver = Driver.Stdio;
+    constructor(private _options: OmnisharpClientOptions = {}) {
+        var driver = _options.driver || Driver.Stdio;
 
-        // Lazy load driver
-        var driverFactory: IStaticDriver = require('./drivers/' + Driver[_options.driver].toLowerCase());
-
+        var driverFactory: IStaticDriver = require('./drivers/' + Driver[driver].toLowerCase());
         this._driver = new driverFactory(_options);
 
         var requestsPerSecond = this._requestStream
@@ -89,13 +88,14 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
             }))
             .sample(100);
 
-
         this.setupObservers();
     }
 
-    public connect() {
-        this._driver.connect();
-        var that = this;
+    public connect(_options?: OmnisharpClientOptions) {
+        var driver = this._options.driver;
+        extend(this._options, _options || {});
+        this._options.driver = driver;
+        this._driver.connect(this._options);
     }
 
     public disconnect() {

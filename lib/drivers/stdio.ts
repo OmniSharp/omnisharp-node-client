@@ -1,6 +1,6 @@
 import {IDriver, IDriverOptions} from "../drivers";
 import {DriverState} from "../omnisharp-client";
-import {spawn, ChildProcess} from "child_process";
+import {spawn, exec, ChildProcess} from "child_process";
 import * as readline from "readline";
 import {Observable, Observer, Subject, AsyncSubject} from "rx";
 var omnisharpReleaseLocation = require('omnisharp-server-roslyn-binaries');
@@ -35,10 +35,12 @@ class StdioDriver implements IDriver {
 
     public get outstandingRequests() { return this._outstandingRequests.size; }
 
-    public connect() {
+    public connect({projectPath}: IDriverOptions) {
+        projectPath = projectPath || this._serverPath;
+
         this._connectionStream.onNext(DriverState.Connecting);
 
-        var serverArguments: any[] = ["--stdio", "-s", this._projectPath, "--hostPID", process.pid];
+        var serverArguments: any[] = ["--stdio", "-s", projectPath, "--hostPID", process.pid];
         this._process = spawn(this._serverPath, serverArguments);
 
         //this._process.stdout.on('data', (data) => console.log(data.toString()));
@@ -78,7 +80,10 @@ class StdioDriver implements IDriver {
     public disconnect() {
         this._connectionStream.onNext(DriverState.Disconnected);
         if (this._process != null) {
-            this._process.kill("SIGKILL");
+            this._process.kill("SIGTERM");
+            if (process.platform === "win32") {
+                exec("taskkill", ["/PID", this._process.pid.toString(), '/T', '/F']);
+            }
         }
         this._process = null;
     }

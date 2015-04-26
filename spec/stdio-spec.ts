@@ -34,7 +34,7 @@ describe("Omnisharp Local - Stdio", function() {
 
             expect(server.currentState).to.be.eq(DriverState.Disconnected);
 
-            server.connect();
+            server.connect({});
             expect(server.currentState).to.be.eq(DriverState.Connecting);
 
             var sub = server.state.subscribe(state => {
@@ -63,7 +63,7 @@ describe("Omnisharp Local - Stdio", function() {
                 projectPath: process.cwd()
             });
 
-            server.connect();
+            server.connect({});
             server.state.subscribe(state => {
                 expect(server.currentState).to.be.not.null;
                 expect(server.commands).to.be.not.null;
