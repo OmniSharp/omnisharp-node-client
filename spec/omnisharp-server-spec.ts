@@ -56,7 +56,8 @@ describe("Omnisharp Server", function() {
 
         it("must give status", function(done) {
 
-            server.status.subscribe(status => {
+            var sub = server.status.subscribe(status => {
+                sub.dispose();
                 done();
             })
 

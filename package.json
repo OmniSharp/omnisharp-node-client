@@ -2,18 +2,24 @@
   "name": "omnisharp-node-client",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "lib/omnisharp-server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "prepublish": "gulp",
+    "postinstall": "gulp",
+    "test": "mocha ./spec"
   },
   "author": "",
   "license": "MIT",
   "dependencies": {
     "chai": "^2.2.0",
+    "gulp": "^3.8.11",
+    "gulp-util": "^3.0.4",
     "lodash": "^3.7.0",
     "mocha": "^2.2.4",
     "omnisharp-server-roslyn-binaries": "latest",
     "rx": "^2.5.2",
-    "tsd": "~0.6.0-beta.5"
+    "through2": "^0.6.5",
+    "tsd": "~0.6.0-beta.5",
+    "typescript": "^1.5.0-alpha"
   }
 }

@@ -10,6 +10,7 @@
     },
     "filesGlob": [
         "./**/*.ts",
+        "!./omnisharp-client.d.ts",
         "!./typings/**/*.d.ts",
         "!./node_modules/**/*.ts"
     ],
