@@ -11,7 +11,7 @@ export interface OmnisharpServerStatus {
     requestsPerSecond: number;
     responsesPerSecond: number;
     eventsPerSecond: number;
-    totalPerSecond: number;
+    operationsPerSecond: number;
     outgoingRequests: number;
     hasOutgoingRequests: boolean;
 }
@@ -31,46 +31,46 @@ export class OmnisharpServer implements OmniSharp.Api, IDriver {
 
         // Lazy load driver
         var driverFactory: IStaticDriver = require('./drivers/' + Driver[_options.driver].toLowerCase());
+
         this._driver = new driverFactory(_options);
 
         var requestsPerSecond = this._requestStream
-            .windowWithTime(1000, 100)
-            .count();
+            .bufferWithTime(1000, 100)
+            .select(x => x.length);
 
         var responsesPerSecond = this._responseStream
-            .windowWithTime(1000, 100)
-            .count();
+            .bufferWithTime(1000, 100)
+            .select(x => x.length);
 
         var eventsPerSecond = this._driver.events
-            .windowWithTime(1000, 100)
-            .count();
+            .bufferWithTime(1000, 100)
+            .select(x => x.length);
 
-        var totalPerSecond = Observable.combineLatest(
-            requestsPerSecond, responsesPerSecond, eventsPerSecond,
-            function(requests, responses, events) {
-                return requests + responses + events;
-            });
 
         this._statusStream = Observable.combineLatest(
             requestsPerSecond,
             responsesPerSecond,
             eventsPerSecond,
-            (requests, responses, events) => ({
+            (requests, responses, events) =><OmnisharpServerStatus> ({
                 state: this._driver.currentState,
                 requestsPerSecond: requests,
                 responsesPerSecond: responses,
                 eventsPerSecond: events,
-                totalPerSecond: requests + responses + events,
+                operationsPerSecond: requests + responses + events,
                 outgoingRequests: this._driver.outstandingRequests,
                 hasOutgoingRequests: this._driver.outstandingRequests > 0
-            }));
+            }))
+            .sample(100);
+
 
         this.setupObservers();
     }
 
     public connect() {
         this._driver.connect();
+        var that = this;
     }
+
     public disconnect() {
         this._driver.disconnect();
     }
@@ -82,8 +82,8 @@ export class OmnisharpServer implements OmniSharp.Api, IDriver {
     public get outstandingRequests() { return this._driver.outstandingRequests; }
 
     public get status() { return this._statusStream; }
-    public get requests(): Observable<any> { return this._requestStream; }
-    public get responses(): Observable<any> { return this._responseStream; }
+    public get requests(): Observable<CommandWrapper<any>> { return this._requestStream; }
+    public get responses(): Observable<CommandWrapper<any>> { return this._responseStream; }
 
     private setupObservers() {
         this.observeUpdatebuffer = this._responseStream.where(z => z.command == "updatebuffer").map<any>(z => z.value);

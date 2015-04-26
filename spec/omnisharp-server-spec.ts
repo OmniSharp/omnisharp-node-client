@@ -20,7 +20,7 @@ describe("Omnisharp Server", function() {
 
     describe('state', function() {
 
-        this.timeout(10000);
+        this.timeout(7000);
         var server: OmnisharpServer;
 
         before((done) => {
@@ -32,21 +32,37 @@ describe("Omnisharp Server", function() {
             server.connect();
 
             var sub = server.state.subscribe(state => {
-                sub.dispose();
-                done();
+                if (state === DriverState.Connected) {
+                    sub.dispose();
+                    done();
+                }
             });
         })
 
-        it("must connect", function(done) {
-            server.checkalivestatus();
-            expect(server.outstandingRequests).to.be.eq(1);
-            server.checkalivestatus();
-            server.checkalivestatus();
-            server.checkalivestatus();
-            expect(server.outstandingRequests).to.be.eq(4);
+        it("must respond to all requests", function(done) {
+            var count = 4;
+            server.observeCheckalivestatus.subscribe((data) => {
+                console.log("observeCheckalivestatus", data)
+                count--;
+                if (!count)
+                    done();
+            });
 
-            server.subscribe
-            done();
+            server.checkalivestatus();
+            server.checkalivestatus();
+            server.checkalivestatus();
+            server.checkalivestatus();
+        });
+
+        it("must give status", function(done) {
+
+            server.status.subscribe(status => {
+                done();
+            })
+
+            server.checkalivestatus();
+            server.checkalivestatus();
+
         });
     });
 

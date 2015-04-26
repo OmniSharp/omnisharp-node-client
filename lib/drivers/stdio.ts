@@ -9,7 +9,7 @@ var omnisharpDebugLocation = resolve(__dirname, '../../node_modules/omnisharp-se
 
 
 class StdioDriver implements IDriver {
-    private _seq: number = 0;
+    private _seq: number = 1;
     private _process: ChildProcess;
     private _outstandingRequests = new Map<number, AsyncSubject<any>>();
     private _projectPath: string;
@@ -82,6 +82,7 @@ class StdioDriver implements IDriver {
 
         var subject = new AsyncSubject<TResponse>();
         this._outstandingRequests.set(sequence, subject);
+        this._process.stdin.write(JSON.stringify(packet) + '\n', 'ascii');
         return subject;
     }
 
