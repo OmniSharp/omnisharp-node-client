@@ -1,12 +1,25 @@
 import {Observable, Subject} from "rx";
-import {Driver, IDriver, IStaticDriver, IDriverOptions, DriverState} from "./drivers";
+import {IDriver, IStaticDriver, IDriverOptions} from "./drivers";
 import {assert} from "chai";
 
-export interface OmnisharpServerOptions extends IDriverOptions {
+export enum Driver {
+    Http,
+    Stdio,
+    //TODO: Websocket,
+}
+
+export enum DriverState {
+    Disconnected,
+    Connecting,
+    Connected,
+}
+
+
+export interface OmnisharpClientOptions extends IDriverOptions {
     driver?: Driver;
 }
 
-export interface OmnisharpServerStatus {
+export interface OmnisharpClientStatus {
     state: DriverState;
     requestsPerSecond: number;
     responsesPerSecond: number;
@@ -24,9 +37,11 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
     private _driver: IDriver;
     private _requestStream = new Subject<CommandWrapper<any>>();
     private _responseStream = new Subject<CommandWrapper<any>>();
-    private _statusStream: Rx.Observable<OmnisharpServerStatus>;
+    private _statusStream: Rx.Observable<OmnisharpClientStatus>;
+    private _errorStream = new Subject<CommandWrapper<any>>();
+    public get id() { return this._driver.id; }
 
-    constructor(private _options: OmnisharpServerOptions) {
+    constructor(private _options: OmnisharpClientOptions) {
         if (!_options.driver) _options.driver = Driver.Stdio;
 
         // Lazy load driver
@@ -46,12 +61,11 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
             .bufferWithTime(1000, 100)
             .select(x => x.length);
 
-
         this._statusStream = Observable.combineLatest(
             requestsPerSecond,
             responsesPerSecond,
             eventsPerSecond,
-            (requests, responses, events) => <OmnisharpServerStatus> ({
+            (requests, responses, events) => <OmnisharpClientStatus> ({
                 state: this._driver.currentState,
                 requestsPerSecond: requests,
                 responsesPerSecond: responses,
@@ -81,9 +95,10 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
     public get state(): Rx.Observable<DriverState> { return this._driver.state; }
     public get outstandingRequests() { return this._driver.outstandingRequests; }
 
-    public get status(): Rx.Observable<OmnisharpServerStatus> { return this._statusStream; }
+    public get status(): Rx.Observable<OmnisharpClientStatus> { return this._statusStream; }
     public get requests(): Rx.Observable<CommandWrapper<any>> { return this._requestStream; }
     public get responses(): Rx.Observable<CommandWrapper<any>> { return this._responseStream; }
+    public get errors(): Rx.Observable<CommandWrapper<any>> { return this._errorStream; }
 
     private setupObservers() {
         this.observeUpdatebuffer = this._responseStream.where(z => z.command == "updatebuffer").map<any>(z => z.value);
@@ -152,6 +167,9 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
         var sub = result.subscribe((data) => {
             sub.dispose();
             this._responseStream.onNext(new CommandWrapper(action, data));
+        }, (error) => {
+            sub.dispose();
+            this._errorStream.onNext(new CommandWrapper(action, error));
         });
         return result;
     }

@@ -2,7 +2,7 @@
   "name": "omnisharp-node-client",
   "version": "1.0.0",
   "description": "",
-  "main": "lib/omnisharp-server.js",
+  "main": "lib/omnisharp-client.js",
   "scripts": {
     "prepublish": "gulp",
     "postinstall": "gulp",

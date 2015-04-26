@@ -1,6 +1,5 @@
 import {expect} from 'chai';
-import {OmnisharpClient} from "../lib/omnisharp-client";
-import {Driver, DriverState} from "../lib/drivers";
+import {OmnisharpClient, Driver, DriverState} from "../lib/omnisharp-client";
 
 declare var xdescribe: Function;
 

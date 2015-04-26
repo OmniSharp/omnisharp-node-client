@@ -1,4 +1,5 @@
-import {IDriver, IDriverOptions, DriverState} from "../drivers";
+import {IDriver, IDriverOptions} from "../drivers";
+import {DriverState} from "../omnisharp-client";
 import {spawn, ChildProcess} from "child_process";
 import * as readline from "readline";
 import {Observable, Observer, Subject, AsyncSubject} from "rx";
@@ -15,6 +16,7 @@ class StdioDriver implements IDriver {
     private _projectPath: string;
     private _serverPath: string;
     public currentState: DriverState = DriverState.Disconnected;
+    public id: string;
 
     constructor({projectPath, debug, serverPath}: IDriverOptions) {
         this._projectPath = projectPath;
@@ -49,11 +51,20 @@ class StdioDriver implements IDriver {
 
         this._process.on('close', () => this.disconnect());
         this._process.on('error', (data) => this.serverErr(data));
+        this.id = this._process.pid;
     }
 
     private serverErr(data) {
         var friendlyMessage = this.parseError(data);
-        this._connectionStream.onError(friendlyMessage);
+
+        this._eventStream.onNext({
+            Type: "error",
+            Event: "error",
+            Seq: -1,
+            Body: {
+                Message: friendlyMessage
+            }
+        });
     }
 
     private parseError(data) {
@@ -72,7 +83,7 @@ class StdioDriver implements IDriver {
         this._process = null;
     }
 
-    public request<TRequest, TResponse>(command: string, request?: TRequest): Observable<TResponse> {
+    public request<TRequest, TResponse>(command: string, request?: TRequest): Rx.Observable<TResponse> {
         var sequence = this._seq++;
         var packet: OmniSharp.Stdio.Protocol.RequestPacket = {
             Command: command,
@@ -145,7 +156,9 @@ class StdioDriver implements IDriver {
             Type: "unknown",
             Event: "unknown",
             Seq: -1,
-            Body: s
+            Body: {
+                Message: s
+            }
         });
 
         var ref = s.match(/Detected an OmniSharp instance already running on port/);

@@ -10,29 +10,16 @@ declare module OmnisharpClient {
         Connecting = 1,
         Connected = 2,
     }
-    export interface IStaticDriver {
-        new (options: IDriverOptions): IDriver;
-    }
     export interface IDriverOptions {
         projectPath: string;
         remote?: boolean;
         debug?: boolean;
         serverPath?: boolean;
     }
-    export interface IDriver {
-        connect(): any;
-        currentState: DriverState;
-        events: Rx.Observable<OmniSharp.Stdio.Protocol.EventPacket>;
-        commands: Rx.Observable<OmniSharp.Stdio.Protocol.ResponsePacket>;
-        state: Rx.Observable<DriverState>;
-        outstandingRequests: number;
-        disconnect(): any;
-        request<TRequest, TResponse>(command: string, request?: TRequest): Rx.Observable<TResponse>;
-    }
-    export interface OmnisharpServerOptions extends IDriverOptions {
+    export interface OmnisharpClientOptions extends IDriverOptions {
         driver?: Driver;
     }
-    export interface OmnisharpServerStatus {
+    export interface OmnisharpClientStatus {
         state: DriverState;
         requestsPerSecond: number;
         responsesPerSecond: number;
@@ -46,8 +33,9 @@ declare module OmnisharpClient {
         value: T;
         constructor(command: string, value: T);
     }
-    export class OmnisharpServer {
-        constructor(_options: OmnisharpServerOptions);
+    export class OmnisharpClient {
+        constructor(_options: OmnisharpClientOptions);
+        id: string;
         connect(): void;
         disconnect(): void;
         currentState: DriverState;
@@ -55,9 +43,10 @@ declare module OmnisharpClient {
         commands: Rx.Observable<OmniSharp.Stdio.Protocol.ResponsePacket>;
         state: Rx.Observable<DriverState>;
         outstandingRequests: number;
-        status: Rx.Observable<OmnisharpServerStatus>;
+        status: Rx.Observable<OmnisharpClientStatus>;
         requests: Rx.Observable<CommandWrapper<any>>;
         responses: Rx.Observable<CommandWrapper<any>>;
+        errors: Rx.Observable<CommandWrapper<any>>;
         observeUpdatebuffer: Rx.Observable<any>;
         observeChangebuffer: Rx.Observable<any>;
         observeCodecheck: Rx.Observable<OmniSharp.Models.QuickFixResponse>;
@@ -112,4 +101,8 @@ declare module OmnisharpClient {
         runcodeaction(request: OmniSharp.Models.CodeActionRequest): Rx.Observable<OmniSharp.Models.RunCodeActionResponse>;
         gettestcontext(request: OmniSharp.Models.TestCommandRequest): Rx.Observable<OmniSharp.Models.GetTestCommandResponse>;
     }
+}
+
+declare module "omnisharp-node-client" {
+    export = OmnisharpClient;
 }

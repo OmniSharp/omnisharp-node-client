@@ -1,6 +1,6 @@
 import {expect} from 'chai';
+import {Driver, DriverState} from "../lib/omnisharp-client";
 import Stdio = require("../lib/drivers/stdio");
-import {Driver, DriverState} from "../lib/drivers";
 
 declare var xdescribe: Function;
 

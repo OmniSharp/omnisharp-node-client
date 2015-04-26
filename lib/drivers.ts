@@ -1,15 +1,4 @@
-export enum Driver {
-    Http,
-    Stdio,
-    //TODO: Websocket,
-}
-
-export enum DriverState {
-    Disconnected,
-    Connecting,
-    Connected,
-}
-
+import {DriverState} from "./omnisharp-client";
 export interface IStaticDriver {
     new (options: IDriverOptions): IDriver;
 }
@@ -22,6 +11,7 @@ export interface IDriverOptions {
 }
 
 export interface IDriver {
+    id: string;
     connect();
     currentState: DriverState;
     events: Rx.Observable<OmniSharp.Stdio.Protocol.EventPacket>;
