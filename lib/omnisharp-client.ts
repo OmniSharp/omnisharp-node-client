@@ -33,10 +33,23 @@ export class CommandWrapper<T> {
     constructor(public command: string, public value: T) { }
 }
 
+export class RequestWrapper<T> {
+    constructor(public command: string, public request: T) { }
+}
+
+export class ResponseWrapper<TRequest, TResponse> {
+    constructor(public command: string, public request: TRequest, public response: TResponse) { }
+}
+
+export interface Result<TRequest, TResponse> {
+    request: TRequest;
+    response: TResponse;
+}
+
 export class OmnisharpClient implements OmniSharp.Api, IDriver {
     private _driver: IDriver;
-    private _requestStream = new Subject<CommandWrapper<any>>();
-    private _responseStream = new Subject<CommandWrapper<any>>();
+    private _requestStream = new Subject<RequestWrapper<any>>();
+    private _responseStream = new Subject<ResponseWrapper<any, any>>();
     private _statusStream: Rx.Observable<OmnisharpClientStatus>;
     private _errorStream = new Subject<CommandWrapper<any>>();
     public get id() { return this._driver.id; }
@@ -89,6 +102,23 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
         this._driver.disconnect();
     }
 
+    public request<TRequest, TResponse>(action: string, request?: TRequest): Rx.Observable<TResponse> {
+        if (this.currentState !== DriverState.Connected) {
+            // Q: Should this throw?
+            return Observable.throwError<TResponse>("Server is not connected");
+        }
+        var result = this._driver.request<TRequest, TResponse>(action, request);
+        this._requestStream.onNext(new RequestWrapper(action, request));
+        var sub = result.subscribe((data) => {
+            sub.dispose();
+            this._responseStream.onNext(new ResponseWrapper(action, request, data));
+        }, (error) => {
+                sub.dispose();
+                this._errorStream.onNext(new CommandWrapper(action, error));
+            });
+        return result;
+    }
+
     public get currentState() { return this._driver.currentState; }
     public get events(): Rx.Observable<OmniSharp.Stdio.Protocol.EventPacket> { return this._driver.events; }
     public get commands(): Rx.Observable<OmniSharp.Stdio.Protocol.ResponsePacket> { return this._driver.commands; }
@@ -96,55 +126,37 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
     public get outstandingRequests() { return this._driver.outstandingRequests; }
 
     public get status(): Rx.Observable<OmnisharpClientStatus> { return this._statusStream; }
-    public get requests(): Rx.Observable<CommandWrapper<any>> { return this._requestStream; }
-    public get responses(): Rx.Observable<CommandWrapper<any>> { return this._responseStream; }
+    public get requests(): Rx.Observable<RequestWrapper<any>> { return this._requestStream; }
+    public get responses(): Rx.Observable<ResponseWrapper<any, any>> { return this._responseStream; }
     public get errors(): Rx.Observable<CommandWrapper<any>> { return this._errorStream; }
 
     private setupObservers() {
-        this.observeUpdatebuffer = this._responseStream.filter(z => z.command == "updatebuffer").map<any>(z => z.value);
-        this.observeChangebuffer = this._responseStream.filter(z => z.command == "changebuffer").map<any>(z => z.value);
-        this.observeCodecheck = this._responseStream.filter(z => z.command == "codecheck").map<OmniSharp.Models.QuickFixResponse>(z => z.value);
-        this.observeFormatAfterKeystroke = this._responseStream.filter(z => z.command == "formatafterkeystroke").map<OmniSharp.Models.FormatRangeResponse>(z => z.value);
-        this.observeFormatRange = this._responseStream.filter(z => z.command == "formatrange").map<OmniSharp.Models.FormatRangeResponse>(z => z.value);
-        this.observeCodeformat = this._responseStream.filter(z => z.command == "codeformat").map<OmniSharp.Models.CodeFormatResponse>(z => z.value);
-        this.observeAutocomplete = this._responseStream.filter(z => z.command == "autocomplete").map<OmniSharp.Models.AutoCompleteResponse[]>(z => z.value);
-        this.observeFindimplementations = this._responseStream.filter(z => z.command == "findimplementations").map<OmniSharp.Models.QuickFixResponse>(z => z.value);
-        this.observeFindsymbols = this._responseStream.filter(z => z.command == "findsymbols").map<OmniSharp.Models.QuickFixResponse>(z => z.value);
-        this.observeFindusages = this._responseStream.filter(z => z.command == "findusages").map<OmniSharp.Models.QuickFixResponse>(z => z.value);
-        this.observeGotodefinition = this._responseStream.filter(z => z.command == "gotodefinition").map<any>(z => z.value);
-        this.observeNavigateup = this._responseStream.filter(z => z.command == "navigateup").map<OmniSharp.Models.NavigateResponse>(z => z.value);
-        this.observeNavigatedown = this._responseStream.filter(z => z.command == "navigatedown").map<OmniSharp.Models.NavigateResponse>(z => z.value);
-        this.observeRename = this._responseStream.filter(z => z.command == "rename").map<OmniSharp.Models.RenameResponse>(z => z.value);
-        this.observeSignatureHelp = this._responseStream.filter(z => z.command == "signaturehelp").map<OmniSharp.Models.SignatureHelp>(z => z.value);
-        this.observeCheckalivestatus = this._responseStream.filter(z => z.command == "checkalivestatus").map<boolean>(z => z.value);
-        this.observeCheckreadystatus = this._responseStream.filter(z => z.command == "checkreadystatus").map<boolean>(z => z.value);
-        this.observeCurrentfilemembersastree = this._responseStream.filter(z => z.command == "currentfilemembersastree").map<any>(z => z.value);
-        this.observeCurrentfilemembersasflat = this._responseStream.filter(z => z.command == "currentfilemembersasflat").map<any>(z => z.value);
-        this.observeTypelookup = this._responseStream.filter(z => z.command == "typelookup").map<any>(z => z.value);
-        this.observeFilesChanged = this._responseStream.filter(z => z.command == "fileschanged").map<boolean>(z => z.value);
-        this.observeProjects = this._responseStream.filter(z => z.command == "projects").map<OmniSharp.Models.WorkspaceInformationResponse>(z => z.value);
-        this.observeProject = this._responseStream.filter(z => z.command == "project").map<OmniSharp.Models.ProjectInformationResponse>(z => z.value);
-        this.observeGetcodeactions = this._responseStream.filter(z => z.command == "getcodeactions").map<OmniSharp.Models.GetCodeActionsResponse>(z => z.value);
-        this.observeRuncodeaction = this._responseStream.filter(z => z.command == "runcodeaction").map<OmniSharp.Models.RunCodeActionResponse>(z => z.value);
-        this.observeGettestcontext = this._responseStream.filter(z => z.command == "gettestcontext").map<OmniSharp.Models.GetTestCommandResponse>(z => z.value);
-    }
-
-
-    public request<TRequest, TResponse>(action: string, request?: TRequest): Rx.Observable<TResponse> {
-        if (this.currentState !== DriverState.Connected) {
-            // Q: Should this throw?
-            return Observable.throwError<TResponse>("Server is not connected");
-        }
-        var result = this._driver.request<TRequest, TResponse>(action, request);
-        this._requestStream.onNext(new CommandWrapper(action, request));
-        var sub = result.subscribe((data) => {
-            sub.dispose();
-            this._responseStream.onNext(new CommandWrapper(action, data));
-        }, (error) => {
-            sub.dispose();
-            this._errorStream.onNext(new CommandWrapper(action, error));
-        });
-        return result;
+        this.observeUpdatebuffer = this._responseStream.filter(z => z.command == "updatebuffer");
+        this.observeChangebuffer = this._responseStream.filter(z => z.command == "changebuffer");
+        this.observeCodecheck = this._responseStream.filter(z => z.command == "codecheck");
+        this.observeFormatAfterKeystroke = this._responseStream.filter(z => z.command == "formatafterkeystroke");
+        this.observeFormatRange = this._responseStream.filter(z => z.command == "formatrange");
+        this.observeCodeformat = this._responseStream.filter(z => z.command == "codeformat");
+        this.observeAutocomplete = this._responseStream.filter(z => z.command == "autocomplete");
+        this.observeFindimplementations = this._responseStream.filter(z => z.command == "findimplementations");
+        this.observeFindsymbols = this._responseStream.filter(z => z.command == "findsymbols");
+        this.observeFindusages = this._responseStream.filter(z => z.command == "findusages");
+        this.observeGotodefinition = this._responseStream.filter(z => z.command == "gotodefinition");
+        this.observeNavigateup = this._responseStream.filter(z => z.command == "navigateup");
+        this.observeNavigatedown = this._responseStream.filter(z => z.command == "navigatedown");
+        this.observeRename = this._responseStream.filter(z => z.command == "rename");
+        this.observeSignatureHelp = this._responseStream.filter(z => z.command == "signaturehelp");
+        this.observeCheckalivestatus = this._responseStream.filter(z => z.command == "checkalivestatus");
+        this.observeCheckreadystatus = this._responseStream.filter(z => z.command == "checkreadystatus")
+        this.observeCurrentfilemembersastree = this._responseStream.filter(z => z.command == "currentfilemembersastree");
+        this.observeCurrentfilemembersasflat = this._responseStream.filter(z => z.command == "currentfilemembersasflat");
+        this.observeTypelookup = this._responseStream.filter(z => z.command == "typelookup");
+        this.observeFilesChanged = this._responseStream.filter(z => z.command == "fileschanged");
+        this.observeProjects = this._responseStream.filter(z => z.command == "projects");
+        this.observeProject = this._responseStream.filter(z => z.command == "project");
+        this.observeGetcodeactions = this._responseStream.filter(z => z.command == "getcodeactions");
+        this.observeRuncodeaction = this._responseStream.filter(z => z.command == "runcodeaction");
+        this.observeGettestcontext = this._responseStream.filter(z => z.command == "gettestcontext");
     }
 
     public updatebuffer(request: OmniSharp.Models.Request): Rx.Observable<any> {
@@ -158,7 +170,7 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
         return this.updatebuffer(request).toPromise();
     }
 
-    public observeUpdatebuffer: Rx.Observable<any>;
+    public observeUpdatebuffer: Rx.Observable<Result<OmniSharp.Models.Request, any>>;
 
     public changebuffer(request: OmniSharp.Models.ChangeBufferRequest): Rx.Observable<any> {
         assert.isNotNull(request.FileName, 'request.FileName must not be null');
@@ -179,7 +191,7 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
         return this.changebuffer(request).toPromise();
     }
 
-    public observeChangebuffer: Rx.Observable<any>;
+    public observeChangebuffer: Rx.Observable<Result<OmniSharp.Models.Request, any>>;
 
     public codecheck(request: OmniSharp.Models.Request): Rx.Observable<OmniSharp.Models.QuickFixResponse> {
         return this.request<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>("codecheck", request);
@@ -189,7 +201,7 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
         return this.codecheck(request).toPromise();
     }
 
-    public observeCodecheck: Rx.Observable<OmniSharp.Models.QuickFixResponse>;
+    public observeCodecheck: Rx.Observable<Result<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>;
 
     public formatAfterKeystroke(request: OmniSharp.Models.FormatAfterKeystrokeRequest): Rx.Observable<OmniSharp.Models.FormatRangeResponse> {
         assert.isNotNull(request.FileName, 'request.FileName must not be null');
@@ -206,7 +218,7 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
         return this.formatAfterKeystroke(request).toPromise();
     }
 
-    public observeFormatAfterKeystroke: Rx.Observable<OmniSharp.Models.FormatRangeResponse>;
+    public observeFormatAfterKeystroke: Rx.Observable<Result<OmniSharp.Models.Request, OmniSharp.Models.FormatRangeResponse>>;
 
     public formatRange(request: OmniSharp.Models.FormatRangeRequest): Rx.Observable<OmniSharp.Models.FormatRangeResponse> {
         assert.isNotNull(request.FileName, 'request.FileName must not be null');
@@ -226,7 +238,7 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
         return this.formatRange(request).toPromise();
     }
 
-    public observeFormatRange: Rx.Observable<OmniSharp.Models.FormatRangeResponse>;
+    public observeFormatRange: Rx.Observable<Result<OmniSharp.Models.FormatRangeRequest, OmniSharp.Models.FormatRangeResponse>>;
 
     public codeformat(request: OmniSharp.Models.Request): Rx.Observable<OmniSharp.Models.CodeFormatResponse> {
         assert.isNotNull(request.FileName, 'request.FileName must not be null');
@@ -238,7 +250,7 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
         return this.codeformat(request).toPromise();
     }
 
-    public observeCodeformat: Rx.Observable<OmniSharp.Models.CodeFormatResponse>;
+    public observeCodeformat: Rx.Observable<Result<OmniSharp.Models.Request, OmniSharp.Models.CodeFormatResponse>>;
 
     public autocomplete(request: OmniSharp.Models.AutoCompleteRequest): Rx.Observable<OmniSharp.Models.AutoCompleteResponse[]> {
         assert.isNotNull(request.FileName, 'request.FileName must not be null');
@@ -255,7 +267,7 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
         return this.autocomplete(request).toPromise();
     }
 
-    public observeAutocomplete: Rx.Observable<OmniSharp.Models.AutoCompleteResponse[]>;
+    public observeAutocomplete: Rx.Observable<Result<OmniSharp.Models.AutoCompleteRequest, OmniSharp.Models.AutoCompleteResponse[]>>;
 
     public findimplementations(request: OmniSharp.Models.Request): Rx.Observable<OmniSharp.Models.QuickFixResponse> {
         assert.isNotNull(request.FileName, 'request.FileName must not be null');
@@ -271,7 +283,7 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
         return this.findimplementations(request).toPromise();
     }
 
-    public observeFindimplementations: Rx.Observable<OmniSharp.Models.QuickFixResponse>;
+    public observeFindimplementations: Rx.Observable<Result<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>;
 
     public findsymbols(request: OmniSharp.Models.FindSymbolsRequest): Rx.Observable<OmniSharp.Models.QuickFixResponse> {
         // This isn't technically required... but looks like the server will get all symbols then...
@@ -285,7 +297,7 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
         return this.findsymbols(request).toPromise();
     }
 
-    public observeFindsymbols: Rx.Observable<OmniSharp.Models.QuickFixResponse>;
+    public observeFindsymbols: Rx.Observable<Result<OmniSharp.Models.FindSymbolsRequest, OmniSharp.Models.QuickFixResponse>>;
 
     public findusages(request: OmniSharp.Models.FindUsagesRequest): Rx.Observable<OmniSharp.Models.QuickFixResponse> {
         assert.isNotNull(request.FileName, 'request.FileName must not be null');
@@ -301,7 +313,7 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
         return this.findusages(request).toPromise();
     }
 
-    public observeFindusages: Rx.Observable<OmniSharp.Models.QuickFixResponse>;
+    public observeFindusages: Rx.Observable<Result<OmniSharp.Models.FindUsagesRequest, OmniSharp.Models.QuickFixResponse>>;
 
     public gotodefinition(request: OmniSharp.Models.Request): Rx.Observable<any> {
         assert.isNotNull(request.FileName, 'request.FileName must not be null');
@@ -317,7 +329,7 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
         return this.gotodefinition(request).toPromise();
     }
 
-    public observeGotodefinition: Rx.Observable<any>;
+    public observeGotodefinition: Rx.Observable<Result<OmniSharp.Models.Request, any>>;
 
     public navigateup(request: OmniSharp.Models.Request): Rx.Observable<OmniSharp.Models.NavigateResponse> {
         assert.isNotNull(request.FileName, 'request.FileName must not be null');
@@ -333,7 +345,7 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
         return this.navigateup(request).toPromise();
     }
 
-    public observeNavigateup: Rx.Observable<OmniSharp.Models.NavigateResponse>;
+    public observeNavigateup: Rx.Observable<Result<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>>;
 
     public navigatedown(request: OmniSharp.Models.Request): Rx.Observable<OmniSharp.Models.NavigateResponse> {
         assert.isNotNull(request.FileName, 'request.FileName must not be null');
@@ -349,7 +361,7 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
         return this.navigatedown(request).toPromise();
     }
 
-    public observeNavigatedown: Rx.Observable<OmniSharp.Models.NavigateResponse>;
+    public observeNavigatedown: Rx.Observable<Result<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>>;
 
 
     public rename(request: OmniSharp.Models.RenameRequest): Rx.Observable<OmniSharp.Models.RenameResponse> {
@@ -367,7 +379,7 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
         return this.rename(request).toPromise();
     }
 
-    public observeRename: Rx.Observable<OmniSharp.Models.RenameResponse>;
+    public observeRename: Rx.Observable<Result<OmniSharp.Models.RenameRequest, OmniSharp.Models.RenameResponse>>;
 
     public signatureHelp(request: OmniSharp.Models.Request): Rx.Observable<OmniSharp.Models.SignatureHelp> {
         assert.isNotNull(request.FileName, 'request.FileName must not be null');
@@ -383,7 +395,7 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
         return this.signatureHelp(request).toPromise();
     }
 
-    public observeSignatureHelp: Rx.Observable<OmniSharp.Models.SignatureHelp>;
+    public observeSignatureHelp: Rx.Observable<Result<OmniSharp.Models.Request, OmniSharp.Models.SignatureHelp>>;
 
     public checkalivestatus(): Rx.Observable<boolean> {
         return this.request<any, any>("checkalivestatus");
@@ -393,7 +405,7 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
         return this.checkalivestatus().toPromise();
     }
 
-    public observeCheckalivestatus: Rx.Observable<boolean>;
+    public observeCheckalivestatus: Rx.Observable<Result<any, boolean>>;
 
     public checkreadystatus(): Rx.Observable<boolean> {
         return this.request<any, any>("checkreadystatus");
@@ -403,7 +415,7 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
         return this.checkreadystatus().toPromise();
     }
 
-    public observeCheckreadystatus: Rx.Observable<boolean>;
+    public observeCheckreadystatus: Rx.Observable<Result<any, boolean>>;
 
     public currentfilemembersastree(request: OmniSharp.Models.Request): Rx.Observable<any> {
         assert.isNotNull(request.FileName, 'request.FileName must not be null');
@@ -415,7 +427,7 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
         return this.currentfilemembersastree(request).toPromise();
     }
 
-    public observeCurrentfilemembersastree: Rx.Observable<any>;
+    public observeCurrentfilemembersastree: Rx.Observable<Result<OmniSharp.Models.Request, any>>;
 
     public currentfilemembersasflat(request: OmniSharp.Models.Request): Rx.Observable<any> {
         assert.isNotNull(request.FileName, 'request.FileName must not be null');
@@ -427,7 +439,7 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
         return this.currentfilemembersasflat(request).toPromise();
     }
 
-    public observeCurrentfilemembersasflat: Rx.Observable<any>;
+    public observeCurrentfilemembersasflat: Rx.Observable<Result<OmniSharp.Models.Request, any>>;
 
     public typelookup(request: OmniSharp.Models.TypeLookupRequest): Rx.Observable<any> {
         assert.isNotNull(request.FileName, 'request.FileName must not be null');
@@ -443,7 +455,7 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
         return this.typelookup(request).toPromise();
     }
 
-    public observeTypelookup: Rx.Observable<any>;
+    public observeTypelookup: Rx.Observable<Result<OmniSharp.Models.TypeLookupRequest, any>>;
 
     public filesChanged(request: OmniSharp.Models.Request[]): Rx.Observable<boolean> {
         assert.isNotNull(request, 'request must not be null');
@@ -454,7 +466,7 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
         return this.filesChanged(request).toPromise();
     }
 
-    public observeFilesChanged: Rx.Observable<boolean>;
+    public observeFilesChanged: Rx.Observable<Result<OmniSharp.Models.Request[], boolean>>;
 
     public projects(): Rx.Observable<OmniSharp.Models.WorkspaceInformationResponse> {
         return this.request<any, OmniSharp.Models.WorkspaceInformationResponse>("projects");
@@ -464,7 +476,7 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
         return this.projects().toPromise();
     }
 
-    public observeProjects: Rx.Observable<OmniSharp.Models.WorkspaceInformationResponse>;
+    public observeProjects: Rx.Observable<Result<OmniSharp.Models.WorkspaceInformationResponse, OmniSharp.Models.WorkspaceInformationResponse>>;
 
     public project(request: OmniSharp.Models.Request): Rx.Observable<OmniSharp.Models.ProjectInformationResponse> {
         assert.isNotNull(request.FileName, 'request.FileName must not be null');
@@ -476,7 +488,7 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
         return this.project(request).toPromise();
     }
 
-    public observeProject: Rx.Observable<OmniSharp.Models.ProjectInformationResponse>;
+    public observeProject: Rx.Observable<Result<OmniSharp.Models.Request, OmniSharp.Models.ProjectInformationResponse>>;
 
     public getcodeactions(request: OmniSharp.Models.CodeActionRequest): Rx.Observable<OmniSharp.Models.GetCodeActionsResponse> {
         assert.isNotNull(request.FileName, 'request.FileName must not be null');
@@ -492,7 +504,7 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
         return this.getcodeactions(request).toPromise();
     }
 
-    public observeGetcodeactions: Rx.Observable<OmniSharp.Models.GetCodeActionsResponse>;
+    public observeGetcodeactions: Rx.Observable<Result<OmniSharp.Models.CodeActionRequest, OmniSharp.Models.GetCodeActionsResponse>>;
 
     public runcodeaction(request: OmniSharp.Models.CodeActionRequest): Rx.Observable<OmniSharp.Models.RunCodeActionResponse> {
         assert.isNotNull(request.FileName, 'request.FileName must not be null');
@@ -510,7 +522,7 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
         return this.runcodeaction(request).toPromise();
     }
 
-    public observeRuncodeaction: Rx.Observable<OmniSharp.Models.RunCodeActionResponse>;
+    public observeRuncodeaction: Rx.Observable<Result<OmniSharp.Models.CodeActionRequest, OmniSharp.Models.RunCodeActionResponse>>;
 
     public gettestcontext(request: OmniSharp.Models.TestCommandRequest): Rx.Observable<OmniSharp.Models.GetTestCommandResponse> {
         assert.isNotNull(request.FileName, 'request.FileName must not be null');
@@ -528,6 +540,6 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
         return this.gettestcontext(request).toPromise();
     }
 
-    public observeGettestcontext: Rx.Observable<OmniSharp.Models.GetTestCommandResponse>;
+    public observeGettestcontext: Rx.Observable<Result<OmniSharp.Models.TestCommandRequest, OmniSharp.Models.GetTestCommandResponse>>;
 
 }
