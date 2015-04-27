@@ -42,7 +42,7 @@ export class ResponseWrapper<TRequest, TResponse> {
     constructor(public command: string, public request: TRequest, public response: TResponse) { }
 }
 
-export interface Result<TRequest, TResponse> {
+export interface Context<TRequest, TResponse> {
     request: TRequest;
     response: TResponse;
 }
@@ -170,7 +170,7 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
         return this.updatebuffer(request).toPromise();
     }
 
-    public observeUpdatebuffer: Rx.Observable<Result<OmniSharp.Models.Request, any>>;
+    public observeUpdatebuffer: Rx.Observable<Context<OmniSharp.Models.Request, any>>;
 
     public changebuffer(request: OmniSharp.Models.ChangeBufferRequest): Rx.Observable<any> {
         assert.isNotNull(request.FileName, 'request.FileName must not be null');
@@ -191,7 +191,7 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
         return this.changebuffer(request).toPromise();
     }
 
-    public observeChangebuffer: Rx.Observable<Result<OmniSharp.Models.Request, any>>;
+    public observeChangebuffer: Rx.Observable<Context<OmniSharp.Models.Request, any>>;
 
     public codecheck(request: OmniSharp.Models.Request): Rx.Observable<OmniSharp.Models.QuickFixResponse> {
         return this.request<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>("codecheck", request);
@@ -201,7 +201,7 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
         return this.codecheck(request).toPromise();
     }
 
-    public observeCodecheck: Rx.Observable<Result<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>;
+    public observeCodecheck: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>;
 
     public formatAfterKeystroke(request: OmniSharp.Models.FormatAfterKeystrokeRequest): Rx.Observable<OmniSharp.Models.FormatRangeResponse> {
         assert.isNotNull(request.FileName, 'request.FileName must not be null');
@@ -218,7 +218,7 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
         return this.formatAfterKeystroke(request).toPromise();
     }
 
-    public observeFormatAfterKeystroke: Rx.Observable<Result<OmniSharp.Models.Request, OmniSharp.Models.FormatRangeResponse>>;
+    public observeFormatAfterKeystroke: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.FormatRangeResponse>>;
 
     public formatRange(request: OmniSharp.Models.FormatRangeRequest): Rx.Observable<OmniSharp.Models.FormatRangeResponse> {
         assert.isNotNull(request.FileName, 'request.FileName must not be null');
@@ -238,7 +238,7 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
         return this.formatRange(request).toPromise();
     }
 
-    public observeFormatRange: Rx.Observable<Result<OmniSharp.Models.FormatRangeRequest, OmniSharp.Models.FormatRangeResponse>>;
+    public observeFormatRange: Rx.Observable<Context<OmniSharp.Models.FormatRangeRequest, OmniSharp.Models.FormatRangeResponse>>;
 
     public codeformat(request: OmniSharp.Models.Request): Rx.Observable<OmniSharp.Models.CodeFormatResponse> {
         assert.isNotNull(request.FileName, 'request.FileName must not be null');
@@ -250,7 +250,7 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
         return this.codeformat(request).toPromise();
     }
 
-    public observeCodeformat: Rx.Observable<Result<OmniSharp.Models.Request, OmniSharp.Models.CodeFormatResponse>>;
+    public observeCodeformat: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.CodeFormatResponse>>;
 
     public autocomplete(request: OmniSharp.Models.AutoCompleteRequest): Rx.Observable<OmniSharp.Models.AutoCompleteResponse[]> {
         assert.isNotNull(request.FileName, 'request.FileName must not be null');
@@ -267,7 +267,7 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
         return this.autocomplete(request).toPromise();
     }
 
-    public observeAutocomplete: Rx.Observable<Result<OmniSharp.Models.AutoCompleteRequest, OmniSharp.Models.AutoCompleteResponse[]>>;
+    public observeAutocomplete: Rx.Observable<Context<OmniSharp.Models.AutoCompleteRequest, OmniSharp.Models.AutoCompleteResponse[]>>;
 
     public findimplementations(request: OmniSharp.Models.Request): Rx.Observable<OmniSharp.Models.QuickFixResponse> {
         assert.isNotNull(request.FileName, 'request.FileName must not be null');
@@ -283,7 +283,7 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
         return this.findimplementations(request).toPromise();
     }
 
-    public observeFindimplementations: Rx.Observable<Result<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>;
+    public observeFindimplementations: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>;
 
     public findsymbols(request: OmniSharp.Models.FindSymbolsRequest): Rx.Observable<OmniSharp.Models.QuickFixResponse> {
         // This isn't technically required... but looks like the server will get all symbols then...
@@ -297,7 +297,7 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
         return this.findsymbols(request).toPromise();
     }
 
-    public observeFindsymbols: Rx.Observable<Result<OmniSharp.Models.FindSymbolsRequest, OmniSharp.Models.QuickFixResponse>>;
+    public observeFindsymbols: Rx.Observable<Context<OmniSharp.Models.FindSymbolsRequest, OmniSharp.Models.QuickFixResponse>>;
 
     public findusages(request: OmniSharp.Models.FindUsagesRequest): Rx.Observable<OmniSharp.Models.QuickFixResponse> {
         assert.isNotNull(request.FileName, 'request.FileName must not be null');
@@ -313,7 +313,7 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
         return this.findusages(request).toPromise();
     }
 
-    public observeFindusages: Rx.Observable<Result<OmniSharp.Models.FindUsagesRequest, OmniSharp.Models.QuickFixResponse>>;
+    public observeFindusages: Rx.Observable<Context<OmniSharp.Models.FindUsagesRequest, OmniSharp.Models.QuickFixResponse>>;
 
     public gotodefinition(request: OmniSharp.Models.Request): Rx.Observable<any> {
         assert.isNotNull(request.FileName, 'request.FileName must not be null');
@@ -329,7 +329,7 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
         return this.gotodefinition(request).toPromise();
     }
 
-    public observeGotodefinition: Rx.Observable<Result<OmniSharp.Models.Request, any>>;
+    public observeGotodefinition: Rx.Observable<Context<OmniSharp.Models.Request, any>>;
 
     public navigateup(request: OmniSharp.Models.Request): Rx.Observable<OmniSharp.Models.NavigateResponse> {
         assert.isNotNull(request.FileName, 'request.FileName must not be null');
@@ -345,7 +345,7 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
         return this.navigateup(request).toPromise();
     }
 
-    public observeNavigateup: Rx.Observable<Result<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>>;
+    public observeNavigateup: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>>;
 
     public navigatedown(request: OmniSharp.Models.Request): Rx.Observable<OmniSharp.Models.NavigateResponse> {
         assert.isNotNull(request.FileName, 'request.FileName must not be null');
@@ -361,7 +361,7 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
         return this.navigatedown(request).toPromise();
     }
 
-    public observeNavigatedown: Rx.Observable<Result<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>>;
+    public observeNavigatedown: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>>;
 
 
     public rename(request: OmniSharp.Models.RenameRequest): Rx.Observable<OmniSharp.Models.RenameResponse> {
@@ -379,7 +379,7 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
         return this.rename(request).toPromise();
     }
 
-    public observeRename: Rx.Observable<Result<OmniSharp.Models.RenameRequest, OmniSharp.Models.RenameResponse>>;
+    public observeRename: Rx.Observable<Context<OmniSharp.Models.RenameRequest, OmniSharp.Models.RenameResponse>>;
 
     public signatureHelp(request: OmniSharp.Models.Request): Rx.Observable<OmniSharp.Models.SignatureHelp> {
         assert.isNotNull(request.FileName, 'request.FileName must not be null');
@@ -395,7 +395,7 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
         return this.signatureHelp(request).toPromise();
     }
 
-    public observeSignatureHelp: Rx.Observable<Result<OmniSharp.Models.Request, OmniSharp.Models.SignatureHelp>>;
+    public observeSignatureHelp: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.SignatureHelp>>;
 
     public checkalivestatus(): Rx.Observable<boolean> {
         return this.request<any, any>("checkalivestatus");
@@ -405,7 +405,7 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
         return this.checkalivestatus().toPromise();
     }
 
-    public observeCheckalivestatus: Rx.Observable<Result<any, boolean>>;
+    public observeCheckalivestatus: Rx.Observable<Context<any, boolean>>;
 
     public checkreadystatus(): Rx.Observable<boolean> {
         return this.request<any, any>("checkreadystatus");
@@ -415,7 +415,7 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
         return this.checkreadystatus().toPromise();
     }
 
-    public observeCheckreadystatus: Rx.Observable<Result<any, boolean>>;
+    public observeCheckreadystatus: Rx.Observable<Context<any, boolean>>;
 
     public currentfilemembersastree(request: OmniSharp.Models.Request): Rx.Observable<any> {
         assert.isNotNull(request.FileName, 'request.FileName must not be null');
@@ -427,7 +427,7 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
         return this.currentfilemembersastree(request).toPromise();
     }
 
-    public observeCurrentfilemembersastree: Rx.Observable<Result<OmniSharp.Models.Request, any>>;
+    public observeCurrentfilemembersastree: Rx.Observable<Context<OmniSharp.Models.Request, any>>;
 
     public currentfilemembersasflat(request: OmniSharp.Models.Request): Rx.Observable<any> {
         assert.isNotNull(request.FileName, 'request.FileName must not be null');
@@ -439,7 +439,7 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
         return this.currentfilemembersasflat(request).toPromise();
     }
 
-    public observeCurrentfilemembersasflat: Rx.Observable<Result<OmniSharp.Models.Request, any>>;
+    public observeCurrentfilemembersasflat: Rx.Observable<Context<OmniSharp.Models.Request, any>>;
 
     public typelookup(request: OmniSharp.Models.TypeLookupRequest): Rx.Observable<any> {
         assert.isNotNull(request.FileName, 'request.FileName must not be null');
@@ -455,7 +455,7 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
         return this.typelookup(request).toPromise();
     }
 
-    public observeTypelookup: Rx.Observable<Result<OmniSharp.Models.TypeLookupRequest, any>>;
+    public observeTypelookup: Rx.Observable<Context<OmniSharp.Models.TypeLookupRequest, any>>;
 
     public filesChanged(request: OmniSharp.Models.Request[]): Rx.Observable<boolean> {
         assert.isNotNull(request, 'request must not be null');
@@ -466,7 +466,7 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
         return this.filesChanged(request).toPromise();
     }
 
-    public observeFilesChanged: Rx.Observable<Result<OmniSharp.Models.Request[], boolean>>;
+    public observeFilesChanged: Rx.Observable<Context<OmniSharp.Models.Request[], boolean>>;
 
     public projects(): Rx.Observable<OmniSharp.Models.WorkspaceInformationResponse> {
         return this.request<any, OmniSharp.Models.WorkspaceInformationResponse>("projects");
@@ -476,7 +476,7 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
         return this.projects().toPromise();
     }
 
-    public observeProjects: Rx.Observable<Result<OmniSharp.Models.WorkspaceInformationResponse, OmniSharp.Models.WorkspaceInformationResponse>>;
+    public observeProjects: Rx.Observable<Context<OmniSharp.Models.WorkspaceInformationResponse, OmniSharp.Models.WorkspaceInformationResponse>>;
 
     public project(request: OmniSharp.Models.Request): Rx.Observable<OmniSharp.Models.ProjectInformationResponse> {
         assert.isNotNull(request.FileName, 'request.FileName must not be null');
@@ -488,7 +488,7 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
         return this.project(request).toPromise();
     }
 
-    public observeProject: Rx.Observable<Result<OmniSharp.Models.Request, OmniSharp.Models.ProjectInformationResponse>>;
+    public observeProject: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.ProjectInformationResponse>>;
 
     public getcodeactions(request: OmniSharp.Models.CodeActionRequest): Rx.Observable<OmniSharp.Models.GetCodeActionsResponse> {
         assert.isNotNull(request.FileName, 'request.FileName must not be null');
@@ -504,7 +504,7 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
         return this.getcodeactions(request).toPromise();
     }
 
-    public observeGetcodeactions: Rx.Observable<Result<OmniSharp.Models.CodeActionRequest, OmniSharp.Models.GetCodeActionsResponse>>;
+    public observeGetcodeactions: Rx.Observable<Context<OmniSharp.Models.CodeActionRequest, OmniSharp.Models.GetCodeActionsResponse>>;
 
     public runcodeaction(request: OmniSharp.Models.CodeActionRequest): Rx.Observable<OmniSharp.Models.RunCodeActionResponse> {
         assert.isNotNull(request.FileName, 'request.FileName must not be null');
@@ -522,7 +522,7 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
         return this.runcodeaction(request).toPromise();
     }
 
-    public observeRuncodeaction: Rx.Observable<Result<OmniSharp.Models.CodeActionRequest, OmniSharp.Models.RunCodeActionResponse>>;
+    public observeRuncodeaction: Rx.Observable<Context<OmniSharp.Models.CodeActionRequest, OmniSharp.Models.RunCodeActionResponse>>;
 
     public gettestcontext(request: OmniSharp.Models.TestCommandRequest): Rx.Observable<OmniSharp.Models.GetTestCommandResponse> {
         assert.isNotNull(request.FileName, 'request.FileName must not be null');
@@ -540,6 +540,6 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
         return this.gettestcontext(request).toPromise();
     }
 
-    public observeGettestcontext: Rx.Observable<Result<OmniSharp.Models.TestCommandRequest, OmniSharp.Models.GetTestCommandResponse>>;
+    public observeGettestcontext: Rx.Observable<Context<OmniSharp.Models.TestCommandRequest, OmniSharp.Models.GetTestCommandResponse>>;
 
 }
