@@ -21,7 +21,7 @@ describe("Omnisharp Local - Stdio", function() {
     describe('state', function() {
 
         var server: Stdio;
-        this.timeout(10000);
+        this.timeout(20000);
 
         before(() => {
             server = new Stdio({

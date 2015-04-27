@@ -36,7 +36,7 @@ class StdioDriver implements IDriver {
     public get outstandingRequests() { return this._outstandingRequests.size; }
 
     public connect({projectPath}: IDriverOptions) {
-        projectPath = projectPath || this._serverPath;
+        projectPath = projectPath || this._projectPath;
 
         this._connectionStream.onNext(DriverState.Connecting);
 

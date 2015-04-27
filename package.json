@@ -6,7 +6,7 @@
   "scripts": {
     "prepublish": "gulp",
     "postinstall": "gulp",
-    "test": "mocha ./spec"
+    "test": "mocha spec"
   },
   "author": "",
   "license": "MIT",

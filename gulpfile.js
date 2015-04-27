@@ -26,4 +26,8 @@ gulp.task('default', function() {
     gulp.src('./lib/**/*.ts')
         .pipe(tsTranspile())
         .pipe(gulp.dest('./lib'));
+        
+    gulp.src('./spec/**/*.ts')
+        .pipe(tsTranspile())
+        .pipe(gulp.dest('./spec'));
 });
