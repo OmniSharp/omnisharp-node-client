@@ -1,4 +1,4 @@
-# omnisharp-node-client
+# omnisharp-node-client [![Travis](https://travis-ci.org/OmniSharp/omnisharp-node-client.svg?branch=master)](https://travis-ci.org/OmniSharp/omnisharp-node-client) [![Appveyor](https://ci.appveyor.com/api/projects/status/github/omnisharp/omnisharp-node-client?svg=true&branch=master)](https://ci.appveyor.com/project/david-driscoll/omnisharp-node-client)
 The node client for [omnisharp-roslyn](https://github.com/OmniSharp/omnisharp-roslyn) is a unified way to interact with the roslyn server.
 
 It currently offers the ability to connect to your local server over Stdio.  In the future more drivers can be added, to allow it to connect to the server over Http, Web Sockets, the cloud... anything really.  The current focus is covering the entire Api surface of roslyn with a strongly typed interface (for those typescript users out there).  This will allow anyone wanting to fire up an omnisharp server to be able to do so with ease.
