@@ -28,29 +28,40 @@ declare module OmnisharpClient {
         outgoingRequests: number;
         hasOutgoingRequests: boolean;
     }
-    export class CommandWrapper<T> {
-        command: string;
+    export interface CommandWrapper<T> {
+        command:string;
         value: T;
-        constructor(command: string, value: T);
     }
+    export interface RequestWrapper<T> {
+        command: string;
+        request: T;
+    }
+
+    export interface ResponseWrapper<TRequest, TResponse> {
+        command: string;
+        request: TRequest;
+        response: TResponse;
+    }
+
     export interface Result<TRequest, TResponse>
     {
         request: TRequest;
         response: TResponse;
     }
+
     export class OmnisharpClient {
         constructor(_options?: OmnisharpClientOptions);
         id: string;
         connect(_options?: OmnisharpClientOptions): void;
         disconnect(): void;
         currentState: DriverState;
+        outstandingRequests: number;
         events: Rx.Observable<OmniSharp.Stdio.Protocol.EventPacket>;
         commands: Rx.Observable<OmniSharp.Stdio.Protocol.ResponsePacket>;
         state: Rx.Observable<DriverState>;
-        outstandingRequests: number;
         status: Rx.Observable<OmnisharpClientStatus>;
-        requests: Rx.Observable<CommandWrapper<any>>;
-        responses: Rx.Observable<CommandWrapper<any>>;
+        requests: Rx.Observable<RequestWrapper<any>>;
+        responses: Rx.Observable<ResponseWrapper<any, any>>;
         errors: Rx.Observable<CommandWrapper<any>>;
 
         updatebuffer(request: OmniSharp.Models.Request): Rx.Observable<any>;
