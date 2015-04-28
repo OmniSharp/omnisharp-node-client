@@ -7,7 +7,7 @@ var omnisharpReleaseLocation = require('omnisharp-server-roslyn-binaries');
 // TODO: Move into omnisharp-server-roslyn-binaries?
 import {resolve} from 'path';
 var omnisharpDebugLocation = resolve(__dirname, '../../node_modules/omnisharp-server-roslyn-binaries/omnisharp-roslyn/scripts/' + (process.platform === 'win32' ? 'omnisharp.cmd' : 'omnisharp'))
-
+import {findProject} from "../project-finder";
 
 class StdioDriver implements IDriver {
     private _seq: number = 1;
@@ -19,7 +19,8 @@ class StdioDriver implements IDriver {
     public id: string;
 
     constructor({projectPath, debug, serverPath}: IDriverOptions) {
-        this._projectPath = projectPath;
+        if (projectPath)
+            this._projectPath = findProject(projectPath);
         this._serverPath = serverPath || (debug && omnisharpDebugLocation) || omnisharpReleaseLocation;
         this._connectionStream.subscribe(state => this.currentState = state);
     }
@@ -40,7 +41,7 @@ class StdioDriver implements IDriver {
 
         this._connectionStream.onNext(DriverState.Connecting);
 
-        var serverArguments: any[] = ["--stdio", "-s", projectPath, "--hostPID", process.pid];
+        var serverArguments: any[] = ["--stdio", "-s", findProject(projectPath), "--hostPID", process.pid];
         this._process = spawn(this._serverPath, serverArguments);
 
         //this._process.stdout.on('data', (data) => console.log(data.toString()));
