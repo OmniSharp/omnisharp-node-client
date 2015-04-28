@@ -1,7 +1,26 @@
 {
   "name": "omnisharp-node-client",
+  "description": "A node client for omnisharp-roslyn",
   "version": "1.0.0",
-  "description": "",
+  "bugs": {
+    "url" : "https://github.com/OmniSharp/omnisharp-node-client/issues"
+  },
+  "homepage": "http://www.omnisharp.net/",
+  "contributors": [
+    {
+      "name": "David Driscoll",
+      "url": "http://david-driscoll.github.io/"
+    }
+  ],
+  "repository" : {
+    "type" : "git",
+    "url" : "https://github.com/OmniSharp/omnisharp-node-client.git"
+  },
+  "engines" : {
+      "node" : ">=0.12.0",
+      "iojs" : ">=1.0.0",
+      "atom" : ">=0.194.0"
+  },
   "main": "lib/omnisharp-client.js",
   "scripts": {
     "prepublish": "gulp",

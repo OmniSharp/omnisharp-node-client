@@ -1,10 +1,18 @@
 language: node_js
 node_js:
-  - "0.12"
-  - "iojs"
+- '0.12'
+- iojs
 sudo: required
 before_script:
-  - sudo sh -c "echo 'deb http://download.mono-project.com/repo/debian wheezy main' > /etc/apt/sources.list.d/mono-xamarin.list"
-  - sudo sh -c "echo 'deb http://download.mono-project.com/repo/debian wheezy-libtiff-compat main' >> /etc/apt/sources.list.d/mono-xamarin.list"
-  - sudo apt-get update -qq
-  - sudo apt-get install --force-yes mono-devel
+- sudo sh -c "echo 'deb http://download.mono-project.com/repo/debian wheezy main' > /etc/apt/sources.list.d/mono-xamarin.list"
+- sudo sh -c "echo 'deb http://download.mono-project.com/repo/debian wheezy-libtiff-compat main' >> /etc/apt/sources.list.d/mono-xamarin.list"
+- sudo apt-get update -qq
+- sudo apt-get install --force-yes mono-devel
+deploy:
+  provider: npm
+  email: david.driscoll@gmail.com
+  api_key:
+    secure: AL4YXSTSh2HdLd8xDd+nKDiml0NBKD/vvX+Us7CA8WnBjW33gfR2wV5DW2Ct4x1J2GMx6TEFjuTkBpS68A3YwdUJxGXBC+cqqHZtfeURyobFoE8dg9Zep0t/OmMOMdao8q+cinr3KjU6MM2/ZQRQpLngqYkERBFcoaBdriiSvks=
+  on:
+    tags: true
+    repo: OmniSharp/omnisharp-node-client
