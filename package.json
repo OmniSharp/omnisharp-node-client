@@ -24,7 +24,7 @@
   "main": "lib/omnisharp-client.js",
   "scripts": {
     "prepublish": "gulp",
-    "postinstall": "gulp",
+    "postinstall": "gulp & tsd reinstall",
     "test": "mocha spec"
   },
   "author": "",

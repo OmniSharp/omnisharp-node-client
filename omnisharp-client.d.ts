@@ -52,6 +52,8 @@ declare module OmnisharpClient {
     export class OmnisharpClient {
         constructor(_options?: OmnisharpClientOptions);
         id: string;
+        serverPath: string;
+        projectPath: string;
         connect(_options?: OmnisharpClientOptions): void;
         disconnect(): void;
         currentState: DriverState;

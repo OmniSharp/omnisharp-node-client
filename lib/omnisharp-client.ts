@@ -15,7 +15,6 @@ export enum DriverState {
     Connected,
 }
 
-
 export interface OmnisharpClientOptions extends IDriverOptions {
     driver?: Driver;
 }
@@ -54,6 +53,9 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
     private _statusStream: Rx.Observable<OmnisharpClientStatus>;
     private _errorStream = new Subject<CommandWrapper<any>>();
     public get id() { return this._driver.id; }
+
+    public get serverPath() { return this._options.serverPath ; }
+    public get projectPath() { return this._options.projectPath; }
 
     constructor(private _options: OmnisharpClientOptions = {}) {
         var driver = _options.driver || Driver.Stdio;
