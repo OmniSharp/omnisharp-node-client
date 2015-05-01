@@ -1,7 +1,7 @@
 import _ = require('lodash');
 import {join, dirname, sep} from 'path';
 var glob = require('glob');
-var filesToSearch = ['global.json', '*.sln', 'project.json', '*.csproj'];
+var filesToSearch = ['global.json', '*.sln', 'project.json', '*.csproj', '*.csx'];
 
 export function findProject(location: string) {
     location = _.trimRight(location, sep);
