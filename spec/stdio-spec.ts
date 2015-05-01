@@ -56,7 +56,7 @@ describe("Omnisharp Local - Stdio", function() {
     });
 
     describe("properties", function() {
-        this.timeout(10000);
+        this.timeout(20000);
         it('should implement the interface', function(done) {
             var server = new Stdio({
                 driver: Driver.Stdio,

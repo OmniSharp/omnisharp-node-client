@@ -19,7 +19,7 @@ describe("Omnisharp Server", function() {
 
     describe('state', function() {
 
-        this.timeout(7000);
+        this.timeout(20000);
         var server: OmnisharpClient;
 
         before((done) => {
