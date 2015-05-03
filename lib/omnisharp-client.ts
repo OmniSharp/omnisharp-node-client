@@ -54,8 +54,8 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
     private _errorStream = new Subject<CommandWrapper<any>>();
     public get id() { return this._driver.id; }
 
-    public get serverPath() { return this._options.serverPath ; }
-    public get projectPath() { return this._options.projectPath; }
+    public get serverPath() { return this._driver.serverPath ; }
+    public get projectPath() { return this._driver.projectPath; }
 
     constructor(private _options: OmnisharpClientOptions = {}) {
         var driver = _options.driver || Driver.Stdio;

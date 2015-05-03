@@ -19,5 +19,7 @@ export interface IDriver {
     state: Rx.Observable<DriverState>;
     outstandingRequests: number;
     disconnect();
+    serverPath: string;
+    projectPath: string;
     request<TRequest, TResponse>(command: string, request?: TRequest): Rx.Observable<TResponse>;
 }

@@ -25,6 +25,9 @@ class StdioDriver implements IDriver {
         this._connectionStream.subscribe(state => this.currentState = state);
     }
 
+    public get serverPath() { return this._serverPath ; }
+    public get projectPath() { return this._projectPath; }
+
     private _commandStream = new Subject<OmniSharp.Stdio.Protocol.ResponsePacket>();
     public get commands(): Rx.Observable<OmniSharp.Stdio.Protocol.ResponsePacket> { return this._commandStream; }
 
@@ -43,8 +46,8 @@ class StdioDriver implements IDriver {
 
         var serverArguments: any[] = ["--stdio", "-s", findProject(projectPath), "--hostPID", process.pid];
         this._process = spawn(this._serverPath, serverArguments);
-
-        //this._process.stdout.on('data', (data) => console.log(data.toString()));
+        this._process.stderr.on('data', function(data) { console.log(data.toString()) });
+        this._process.stderr.on('data', (data) => this.serverErr(data));
 
         var rl = readline.createInterface({
             input: this._process.stdout,
