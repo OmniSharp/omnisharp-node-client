@@ -2,6 +2,7 @@ var gulp = require('gulp');
 var ts = require('typescript');
 var through = require('through2');
 var gutil = require('gulp-util');
+var fs = require('fs');
 
 function tsTranspile() {
     return through.obj(function (file, enc, cb) {
@@ -26,8 +27,10 @@ gulp.task('default', function() {
     gulp.src('./lib/**/*.ts')
         .pipe(tsTranspile())
         .pipe(gulp.dest('./lib'));
-        
+
     gulp.src('./spec/**/*.ts')
         .pipe(tsTranspile())
         .pipe(gulp.dest('./spec'));
+
+    fs.writeFileSync('./omnisharp-server.d.ts', fs.readFileSync('./node_modules/omnisharp-server-roslyn-binaries/lib/server/omnisharp-server.d.ts'));
 });

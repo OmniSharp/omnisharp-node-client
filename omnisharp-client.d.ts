@@ -1,4 +1,4 @@
-/// <reference path="node_modules/omnisharp-server-roslyn-binaries/lib/server/omnisharp-server.d.ts" />
+/// <reference path="./omnisharp-server.d.ts" />
 
 declare module OmnisharpClient {
     export enum Driver {

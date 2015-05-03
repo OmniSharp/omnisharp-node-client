@@ -6,7 +6,6 @@ import {Observable, Observer, Subject, AsyncSubject} from "rx";
 var omnisharpReleaseLocation = require('omnisharp-server-roslyn-binaries');
 // TODO: Move into omnisharp-server-roslyn-binaries?
 import {resolve} from 'path';
-var omnisharpDebugLocation = resolve(__dirname, '../../node_modules/omnisharp-server-roslyn-binaries/omnisharp-roslyn/scripts/' + (process.platform === 'win32' ? 'omnisharp.cmd' : 'omnisharp'))
 import {findProject} from "../project-finder";
 
 class StdioDriver implements IDriver {
@@ -21,7 +20,7 @@ class StdioDriver implements IDriver {
     constructor({projectPath, debug, serverPath}: IDriverOptions) {
         if (projectPath)
             this._projectPath = findProject(projectPath);
-        this._serverPath = serverPath || (debug && omnisharpDebugLocation) || omnisharpReleaseLocation;
+        this._serverPath = serverPath || omnisharpReleaseLocation;
         this._connectionStream.subscribe(state => this.currentState = state);
     }
 
