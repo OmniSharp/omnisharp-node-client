@@ -13,6 +13,7 @@ export enum DriverState {
     Disconnected,
     Connecting,
     Connected,
+    Error,
 }
 
 export interface OmnisharpClientOptions extends IDriverOptions {
@@ -105,7 +106,7 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
     }
 
     public request<TRequest, TResponse>(action: string, request?: TRequest): Rx.Observable<TResponse> {
-        if (this.currentState !== DriverState.Connected) {
+        if (this.currentState !== DriverState.Connected && this.currentState !== DriverState.Error) {
             // Q: Should this throw?
             return Observable.throwError<TResponse>("Server is not connected");
         }

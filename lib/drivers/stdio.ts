@@ -14,7 +14,15 @@ class StdioDriver implements IDriver {
     private _outstandingRequests = new Map<number, AsyncSubject<any>>();
     private _projectPath: string;
     private _serverPath: string;
-    public currentState: DriverState = DriverState.Disconnected;
+    private _currentState: DriverState = DriverState.Disconnected;
+    public get currentState() { return this._currentState; }
+    public set currentState(value) {
+        // Prevent the client from leaving the error state
+        // Error means bad things, like mono is working right
+        if (this._currentState !== DriverState.Error) {
+            this._currentState = value;
+        }
+    }
     public id: string;
 
     constructor({projectPath, debug, serverPath}: IDriverOptions) {
@@ -24,7 +32,7 @@ class StdioDriver implements IDriver {
         this._connectionStream.subscribe(state => this.currentState = state);
     }
 
-    public get serverPath() { return this._serverPath ; }
+    public get serverPath() { return this._serverPath; }
     public get projectPath() { return this._projectPath; }
 
     private _commandStream = new Subject<OmniSharp.Stdio.Protocol.ResponsePacket>();
@@ -54,9 +62,11 @@ class StdioDriver implements IDriver {
         });
         rl.on('line', (data) => this.handleData(data));
 
+        if (this._process.pid)
+            this.id = this._process.pid.toString();
         this._process.on('close', () => this.disconnect());
         this._process.on('error', (data) => this.serverErr(data));
-        this.id = this._process.pid.toString();
+        this._process.on('error', () => this.currentState = DriverState.Error);
     }
 
     private serverErr(data) {

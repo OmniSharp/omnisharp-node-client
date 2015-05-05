@@ -7,7 +7,7 @@ export interface IDriverOptions {
     projectPath?: string;
     remote?: boolean;
     debug?: boolean; // Start the debug server? (Run from source, to attach with a debug host like VS)
-    serverPath?: boolean; // Start a given server, perhaps in a different directory.
+    serverPath?: string; // Start a given server, perhaps in a different directory.
 }
 
 export interface IDriver {
