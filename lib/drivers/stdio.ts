@@ -64,13 +64,15 @@ class StdioDriver implements IDriver {
 
         if (this._process.pid)
             this.id = this._process.pid.toString();
-        this._process.on('close', () => this.disconnect());
+
         this._process.on('error', (data) => this.serverErr(data));
-        this._process.on('error', () => this.currentState = DriverState.Error);
+        this._process.on('close', () => this.disconnect());
     }
 
     private serverErr(data) {
         var friendlyMessage = this.parseError(data);
+        this.currentState = DriverState.Error;
+        this._process = null;
 
         this._eventStream.onNext({
             Type: "error",
@@ -92,7 +94,7 @@ class StdioDriver implements IDriver {
 
     public disconnect() {
         this._connectionStream.onNext(DriverState.Disconnected);
-        if (this._process != null) {
+        if (this._process != null && this._process.pid) {
             this._process.kill("SIGTERM");
             if (process.platform === "win32") {
                 exec("taskkill", ["/PID", this._process.pid.toString(), '/T', '/F']);
