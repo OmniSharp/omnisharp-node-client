@@ -101,7 +101,7 @@ class StdioDriver implements IDriver {
 
         var subject = new AsyncSubject<TResponse>();
         this._outstandingRequests.set(sequence, subject);
-        this._process.stdin.write(JSON.stringify(packet) + '\n', 'ascii');
+        this._process.stdin.write(JSON.stringify(packet) + '\n', 'utf8');
         return subject;
     }
 
