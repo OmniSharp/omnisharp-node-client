@@ -1,4 +1,4 @@
-import {Observable, Subject} from "rx";
+import {Observable, Subject, AsyncSubject} from "rx";
 import {IDriver, IStaticDriver, IDriverOptions} from "./drivers";
 import {assert} from "chai";
 import {extend} from "lodash";
@@ -55,6 +55,7 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
     private _errorStream = new Subject<CommandWrapper<any>>();
     public get id() { return this._driver.id; }
 
+
     public get serverPath() { return this._driver.serverPath ; }
     public get projectPath() { return this._driver.projectPath; }
 
@@ -106,9 +107,16 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
     }
 
     public request<TRequest, TResponse>(action: string, request?: TRequest): Rx.Observable<TResponse> {
+        // Handle disconnected requests
         if (this.currentState !== DriverState.Connected && this.currentState !== DriverState.Error) {
-            // Q: Should this throw?
-            return Observable.throwError<TResponse>("Server is not connected");
+            var response = new AsyncSubject<TResponse>();
+
+            var sub = this.state.where(z => z === DriverState.Connected).subscribe(z => {
+                sub.dispose();
+                this._driver.request<TRequest, TResponse>(action, request).subscribe(z => response.onNext(z));
+            });
+
+            return response;
         }
         var result = this._driver.request<TRequest, TResponse>(action, request);
         this._requestStream.onNext(new RequestWrapper(action, request));

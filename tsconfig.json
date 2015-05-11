@@ -11,6 +11,7 @@
     "filesGlob": [
         "./**/*.ts",
         "!./omnisharp-client.d.ts",
+        "!./omnisharp-server.d.ts",
         "!./typings/**/*.d.ts",
         "!./node_modules/**/*.ts"
     ],
