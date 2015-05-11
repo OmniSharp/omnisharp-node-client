@@ -1,4 +1,4 @@
-import {IDriver, IDriverOptions} from "../drivers";
+import {IDriver, IDriverOptions, ILogger} from "../drivers";
 import {DriverState} from "../omnisharp-client";
 import {spawn, exec, ChildProcess} from "child_process";
 import * as readline from "readline";
@@ -25,13 +25,15 @@ class StdioDriver implements IDriver {
         }
     }
     private _findProject: boolean;
+    private _logger: ILogger;
     public id: string;
 
-    constructor({projectPath, debug, serverPath, findProject}: IDriverOptions) {
+    constructor({projectPath, debug, serverPath, findProject, logger}: IDriverOptions) {
         this._projectPath = projectPath;
         this._findProject = findProject || false;
         this._serverPath = serverPath || omnisharpReleaseLocation;
         this._connectionStream.subscribe(state => this.currentState = state);
+        this._logger = logger || console;
     }
 
     public get serverPath() { return this._serverPath; }
@@ -51,14 +53,14 @@ class StdioDriver implements IDriver {
     public connect({projectPath, findProject}: IDriverOptions) {
         projectPath = projectPath || this._projectPath;
         if (findProject || this._findProject) {
-            projectPath = projectFinder(projectPath)
+            projectPath = projectFinder(projectPath, this._logger);
         }
 
         this._connectionStream.onNext(DriverState.Connecting);
 
         var serverArguments: any[] = ["--stdio", "-s", projectPath, "--hostPID", process.pid];
         this._process = spawn(this._serverPath, serverArguments);
-        this._process.stderr.on('data', function(data) { console.log(data.toString()) });
+        this._process.stderr.on('data', function(data) { this.logger.error(data.toString()) });
         this._process.stderr.on('data', (data) => this.serverErr(data));
 
         var rl = readline.createInterface({

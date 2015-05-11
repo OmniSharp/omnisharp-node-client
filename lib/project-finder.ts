@@ -1,10 +1,11 @@
 import _ = require('lodash');
+import {ILogger} from './drivers';
 import {join, dirname, sep} from 'path';
 var glob = require('glob');
 var primaryFilesToSearch = ['global.json', '*.sln', '*.csx'];
 var secondaryFilesToSearch = ['project.json', '*.csproj'];
 
-export function findProject(location: string) {
+export function findProject(location: string, logger: ILogger) {
     location = _.trimRight(location, sep);
 
     var locations = location.split(sep);
@@ -14,12 +15,12 @@ export function findProject(location: string) {
 
     mappedLocations.reverse();
 
-    var primaryResult = searchForFolder(mappedLocations, primaryFilesToSearch);
+    var primaryResult = searchForFolder(mappedLocations, primaryFilesToSearch, logger);
     if (primaryResult) {
         return primaryResult;
     }
 
-    var secondaryResult = searchForFolder(mappedLocations, secondaryFilesToSearch);
+    var secondaryResult = searchForFolder(mappedLocations, secondaryFilesToSearch, logger);
     if (secondaryResult) {
         return secondaryResult;
     }
@@ -27,7 +28,7 @@ export function findProject(location: string) {
     return null;
 }
 
-function searchForFolder(locations: string[], filesToSearch: string[]) {
+function searchForFolder(locations: string[], filesToSearch: string[], logger: ILogger) {
     var foundFile: string;
     var results = locations.map(location => ({
         location,
@@ -35,7 +36,7 @@ function searchForFolder(locations: string[], filesToSearch: string[]) {
     }));
 
     _.each(results, ({location, files} : { location: string; files: string[] }) => {
-        console.log(`Omnisharp Client: Searching ${location} for ${filesToSearch}.`);
+        logger.log(`Omnisharp Project Finder: Searching ${location} for ${filesToSearch}`);
 
         var found = _.find(files, file => {
             var g = glob.sync(file);
@@ -47,7 +48,7 @@ function searchForFolder(locations: string[], filesToSearch: string[]) {
 
         if (found) {
             foundFile = found;
-            console.log(`Omnisharp Client: Found ${found}.`);
+            logger.log(`Omnisharp Project Finder: Found ${found}`);
             return false;
         }
     });
