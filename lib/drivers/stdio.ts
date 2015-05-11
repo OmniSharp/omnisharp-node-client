@@ -7,6 +7,7 @@ var omnisharpReleaseLocation = require('omnisharp-server-roslyn-binaries');
 // TODO: Move into omnisharp-server-roslyn-binaries?
 import {resolve} from 'path';
 import {findProject} from "../project-finder";
+var stripBom = require('strip-bom');
 
 class StdioDriver implements IDriver {
     private _seq: number = 1;
@@ -99,9 +100,13 @@ class StdioDriver implements IDriver {
             Arguments: request
         };
 
+        if (request && request['Buffer']) {
+            request['Buffer'] = stripBom(request['Buffer']);
+        }
+
         var subject = new AsyncSubject<TResponse>();
         this._outstandingRequests.set(sequence, subject);
-        this._process.stdin.write(JSON.stringify(packet) + '\n', 'ascii');
+        this._process.stdin.write(JSON.stringify(packet) + '\n', 'utf8');
         return subject;
     }
 
