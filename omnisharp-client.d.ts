@@ -15,6 +15,8 @@ declare module OmnisharpClient {
         remote?: boolean;
         debug?: boolean;
         serverPath?: boolean;
+        findProject?: boolean; // Should try and find the project using the project finder
+        logger?: ILogger;
     }
     export interface OmnisharpClientOptions extends IDriverOptions {
         driver?: Driver;
