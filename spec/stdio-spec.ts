@@ -74,47 +74,7 @@ describe("Omnisharp Local - Stdio", function() {
 
             done();
         })
-    })
 
-    describe("error", function() {
-        this.timeout(20000);
-        it('should error if omnisharp cannot be found', function(done) {
-            var server = new Stdio({
-                driver: Driver.Stdio,
-                projectPath: process.cwd(),
-                serverPath: '/usr/does/not/exist'
-            });
 
-            server.connect({});
-            server.state.subscribe(state => {
-                if (server.currentState === DriverState.Error) {
-                    expect(server.currentState).to.be.eq(DriverState.Error);
-                    done();
-                }
-            });
-
-        })
-
-        it('should remain an error event after attempting to reconnect', function(done) {
-            var server = new Stdio({
-                driver: Driver.Stdio,
-                projectPath: process.cwd(),
-                serverPath: '/usr/does/not/exist'
-            });
-
-            server.connect({});
-            var sub = server.state.subscribe(state => {
-                if (server.currentState === DriverState.Error) {
-                    expect(server.currentState).to.be.eq(DriverState.Error);
-                    sub.dispose();
-                    server.connect({});
-                    server.state.subscribe(state => {
-                        expect(server.currentState).to.be.eq(DriverState.Error);
-                        done();
-                    });
-                }
-            });
-
-        })
     })
 });

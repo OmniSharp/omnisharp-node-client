@@ -11,6 +11,7 @@
     "filesGlob": [
         "./**/*.ts",
         "!./omnisharp-client.d.ts",
+        "!./omnisharp-server.d.ts",
         "!./typings/**/*.d.ts",
         "!./node_modules/**/*.ts"
     ],
@@ -21,9 +22,9 @@
         "./lib/drivers/websocket.ts",
         "./lib/omnisharp-client.ts",
         "./lib/project-finder.ts",
-        "./omnisharp-server.d.ts",
         "./spec/omnisharp-client-commands.ts",
         "./spec/omnisharp-client-spec.ts",
+        "./spec/project-find-spec.ts",
         "./spec/stdio-spec.ts",
         "./spec/tsd.d.ts",
         "./tsd.d.ts"

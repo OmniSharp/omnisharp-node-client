@@ -1,4 +1,4 @@
-import {IDriver, IDriverOptions} from "../drivers";
+import {IDriver, IDriverOptions, ILogger} from "../drivers";
 import {DriverState} from "../omnisharp-client";
 import {spawn, exec, ChildProcess} from "child_process";
 import * as readline from "readline";
@@ -6,7 +6,7 @@ import {Observable, Observer, Subject, AsyncSubject} from "rx";
 var omnisharpReleaseLocation = require('omnisharp-server-roslyn-binaries');
 // TODO: Move into omnisharp-server-roslyn-binaries?
 import {resolve} from 'path';
-import {findProject} from "../project-finder";
+import {findProject as projectFinder} from "../project-finder";
 var stripBom = require('strip-bom');
 
 class StdioDriver implements IDriver {
@@ -24,13 +24,16 @@ class StdioDriver implements IDriver {
             this._currentState = value;
         }
     }
+    private _findProject: boolean;
+    private _logger: ILogger;
     public id: string;
 
-    constructor({projectPath, debug, serverPath}: IDriverOptions) {
-        if (projectPath)
-            this._projectPath = findProject(projectPath);
+    constructor({projectPath, debug, serverPath, findProject, logger}: IDriverOptions) {
+        this._projectPath = projectPath;
+        this._findProject = findProject || false;
         this._serverPath = serverPath || omnisharpReleaseLocation;
         this._connectionStream.subscribe(state => this.currentState = state);
+        this._logger = logger || console;
     }
 
     public get serverPath() { return this._serverPath; }
@@ -47,14 +50,17 @@ class StdioDriver implements IDriver {
 
     public get outstandingRequests() { return this._outstandingRequests.size; }
 
-    public connect({projectPath}: IDriverOptions) {
+    public connect({projectPath, findProject}: IDriverOptions) {
         projectPath = projectPath || this._projectPath;
+        if (findProject || this._findProject) {
+            projectPath = projectFinder(projectPath, this._logger);
+        }
 
         this._connectionStream.onNext(DriverState.Connecting);
 
-        var serverArguments: any[] = ["--stdio", "-s", findProject(projectPath), "--hostPID", process.pid];
+        var serverArguments: any[] = ["--stdio", "-s", projectPath, "--hostPID", process.pid];
         this._process = spawn(this._serverPath, serverArguments);
-        this._process.stderr.on('data', function(data) { console.log(data.toString()) });
+        this._process.stderr.on('data', function(data) { this.logger.error(data.toString()) });
         this._process.stderr.on('data', (data) => this.serverErr(data));
 
         var rl = readline.createInterface({
