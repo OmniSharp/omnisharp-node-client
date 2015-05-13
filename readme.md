@@ -6,6 +6,29 @@ It currently offers the ability to connect to your local server over Stdio.  In 
 ## Used by
 * [omnisharp-atom](https://github.com/OmniSharp/omnisharp-atom) <sup>soon(</sup>&trade;<sup>)</sup>
 
+## Developers
+To get started:
+* clone repository
+* tsd reinstall
+* npm install
+* run build-server[.sh|.ps1]
+
+### **!Windows Developers!**
+There is an issue with kre beta3 and `Nuget.Core` trying to resolve as `NuGet.Core`.
+
+The fix is to set up a local nuget repository that contains a modified package.
+The modified package can be found here:
+https://onedrive.live.com/redir?resid=b65e6b05ae4ee402!109984&authkey=!AOlvubzpEnZbJJg&ithint=file%2cnupkg
+
+Rough installation steps are:
+* clone repository
+* init the submodule
+* edit vendor/omnisharp-roslyn/NuGet.config
+* Add a value pointing to local nuget store eg. `<add key="Local" value="D:\Development\Nuget" />`
+
+This should solve the issue with KPM restore not working correctly.  I imagine once we update to beta4 this will go away.
+NOTE: This is just to build the server locally, once it's built once you can just ignore this step.
+
 ## Api
 The api mimics the roslyn surface, with strongly typed methods for everything.  Under the covers we use [RxJS](https://github.com/Reactive-Extensions/RxJS) to handle our events.  Through the API we offer several streams of data, as well as several ways of data access.
 
