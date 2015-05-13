@@ -7,7 +7,6 @@ popd
 rm -rf roslyn
 mkdir -p roslyn
 
-ls -l -R vendor/omnisharp-roslyn/artifacts/build/
 cp -a vendor/omnisharp-roslyn/artifacts/build/omnisharp/approot/* roslyn
 curl -LO http://nuget.org/nuget.exe
 
@@ -17,8 +16,6 @@ if [ ! -d "roslyn/packages/kre-clr-win-x86.1.0.0-beta3" ]; then
     exit 1
 fi
 
-ls -l roslyn/packages/
-cp -R roslyn/packages/kre-mono.1.0.0-beta3-11030 roslyn/packages/kre-mono.1.0.0-beta3
 if [ ! -d "roslyn/packages/kre-mono.1.0.0-beta3" ]; then
     echo 'ERROR: Can not find kre-mono.1.0.0-beta3 in output exiting!'
     exit 1
