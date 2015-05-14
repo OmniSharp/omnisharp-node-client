@@ -17,3 +17,5 @@ deploy:
   on:
     tags: true
     repo: OmniSharp/omnisharp-node-client
+after_deploy:
+- cat npm-debug.log
