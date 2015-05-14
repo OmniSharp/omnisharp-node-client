@@ -2,6 +2,7 @@
 npm-debug.log
 node_modules
 typings
-lib/**/*.ts
-spec/**/*.ts
+lib/**/*.js
+spec/**/*.js
 NuGet.exe
+vendor
