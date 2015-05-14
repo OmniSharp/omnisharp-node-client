@@ -5,4 +5,5 @@ server
 typings
 lib/**/*.js
 spec/**/*.js
-omnisharp-server.d.ts
+roslyn/
+NuGet.exe

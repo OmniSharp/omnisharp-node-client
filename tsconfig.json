@@ -21,6 +21,7 @@
         "./lib/drivers/stdio.ts",
         "./lib/drivers/websocket.ts",
         "./lib/omnisharp-client.ts",
+        "./lib/omnisharp-path.ts",
         "./lib/project-finder.ts",
         "./spec/omnisharp-client-commands.ts",
         "./spec/omnisharp-client-spec.ts",
