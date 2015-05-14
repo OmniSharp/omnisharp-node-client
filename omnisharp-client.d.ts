@@ -9,6 +9,10 @@ declare module OmnisharpClient {
         Disconnected = 0,
         Connecting = 1,
         Connected = 2,
+    }    
+    export interface ILogger {
+        log(...values: any[]);
+        error(...values: any[]);
     }
     export interface IDriverOptions {
         projectPath?: string;
