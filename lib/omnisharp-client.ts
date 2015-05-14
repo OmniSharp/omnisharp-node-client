@@ -352,6 +352,28 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
         return this.request<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>("navigateup", request);
     }
 
+    public gotofile(request?: OmniSharp.Models.Request): Rx.Observable<OmniSharp.Models.QuickFixResponse> {
+        return this.request<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>("gotofile", request);
+    }
+
+    public gotofilePromise(request?: OmniSharp.Models.Request) {
+        return this.gotofile(request).toPromise();
+    }
+
+    public observeGotofile: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>;
+
+    public gotoregion(request: OmniSharp.Models.Request): Rx.Observable<OmniSharp.Models.QuickFixResponse> {
+        assert.isNotNull(request.FileName, 'request.FileName must not be null');
+
+        return this.request<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>("gotoregion", request);
+    }
+
+    public gotoregionPromise(request: OmniSharp.Models.Request) {
+        return this.gotofile(request).toPromise();
+    }
+
+    public observeGotoregion: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>;
+
     public navigateupPromise(request: OmniSharp.Models.Request) {
         return this.navigateup(request).toPromise();
     }
@@ -552,27 +574,5 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
     }
 
     public observeGettestcontext: Rx.Observable<Context<OmniSharp.Models.TestCommandRequest, OmniSharp.Models.GetTestCommandResponse>>;
-
-    public gotofile(request?: OmniSharp.Models.Request): Rx.Observable<OmniSharp.Models.QuickFixResponse> {
-        return this.request<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>("gotofile", request);
-    }
-
-    public gotofilePromise(request?: OmniSharp.Models.Request) {
-        return this.gotofile(request).toPromise();
-    }
-
-    public observeGotofile: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>;
-
-    public gotoregion(request: OmniSharp.Models.Request): Rx.Observable<OmniSharp.Models.QuickFixResponse> {
-        assert.isNotNull(request.FileName, 'request.FileName must not be null');
-
-        return this.request<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>("gotoregion", request);
-    }
-
-    public gotoregionPromise(request: OmniSharp.Models.Request) {
-        return this.gotofile(request).toPromise();
-    }
-
-    public observeGotoregion: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>;
 
 }

@@ -14,7 +14,7 @@ declare module OmnisharpClient {
         projectPath?: string;
         remote?: boolean;
         debug?: boolean;
-        serverPath?: boolean;
+        serverPath?: string;
         findProject?: boolean; // Should try and find the project using the project finder
         logger?: ILogger;
     }
@@ -101,6 +101,12 @@ declare module OmnisharpClient {
         gotodefinition(request: OmniSharp.Models.Request): Rx.Observable<OmniSharp.Models.GotoDefinitionResponse>;
         gotodefinitionPromise(request: OmniSharp.Models.Request): Rx.IPromise<OmniSharp.Models.GotoDefinitionResponse>;
         observeGotodefinition: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.GotoDefinitionResponse>>;
+        gotofile(request: OmniSharp.Models.Request): Rx.Observable<OmniSharp.Models.QuickFixResponse>;
+        gotofilePromise(request: OmniSharp.Models.Request): Rx.IPromise<OmniSharp.Models.QuickFixResponse>;
+        observeGotofile: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>;
+        gotoregion(request: OmniSharp.Models.Request): Rx.Observable<OmniSharp.Models.QuickFixResponse>;
+        gotoregionPromise(request: OmniSharp.Models.Request): Rx.IPromise<OmniSharp.Models.QuickFixResponse>;
+        observeGotoregion: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>;
         navigateup(request: OmniSharp.Models.Request): Rx.Observable<OmniSharp.Models.NavigateResponse>;
         navigateupPromise(request: OmniSharp.Models.Request): Rx.IPromise<OmniSharp.Models.NavigateResponse>;
         observeNavigateup: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>>;
@@ -155,6 +161,6 @@ declare module OmnisharpClient {
     }
 }
 
-declare module "omnisharp-node-client" {
+declare module "omnisharp-client" {
     export = OmnisharpClient;
 }
