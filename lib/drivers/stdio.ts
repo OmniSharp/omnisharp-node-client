@@ -60,7 +60,7 @@ class StdioDriver implements IDriver {
 
         var serverArguments: any[] = ["--stdio", "-s", projectPath, "--hostPID", process.pid];
         this._process = spawn(this._serverPath, serverArguments);
-        this._process.stderr.on('data', function(data) { this.logger.error(data.toString()) });
+        this._process.stderr.on('data', (data) => this._logger.error(data.toString()));
         this._process.stderr.on('data', (data) => this.serverErr(data));
 
         var rl = readline.createInterface({
