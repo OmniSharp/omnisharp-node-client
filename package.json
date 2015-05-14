@@ -1,5 +1,5 @@
 {
-  "name": "omnisharp-node-client",
+  "name": "omnisharp-client",
   "description": "A node client for omnisharp-roslyn",
   "version": "1.1.0",
   "bugs": {

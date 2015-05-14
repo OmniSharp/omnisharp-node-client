@@ -6,6 +6,7 @@ pushd vendor/omnisharp-roslyn
 popd
 rm -rf roslyn
 mkdir -p roslyn
+
 cp -a vendor/omnisharp-roslyn/artifacts/build/omnisharp/approot/* roslyn
 curl -LO http://nuget.org/nuget.exe
 

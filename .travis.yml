@@ -9,6 +9,8 @@ before_script:
 - nvm install 0.12
 script:
 - ". ./travis-build.sh"
+before_deploy:
+- npm install
 deploy:
   provider: npm
   email: david.driscoll@gmail.com
