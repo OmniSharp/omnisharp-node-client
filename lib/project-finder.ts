@@ -4,6 +4,7 @@ import {join, dirname, sep} from 'path';
 var glob = require('glob');
 var primaryFilesToSearch = ['global.json', '*.sln', '*.csx'];
 var secondaryFilesToSearch = ['project.json', '*.csproj'];
+import {findCandidates} from './candidate-finder';
 
 export function findProject(location: string, logger: ILogger) {
     location = _.trimRight(location, sep);
@@ -23,6 +24,14 @@ export function findProject(location: string, logger: ILogger) {
     var secondaryResult = searchForFolder(mappedLocations, secondaryFilesToSearch, logger);
     if (secondaryResult) {
         return secondaryResult;
+    }
+
+    // Look to see if there is a single candiate that matches,
+    //     otherwise we have no idea what project to hand off
+    var candidates = findCandidates(location, logger);
+
+    if (candidates.length === 1) {
+        return candidates[0];
     }
 
     return null;

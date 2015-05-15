@@ -9,7 +9,7 @@ declare module OmnisharpClient {
         Disconnected = 0,
         Connecting = 1,
         Connected = 2,
-    }    
+    }
     export interface ILogger {
         log(...values: any[]);
         error(...values: any[]);
@@ -55,6 +55,8 @@ declare module OmnisharpClient {
         response: TResponse;
     }
 
+    export function findCandidates(location: string, logger: ILogger): string[];
+
     export class OmnisharpClient {
         constructor(_options?: OmnisharpClientOptions);
         id: string;
@@ -71,6 +73,15 @@ declare module OmnisharpClient {
         requests: Rx.Observable<RequestWrapper<any>>;
         responses: Rx.Observable<ResponseWrapper<any, any>>;
         errors: Rx.Observable<CommandWrapper<any>>;
+        projectAdded: Rx.Observable<OmniSharp.Models.ProjectInformationResponse>;
+        projectChanged: Rx.Observable<OmniSharp.Models.ProjectInformationResponse>;
+        projectRemoved: Rx.Observable<OmniSharp.Models.ProjectInformationResponse>;
+        error: Rx.Observable<OmniSharp.Models.ErrorMessage>;
+        msBuildProjectDiagnostics: Rx.Observable<OmniSharp.Models.MSBuildProjectDiagnostics>;
+        packageRestoreStarted: Rx.Observable<OmniSharp.Models.PackageRestoreMessage>;
+        packageRestoreFinished: Rx.Observable<OmniSharp.Models.PackageRestoreMessage>;
+        unresolvedDependencies: Rx.Observable<OmniSharp.Models.UnresolvedDependenciesMessage>;
+        request<TRequest, TResponse>(action: string, request?: TRequest): Rx.Observable<TResponse>;
 
         updatebuffer(request: OmniSharp.Models.Request): Rx.Observable<any>;
         updatebufferPromise(request: OmniSharp.Models.Request): Rx.IPromise<any>;
