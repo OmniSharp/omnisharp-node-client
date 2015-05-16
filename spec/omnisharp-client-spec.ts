@@ -41,7 +41,6 @@ describe("Omnisharp Server", function() {
         it("must respond to all requests", function(done) {
             var count = 4;
             server.observeCheckalivestatus.subscribe((data) => {
-                console.log("observeCheckalivestatus", data)
                 count--;
                 if (!count)
                     done();

@@ -2,6 +2,7 @@ import {Observable, Subject, AsyncSubject} from "rx";
 import {IDriver, IStaticDriver, IDriverOptions} from "./drivers";
 import {assert} from "chai";
 import {extend} from "lodash";
+import { findCandidates as candidateFinder} from "./candidate-finder";
 
 export enum Driver {
     Http,
@@ -46,8 +47,9 @@ export interface Context<TRequest, TResponse> {
     request: TRequest;
     response: TResponse;
 }
+export var findCandidates = candidateFinder;
 
-export class OmnisharpClient implements OmniSharp.Api, IDriver {
+export class OmnisharpClient implements OmniSharp.Api, OmniSharp.Events, IDriver {
     private _driver: IDriver;
     private _requestStream = new Subject<RequestWrapper<any>>();
     private _responseStream = new Subject<ResponseWrapper<any, any>>();
@@ -168,6 +170,16 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
         this.observeGetcodeactions = this._responseStream.filter(z => z.command == "getcodeactions");
         this.observeRuncodeaction = this._responseStream.filter(z => z.command == "runcodeaction");
         this.observeGettestcontext = this._responseStream.filter(z => z.command == "gettestcontext");
+
+
+        this.projectAdded = this._driver.events.filter(z => z.Event === "ProjectAdded").map(z => <OmniSharp.Models.ProjectInformationResponse>z.Body);
+        this.projectChanged = this._driver.events.filter(z => z.Event === "ProjectChanged").map(z => <OmniSharp.Models.ProjectInformationResponse>z.Body);
+        this.projectRemoved = this._driver.events.filter(z => z.Event === "ProjectRemoved").map(z => <OmniSharp.Models.ProjectInformationResponse>z.Body);
+        this.error = this._driver.events.filter(z => z.Event === "Error").map(z => <OmniSharp.Models.ErrorMessage>z.Body);
+        this.msBuildProjectDiagnostics = this._driver.events.filter(z => z.Event === "MsBuildProjectDiagnostics").map(z => <OmniSharp.Models.MSBuildProjectDiagnostics>z.Body);;
+        this.packageRestoreStarted = this._driver.events.filter(z => z.Event === "PackageRestoreStarted").map(z => <OmniSharp.Models.PackageRestoreMessage>z.Body);;
+        this.packageRestoreFinished = this._driver.events.filter(z => z.Event === "PackageRestoreFinished").map(z => <OmniSharp.Models.PackageRestoreMessage>z.Body);;
+        this.unresolvedDependencies = this._driver.events.filter(z => z.Event === "UnresolvedDependencies").map(z => <OmniSharp.Models.UnresolvedDependenciesMessage>z.Body);;
     }
 
     public updatebuffer(request: OmniSharp.Models.Request): Rx.Observable<any> {
@@ -574,5 +586,15 @@ export class OmnisharpClient implements OmniSharp.Api, IDriver {
     }
 
     public observeGettestcontext: Rx.Observable<Context<OmniSharp.Models.TestCommandRequest, OmniSharp.Models.GetTestCommandResponse>>;
+
+
+    public projectAdded: Rx.Observable<OmniSharp.Models.ProjectInformationResponse>;
+    public projectChanged: Rx.Observable<OmniSharp.Models.ProjectInformationResponse>;
+    public projectRemoved: Rx.Observable<OmniSharp.Models.ProjectInformationResponse>;
+    public error: Rx.Observable<OmniSharp.Models.ErrorMessage>;
+    public msBuildProjectDiagnostics: Rx.Observable<OmniSharp.Models.MSBuildProjectDiagnostics>;
+    public packageRestoreStarted: Rx.Observable<OmniSharp.Models.PackageRestoreMessage>;
+    public packageRestoreFinished: Rx.Observable<OmniSharp.Models.PackageRestoreMessage>;
+    public unresolvedDependencies: Rx.Observable<OmniSharp.Models.UnresolvedDependenciesMessage>;
 
 }

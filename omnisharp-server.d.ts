@@ -85,6 +85,9 @@ declare module OmniSharp.Models {
         Kind: string;
         Projects: string[];
     }
+    interface FileMemberTree {
+        TopLevelTypeDefinitions: OmniSharp.Models.FileMemberElement[];
+    }
     interface FindSymbolsRequest {
         Filter?: string;
     }
@@ -330,12 +333,12 @@ declare module OmniSharp {
         checkreadystatus(request: any): Rx.Observable<boolean>;
         checkreadystatusPromise(request: any): Rx.IPromise<boolean>;
         observeCheckreadystatus: Rx.Observable<Context<any, boolean>>;
-        currentfilemembersastree(request: OmniSharp.Models.Request): Rx.Observable<any>;
-        currentfilemembersastreePromise(request: OmniSharp.Models.Request): Rx.IPromise<any>;
-        observeCurrentfilemembersastree: Rx.Observable<Context<OmniSharp.Models.Request, any>>;
-        currentfilemembersasflat(request: OmniSharp.Models.Request): Rx.Observable<any>;
-        currentfilemembersasflatPromise(request: OmniSharp.Models.Request): Rx.IPromise<any>;
-        observeCurrentfilemembersasflat: Rx.Observable<Context<OmniSharp.Models.Request, any>>;
+        currentfilemembersastree(request: OmniSharp.Models.Request): Rx.Observable<OmniSharp.Models.FileMemberTree>;
+        currentfilemembersastreePromise(request: OmniSharp.Models.Request): Rx.IPromise<OmniSharp.Models.FileMemberTree>;
+        observeCurrentfilemembersastree: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.FileMemberTree>>;
+        currentfilemembersasflat(request: OmniSharp.Models.Request): Rx.Observable<OmniSharp.Models.QuickFix[]>;
+        currentfilemembersasflatPromise(request: OmniSharp.Models.Request): Rx.IPromise<OmniSharp.Models.QuickFix[]>;
+        observeCurrentfilemembersasflat: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFix[]>>;
         typelookup(request: OmniSharp.Models.TypeLookupRequest): Rx.Observable<any>;
         typelookupPromise(request: OmniSharp.Models.TypeLookupRequest): Rx.IPromise<any>;
         observeTypelookup: Rx.Observable<Context<OmniSharp.Models.TypeLookupRequest, any>>;
@@ -357,5 +360,17 @@ declare module OmniSharp {
         gettestcontext(request: OmniSharp.Models.TestCommandRequest): Rx.Observable<OmniSharp.Models.GetTestCommandResponse>;
         gettestcontextPromise(request: OmniSharp.Models.TestCommandRequest): Rx.IPromise<OmniSharp.Models.GetTestCommandResponse>;
         observeGettestcontext: Rx.Observable<Context<OmniSharp.Models.TestCommandRequest, OmniSharp.Models.GetTestCommandResponse>>;
+    }
+}
+declare module OmniSharp {
+    interface Events {
+        projectAdded: Rx.Observable<OmniSharp.Models.ProjectInformationResponse>;
+        projectChanged: Rx.Observable<OmniSharp.Models.ProjectInformationResponse>;
+        projectRemoved: Rx.Observable<OmniSharp.Models.ProjectInformationResponse>;
+        error: Rx.Observable<OmniSharp.Models.ErrorMessage>;
+        msBuildProjectDiagnostics: Rx.Observable<OmniSharp.Models.MSBuildProjectDiagnostics>;
+        packageRestoreStarted: Rx.Observable<OmniSharp.Models.PackageRestoreMessage>;
+        packageRestoreFinished: Rx.Observable<OmniSharp.Models.PackageRestoreMessage>;
+        unresolvedDependencies: Rx.Observable<OmniSharp.Models.UnresolvedDependenciesMessage>;
     }
 }

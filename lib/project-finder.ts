@@ -4,6 +4,7 @@ import {join, dirname, sep} from 'path';
 var glob = require('glob');
 var primaryFilesToSearch = ['global.json', '*.sln', '*.csx'];
 var secondaryFilesToSearch = ['project.json', '*.csproj'];
+import {findCandidates} from './candidate-finder';
 
 export function findProject(location: string, logger: ILogger) {
     location = _.trimRight(location, sep);

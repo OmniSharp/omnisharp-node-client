@@ -9,7 +9,7 @@ declare module OmnisharpClient {
         Disconnected = 0,
         Connecting = 1,
         Connected = 2,
-    }    
+    }
     export interface ILogger {
         log(...values: any[]);
         error(...values: any[]);
@@ -55,6 +55,8 @@ declare module OmnisharpClient {
         response: TResponse;
     }
 
+    export function findCandidates(location: string, logger: ILogger): Rx.Observable<string[]>;
+
     export class OmnisharpClient {
         constructor(_options?: OmnisharpClientOptions);
         id: string;
@@ -71,6 +73,16 @@ declare module OmnisharpClient {
         requests: Rx.Observable<RequestWrapper<any>>;
         responses: Rx.Observable<ResponseWrapper<any, any>>;
         errors: Rx.Observable<CommandWrapper<any>>;
+        request<TRequest, TResponse>(action: string, request?: TRequest): Rx.Observable<TResponse>;
+
+        projectAdded: Rx.Observable<OmniSharp.Models.ProjectInformationResponse>;
+        projectChanged: Rx.Observable<OmniSharp.Models.ProjectInformationResponse>;
+        projectRemoved: Rx.Observable<OmniSharp.Models.ProjectInformationResponse>;
+        error: Rx.Observable<OmniSharp.Models.ErrorMessage>;
+        msBuildProjectDiagnostics: Rx.Observable<OmniSharp.Models.MSBuildProjectDiagnostics>;
+        packageRestoreStarted: Rx.Observable<OmniSharp.Models.PackageRestoreMessage>;
+        packageRestoreFinished: Rx.Observable<OmniSharp.Models.PackageRestoreMessage>;
+        unresolvedDependencies: Rx.Observable<OmniSharp.Models.UnresolvedDependenciesMessage>;
 
         updatebuffer(request: OmniSharp.Models.Request): Rx.Observable<any>;
         updatebufferPromise(request: OmniSharp.Models.Request): Rx.IPromise<any>;
@@ -129,12 +141,12 @@ declare module OmnisharpClient {
         checkreadystatus(request: any): Rx.Observable<boolean>;
         checkreadystatusPromise(request: any): Rx.IPromise<boolean>;
         observeCheckreadystatus: Rx.Observable<Context<any, boolean>>;
-        currentfilemembersastree(request: OmniSharp.Models.Request): Rx.Observable<any>;
-        currentfilemembersastreePromise(request: OmniSharp.Models.Request): Rx.IPromise<any>;
-        observeCurrentfilemembersastree: Rx.Observable<Context<OmniSharp.Models.Request, any>>;
-        currentfilemembersasflat(request: OmniSharp.Models.Request): Rx.Observable<any>;
-        currentfilemembersasflatPromise(request: OmniSharp.Models.Request): Rx.IPromise<any>;
-        observeCurrentfilemembersasflat: Rx.Observable<Context<OmniSharp.Models.Request, any>>;
+        currentfilemembersastree(request: OmniSharp.Models.Request): Rx.Observable<OmniSharp.Models.FileMemberTree>;
+        currentfilemembersastreePromise(request: OmniSharp.Models.Request): Rx.IPromise<OmniSharp.Models.FileMemberTree>;
+        observeCurrentfilemembersastree: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.FileMemberTree>>;
+        currentfilemembersasflat(request: OmniSharp.Models.Request): Rx.Observable<OmniSharp.Models.QuickFix[]>;
+        currentfilemembersasflatPromise(request: OmniSharp.Models.Request): Rx.IPromise<OmniSharp.Models.QuickFix[]>;
+        observeCurrentfilemembersasflat: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFix[]>>;
         typelookup(request: OmniSharp.Models.TypeLookupRequest): Rx.Observable<any>;
         typelookupPromise(request: OmniSharp.Models.TypeLookupRequest): Rx.IPromise<any>;
         observeTypelookup: Rx.Observable<Context<OmniSharp.Models.TypeLookupRequest, any>>;

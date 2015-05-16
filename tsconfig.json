@@ -8,6 +8,7 @@
         "removeComments": true,
         "noLib": false
     },
+    "compileOnSave": true,
     "filesGlob": [
         "./**/*.ts",
         "!./omnisharp-client.d.ts",
@@ -16,6 +17,7 @@
         "!./node_modules/**/*.ts"
     ],
     "files": [
+        "./lib/candidate-finder.ts",
         "./lib/drivers.ts",
         "./lib/drivers/http.ts",
         "./lib/drivers/stdio.ts",
@@ -23,6 +25,7 @@
         "./lib/omnisharp-client.ts",
         "./lib/omnisharp-path.ts",
         "./lib/project-finder.ts",
+        "./spec/candidate-find-spec.ts",
         "./spec/omnisharp-client-commands.ts",
         "./spec/omnisharp-client-spec.ts",
         "./spec/project-find-spec.ts",
