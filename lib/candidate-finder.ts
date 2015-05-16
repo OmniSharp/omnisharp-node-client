@@ -17,13 +17,8 @@ export function findCandidates(location: string, logger: ILogger) {
     mappedLocations.reverse();
 
     var candidates = searchForCandidates(mappedLocations, projectFilesToSearch, logger);
-    console.log('candidates', candidates);
-
     var scriptCsCandidates = searchForCandidates(mappedLocations, scriptCsFilesToSearch, logger);
-    console.log('scriptCsCandidates', scriptCsCandidates);
     if (scriptCsCandidates.length && candidates.length) {
-        console.log('getMinCandidate(candidates)', getMinCandidate(candidates), 'getMinCandidate(scriptCsCandidates)', getMinCandidate(scriptCsCandidates));
-        console.log('getMinCandidate(candidates) >= getMinCandidate(scriptCsCandidates)', getMinCandidate(candidates) >= getMinCandidate(scriptCsCandidates));
         if (getMinCandidate(candidates) >= getMinCandidate(scriptCsCandidates)) {
             candidates = candidates.concat(scriptCsCandidates);
             candidates = _.sortBy(candidates, z => z.split(sep).length);
@@ -63,8 +58,6 @@ function searchForCandidates(locations: string[], filesToSearch: string[], logge
             .map((file: string) => dirname(file))
             .unique()
             .value();
-
-        console.log('nestedResults', nestedResults)
 
         nestedResults.forEach(found => logger.log(`Omnisharp Candidate Finder: Found ${found}`));
 
