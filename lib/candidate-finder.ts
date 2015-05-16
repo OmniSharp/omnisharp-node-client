@@ -59,17 +59,26 @@ function searchForCandidates(location: string, filesToSearch: string[], logger: 
                 .map(file => dirname(file))
                 .distinct()
         })
-        // take the first result only.
-        .take(1);
+    // take the first result only.
+        .take(1)
+        .toArray();
 
-    var nestedSearch = Observable.from(filesToSearch)
-        .map(fileName => join(location, '**', fileName))
-        .flatMap(file => glob([file, '!**/node_modules/*']))
-        .selectMany(x => Observable.from(x))
-        .map(file => dirname(file))
-        .distinct()
+    var merged = rootObservable.flatMap(candidates => {
+        if (candidates.length) {
+            return Observable.just(candidates);
+        } else if (locations.length > 2) {
+        // Only search inside if we feel we're nested enough to not have a fit.
+            return Observable.from(filesToSearch)
+                .map(fileName => join(location, '**', fileName))
+                .flatMap(file => glob([file, '!**/node_modules/*']))
+                .selectMany(x => Observable.from(x))
+                .map(file => dirname(file))
+                .distinct()
+                .toArray();
+        }
 
-    var merged = Observable.merge(rootObservable, nestedSearch).toArray();
+        return Observable.just([]);
+    });
 
     var result = merged.map(candidates => {
         var rootCandidateCount = getMinCandidate(candidates);
