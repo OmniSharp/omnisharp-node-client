@@ -63,18 +63,32 @@ describe("Omnisharp Local - Stdio", function() {
                 projectPath: process.cwd()
             });
 
-            server.connect({});
-            server.state.subscribe(state => {
+            var sub = server.state.subscribe(state => {
                 expect(server.currentState).to.be.not.null;
                 expect(server.commands).to.be.not.null;
                 expect(server.events).to.be.not.null;
                 expect(server.state).to.be.not.null;
                 expect(server.outstandingRequests).to.be.not.null;
+                done();
+                sub.dispose();
+            });
+            server.connect({});
+        })
+    })
+
+    describe("properties", function() {
+        this.timeout(20000);
+        it('should disconnect if no project path is given', function(done) {
+            var server = new Stdio({
+                driver: Driver.Stdio
             });
 
-            done();
+            var sub  = server.state.subscribe(state => {
+                expect(state).to.be.eql(DriverState.Error);
+                done();
+                sub.dispose();
+            });
+            server.connect({});
         })
-
-
     })
 });

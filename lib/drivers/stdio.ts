@@ -86,7 +86,7 @@ class StdioDriver implements IDriver {
 
     private serverErr(data) {
         var friendlyMessage = this.parseError(data);
-        this.currentState = DriverState.Error;
+        this._connectionStream.onNext(DriverState.Error);
         this._process = null;
 
         this._eventStream.onNext({
