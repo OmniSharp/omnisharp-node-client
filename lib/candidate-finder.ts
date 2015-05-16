@@ -4,16 +4,21 @@ import {join, dirname, sep} from 'path';
 import {Observable, AsyncSubject, Scheduler} from "rx";
 var sepRegex = /[\\|\/]/g;
 var glob: (file: string[]) => Observable<string[]> = <any> Observable.fromNodeCallback(require('globby'));
-var projectFilesToSearch = ['global.json', '*.sln', 'project.json', '*.csproj'];
+var solutionFilesToSearch = ['global.json', '*.sln'];
+var projectFilesToSearch = ['project.json', '*.csproj'];
 var scriptCsFilesToSearch = ['*.csx'];
 
 export function findCandidates(location: string, logger: ILogger) {
     location = _.trimRight(location, sep);
 
-
-    var candidates = searchForCandidates(location, projectFilesToSearch, logger);
+    var solutionCandidates = searchForCandidates(location, solutionFilesToSearch, logger);
+    var projectCandidates = searchForCandidates(location, projectFilesToSearch, logger);
     var scriptCsCandidates = searchForCandidates(location, scriptCsFilesToSearch, logger);
-    return Observable.zip(candidates, scriptCsCandidates, (candidates, scriptCsCandidates) => {
+    return Observable.zip(solutionCandidates, projectCandidates, scriptCsCandidates, (solutionCandidates, projectCandidates, scriptCsCandidates) => {
+
+        var candidates = squashCandidates(solutionCandidates.concat(projectCandidates));
+        scriptCsCandidates = squashCandidates(scriptCsCandidates);
+
         if (scriptCsCandidates.length && candidates.length) {
             if (getMinCandidate(candidates) >= getMinCandidate(scriptCsCandidates)) {
                 candidates = candidates.concat(scriptCsCandidates);
@@ -23,10 +28,18 @@ export function findCandidates(location: string, logger: ILogger) {
         }
 
         if (scriptCsCandidates.length)
-            return scriptCsCandidates
+            return scriptCsCandidates;
 
         return candidates;
-    });
+    })
+    .tapOnNext(candidates => logger.log(`Omni Project Candidates: Found ${candidates}`));
+}
+
+function squashCandidates(candidates: string[]) {
+    var rootCandidateCount = getMinCandidate(candidates);
+    var r = _.unique(candidates.filter(z => z.split(sepRegex).length === rootCandidateCount))
+        .map(z => z.split(sepRegex).join(sep));
+    return r;
 }
 
 function getMinCandidate(candidates: string[]) {
@@ -59,17 +72,8 @@ function searchForCandidates(location: string, filesToSearch: string[], logger: 
                 .map(file => dirname(file))
                 .distinct()
         })
-    // take the first result only.
         .take(1)
         .toArray();
 
-    var result = rootObservable.map(candidates => {
-        var rootCandidateCount = getMinCandidate(candidates);
-        var r = _.unique(candidates.filter(z => z.split(sepRegex).length === rootCandidateCount))
-            .map(z => z.split(sepRegex).join(sep));
-        logger.log(`Omni Project Candidates: Found ${r}`);
-        return r;
-    });
-
-    return result;
+    return rootObservable;
 }
