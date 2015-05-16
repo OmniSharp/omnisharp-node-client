@@ -56,6 +56,14 @@ class StdioDriver implements IDriver {
             projectPath = projectFinder(projectPath, this._logger);
         }
 
+        if (!projectPath) {
+          var error = "Failed to determine project path for omnisharp, aborting connect()";
+          this._logger.error(error);
+          this.serverErr(error);
+          this.disconnect();
+          return;
+        }
+
         this._connectionStream.onNext(DriverState.Connecting);
 
         var serverArguments: any[] = ["--stdio", "-s", projectPath, "--hostPID", process.pid];
@@ -78,7 +86,7 @@ class StdioDriver implements IDriver {
 
     private serverErr(data) {
         var friendlyMessage = this.parseError(data);
-        this.currentState = DriverState.Error;
+        this._connectionStream.onNext(DriverState.Error);
         this._process = null;
 
         this._eventStream.onNext({
