@@ -1,4 +1,4 @@
-<#echo update submodules...
+echo update submodules...
 git submodule update --init --recursive
 git submodule foreach git pull origin master
 pushd vendor/omnisharp-roslyn
@@ -28,7 +28,7 @@ if (!(Test-Path roslyn/packages/kre-mono.1.0.0-beta3)) {
 }
 
 Copy-Item -Force vendor/omnisharp.cmd.patch roslyn/omnisharp.cmd
-Copy-Item -Force vendor/omnisharp.patch roslyn/omnisharp#>
+Copy-Item -Force vendor/omnisharp.patch roslyn/omnisharp
 
 iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/aspnet/Home/release/kvminstall.ps1'))
 $Env:KRE_FEED='https://www.nuget.org/api/v2'
