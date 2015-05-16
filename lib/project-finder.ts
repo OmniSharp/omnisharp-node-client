@@ -26,14 +26,6 @@ export function findProject(location: string, logger: ILogger) {
         return secondaryResult;
     }
 
-    // Look to see if there is a single candiate that matches,
-    //     otherwise we have no idea what project to hand off
-    var candidates = findCandidates(location, logger);
-
-    if (candidates.length === 1) {
-        return candidates[0];
-    }
-
     return null;
 }
 

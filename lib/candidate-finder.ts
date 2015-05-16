@@ -1,35 +1,32 @@
 import _ = require('lodash');
 import {ILogger} from './drivers';
 import {join, dirname, sep} from 'path';
+import {Observable, AsyncSubject, Scheduler} from "rx";
 var sepRegex = /[\\|\/]/g;
-var glob = require('glob');
+var glob: (file: string[]) => Observable<string[]> = <any> Observable.fromNodeCallback(require('globby'));
 var projectFilesToSearch = ['global.json', '*.sln', 'project.json', '*.csproj'];
 var scriptCsFilesToSearch = ['*.csx'];
 
 export function findCandidates(location: string, logger: ILogger) {
     location = _.trimRight(location, sep);
 
-    var locations = location.split(sep);
-    var mappedLocations = locations.map((loc, index) => {
-        return _.take(locations, index + 1).join(sep);
-    });
 
-    mappedLocations.reverse();
-
-    var candidates = searchForCandidates(mappedLocations, projectFilesToSearch, logger);
-    var scriptCsCandidates = searchForCandidates(mappedLocations, scriptCsFilesToSearch, logger);
-    if (scriptCsCandidates.length && candidates.length) {
-        if (getMinCandidate(candidates) >= getMinCandidate(scriptCsCandidates)) {
-            candidates = candidates.concat(scriptCsCandidates);
-            candidates = _.sortBy(candidates, z => z.split(sep).length);
+    var candidates = searchForCandidates(location, projectFilesToSearch, logger);
+    var scriptCsCandidates = searchForCandidates(location, scriptCsFilesToSearch, logger);
+    return Observable.zip(candidates, scriptCsCandidates, (candidates, scriptCsCandidates) => {
+        if (scriptCsCandidates.length && candidates.length) {
+            if (getMinCandidate(candidates) >= getMinCandidate(scriptCsCandidates)) {
+                candidates = candidates.concat(scriptCsCandidates);
+                candidates = _.sortBy(candidates, z => z.split(sep).length);
+            }
+            scriptCsCandidates = [];
         }
-        scriptCsCandidates = [];
-    }
 
-    if (scriptCsCandidates.length)
-        return scriptCsCandidates
+        if (scriptCsCandidates.length)
+            return scriptCsCandidates
 
-    return candidates;
+        return candidates;
+    });
 }
 
 function getMinCandidate(candidates: string[]) {
@@ -40,52 +37,47 @@ function getMinCandidate(candidates: string[]) {
     }).split(sepRegex).length;
 }
 
-function searchForCandidates(locations: string[], filesToSearch: string[], logger: ILogger) {
-    var results = locations.map(location => ({
-        location,
-        files: filesToSearch.map(fileName => join(location, fileName))
-    }));
-
-    var candidates: string[] = [];
-
-    if (locations.length) {
-        // Take the most specific location, and then search inside it.
-        var nestedResults = _(filesToSearch).chain()
-            .map(fileName => join(locations[0], '**', fileName))
-            .map(file => glob.sync(file) || [])
-            .flatten()
-            .map((z: string) => z.split(sepRegex).join(sep))
-            .map((file: string) => dirname(file))
-            .unique()
-            .value();
-
-        nestedResults.forEach(found => logger.log(`Omnisharp Candidate Finder: Found ${found}`));
-
-        candidates.push(...nestedResults);
-    }
-
-    _.each(results, ({location, files}: { location: string; files: string[] }) => {
-        logger.log(`Omnisharp Candidate Finder: Searching ${location} for ${filesToSearch}`);
-
-        var found = _.find(files, file => {
-            var g = glob.sync(file);
-            if (g && g.length) {
-                return true;
-            }
-            return false;
-        });
-
-        if (found) {
-            candidates.push(dirname(found));
-            logger.log(`Omnisharp Candidate Finder: Found ${found}`);
-            return false;
-        }
+function searchForCandidates(location: string, filesToSearch: string[], logger: ILogger) {
+    var locations = location.split(sep);
+    locations = locations.map((loc, index) => {
+        return _.take(locations, locations.length - index).join(sep);
     });
 
-    if (candidates.length) {
-        var rootCandidateCount = getMinCandidate(candidates);
-        return _.unique(candidates.filter(z => z.split(sep).length === rootCandidateCount));
-    }
+    // TODO: Searching is expensive, should we control the max depth?
+    // locations = _.take(locations, 5);
 
-    return [];
+    var rootObservable = Observable.from(locations, x => x, Scheduler.timeout)
+        .map(loc => ({
+            loc,
+            files: filesToSearch.map(fileName => join(loc, fileName))
+        }))
+        .flatMap(function({loc, files}) {
+            logger.log(`Omni Project Candidates: Searching ${loc} for ${filesToSearch}`);
+            return Observable.from(files, x => x, Scheduler.timeout)
+                .flatMap(file => glob([file]))
+                .selectMany(x => Observable.from(x))
+                .map(file => dirname(file))
+                .distinct()
+        })
+        // take the first result only.
+        .take(1);
+
+    var nestedSearch = Observable.from(filesToSearch)
+        .map(fileName => join(location, '**', fileName))
+        .flatMap(file => glob([file, '!**/node_modules/*']))
+        .selectMany(x => Observable.from(x))
+        .map(file => dirname(file))
+        .distinct()
+
+    var merged = Observable.merge(rootObservable, nestedSearch).toArray();
+
+    var result = merged.map(candidates => {
+        var rootCandidateCount = getMinCandidate(candidates);
+        var r = _.unique(candidates.filter(z => z.split(sepRegex).length === rootCandidateCount))
+            .map(z => z.split(sepRegex).join(sep));
+        logger.log(`Omni Project Candidates: Found ${r}`);
+        return r;
+    });
+
+    return result;
 }
