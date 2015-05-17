@@ -113,8 +113,8 @@ export class OmnisharpClient implements OmniSharp.Api, OmniSharp.Events, IDriver
         var priorityRequests = new BehaviorSubject(0), priorityResponses = new BehaviorSubject(0);
 
         var pauser = Observable.zip(
-            priorityRequests.where(x => x > 0),
-            priorityResponses.where(x => x > 0),
+            priorityRequests,
+            priorityResponses,
             (requests, responses) => {
                 if (requests > 0 && responses === requests) {
                     priorityRequests.onNext(0);
@@ -125,7 +125,8 @@ export class OmnisharpClient implements OmniSharp.Api, OmniSharp.Events, IDriver
                 }
 
                 return true;
-            }).startWith(true);
+            })
+            .startWith(true);
 
         // These are operations that should wait until after
         // we have executed all the current priority commands
@@ -150,6 +151,20 @@ export class OmnisharpClient implements OmniSharp.Api, OmniSharp.Events, IDriver
             .flatMap(request => this.handleResult(request))
             .doOnNext(() => priorityResponses.onNext(priorityResponses.getValue() + 1))
             .subscribe(() => priorityQueue.request(1));
+
+        // Sometimes we can get out of sync,
+        // this will let us reset in a timely manner
+        Observable.merge(
+            pauser,
+            priorityRequests.map(z => !!z).where(z => z),
+            priorityResponses.map(z => !!z).where(z => z),
+            priorityQueue.map(z => !!z)
+        )
+        .debounce(500)
+        .subscribe(() => {
+            priorityRequests.onNext(0);
+            priorityResponses.onNext(0);
+        });
 
         priorityQueue.request(1);
     }
