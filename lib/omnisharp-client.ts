@@ -112,7 +112,7 @@ export class OmnisharpClient implements OmniSharp.Api, OmniSharp.Events, IDriver
     private setupRequestStreams() {
         var priorityRequests = new BehaviorSubject(0), priorityResponses = new BehaviorSubject(0);
 
-        var pauser = Observable.zip(
+        var pauser = Observable.combineLatest(
             priorityRequests,
             priorityResponses,
             (requests, responses) => {
@@ -148,24 +148,16 @@ export class OmnisharpClient implements OmniSharp.Api, OmniSharp.Events, IDriver
             .controlled();
 
         priorityQueue
-            .flatMap(request => this.handleResult(request))
-            .doOnNext(() => priorityResponses.onNext(priorityResponses.getValue() + 1))
-            .subscribe(() => priorityQueue.request(1));
+            .map(request => this.handleResult(request))
+            .subscribe(response => {
+                response
+                    .subscribeOnCompleted(() => {
+                        priorityResponses.onNext(priorityResponses.getValue() + 1)
+                        priorityQueue.request(1);
+                    });
+            });
 
-        // Sometimes we can get out of sync,
-        // this will let us reset in a timely manner
-        Observable.merge(
-            pauser,
-            priorityRequests.map(z => !!z).where(z => z),
-            priorityResponses.map(z => !!z).where(z => z),
-            priorityQueue.map(z => !!z)
-        )
-        .debounce(500)
-        .subscribe(() => {
-            priorityRequests.onNext(0);
-            priorityResponses.onNext(0);
-        });
-
+        // We need to have a pending request to catch the first one coming in.
         priorityQueue.request(1);
     }
 
