@@ -26,14 +26,16 @@ class StdioDriver implements IDriver {
     }
     private _findProject: boolean;
     private _logger: ILogger;
+    private _timeout: number;
     public id: string;
 
-    constructor({projectPath, debug, serverPath, findProject, logger}: IDriverOptions) {
+    constructor({projectPath, debug, serverPath, findProject, logger, timeout}: IDriverOptions) {
         this._projectPath = projectPath;
         this._findProject = findProject || false;
         this._serverPath = serverPath || omnisharpLocation;
         this._connectionStream.subscribe(state => this.currentState = state);
         this._logger = logger || console;
+        this._timeout = (timeout || 60) * 1000;
     }
 
     public get serverPath() { return this._serverPath; }
@@ -133,7 +135,7 @@ class StdioDriver implements IDriver {
         var subject = new AsyncSubject<TResponse>();
         this._outstandingRequests.set(sequence, subject);
         this._process.stdin.write(JSON.stringify(packet) + '\n', 'utf8');
-        return subject;
+        return subject.timeout(this._timeout, Observable.just(<any>'Request timed out'));
     }
 
     private handleData(data: string) {
@@ -164,10 +166,10 @@ class StdioDriver implements IDriver {
             this._outstandingRequests.delete(response.Request_seq);
             if (response.Success) {
                 observer.onNext(response.Body);
-                observer.onCompleted();
             } else {
                 observer.onError(response.Message);
             }
+            observer.onCompleted();
 
         } else {
 
