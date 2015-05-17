@@ -4,8 +4,14 @@ import {assert} from "chai";
 import {extend, uniqueId, some} from "lodash";
 import { findCandidates as candidateFinder} from "./candidate-finder";
 
-var normalCommands = [];
-var priorityCommands = ['updatebuffer', 'changebuffer'];
+var normalCommands = [
+    'findimplementations', 'findsymbols', 'findusages',
+    'gotodefinition', 'gotofile', 'gotoregion', 'typelookup',
+    'navigateup', 'navigatedown', 'projects', 'project'
+];
+var priorityCommands = [
+    'updatebuffer', 'changebuffer', 'filesChanged'
+];
 var undeferredCommands = normalCommands.concat(priorityCommands);
 
 export enum Driver {
