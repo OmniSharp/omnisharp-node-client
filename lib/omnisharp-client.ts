@@ -1,8 +1,12 @@
-import {Observable, Subject, AsyncSubject} from "rx";
+import {Observable, Subject, AsyncSubject, BehaviorSubject} from "rx";
 import {IDriver, IStaticDriver, IDriverOptions} from "./drivers";
 import {assert} from "chai";
-import {extend} from "lodash";
+import {extend, uniqueId, some} from "lodash";
 import { findCandidates as candidateFinder} from "./candidate-finder";
+
+var normalCommands = [];
+var priorityCommands = ['updatebuffer', 'changebuffer'];
+var undeferredCommands = normalCommands.concat(priorityCommands);
 
 export enum Driver {
     Http,
@@ -36,11 +40,19 @@ export class CommandWrapper<T> {
 }
 
 export class RequestWrapper<T> {
-    constructor(public command: string, public request: T) { }
+
+    public sequence: string;
+    constructor(public command: string, public request: T) {
+        this.sequence = uniqueId("__request");
+    }
+
+    public getResponse<TResponse>(stream: Observable<ResponseWrapper<T, TResponse>>) {
+        return stream.first(res => res.sequence === this.sequence).map(z => z.response);
+    }
 }
 
 export class ResponseWrapper<TRequest, TResponse> {
-    constructor(public command: string, public request: TRequest, public response: TResponse) { }
+    constructor(public command: string, public request: TRequest, public response: TResponse, public sequence: string) { }
 }
 
 export interface Context<TRequest, TResponse> {
@@ -55,10 +67,9 @@ export class OmnisharpClient implements OmniSharp.Api, OmniSharp.Events, IDriver
     private _responseStream = new Subject<ResponseWrapper<any, any>>();
     private _statusStream: Rx.Observable<OmnisharpClientStatus>;
     private _errorStream = new Subject<CommandWrapper<any>>();
+
     public get id() { return this._driver.id; }
-
-
-    public get serverPath() { return this._driver.serverPath ; }
+    public get serverPath() { return this._driver.serverPath; }
     public get projectPath() { return this._driver.projectPath; }
 
     constructor(private _options: OmnisharpClientOptions = {}) {
@@ -94,7 +105,65 @@ export class OmnisharpClient implements OmniSharp.Api, OmniSharp.Events, IDriver
             }))
             .sample(100);
 
+        this.setupRequestStreams();
         this.setupObservers();
+    }
+
+    private setupRequestStreams() {
+        var priorityRequests = new BehaviorSubject(0), priorityResponses = new BehaviorSubject(0);
+
+        var pauser = Observable.zip(
+            priorityRequests.where(x => x > 0),
+            priorityResponses.where(x => x > 0),
+            (requests, responses) => {
+                if (requests > 0 && responses === requests) {
+                    priorityRequests.onNext(0);
+                    priorityResponses.onNext(0);
+                    return true;
+                } else if (requests > 0) {
+                    return false;
+                }
+
+                return true;
+            }).startWith(true);
+
+        // These are operations that should wait until after
+        // we have executed all the current priority commands
+        var deferredQueue = this._requestStream
+            .where(z => !some(undeferredCommands, x => x === z.command))
+            .pausableBuffered(pauser)
+            .subscribe(request => this.handleResult(request));
+
+        // We just pass these operations through as soon as possible
+        var normalQueue = this._requestStream
+            .where(z => some(normalCommands, x => x === z.command))
+            .subscribe(request => this.handleResult(request))
+
+        // We must wait for these commands
+        // And these commands must run in order.
+        var priorityQueue = this._requestStream
+            .where(z => some(priorityCommands, x => x === z.command))
+            .doOnNext(() => priorityRequests.onNext(priorityRequests.getValue() + 1))
+            .controlled();
+
+        priorityQueue
+            .flatMap(request => this.handleResult(request))
+            .doOnNext(() => priorityResponses.onNext(priorityResponses.getValue() + 1))
+            .subscribe(() => priorityQueue.request(1));
+
+        priorityQueue.request(1);
+    }
+
+    private handleResult({command, request, sequence}: RequestWrapper<any>) {
+        var result = this._driver.request<any, any>(command, request);
+
+        result.subscribe((data) => {
+            this._responseStream.onNext(new ResponseWrapper(command, request, data, sequence));
+        }, (error) => {
+            this._errorStream.onNext(new CommandWrapper(command, error));
+        });
+
+        return result;
     }
 
     public connect(_options?: OmnisharpClientOptions) {
@@ -115,21 +184,16 @@ export class OmnisharpClient implements OmniSharp.Api, OmniSharp.Events, IDriver
 
             var sub = this.state.where(z => z === DriverState.Connected).subscribe(z => {
                 sub.dispose();
-                this._driver.request<TRequest, TResponse>(action, request).subscribe(z => response.onNext(z));
+                this.request<TRequest, TResponse>(action, request).subscribe(z => response.onNext(z));
             });
 
             return response;
         }
-        var result = this._driver.request<TRequest, TResponse>(action, request);
-        this._requestStream.onNext(new RequestWrapper(action, request));
-        var sub = result.subscribe((data) => {
-            sub.dispose();
-            this._responseStream.onNext(new ResponseWrapper(action, request, data));
-        }, (error) => {
-                sub.dispose();
-                this._errorStream.onNext(new CommandWrapper(action, error));
-            });
-        return result;
+
+        var wrapper = new RequestWrapper(action, request);
+        this._requestStream.onNext(wrapper);
+
+        return wrapper.getResponse<TResponse>(this._responseStream);
     }
 
     public get currentState() { return this._driver.currentState; }
