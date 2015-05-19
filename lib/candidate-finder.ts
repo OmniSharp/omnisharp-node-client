@@ -15,22 +15,9 @@ export function findCandidates(location: string, logger: ILogger) {
     var projectCandidates = searchForCandidates(location, projectFilesToSearch, logger);
     var scriptCsCandidates = searchForCandidates(location, scriptCsFilesToSearch, logger);
     return Observable.zip(solutionCandidates, projectCandidates, scriptCsCandidates, (solutionCandidates, projectCandidates, scriptCsCandidates) => {
-
-        var candidates = squashCandidates(solutionCandidates.concat(projectCandidates));
-        scriptCsCandidates = squashCandidates(scriptCsCandidates);
-
-        if (scriptCsCandidates.length && candidates.length) {
-            if (getMinCandidate(candidates) >= getMinCandidate(scriptCsCandidates)) {
-                candidates = candidates.concat(scriptCsCandidates);
-                candidates = _.sortBy(candidates, z => z.split(sep).length);
-            }
-            scriptCsCandidates = [];
-        }
-
-        if (scriptCsCandidates.length)
-            return scriptCsCandidates;
-
-        return candidates;
+        var candidates = squashCandidates(solutionCandidates.concat(projectCandidates)).concat(scriptCsCandidates);
+        return _.unique(candidates)
+            .map(z => z.split(sepRegex).join(sep));
     })
     .tapOnNext(candidates => logger.log(`Omni Project Candidates: Found ${candidates}`));
 }
@@ -38,7 +25,6 @@ export function findCandidates(location: string, logger: ILogger) {
 function squashCandidates(candidates: string[]) {
     var rootCandidateCount = getMinCandidate(candidates);
     var r = _.unique(candidates.filter(z => z.split(sepRegex).length === rootCandidateCount))
-        .map(z => z.split(sepRegex).join(sep));
     return r;
 }
 

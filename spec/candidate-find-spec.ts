@@ -98,7 +98,10 @@ describe("Candidate Finder", function() {
     it('z12 candidate find projects up the folder heirarchy if not found', function(done) {
         findCandidates(join(__dirname, 'fixture/candidate-finder/global-root-folder/csx'), console).subscribe(csx => {
             expect(csx).to.not.be.null;
-            expect(csx).to.be.deep.equal([join(__dirname, 'fixture/candidate-finder/global-root-folder')]);
+            expect(csx).to.be.deep.equal([
+                join(__dirname, 'fixture/candidate-finder/global-root-folder'),
+                join(__dirname, 'fixture/candidate-finder/global-root-folder/csx')
+            ]);
             done();
         });
     });
@@ -139,8 +142,8 @@ describe("Candidate Finder", function() {
         findCandidates(join(__dirname, 'fixture/candidate-finder/csx-root-folder/global'), console).subscribe(global => {
             expect(global).to.not.be.null;
             expect(global).to.be.deep.equal([
-                join(__dirname, 'fixture/candidate-finder/csx-root-folder'),
                 join(__dirname, 'fixture/candidate-finder/csx-root-folder/global'),
+                join(__dirname, 'fixture/candidate-finder/csx-root-folder'),
             ]);
             done();
         });
@@ -150,8 +153,8 @@ describe("Candidate Finder", function() {
         findCandidates(join(__dirname, 'fixture/candidate-finder/csx-root-folder/solution'), console).subscribe(solution => {
             expect(solution).to.not.be.null;
             expect(solution).to.be.deep.equal([
-                join(__dirname, 'fixture/candidate-finder/csx-root-folder'),
                 join(__dirname, 'fixture/candidate-finder/csx-root-folder/solution'),
+                join(__dirname, 'fixture/candidate-finder/csx-root-folder'),
             ]);
             done();
         });
@@ -168,7 +171,7 @@ describe("Candidate Finder", function() {
     it('z20 candidate find projects up the folder heirarchy if not found', function(done) {
         findCandidates(join(__dirname, 'fixture/candidate-finder/solution-root-folder/csx'), console).subscribe(csx => {
             expect(csx).to.not.be.null;
-            expect(csx).to.be.deep.equal([join(__dirname, 'fixture/candidate-finder/solution-root-folder')]);
+            expect(csx).to.be.deep.equal([join(__dirname, 'fixture/candidate-finder/solution-root-folder'), join(__dirname, 'fixture/candidate-finder/solution-root-folder/csx')]);
             done();
         });
     });
