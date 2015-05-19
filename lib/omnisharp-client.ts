@@ -1,7 +1,7 @@
 import {Observable, Subject, AsyncSubject, BehaviorSubject} from "rx";
 import {IDriver, IStaticDriver, IDriverOptions} from "./drivers";
 import {assert} from "chai";
-import {extend, uniqueId, some} from "lodash";
+import {extend, uniqueId, some, endsWith} from "lodash";
 import { findCandidates as candidateFinder} from "./candidate-finder";
 
 var normalCommands = [
@@ -48,8 +48,10 @@ export class CommandWrapper<T> {
 export class RequestWrapper<T> {
 
     public sequence: string;
+    public time: Date;
     constructor(public command: string, public request: T) {
         this.sequence = uniqueId("__request");
+        this.time = new Date();
     }
 
     public getResponse<TResponse>(stream: Observable<ResponseWrapper<T, TResponse>>) {
@@ -58,7 +60,18 @@ export class RequestWrapper<T> {
 }
 
 export class ResponseWrapper<TRequest, TResponse> {
-    constructor(public command: string, public request: TRequest, public response: TResponse, public sequence: string) { }
+    public request: TRequest;
+    public command: string;
+    public sequence: string;
+    public time: Date;
+    public responseTime: number;
+    constructor({request, command, sequence, time}: RequestWrapper<any>, public response: TResponse) {
+        this.request = request;
+        this.command = command;
+        this.sequence = sequence;
+        this.time = new Date();
+        this.responseTime = this.time.getTime() - time.getTime();
+    }
 }
 
 export interface Context<TRequest, TResponse> {
@@ -73,6 +86,7 @@ export class OmnisharpClient implements OmniSharp.Api, OmniSharp.Events, IDriver
     private _responseStream = new Subject<ResponseWrapper<any, any>>();
     private _statusStream: Rx.Observable<OmnisharpClientStatus>;
     private _errorStream = new Subject<CommandWrapper<any>>();
+    private _customEvents = new Subject<OmniSharp.Stdio.Protocol.EventPacket>();
 
     public get id() { return this._driver.id; }
     public get serverPath() { return this._driver.serverPath; }
@@ -110,6 +124,21 @@ export class OmnisharpClient implements OmniSharp.Api, OmniSharp.Events, IDriver
                 hasOutgoingRequests: this._driver.outstandingRequests > 0
             }))
             .sample(100);
+
+        if (this._options.debug) {
+            this._responseStream.subscribe(wrapper => {
+                // log our complete response time
+                this._customEvents.onNext({
+                    Event: "log",
+                    Body: {
+                        Message: `/${wrapper.command}  ${wrapper.responseTime}ms (round trip)`,
+                        LogLevel: "INFORMATION"
+                    },
+                    Seq: -1,
+                    Type: "log"
+                })
+            });
+        }
 
         this.setupRequestStreams();
         this.setupObservers();
@@ -167,13 +196,13 @@ export class OmnisharpClient implements OmniSharp.Api, OmniSharp.Events, IDriver
         priorityQueue.request(1);
     }
 
-    private handleResult({command, request, sequence}: RequestWrapper<any>) {
-        var result = this._driver.request<any, any>(command, request);
+    private handleResult(wrapper: RequestWrapper<any>) {
+        var result = this._driver.request<any, any>(wrapper.command, wrapper.request);
 
         result.subscribe((data) => {
-            this._responseStream.onNext(new ResponseWrapper(command, request, data, sequence));
+            this._responseStream.onNext(new ResponseWrapper(wrapper, data));
         }, (error) => {
-            this._errorStream.onNext(new CommandWrapper(command, error));
+            this._errorStream.onNext(new CommandWrapper(wrapper.command, error));
         });
 
         return result;
@@ -210,7 +239,7 @@ export class OmnisharpClient implements OmniSharp.Api, OmniSharp.Events, IDriver
     }
 
     public get currentState() { return this._driver.currentState; }
-    public get events(): Rx.Observable<OmniSharp.Stdio.Protocol.EventPacket> { return this._driver.events; }
+    public get events(): Rx.Observable<OmniSharp.Stdio.Protocol.EventPacket> { return Observable.merge(this._customEvents, this._driver.events); }
     public get commands(): Rx.Observable<OmniSharp.Stdio.Protocol.ResponsePacket> { return this._driver.commands; }
     public get state(): Rx.Observable<DriverState> { return this._driver.state; }
     public get outstandingRequests() { return this._driver.outstandingRequests; }
@@ -563,21 +592,21 @@ export class OmnisharpClient implements OmniSharp.Api, OmniSharp.Events, IDriver
 
     public observeCurrentfilemembersasflat: Rx.Observable<Context<OmniSharp.Models.Request, any>>;
 
-    public typelookup(request: OmniSharp.Models.TypeLookupRequest): Rx.Observable<any> {
+    public typelookup(request: OmniSharp.Models.TypeLookupRequest): Rx.Observable<OmniSharp.Models.TypeLookupResponse> {
         assert.isNotNull(request.FileName, 'request.FileName must not be null');
         assert.isNotNull(request.Line, 'request.Line must not be null');
         assert.isAbove(request.Line, 0, 'request.Line must be greater than 0.');
         assert.isNotNull(request.Column, 'request.Column must not be null');
         assert.isAbove(request.Column, 0, 'request.Column must be greater than 0.');
 
-        return this.request<OmniSharp.Models.TypeLookupRequest, any>("typelookup", request);
+        return this.request<OmniSharp.Models.TypeLookupRequest, OmniSharp.Models.TypeLookupResponse>("typelookup", request);
     }
 
     public typelookupPromise(request: OmniSharp.Models.TypeLookupRequest) {
         return this.typelookup(request).toPromise();
     }
 
-    public observeTypelookup: Rx.Observable<Context<OmniSharp.Models.TypeLookupRequest, any>>;
+    public observeTypelookup: Rx.Observable<Context<OmniSharp.Models.TypeLookupRequest, OmniSharp.Models.TypeLookupResponse>>;
 
     public filesChanged(request: OmniSharp.Models.Request[]): Rx.Observable<boolean> {
         assert.isNotNull(request, 'request must not be null');

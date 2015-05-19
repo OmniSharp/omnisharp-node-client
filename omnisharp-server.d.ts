@@ -339,9 +339,9 @@ declare module OmniSharp {
         currentfilemembersasflat(request: OmniSharp.Models.Request): Rx.Observable<OmniSharp.Models.QuickFix[]>;
         currentfilemembersasflatPromise(request: OmniSharp.Models.Request): Rx.IPromise<OmniSharp.Models.QuickFix[]>;
         observeCurrentfilemembersasflat: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFix[]>>;
-        typelookup(request: OmniSharp.Models.TypeLookupRequest): Rx.Observable<any>;
-        typelookupPromise(request: OmniSharp.Models.TypeLookupRequest): Rx.IPromise<any>;
-        observeTypelookup: Rx.Observable<Context<OmniSharp.Models.TypeLookupRequest, any>>;
+        typelookup(request: OmniSharp.Models.TypeLookupRequest): Rx.Observable<OmniSharp.Models.TypeLookupResponse>;
+        typelookupPromise(request: OmniSharp.Models.TypeLookupRequest): Rx.IPromise<OmniSharp.Models.TypeLookupResponse>;
+        observeTypelookup: Rx.Observable<Context<OmniSharp.Models.TypeLookupRequest, OmniSharp.Models.TypeLookupResponse>>;
         filesChanged(request: OmniSharp.Models.Request[]): Rx.Observable<boolean>;
         filesChangedPromise(request: OmniSharp.Models.Request[]): Rx.IPromise<boolean>;
         observeFilesChanged: Rx.Observable<Context<OmniSharp.Models.Request[], boolean>>;
