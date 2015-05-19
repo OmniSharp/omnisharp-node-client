@@ -69,8 +69,8 @@ describe("Omnisharp Local - Stdio", function() {
                 expect(server.events).to.be.not.null;
                 expect(server.state).to.be.not.null;
                 expect(server.outstandingRequests).to.be.not.null;
-                done();
                 sub.dispose();
+                done();
             });
             server.connect({});
         })

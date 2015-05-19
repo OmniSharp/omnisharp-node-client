@@ -17,10 +17,11 @@ declare module OmnisharpClient {
     export interface IDriverOptions {
         projectPath?: string;
         remote?: boolean;
-        debug?: boolean;
-        serverPath?: string;
+        debug?: boolean; // Start the debug server? (Run from source, to attach with a debug host like VS)
+        serverPath?: string; // Start a given server, perhaps in a different directory.
         findProject?: boolean; // Should try and find the project using the project finder
         logger?: ILogger;
+        timeout?: number; // timeout in seconds
     }
     export interface OmnisharpClientOptions extends IDriverOptions {
         driver?: Driver;

@@ -15,6 +15,7 @@ export interface IDriverOptions {
     serverPath?: string; // Start a given server, perhaps in a different directory.
     findProject?: boolean; // Should try and find the project using the project finder
     logger?: ILogger;
+    timeout?: number; // timeout in seconds
 }
 
 export interface IDriver {
