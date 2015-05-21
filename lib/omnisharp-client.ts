@@ -1,7 +1,7 @@
 import {Observable, Subject, AsyncSubject, BehaviorSubject} from "rx";
 import {IDriver, IStaticDriver, IDriverOptions} from "./drivers";
 import {assert} from "chai";
-import {extend, uniqueId, some, endsWith} from "lodash";
+import {extend, uniqueId, some, endsWith, isObject, clone} from "lodash";
 import { findCandidates as candidateFinder} from "./candidate-finder";
 
 var normalCommands = [
@@ -46,12 +46,19 @@ export class CommandWrapper<T> {
 }
 
 export class RequestWrapper<T> {
-
+    public request: T;
     public sequence: string;
     public time: Date;
-    constructor(public command: string, public request: T) {
+
+    constructor(public command: string, request: T) {
+        if (isObject(request)) {
+            this.request  = Object.freeze(clone(request));
+        } else {
+            this.request = request;
+        }
         this.sequence = uniqueId("__request");
         this.time = new Date();
+        Object.freeze(this);
     }
 
     public getResponse<TResponse>(stream: Observable<ResponseWrapper<T, TResponse>>) {
@@ -61,16 +68,24 @@ export class RequestWrapper<T> {
 
 export class ResponseWrapper<TRequest, TResponse> {
     public request: TRequest;
+    public response: TResponse;
     public command: string;
     public sequence: string;
     public time: Date;
     public responseTime: number;
-    constructor({request, command, sequence, time}: RequestWrapper<any>, public response: TResponse) {
+    constructor({request, command, sequence, time}: RequestWrapper<any>, response: TResponse) {
+        if (isObject(response)) {
+            this.response  = Object.freeze(response);
+        } else {
+            this.response = response;
+        }
+
         this.request = request;
         this.command = command;
         this.sequence = sequence;
         this.time = new Date();
         this.responseTime = this.time.getTime() - time.getTime();
+        Object.freeze(this);
     }
 }
 
@@ -97,6 +112,14 @@ export class OmnisharpClient implements OmniSharp.Api, OmniSharp.Events, IDriver
 
         var driverFactory: IStaticDriver = require('./drivers/' + Driver[driver].toLowerCase());
         this._driver = new driverFactory(_options);
+        this._events = Observable.merge(this._customEvents, this._driver.events)
+                                    .map(event => {
+                                        if (isObject(event.Body)) {
+                                            Object.freeze(event.Body);
+                                        }
+                                        return Object.freeze(event);
+                                    })
+                                    .share();
 
         var requestsPerSecond = this._requestStream
             .bufferWithTime(1000, 100)
@@ -123,7 +146,9 @@ export class OmnisharpClient implements OmniSharp.Api, OmniSharp.Events, IDriver
                 outgoingRequests: this._driver.outstandingRequests,
                 hasOutgoingRequests: this._driver.outstandingRequests > 0
             }))
-            .sample(100);
+            .sample(100)
+            .map(Object.freeze)
+            .share();
 
         if (this._options.debug) {
             this._responseStream.subscribe(wrapper => {
@@ -239,7 +264,8 @@ export class OmnisharpClient implements OmniSharp.Api, OmniSharp.Events, IDriver
     }
 
     public get currentState() { return this._driver.currentState; }
-    public get events(): Rx.Observable<OmniSharp.Stdio.Protocol.EventPacket> { return Observable.merge(this._customEvents, this._driver.events); }
+    private _events: Rx.Observable<OmniSharp.Stdio.Protocol.EventPacket>;
+    public get events(): Rx.Observable<OmniSharp.Stdio.Protocol.EventPacket> { return this._events; }
     public get commands(): Rx.Observable<OmniSharp.Stdio.Protocol.ResponsePacket> { return this._driver.commands; }
     public get state(): Rx.Observable<DriverState> { return this._driver.state; }
     public get outstandingRequests() { return this._driver.outstandingRequests; }
@@ -250,42 +276,42 @@ export class OmnisharpClient implements OmniSharp.Api, OmniSharp.Events, IDriver
     public get errors(): Rx.Observable<CommandWrapper<any>> { return this._errorStream; }
 
     private setupObservers() {
-        this.observeUpdatebuffer = this._responseStream.filter(z => z.command == "updatebuffer");
-        this.observeChangebuffer = this._responseStream.filter(z => z.command == "changebuffer");
-        this.observeCodecheck = this._responseStream.filter(z => z.command == "codecheck");
-        this.observeFormatAfterKeystroke = this._responseStream.filter(z => z.command == "formatafterkeystroke");
-        this.observeFormatRange = this._responseStream.filter(z => z.command == "formatrange");
-        this.observeCodeformat = this._responseStream.filter(z => z.command == "codeformat");
-        this.observeAutocomplete = this._responseStream.filter(z => z.command == "autocomplete");
-        this.observeFindimplementations = this._responseStream.filter(z => z.command == "findimplementations");
-        this.observeFindsymbols = this._responseStream.filter(z => z.command == "findsymbols");
-        this.observeFindusages = this._responseStream.filter(z => z.command == "findusages");
-        this.observeGotodefinition = this._responseStream.filter(z => z.command == "gotodefinition");
-        this.observeNavigateup = this._responseStream.filter(z => z.command == "navigateup");
-        this.observeNavigatedown = this._responseStream.filter(z => z.command == "navigatedown");
-        this.observeRename = this._responseStream.filter(z => z.command == "rename");
-        this.observeSignatureHelp = this._responseStream.filter(z => z.command == "signaturehelp");
-        this.observeCheckalivestatus = this._responseStream.filter(z => z.command == "checkalivestatus");
-        this.observeCheckreadystatus = this._responseStream.filter(z => z.command == "checkreadystatus")
-        this.observeCurrentfilemembersastree = this._responseStream.filter(z => z.command == "currentfilemembersastree");
-        this.observeCurrentfilemembersasflat = this._responseStream.filter(z => z.command == "currentfilemembersasflat");
-        this.observeTypelookup = this._responseStream.filter(z => z.command == "typelookup");
-        this.observeFilesChanged = this._responseStream.filter(z => z.command == "fileschanged");
-        this.observeProjects = this._responseStream.filter(z => z.command == "projects");
-        this.observeProject = this._responseStream.filter(z => z.command == "project");
-        this.observeGetcodeactions = this._responseStream.filter(z => z.command == "getcodeactions");
-        this.observeRuncodeaction = this._responseStream.filter(z => z.command == "runcodeaction");
-        this.observeGettestcontext = this._responseStream.filter(z => z.command == "gettestcontext");
+        this.observeUpdatebuffer = this._responseStream.filter(z => z.command == "updatebuffer").share();
+        this.observeChangebuffer = this._responseStream.filter(z => z.command == "changebuffer").share();
+        this.observeCodecheck = this._responseStream.filter(z => z.command == "codecheck").share();
+        this.observeFormatAfterKeystroke = this._responseStream.filter(z => z.command == "formatafterkeystroke").share();
+        this.observeFormatRange = this._responseStream.filter(z => z.command == "formatrange").share();
+        this.observeCodeformat = this._responseStream.filter(z => z.command == "codeformat").share();
+        this.observeAutocomplete = this._responseStream.filter(z => z.command == "autocomplete").share();
+        this.observeFindimplementations = this._responseStream.filter(z => z.command == "findimplementations").share();
+        this.observeFindsymbols = this._responseStream.filter(z => z.command == "findsymbols").share();
+        this.observeFindusages = this._responseStream.filter(z => z.command == "findusages").share();
+        this.observeGotodefinition = this._responseStream.filter(z => z.command == "gotodefinition").share();
+        this.observeNavigateup = this._responseStream.filter(z => z.command == "navigateup").share();
+        this.observeNavigatedown = this._responseStream.filter(z => z.command == "navigatedown").share();
+        this.observeRename = this._responseStream.filter(z => z.command == "rename").share();
+        this.observeSignatureHelp = this._responseStream.filter(z => z.command == "signaturehelp").share();
+        this.observeCheckalivestatus = this._responseStream.filter(z => z.command == "checkalivestatus").share();
+        this.observeCheckreadystatus = this._responseStream.filter(z => z.command == "checkreadystatus").share();
+        this.observeCurrentfilemembersastree = this._responseStream.filter(z => z.command == "currentfilemembersastree").share();
+        this.observeCurrentfilemembersasflat = this._responseStream.filter(z => z.command == "currentfilemembersasflat").share();
+        this.observeTypelookup = this._responseStream.filter(z => z.command == "typelookup").share();
+        this.observeFilesChanged = this._responseStream.filter(z => z.command == "fileschanged").share();
+        this.observeProjects = this._responseStream.filter(z => z.command == "projects").share();
+        this.observeProject = this._responseStream.filter(z => z.command == "project").share();
+        this.observeGetcodeactions = this._responseStream.filter(z => z.command == "getcodeactions").share();
+        this.observeRuncodeaction = this._responseStream.filter(z => z.command == "runcodeaction").share();
+        this.observeGettestcontext = this._responseStream.filter(z => z.command == "gettestcontext").share();
 
 
-        this.projectAdded = this._driver.events.filter(z => z.Event === "ProjectAdded").map(z => <OmniSharp.Models.ProjectInformationResponse>z.Body);
-        this.projectChanged = this._driver.events.filter(z => z.Event === "ProjectChanged").map(z => <OmniSharp.Models.ProjectInformationResponse>z.Body);
-        this.projectRemoved = this._driver.events.filter(z => z.Event === "ProjectRemoved").map(z => <OmniSharp.Models.ProjectInformationResponse>z.Body);
-        this.error = this._driver.events.filter(z => z.Event === "Error").map(z => <OmniSharp.Models.ErrorMessage>z.Body);
-        this.msBuildProjectDiagnostics = this._driver.events.filter(z => z.Event === "MsBuildProjectDiagnostics").map(z => <OmniSharp.Models.MSBuildProjectDiagnostics>z.Body);;
-        this.packageRestoreStarted = this._driver.events.filter(z => z.Event === "PackageRestoreStarted").map(z => <OmniSharp.Models.PackageRestoreMessage>z.Body);;
-        this.packageRestoreFinished = this._driver.events.filter(z => z.Event === "PackageRestoreFinished").map(z => <OmniSharp.Models.PackageRestoreMessage>z.Body);;
-        this.unresolvedDependencies = this._driver.events.filter(z => z.Event === "UnresolvedDependencies").map(z => <OmniSharp.Models.UnresolvedDependenciesMessage>z.Body);;
+        this.projectAdded = this._driver.events.filter(z => z.Event === "ProjectAdded").map(z => <OmniSharp.Models.ProjectInformationResponse>z.Body).share();
+        this.projectChanged = this._driver.events.filter(z => z.Event === "ProjectChanged").map(z => <OmniSharp.Models.ProjectInformationResponse>z.Body).share();
+        this.projectRemoved = this._driver.events.filter(z => z.Event === "ProjectRemoved").map(z => <OmniSharp.Models.ProjectInformationResponse>z.Body).share();
+        this.error = this._driver.events.filter(z => z.Event === "Error").map(z => <OmniSharp.Models.ErrorMessage>z.Body).share();
+        this.msBuildProjectDiagnostics = this._driver.events.filter(z => z.Event === "MsBuildProjectDiagnostics").map(z => <OmniSharp.Models.MSBuildProjectDiagnostics>z.Body).share();
+        this.packageRestoreStarted = this._driver.events.filter(z => z.Event === "PackageRestoreStarted").map(z => <OmniSharp.Models.PackageRestoreMessage>z.Body).share();
+        this.packageRestoreFinished = this._driver.events.filter(z => z.Event === "PackageRestoreFinished").map(z => <OmniSharp.Models.PackageRestoreMessage>z.Body).share();
+        this.unresolvedDependencies = this._driver.events.filter(z => z.Event === "UnresolvedDependencies").map(z => <OmniSharp.Models.UnresolvedDependenciesMessage>z.Body).share();
     }
 
     public updatebuffer(request: OmniSharp.Models.Request): Rx.Observable<any> {
