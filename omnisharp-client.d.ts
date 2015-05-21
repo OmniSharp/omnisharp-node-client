@@ -9,6 +9,7 @@ declare module OmnisharpClient {
         Disconnected = 0,
         Connecting = 1,
         Connected = 2,
+        Error = 3,
     }
     export interface ILogger {
         log(...values: any[]);
