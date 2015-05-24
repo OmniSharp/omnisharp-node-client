@@ -275,6 +275,11 @@ declare module OmniSharp {
         response: TResponse;
     }
 
+    interface RequestOptions
+    {
+        silent?: boolean;
+    }
+
     interface Api {
         updatebuffer(request: OmniSharp.Models.Request, options?: RequestOptions): Rx.Observable<any>;
         updatebufferPromise(request: OmniSharp.Models.Request, options?: RequestOptions): Rx.IPromise<any>;

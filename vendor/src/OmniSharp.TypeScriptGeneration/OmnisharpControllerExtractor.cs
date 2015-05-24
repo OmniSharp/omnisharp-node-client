@@ -16,11 +16,12 @@ namespace OmniSharp.TypeScriptGeneration
             var methods = "        " + string.Join("\n        ", GetInterfaceMethods()) + "\n";
             var events = "        " + string.Join("\n        ", GetEvents()) + "\n";
 
-            yield return $"declare module {nameof(OmniSharp)} {{\n{ContextInterface}    interface Api {{\n{methods}    }}\n}}";
+            yield return $"declare module {nameof(OmniSharp)} {{\n{ContextInterface}{RequestOptionsInterface}    interface Api {{\n{methods}    }}\n}}";
             yield return $"declare module {nameof(OmniSharp)} {{\n    interface Events {{\n{events}    }}\n}}";
         }
 
         private static string ContextInterface = "    interface Context<TRequest, TResponse>\n    {\n        request: TRequest;\n        response: TResponse;\n    }\n\n";
+        private static string RequestOptionsInterface = "    interface RequestOptions\n    {\n        silent?: boolean;\n    }\n\n";
 
         private static IEnumerable<string> GetInterfaceMethods()
         {

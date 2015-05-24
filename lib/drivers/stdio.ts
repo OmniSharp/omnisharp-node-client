@@ -1,5 +1,5 @@
-import {IDriver, IDriverOptions, ILogger} from "../drivers";
-import {DriverState} from "../omnisharp-client";
+import {IDriver, IDriverOptions, ILogger} from "../interfaces";
+import {DriverState} from "../enums";
 import {spawn, exec, ChildProcess} from "child_process";
 import * as readline from "readline";
 import {Observable, Observer, Subject, AsyncSubject} from "rx";
