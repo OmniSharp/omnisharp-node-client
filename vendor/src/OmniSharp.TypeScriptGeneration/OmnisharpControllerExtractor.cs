@@ -39,13 +39,13 @@ namespace OmniSharp.TypeScriptGeneration
 
                 if (method.RequestType != null)
                 {
-                    yield return $"{method.Action}(request: {requestType}): Rx.Observable<{returnType}>;";
-                    yield return $"{method.Action}Promise(request: {requestType}): Rx.IPromise<{returnType}>;";
+                    yield return $"{method.Action}(request: {requestType}, options?: RequestOptions): Rx.Observable<{returnType}>;";
+                    yield return $"{method.Action}Promise(request: {requestType}, options?: RequestOptions): Rx.IPromise<{returnType}>;";
                 }
                 else
                 {
-                    yield return $"{method.Action}(): Rx.Observable<{returnType}>;";
-                    yield return $"{method.Action}Promise(): Rx.IPromise<{returnType}>;";
+                    yield return $"{method.Action}(): Rx.Observable<{returnType}, options?: RequestOptions>;";
+                    yield return $"{method.Action}Promise(): Rx.IPromise<{returnType}, options?: RequestOptions>;";
                 }
             }
         }

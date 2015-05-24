@@ -41,6 +41,10 @@ export interface OmnisharpClientStatus {
     hasOutgoingRequests: boolean;
 }
 
+export interface RequestOptions {
+    silent?: boolean;
+}
+
 export class CommandWrapper<T> {
     constructor(public command: string, public value: T) { }
 }
@@ -49,13 +53,16 @@ export class RequestWrapper<T> {
     public request: T;
     public sequence: string;
     public time: Date;
+    public silent: boolean;
 
-    constructor(public command: string, request: T) {
+    constructor(public command: string, request: T, {silent}: RequestOptions) {
         if (isObject(request)) {
-            this.request  = Object.freeze(clone(request));
+            this.request = Object.freeze(clone(request));
         } else {
             this.request = request;
         }
+
+        this.silent = !!silent;
         this.sequence = uniqueId("__request");
         this.time = new Date();
         Object.freeze(this);
@@ -73,9 +80,11 @@ export class ResponseWrapper<TRequest, TResponse> {
     public sequence: string;
     public time: Date;
     public responseTime: number;
-    constructor({request, command, sequence, time}: RequestWrapper<any>, response: TResponse) {
+    public silent: boolean;
+
+    constructor({request, command, sequence, time, silent}: RequestWrapper<any>, response: TResponse) {
         if (isObject(response)) {
-            this.response  = Object.freeze(response);
+            this.response = Object.freeze(response);
         } else {
             this.response = response;
         }
@@ -84,6 +93,7 @@ export class ResponseWrapper<TRequest, TResponse> {
         this.command = command;
         this.sequence = sequence;
         this.time = new Date();
+        this.silent = !!silent;
         this.responseTime = this.time.getTime() - time.getTime();
         Object.freeze(this);
     }
@@ -113,13 +123,13 @@ export class OmnisharpClient implements OmniSharp.Api, OmniSharp.Events, IDriver
         var driverFactory: IStaticDriver = require('./drivers/' + Driver[driver].toLowerCase());
         this._driver = new driverFactory(_options);
         this._events = Observable.merge(this._customEvents, this._driver.events)
-                                    .map(event => {
-                                        if (isObject(event.Body)) {
-                                            Object.freeze(event.Body);
-                                        }
-                                        return Object.freeze(event);
-                                    })
-                                    .share();
+            .map(event => {
+                if (isObject(event.Body)) {
+                    Object.freeze(event.Body);
+                }
+                return Object.freeze(event);
+            })
+            .share();
 
         var requestsPerSecond = this._requestStream
             .bufferWithTime(1000, 100)
@@ -244,7 +254,9 @@ export class OmnisharpClient implements OmniSharp.Api, OmniSharp.Events, IDriver
         this._driver.disconnect();
     }
 
-    public request<TRequest, TResponse>(action: string, request?: TRequest): Rx.Observable<TResponse> {
+    public request<TRequest, TResponse>(action: string, request: TRequest, options?: RequestOptions): Rx.Observable<TResponse> {
+        if (!options) options = <RequestOptions>{};
+
         // Handle disconnected requests
         if (this.currentState !== DriverState.Connected && this.currentState !== DriverState.Error) {
             var response = new AsyncSubject<TResponse>();
@@ -257,7 +269,7 @@ export class OmnisharpClient implements OmniSharp.Api, OmniSharp.Events, IDriver
             return response;
         }
 
-        var wrapper = new RequestWrapper(action, request);
+        var wrapper = new RequestWrapper(action, request, options);
         this._requestStream.onNext(wrapper);
 
         return wrapper.getResponse<TResponse>(this._responseStream);
@@ -276,33 +288,33 @@ export class OmnisharpClient implements OmniSharp.Api, OmniSharp.Events, IDriver
     public get errors(): Rx.Observable<CommandWrapper<any>> { return this._errorStream; }
 
     private setupObservers() {
-        this.observeUpdatebuffer = this._responseStream.filter(z => z.command == "updatebuffer").share();
-        this.observeChangebuffer = this._responseStream.filter(z => z.command == "changebuffer").share();
-        this.observeCodecheck = this._responseStream.filter(z => z.command == "codecheck").share();
-        this.observeFormatAfterKeystroke = this._responseStream.filter(z => z.command == "formatafterkeystroke").share();
-        this.observeFormatRange = this._responseStream.filter(z => z.command == "formatrange").share();
-        this.observeCodeformat = this._responseStream.filter(z => z.command == "codeformat").share();
-        this.observeAutocomplete = this._responseStream.filter(z => z.command == "autocomplete").share();
-        this.observeFindimplementations = this._responseStream.filter(z => z.command == "findimplementations").share();
-        this.observeFindsymbols = this._responseStream.filter(z => z.command == "findsymbols").share();
-        this.observeFindusages = this._responseStream.filter(z => z.command == "findusages").share();
-        this.observeGotodefinition = this._responseStream.filter(z => z.command == "gotodefinition").share();
-        this.observeNavigateup = this._responseStream.filter(z => z.command == "navigateup").share();
-        this.observeNavigatedown = this._responseStream.filter(z => z.command == "navigatedown").share();
-        this.observeRename = this._responseStream.filter(z => z.command == "rename").share();
-        this.observeSignatureHelp = this._responseStream.filter(z => z.command == "signaturehelp").share();
-        this.observeCheckalivestatus = this._responseStream.filter(z => z.command == "checkalivestatus").share();
-        this.observeCheckreadystatus = this._responseStream.filter(z => z.command == "checkreadystatus").share();
-        this.observeCurrentfilemembersastree = this._responseStream.filter(z => z.command == "currentfilemembersastree").share();
-        this.observeCurrentfilemembersasflat = this._responseStream.filter(z => z.command == "currentfilemembersasflat").share();
-        this.observeTypelookup = this._responseStream.filter(z => z.command == "typelookup").share();
-        this.observeFilesChanged = this._responseStream.filter(z => z.command == "fileschanged").share();
-        this.observeProjects = this._responseStream.filter(z => z.command == "projects").share();
-        this.observeProject = this._responseStream.filter(z => z.command == "project").share();
-        this.observeGetcodeactions = this._responseStream.filter(z => z.command == "getcodeactions").share();
-        this.observeRuncodeaction = this._responseStream.filter(z => z.command == "runcodeaction").share();
-        this.observeGettestcontext = this._responseStream.filter(z => z.command == "gettestcontext").share();
-
+        var observerStream = this._responseStream.filter(z => !z.silent);
+        this.observeUpdatebuffer = observerStream.filter(z => z.command == "updatebuffer").share();
+        this.observeChangebuffer = observerStream.filter(z => z.command == "changebuffer").share();
+        this.observeCodecheck = observerStream.filter(z => z.command == "codecheck").share();
+        this.observeFormatAfterKeystroke = observerStream.filter(z => z.command == "formatafterkeystroke").share();
+        this.observeFormatRange = observerStream.filter(z => z.command == "formatrange").share();
+        this.observeCodeformat = observerStream.filter(z => z.command == "codeformat").share();
+        this.observeAutocomplete = observerStream.filter(z => z.command == "autocomplete").share();
+        this.observeFindimplementations = observerStream.filter(z => z.command == "findimplementations").share();
+        this.observeFindsymbols = observerStream.filter(z => z.command == "findsymbols").share();
+        this.observeFindusages = observerStream.filter(z => z.command == "findusages").share();
+        this.observeGotodefinition = observerStream.filter(z => z.command == "gotodefinition").share();
+        this.observeNavigateup = observerStream.filter(z => z.command == "navigateup").share();
+        this.observeNavigatedown = observerStream.filter(z => z.command == "navigatedown").share();
+        this.observeRename = observerStream.filter(z => z.command == "rename").share();
+        this.observeSignatureHelp = observerStream.filter(z => z.command == "signaturehelp").share();
+        this.observeCheckalivestatus = observerStream.filter(z => z.command == "checkalivestatus").share();
+        this.observeCheckreadystatus = observerStream.filter(z => z.command == "checkreadystatus").share();
+        this.observeCurrentfilemembersastree = observerStream.filter(z => z.command == "currentfilemembersastree").share();
+        this.observeCurrentfilemembersasflat = observerStream.filter(z => z.command == "currentfilemembersasflat").share();
+        this.observeTypelookup = observerStream.filter(z => z.command == "typelookup").share();
+        this.observeFilesChanged = observerStream.filter(z => z.command == "fileschanged").share();
+        this.observeProjects = observerStream.filter(z => z.command == "projects").share();
+        this.observeProject = observerStream.filter(z => z.command == "project").share();
+        this.observeGetcodeactions = observerStream.filter(z => z.command == "getcodeactions").share();
+        this.observeRuncodeaction = observerStream.filter(z => z.command == "runcodeaction").share();
+        this.observeGettestcontext = observerStream.filter(z => z.command == "gettestcontext").share();
 
         this.projectAdded = this._driver.events.filter(z => z.Event === "ProjectAdded").map(z => <OmniSharp.Models.ProjectInformationResponse>z.Body).share();
         this.projectChanged = this._driver.events.filter(z => z.Event === "ProjectChanged").map(z => <OmniSharp.Models.ProjectInformationResponse>z.Body).share();
