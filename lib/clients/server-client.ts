@@ -69,7 +69,7 @@ export class ServerClient implements OmniSharp.Api, OmniSharp.Events, IDriver {
                 outgoingRequests: this._driver.outstandingRequests,
                 hasOutgoingRequests: this._driver.outstandingRequests > 0
             }))
-            .sample(100)
+            .sample(250)
             .map(Object.freeze)
             .share();
 

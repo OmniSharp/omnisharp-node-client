@@ -9,10 +9,8 @@ export class CompositeClient implements OmniSharp.Events {
     private _keys: string[];
     private _clients: ServerClient[] = [];
 
-    constructor(clients: ServerClient[]) {
-        for (var client of clients) {
-            this.addObserversForClient(client);
-        }
+    constructor(clients?: ServerClient[]) {
+        _.each(clients, client => this.addObserversForClient(client));
     }
 
     public add(client: ServerClient) {
