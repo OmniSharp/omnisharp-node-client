@@ -18,6 +18,7 @@
     ],
     "files": [
         "./lib/candidate-finder.ts",
+        "./lib/composite-client.ts",
         "./lib/drivers.ts",
         "./lib/drivers/http.ts",
         "./lib/drivers/stdio.ts",
@@ -25,6 +26,7 @@
         "./lib/omnisharp-client.ts",
         "./lib/omnisharp-path.ts",
         "./lib/project-finder.ts",
+        "./lib/rx/CompositeObservable.ts",
         "./spec/candidate-find-spec.ts",
         "./spec/omnisharp-client-commands.ts",
         "./spec/omnisharp-client-spec.ts",

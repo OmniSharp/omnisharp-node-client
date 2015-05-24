@@ -11,11 +11,13 @@ namespace OmniSharp.TypeScriptGeneration
 {
     public static class OmnisharpControllerExtractor
     {
-        public static string GetInterface()
+        public static IEnumerable<string> GetInterface()
         {
             var methods = "        " + string.Join("\n        ", GetInterfaceMethods()) + "\n";
+            var events = "        " + string.Join("\n        ", GetEvents()) + "\n";
 
-            return $"declare module {nameof(OmniSharp)} {{\n{ContextInterface}    interface Api {{\n{methods}    }}\n}}";
+            yield return $"declare module {nameof(OmniSharp)} {{\n{ContextInterface}    interface Api {{\n{methods}    }}\n}}";
+            yield return $"declare module {nameof(OmniSharp)} {{\n    interface Events {{\n{events}    }}\n}}";
         }
 
         private static string ContextInterface = "    interface Context<TRequest, TResponse>\n    {\n        request: TRequest;\n        response: TResponse;\n    }\n\n";
@@ -39,12 +41,36 @@ namespace OmniSharp.TypeScriptGeneration
                 {
                     yield return $"{method.Action}(request: {requestType}): Rx.Observable<{returnType}>;";
                     yield return $"{method.Action}Promise(request: {requestType}): Rx.IPromise<{returnType}>;";
-                    yield return $"{observeName}: Rx.Observable<Context<{requestType}, {returnType}>>;";
                 }
                 else
                 {
                     yield return $"{method.Action}(): Rx.Observable<{returnType}>;";
                     yield return $"{method.Action}Promise(): Rx.IPromise<{returnType}>;";
+                }
+            }
+        }
+
+        private static IEnumerable<string> GetEvents()
+        {
+            var methods = GetControllerMethods().ToArray();
+            foreach (var method in methods)
+            {
+                var observeName = $"observe{method.Action[0].ToString().ToUpper()}{method.Action.Substring(1)}";
+
+                var requestType = method.RequestType;
+                if (method.RequestArray)
+                    requestType += "[]";
+
+                var returnType = method.ReturnType;
+                if (method.ReturnArray)
+                    returnType += "[]";
+
+                if (method.RequestType != null)
+                {
+                    yield return $"{observeName}: Rx.Observable<Context<{requestType}, {returnType}>>;";
+                }
+                else
+                {
                     yield return $"{observeName}: Rx.Observable<{returnType}>;";
                 }
             }
