@@ -4,47 +4,50 @@ import {ServerClient} from "./server-client";
 import {CompositeObservable, ICompositeObservable} from "../rx/CompositeObservable";
 interface Context<TRequest, TResponse> extends OmniSharp.Context<TRequest, TResponse> {}
 
-export class CompositeClient implements OmniSharp.Events {
-    static clientKeys = _.keys(ServerClient.prototype);
-    private _keys: string[];
-    //private _clients: ServerClient[] = [];
+export interface CompositeObservable<T> extends ICompositeObservable<T> {}
+export class CompositeClient<T extends ServerClient> implements OmniSharp.Events {
+    private _keys: string[] = [];
+    //private _clients: T[] = [];
 
-    constructor(clients?: ServerClient[]) {
+    constructor(clients?: T[]) {
         _.each(clients, client => this.addObserversForClient(client));
     }
 
-    public add(client: ServerClient) {
+    public add(client: T) {
         this.addObserversForClient(client);
     }
 
-    public remove(client: ServerClient) {
+    public remove(client: T) {
         this.removeObserversForClient(client);
     }
 
-    public removeAll(client: ServerClient) {
-        _(this._keys).each(key => this[key].removeAll());
+    public removeAll() {
+        _.each(this._keys, key =>
+            this[key].removeAll());
     }
 
-    private setupKeys(client: ServerClient) {
+    private setupKeys(client: T) {
         _.each(client, (value: any, key) => {
-            if (value.subscribe && _.contains(CompositeClient.clientKeys, key)) { // assume its an observable
+            if (value.subscribe && _.contains(_.keys(client), key) && !_.startsWith(key, '_')) { // assume its an observable
                 this._keys.push(key)
                 this[key] = CompositeObservable();
             }
         });
     }
 
-    private addObserversForClient(client: ServerClient) {
+    private addObserversForClient(client: T) {
         if (!this._keys || !this._keys.length) { this.setupKeys(client); }
 
-        _(this._keys).each(key => this[key].add(client[key]));
+        _.each(this._keys, key =>
+            this[key].add(client[key]));
         //this._clients.push(client);
     }
 
-    private removeObserversForClient(client: ServerClient) {
+    private removeObserversForClient(client: T) {
         if (!this._keys || !this._keys.length) { this.setupKeys(client); }
 
-        _(this._keys).each(key => this[key].remove(client[key]));
+        _.each(this._keys, key =>
+            this[key].remove(client[key]));
         //_.pull(this._clients, client);
     }
 

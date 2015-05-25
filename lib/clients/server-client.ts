@@ -21,7 +21,7 @@ interface Context<TRequest, TResponse> extends OmniSharp.Context<TRequest, TResp
 export class ServerClient implements OmniSharp.Api, OmniSharp.Events, IDriver {
     private _driver: IDriver;
     private _requestStream = new Subject<RequestContext<any>>();
-        private _responseStream = new Subject<ResponseContext<any, any>>();
+    private _responseStream = new Subject<ResponseContext<any, any>>();
     private _statusStream: Rx.Observable<OmnisharpClientStatus>;
     private _errorStream = new Subject<CommandContext<any>>();
     private _customEvents = new Subject<OmniSharp.Stdio.Protocol.EventPacket>();
@@ -156,6 +156,19 @@ export class ServerClient implements OmniSharp.Api, OmniSharp.Events, IDriver {
         return result;
     }
 
+    public log(message: string, logLevel?: string) {
+        // log our complete response time
+        this._customEvents.onNext({
+            Event: "log",
+            Body: {
+                Message: message,
+                LogLevel: logLevel ? logLevel.toUpperCase() : "INFORMATION"
+            },
+            Seq: -1,
+            Type: "log"
+        });
+    }
+
     public connect(_options?: OmnisharpClientOptions) {
         var driver = this._options.driver;
         extend(this._options, _options || {});
@@ -256,13 +269,13 @@ export class ServerClient implements OmniSharp.Api, OmniSharp.Events, IDriver {
         assert.isNotNull(request.FileName, 'request.FileName must not be null');
         assert.isNotNull(request.NewText, 'request.NewText must not be null');
         assert.isNotNull(request.StartLine, 'request.StartLine must not be null');
-        assert.isAbove(request.StartLine, 0, 'request.StartLine must be greater than 0.');
+        (<any>assert).isAbove(request.StartLine, 0, 'request.StartLine must be greater than 0.');
         assert.isNotNull(request.StartColumn, 'request.StartColumn must not be null');
-        assert.isAbove(request.StartColumn, 0, 'request.StartColumn must be greater than 0.');
+        (<any>assert).isAbove(request.StartColumn, 0, 'request.StartColumn must be greater than 0.');
         assert.isNotNull(request.EndLine, 'request.EndLine must not be null');
-        assert.isAbove(request.EndLine, 0, 'request.EndLine must be greater than 0.');
+        (<any>assert).isAbove(request.EndLine, 0, 'request.EndLine must be greater than 0.');
         assert.isNotNull(request.EndColumn, 'request.EndColumn must not be null');
-        assert.isAbove(request.EndColumn, 0, 'request.EndColumn must be greater than 0.');
+        (<any>assert).isAbove(request.EndColumn, 0, 'request.EndColumn must be greater than 0.');
 
         return this.request<OmniSharp.Models.ChangeBufferRequest, any>("changebuffer", request, options);
     }
@@ -286,9 +299,9 @@ export class ServerClient implements OmniSharp.Api, OmniSharp.Events, IDriver {
     public formatAfterKeystroke(request: OmniSharp.Models.FormatAfterKeystrokeRequest, options?: OmniSharp.RequestOptions): Rx.Observable<OmniSharp.Models.FormatRangeResponse> {
         assert.isNotNull(request.FileName, 'request.FileName must not be null');
         assert.isNotNull(request.Line, 'request.Line must not be null');
-        assert.isAbove(request.Line, 0, 'request.Line must be greater than 0.');
+        (<any>assert).isAbove(request.Line, 0, 'request.Line must be greater than 0.');
         assert.isNotNull(request.Column, 'request.Column must not be null');
-        assert.isAbove(request.Column, 0, 'request.Column must be greater than 0.');
+        (<any>assert).isAbove(request.Column, 0, 'request.Column must be greater than 0.');
         assert.isNotNull(request.Character || request.Char, 'request.Character || request.Char must not be null');
 
         return this.request<OmniSharp.Models.FormatAfterKeystrokeRequest, OmniSharp.Models.FormatRangeResponse>("formatAfterKeystroke", request, options);
@@ -303,13 +316,13 @@ export class ServerClient implements OmniSharp.Api, OmniSharp.Events, IDriver {
     public formatRange(request: OmniSharp.Models.FormatRangeRequest, options?: OmniSharp.RequestOptions): Rx.Observable<OmniSharp.Models.FormatRangeResponse> {
         assert.isNotNull(request.FileName, 'request.FileName must not be null');
         assert.isNotNull(request.Line, 'request.Line must not be null');
-        assert.isAbove(request.Line, 0, 'request.Line must be greater than 0.');
+        (<any>assert).isAbove(request.Line, 0, 'request.Line must be greater than 0.');
         assert.isNotNull(request.Column, 'request.Column must not be null');
-        assert.isAbove(request.Column, 0, 'request.Column must be greater than 0.');
+        (<any>assert).isAbove(request.Column, 0, 'request.Column must be greater than 0.');
         assert.isNotNull(request.EndLine, 'request.EndLine must not be null');
-        assert.isAbove(request.EndLine, 0, 'request.EndLine must be greater than 0.');
+        (<any>assert).isAbove(request.EndLine, 0, 'request.EndLine must be greater than 0.');
         assert.isNotNull(request.EndColumn, 'request.EndColumn must not be null');
-        assert.isAbove(request.EndColumn, 0, 'request.EndColumn must be greater than 0.');
+        (<any>assert).isAbove(request.EndColumn, 0, 'request.EndColumn must be greater than 0.');
 
         return this.request<OmniSharp.Models.FormatRangeRequest, OmniSharp.Models.FormatRangeResponse>("formatRange", request, options);
     }
@@ -335,9 +348,9 @@ export class ServerClient implements OmniSharp.Api, OmniSharp.Events, IDriver {
     public autocomplete(request: OmniSharp.Models.AutoCompleteRequest, options?: OmniSharp.RequestOptions): Rx.Observable<OmniSharp.Models.AutoCompleteResponse[]> {
         assert.isNotNull(request.FileName, 'request.FileName must not be null');
         assert.isNotNull(request.Line, 'request.Line must not be null');
-        assert.isAbove(request.Line, 0, 'request.Line must be greater than 0.');
+        (<any>assert).isAbove(request.Line, 0, 'request.Line must be greater than 0.');
         assert.isNotNull(request.Column, 'request.Column must not be null');
-        assert.isAbove(request.Column, 0, 'request.Column must be greater than 0.');
+        (<any>assert).isAbove(request.Column, 0, 'request.Column must be greater than 0.');
         assert.isNotNull(request.WordToComplete, 'request.WordToComplete must not be null');
 
         return this.request<OmniSharp.Models.AutoCompleteRequest, OmniSharp.Models.AutoCompleteResponse[]>("autocomplete", request, options);
@@ -352,9 +365,9 @@ export class ServerClient implements OmniSharp.Api, OmniSharp.Events, IDriver {
     public findimplementations(request: OmniSharp.Models.Request, options?: OmniSharp.RequestOptions): Rx.Observable<OmniSharp.Models.QuickFixResponse> {
         assert.isNotNull(request.FileName, 'request.FileName must not be null');
         assert.isNotNull(request.Line, 'request.Line must not be null');
-        assert.isAbove(request.Line, 0, 'request.Line must be greater than 0.');
+        (<any>assert).isAbove(request.Line, 0, 'request.Line must be greater than 0.');
         assert.isNotNull(request.Column, 'request.Column must not be null');
-        assert.isAbove(request.Column, 0, 'request.Column must be greater than 0.');
+        (<any>assert).isAbove(request.Column, 0, 'request.Column must be greater than 0.');
 
         return this.request<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>("findimplementations", request, options);
     }
@@ -382,9 +395,9 @@ export class ServerClient implements OmniSharp.Api, OmniSharp.Events, IDriver {
     public findusages(request: OmniSharp.Models.FindUsagesRequest, options?: OmniSharp.RequestOptions): Rx.Observable<OmniSharp.Models.QuickFixResponse> {
         assert.isNotNull(request.FileName, 'request.FileName must not be null');
         assert.isNotNull(request.Line, 'request.Line must not be null');
-        assert.isAbove(request.Line, 0, 'request.Line must be greater than 0.');
+        (<any>assert).isAbove(request.Line, 0, 'request.Line must be greater than 0.');
         assert.isNotNull(request.Column, 'request.Column must not be null');
-        assert.isAbove(request.Column, 0, 'request.Column must be greater than 0.');
+        (<any>assert).isAbove(request.Column, 0, 'request.Column must be greater than 0.');
 
         return this.request<OmniSharp.Models.FindUsagesRequest, OmniSharp.Models.QuickFixResponse>("findusages", request, options);
     }
@@ -398,9 +411,9 @@ export class ServerClient implements OmniSharp.Api, OmniSharp.Events, IDriver {
     public gotodefinition(request: OmniSharp.Models.Request, options?: OmniSharp.RequestOptions): Rx.Observable<any> {
         assert.isNotNull(request.FileName, 'request.FileName must not be null');
         assert.isNotNull(request.Line, 'request.Line must not be null');
-        assert.isAbove(request.Line, 0, 'request.Line must be greater than 0.');
+        (<any>assert).isAbove(request.Line, 0, 'request.Line must be greater than 0.');
         assert.isNotNull(request.Column, 'request.Column must not be null');
-        assert.isAbove(request.Column, 0, 'request.Column must be greater than 0.');
+        (<any>assert).isAbove(request.Column, 0, 'request.Column must be greater than 0.');
 
         return this.request<OmniSharp.Models.Request, any>("gotodefinition", request, options);
     }
@@ -414,9 +427,9 @@ export class ServerClient implements OmniSharp.Api, OmniSharp.Events, IDriver {
     public navigateup(request: OmniSharp.Models.Request, options?: OmniSharp.RequestOptions): Rx.Observable<OmniSharp.Models.NavigateResponse> {
         assert.isNotNull(request.FileName, 'request.FileName must not be null');
         assert.isNotNull(request.Line, 'request.Line must not be null');
-        assert.isAbove(request.Line, 0, 'request.Line must be greater than 0.');
+        (<any>assert).isAbove(request.Line, 0, 'request.Line must be greater than 0.');
         assert.isNotNull(request.Column, 'request.Column must not be null');
-        assert.isAbove(request.Column, 0, 'request.Column must be greater than 0.');
+        (<any>assert).isAbove(request.Column, 0, 'request.Column must be greater than 0.');
 
         return this.request<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>("navigateup", request, options);
     }
@@ -452,9 +465,9 @@ export class ServerClient implements OmniSharp.Api, OmniSharp.Events, IDriver {
     public navigatedown(request: OmniSharp.Models.Request, options?: OmniSharp.RequestOptions): Rx.Observable<OmniSharp.Models.NavigateResponse> {
         assert.isNotNull(request.FileName, 'request.FileName must not be null');
         assert.isNotNull(request.Line, 'request.Line must not be null');
-        assert.isAbove(request.Line, 0, 'request.Line must be greater than 0.');
+        (<any>assert).isAbove(request.Line, 0, 'request.Line must be greater than 0.');
         assert.isNotNull(request.Column, 'request.Column must not be null');
-        assert.isAbove(request.Column, 0, 'request.Column must be greater than 0.');
+        (<any>assert).isAbove(request.Column, 0, 'request.Column must be greater than 0.');
 
         return this.request<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>("navigatedown", request, options);
     }
@@ -469,9 +482,9 @@ export class ServerClient implements OmniSharp.Api, OmniSharp.Events, IDriver {
     public rename(request: OmniSharp.Models.RenameRequest, options?: OmniSharp.RequestOptions): Rx.Observable<OmniSharp.Models.RenameResponse> {
         assert.isNotNull(request.FileName, 'request.FileName must not be null');
         assert.isNotNull(request.Line, 'request.Line must not be null');
-        assert.isAbove(request.Line, 0, 'request.Line must be greater than 0.');
+        (<any>assert).isAbove(request.Line, 0, 'request.Line must be greater than 0.');
         assert.isNotNull(request.Column, 'request.Column must not be null');
-        assert.isAbove(request.Column, 0, 'request.Column must be greater than 0.');
+        (<any>assert).isAbove(request.Column, 0, 'request.Column must be greater than 0.');
         assert.isNotNull(request.RenameTo, 'request.RenameTo must not be null');
 
         return this.request<OmniSharp.Models.RenameRequest, OmniSharp.Models.RenameResponse>("rename", request, options);
@@ -486,9 +499,9 @@ export class ServerClient implements OmniSharp.Api, OmniSharp.Events, IDriver {
     public signatureHelp(request: OmniSharp.Models.Request, options?: OmniSharp.RequestOptions): Rx.Observable<OmniSharp.Models.SignatureHelp> {
         assert.isNotNull(request.FileName, 'request.FileName must not be null');
         assert.isNotNull(request.Line, 'request.Line must not be null');
-        assert.isAbove(request.Line, 0, 'request.Line must be greater than 0.');
+        (<any>assert).isAbove(request.Line, 0, 'request.Line must be greater than 0.');
         assert.isNotNull(request.Column, 'request.Column must not be null');
-        assert.isAbove(request.Column, 0, 'request.Column must be greater than 0.');
+        (<any>assert).isAbove(request.Column, 0, 'request.Column must be greater than 0.');
 
         return this.request<OmniSharp.Models.Request, OmniSharp.Models.SignatureHelp>("signatureHelp", request, options);
     }
@@ -546,9 +559,9 @@ export class ServerClient implements OmniSharp.Api, OmniSharp.Events, IDriver {
     public typelookup(request: OmniSharp.Models.TypeLookupRequest, options?: OmniSharp.RequestOptions): Rx.Observable<OmniSharp.Models.TypeLookupResponse> {
         assert.isNotNull(request.FileName, 'request.FileName must not be null');
         assert.isNotNull(request.Line, 'request.Line must not be null');
-        assert.isAbove(request.Line, 0, 'request.Line must be greater than 0.');
+        (<any>assert).isAbove(request.Line, 0, 'request.Line must be greater than 0.');
         assert.isNotNull(request.Column, 'request.Column must not be null');
-        assert.isAbove(request.Column, 0, 'request.Column must be greater than 0.');
+        (<any>assert).isAbove(request.Column, 0, 'request.Column must be greater than 0.');
 
         return this.request<OmniSharp.Models.TypeLookupRequest, OmniSharp.Models.TypeLookupResponse>("typelookup", request, options);
     }
@@ -595,9 +608,9 @@ export class ServerClient implements OmniSharp.Api, OmniSharp.Events, IDriver {
     public getcodeactions(request: OmniSharp.Models.CodeActionRequest, options?: OmniSharp.RequestOptions): Rx.Observable<OmniSharp.Models.GetCodeActionsResponse> {
         assert.isNotNull(request.FileName, 'request.FileName must not be null');
         assert.isNotNull(request.Line, 'request.Line must not be null');
-        assert.isAbove(request.Line, 0, 'request.Line must be greater than 0.');
+        (<any>assert).isAbove(request.Line, 0, 'request.Line must be greater than 0.');
         assert.isNotNull(request.Column, 'request.Column must not be null');
-        assert.isAbove(request.Column, 0, 'request.Column must be greater than 0.');
+        (<any>assert).isAbove(request.Column, 0, 'request.Column must be greater than 0.');
 
         return this.request<OmniSharp.Models.CodeActionRequest, OmniSharp.Models.GetCodeActionsResponse>("getcodeactions", request, options);
     }
@@ -611,11 +624,11 @@ export class ServerClient implements OmniSharp.Api, OmniSharp.Events, IDriver {
     public runcodeaction(request: OmniSharp.Models.CodeActionRequest, options?: OmniSharp.RequestOptions): Rx.Observable<OmniSharp.Models.RunCodeActionResponse> {
         assert.isNotNull(request.FileName, 'request.FileName must not be null');
         assert.isNotNull(request.Line, 'request.Line must not be null');
-        assert.isAbove(request.Line, 0, 'request.Line must be greater than 0.');
+        (<any>assert).isAbove(request.Line, 0, 'request.Line must be greater than 0.');
         assert.isNotNull(request.Column, 'request.Column must not be null');
-        assert.isAbove(request.Column, 0, 'request.Column must be greater than 0.');
+        (<any>assert).isAbove(request.Column, 0, 'request.Column must be greater than 0.');
         assert.isNotNull(request.CodeAction, 'request.CodeAction must not be null');
-        assert.isAbove(request.CodeAction, -1, 'request.CodeAction must be greater than -1.');
+        (<any>assert).isAbove(request.CodeAction, -1, 'request.CodeAction must be greater than -1.');
 
         return this.request<OmniSharp.Models.CodeActionRequest, OmniSharp.Models.RunCodeActionResponse>("runcodeaction", request, options);
     }
@@ -629,11 +642,11 @@ export class ServerClient implements OmniSharp.Api, OmniSharp.Events, IDriver {
     public gettestcontext(request: OmniSharp.Models.TestCommandRequest, options?: OmniSharp.RequestOptions): Rx.Observable<OmniSharp.Models.GetTestCommandResponse> {
         assert.isNotNull(request.FileName, 'request.FileName must not be null');
         assert.isNotNull(request.Line, 'request.Line must not be null');
-        assert.isAbove(request.Line, 0, 'request.Line must be greater than 0.');
+        (<any>assert).isAbove(request.Line, 0, 'request.Line must be greater than 0.');
         assert.isNotNull(request.Column, 'request.Column must not be null');
-        assert.isAbove(request.Column, 0, 'request.Column must be greater than 0.');
+        (<any>assert).isAbove(request.Column, 0, 'request.Column must be greater than 0.');
         assert.isNotNull(request.Type, 'request.Type must not be null');
-        assert.isAbove(request.Type, -1, 'request.Type must be greater than -1.');
+        (<any>assert).isAbove(request.Type, -1, 'request.Type must be greater than -1.');
 
         return this.request<OmniSharp.Models.TestCommandRequest, OmniSharp.Models.GetTestCommandResponse>("gettestcontext", request, options);
     }

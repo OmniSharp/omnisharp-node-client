@@ -19,3 +19,9 @@ interface MapConstructor {
     prototype: Map<any, any>;
 }
 declare var Map: MapConstructor;
+
+declare module chai {
+    interface Assert {
+        isAbove(valueToCheck: number, valueToBeAbove: number, message?: string);
+    }
+}

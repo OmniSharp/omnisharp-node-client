@@ -1,6 +1,6 @@
 import { findCandidates as candidateFinder} from "./candidate-finder";
 import {ServerClient} from './clients/server-client';
-import {CompositeClient} from './clients/composite-client';
+import {CompositeClient, CompositeObservable} from './clients/composite-client';
 import * as enums from "./enums";
 import * as interfaces from "./interfaces";
 
@@ -11,4 +11,5 @@ export var Driver = enums.Driver;
 export var DriverState = enums.DriverState;
 export var findCandidates = candidateFinder;
 export class OmnisharpClient extends ServerClient {}
-export class OmnisharpCompositeClient extends CompositeClient {}
+export class OmnisharpCompositeClient<T extends ServerClient> extends CompositeClient<T> {}
+export interface ICompositeObservable<T> extends CompositeObservable<T> {}
