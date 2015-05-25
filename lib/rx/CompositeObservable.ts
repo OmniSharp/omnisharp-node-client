@@ -12,6 +12,7 @@ interface ICompositeSourceItem {
 export interface ICompositeObservable<T> extends Observable<T> {
     add(observable: Observable<T>);
     remove(observable: Observable<T>);
+    removeAll();
 }
 
 export var CompositeObservable = (function() {
@@ -60,6 +61,10 @@ export var CompositeObservable = (function() {
         }
     }
 
+    function removeAll(sources: ICompositeSourceItem[], observers: ICompositeObserverItem[]) {
+        _.each(sources, this.remove);
+    }
+
     function Composite<T>(observables?: Observable<T>[]) {
         var sources: ICompositeSourceItem[] = []; // [{ source, group }]
         var observers: ICompositeObserverItem[] = []; // [{ observer, group, isStopped }]
@@ -79,6 +84,7 @@ export var CompositeObservable = (function() {
         observable.observers = observers;
         observable.add = _.bind(add, observable, sources, observers);
         observable.remove = _.bind(remove, observable, sources, observers);
+        observable.removeAll = _.bind(removeAll, observable, sources, observers);
         _.each(observables || [], function(o) { observable.add(o) });
 
         return <ICompositeObservable<T>> observable;

@@ -21,7 +21,7 @@ interface Context<TRequest, TResponse> extends OmniSharp.Context<TRequest, TResp
 export class ServerClient implements OmniSharp.Api, OmniSharp.Events, IDriver {
     private _driver: IDriver;
     private _requestStream = new Subject<RequestContext<any>>();
-    private _responseStream = new Subject<ResponseContext<any, any>>();
+        private _responseStream = new Subject<ResponseContext<any, any>>();
     private _statusStream: Rx.Observable<OmnisharpClientStatus>;
     private _errorStream = new Subject<CommandContext<any>>();
     private _customEvents = new Subject<OmniSharp.Stdio.Protocol.EventPacket>();

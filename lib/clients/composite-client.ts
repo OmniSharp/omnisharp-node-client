@@ -7,7 +7,7 @@ interface Context<TRequest, TResponse> extends OmniSharp.Context<TRequest, TResp
 export class CompositeClient implements OmniSharp.Events {
     static clientKeys = _.keys(ServerClient.prototype);
     private _keys: string[];
-    private _clients: ServerClient[] = [];
+    //private _clients: ServerClient[] = [];
 
     constructor(clients?: ServerClient[]) {
         _.each(clients, client => this.addObserversForClient(client));
@@ -19,6 +19,10 @@ export class CompositeClient implements OmniSharp.Events {
 
     public remove(client: ServerClient) {
         this.removeObserversForClient(client);
+    }
+
+    public removeAll(client: ServerClient) {
+        _(this._keys).each(key => this[key].removeAll());
     }
 
     private setupKeys(client: ServerClient) {
@@ -34,14 +38,14 @@ export class CompositeClient implements OmniSharp.Events {
         if (!this._keys || !this._keys.length) { this.setupKeys(client); }
 
         _(this._keys).each(key => this[key].add(client[key]));
-        this._clients.push(client);
+        //this._clients.push(client);
     }
 
     private removeObserversForClient(client: ServerClient) {
         if (!this._keys || !this._keys.length) { this.setupKeys(client); }
 
         _(this._keys).each(key => this[key].remove(client[key]));
-        _.pull(this._clients, client);
+        //_.pull(this._clients, client);
     }
 
     public observeUpdatebuffer: Rx.Observable<Context<OmniSharp.Models.Request, any>>;
