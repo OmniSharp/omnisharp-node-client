@@ -26,6 +26,8 @@ export class ServerClient implements OmniSharp.Api, OmniSharp.Events, IDriver {
     private _errorStream = new Subject<CommandContext<any>>();
     private _customEvents = new Subject<OmniSharp.Stdio.Protocol.EventPacket>();
 
+    public static DriverState = DriverState;
+
     public get id() { return this._driver.id; }
     public get serverPath() { return this._driver.serverPath; }
     public get projectPath() { return this._driver.projectPath; }
