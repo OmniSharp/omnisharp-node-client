@@ -3,6 +3,7 @@
 /// <reference path="typings/node/node.d.ts" />
 /// <reference path="typings/chai/chai.d.ts" />
 /// <reference path="typings/lodash/lodash.d.ts" />
+/// <reference path="lib/interfaces.d.ts" />
 
 interface Map<K, V> {
     clear(): void;
@@ -18,3 +19,9 @@ interface MapConstructor {
     prototype: Map<any, any>;
 }
 declare var Map: MapConstructor;
+
+declare module chai {
+    interface Assert {
+        isAbove(valueToCheck: number, valueToBeAbove: number, message?: string);
+    }
+}

@@ -41,7 +41,9 @@ namespace OmniSharp.TypeScriptGeneration
 
             var result = fluent.Generate();
 
-            result = string.Join("\n", result, OmnisharpControllerExtractor.GetInterface(), OmnisharpEventExtractor.GetInterface());
+            var generated = string.Join("\n", OmnisharpControllerExtractor.GetInterface());
+
+            result = string.Join("\n", result, generated, OmnisharpEventExtractor.GetInterface());
             if (!string.IsNullOrWhiteSpace(path))
             {
                 File.WriteAllText(Path.Combine(path, "omnisharp-server.d.ts"), result);

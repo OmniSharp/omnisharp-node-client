@@ -1,5 +1,6 @@
 import {expect} from 'chai';
-import {OmnisharpClient, Driver, DriverState} from "../lib/omnisharp-client";
+import {Driver, DriverState} from "../lib/enums";
+import {ServerClient as OmnisharpClient} from "../lib/clients/server-client";
 
 declare var xdescribe: Function;
 

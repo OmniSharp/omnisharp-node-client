@@ -11,14 +11,17 @@ namespace OmniSharp.TypeScriptGeneration
 {
     public static class OmnisharpControllerExtractor
     {
-        public static string GetInterface()
+        public static IEnumerable<string> GetInterface()
         {
             var methods = "        " + string.Join("\n        ", GetInterfaceMethods()) + "\n";
+            var events = "        " + string.Join("\n        ", GetEvents()) + "\n";
 
-            return $"declare module {nameof(OmniSharp)} {{\n{ContextInterface}    interface Api {{\n{methods}    }}\n}}";
+            yield return $"declare module {nameof(OmniSharp)} {{\n{ContextInterface}{RequestOptionsInterface}    interface Api {{\n{methods}    }}\n}}";
+            yield return $"declare module {nameof(OmniSharp)} {{\n    interface Events {{\n{events}    }}\n}}";
         }
 
         private static string ContextInterface = "    interface Context<TRequest, TResponse>\n    {\n        request: TRequest;\n        response: TResponse;\n    }\n\n";
+        private static string RequestOptionsInterface = "    interface RequestOptions\n    {\n        silent?: boolean;\n    }\n\n";
 
         private static IEnumerable<string> GetInterfaceMethods()
         {
@@ -37,14 +40,38 @@ namespace OmniSharp.TypeScriptGeneration
 
                 if (method.RequestType != null)
                 {
-                    yield return $"{method.Action}(request: {requestType}): Rx.Observable<{returnType}>;";
-                    yield return $"{method.Action}Promise(request: {requestType}): Rx.IPromise<{returnType}>;";
+                    yield return $"{method.Action}(request: {requestType}, options?: RequestOptions): Rx.Observable<{returnType}>;";
+                    yield return $"{method.Action}Promise(request: {requestType}, options?: RequestOptions): Rx.IPromise<{returnType}>;";
+                }
+                else
+                {
+                    yield return $"{method.Action}(): Rx.Observable<{returnType}, options?: RequestOptions>;";
+                    yield return $"{method.Action}Promise(): Rx.IPromise<{returnType}, options?: RequestOptions>;";
+                }
+            }
+        }
+
+        private static IEnumerable<string> GetEvents()
+        {
+            var methods = GetControllerMethods().ToArray();
+            foreach (var method in methods)
+            {
+                var observeName = $"observe{method.Action[0].ToString().ToUpper()}{method.Action.Substring(1)}";
+
+                var requestType = method.RequestType;
+                if (method.RequestArray)
+                    requestType += "[]";
+
+                var returnType = method.ReturnType;
+                if (method.ReturnArray)
+                    returnType += "[]";
+
+                if (method.RequestType != null)
+                {
                     yield return $"{observeName}: Rx.Observable<Context<{requestType}, {returnType}>>;";
                 }
                 else
                 {
-                    yield return $"{method.Action}(): Rx.Observable<{returnType}>;";
-                    yield return $"{method.Action}Promise(): Rx.IPromise<{returnType}>;";
                     yield return $"{observeName}: Rx.Observable<{returnType}>;";
                 }
             }

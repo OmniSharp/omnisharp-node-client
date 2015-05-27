@@ -1,5 +1,5 @@
 import _ = require('lodash');
-import {ILogger} from './drivers';
+import {ILogger} from './interfaces';
 import {join, dirname, sep} from 'path';
 var glob = require('glob');
 var primaryFilesToSearch = ['global.json', '*.sln', '*.csx'];

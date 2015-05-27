@@ -1,4 +1,5 @@
-import {DriverState} from "./omnisharp-client";
+import {DriverState, Driver} from "./enums";
+
 export interface IStaticDriver {
     new (options: IDriverOptions): IDriver;
 }
@@ -30,4 +31,18 @@ export interface IDriver {
     serverPath: string;
     projectPath: string;
     request<TRequest, TResponse>(command: string, request?: TRequest): Rx.Observable<TResponse>;
+}
+
+export interface OmnisharpClientOptions extends IDriverOptions {
+    driver?: Driver;
+}
+
+export interface OmnisharpClientStatus {
+    state: DriverState;
+    requestsPerSecond: number;
+    responsesPerSecond: number;
+    eventsPerSecond: number;
+    operationsPerSecond: number;
+    outgoingRequests: number;
+    hasOutgoingRequests: boolean;
 }
