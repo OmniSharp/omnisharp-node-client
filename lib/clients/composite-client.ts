@@ -2,14 +2,49 @@ import {helpers as rxHelpers, Observable} from "rx";
 import * as _ from 'lodash';
 import {ServerClient} from "./server-client";
 import {CompositeObservable, ICompositeObservable} from "../rx/CompositeObservable";
-interface Context<TRequest, TResponse> extends OmniSharp.Context<TRequest, TResponse> {}
+interface Context<TRequest, TResponse> extends OmniSharp.Context<TRequest, TResponse> { }
 
-export interface CompositeObservable<T> extends ICompositeObservable<T> {}
+export interface CompositeObservable<T> extends ICompositeObservable<T> { }
 export class CompositeClient<T extends ServerClient> implements OmniSharp.Events {
-    private _keys: string[] = [];
-    //private _clients: T[] = [];
-
     constructor(clients?: T[]) {
+        this.observeUpdatebuffer = CompositeObservable<Context<OmniSharp.Models.Request, any>>();
+        this.observeChangebuffer = CompositeObservable<Context<OmniSharp.Models.Request, any>>();
+        this.observeCodecheck = CompositeObservable<Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>();
+        this.observeFormatAfterKeystroke = CompositeObservable<Context<OmniSharp.Models.Request, OmniSharp.Models.FormatRangeResponse>>();
+        this.observeFormatRange = CompositeObservable<Context<OmniSharp.Models.FormatRangeRequest, OmniSharp.Models.FormatRangeResponse>>();
+        this.observeCodeformat = CompositeObservable<Context<OmniSharp.Models.Request, OmniSharp.Models.CodeFormatResponse>>();
+        this.observeAutocomplete = CompositeObservable<Context<OmniSharp.Models.AutoCompleteRequest, OmniSharp.Models.AutoCompleteResponse[]>>();
+        this.observeFindimplementations = CompositeObservable<Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>();
+        this.observeFindsymbols = CompositeObservable<Context<OmniSharp.Models.FindSymbolsRequest, OmniSharp.Models.QuickFixResponse>>();
+        this.observeFindusages = CompositeObservable<Context<OmniSharp.Models.FindUsagesRequest, OmniSharp.Models.QuickFixResponse>>();
+        this.observeGotodefinition = CompositeObservable<Context<OmniSharp.Models.Request, any>>();
+        this.observeGotofile = CompositeObservable<Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>();
+        this.observeGotoregion = CompositeObservable<Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>();
+        this.observeNavigateup = CompositeObservable<Context<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>>();
+        this.observeNavigatedown = CompositeObservable<Context<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>>();
+        this.observeRename = CompositeObservable<Context<OmniSharp.Models.RenameRequest, OmniSharp.Models.RenameResponse>>();
+        this.observeSignatureHelp = CompositeObservable<Context<OmniSharp.Models.Request, OmniSharp.Models.SignatureHelp>>();
+        this.observeCheckalivestatus = CompositeObservable<Context<any, boolean>>();
+        this.observeCheckreadystatus = CompositeObservable<Context<any, boolean>>();
+        this.observeCurrentfilemembersastree = CompositeObservable<Context<OmniSharp.Models.Request, any>>();
+        this.observeCurrentfilemembersasflat = CompositeObservable<Context<OmniSharp.Models.Request, any>>();
+        this.observeTypelookup = CompositeObservable<Context<OmniSharp.Models.TypeLookupRequest, OmniSharp.Models.TypeLookupResponse>>();
+        this.observeFilesChanged = CompositeObservable<Context<OmniSharp.Models.Request[], boolean>>();
+        this.observeProjects = CompositeObservable<Context<OmniSharp.Models.WorkspaceInformationResponse, OmniSharp.Models.WorkspaceInformationResponse>>();
+        this.observeProject = CompositeObservable<Context<OmniSharp.Models.Request, OmniSharp.Models.ProjectInformationResponse>>();
+        this.observeGetcodeactions = CompositeObservable<Context<OmniSharp.Models.CodeActionRequest, OmniSharp.Models.GetCodeActionsResponse>>();
+        this.observeRuncodeaction = CompositeObservable<Context<OmniSharp.Models.CodeActionRequest, OmniSharp.Models.RunCodeActionResponse>>();
+        this.observeGettestcontext = CompositeObservable<Context<OmniSharp.Models.TestCommandRequest, OmniSharp.Models.GetTestCommandResponse>>();
+
+        this.projectAdded = CompositeObservable<OmniSharp.Models.ProjectInformationResponse>();
+        this.projectChanged = CompositeObservable<OmniSharp.Models.ProjectInformationResponse>();
+        this.projectRemoved = CompositeObservable<OmniSharp.Models.ProjectInformationResponse>();
+        this.error = CompositeObservable<OmniSharp.Models.ErrorMessage>();
+        this.msBuildProjectDiagnostics = CompositeObservable<OmniSharp.Models.MSBuildProjectDiagnostics>();
+        this.packageRestoreStarted = CompositeObservable<OmniSharp.Models.PackageRestoreMessage>();
+        this.packageRestoreFinished = CompositeObservable<OmniSharp.Models.PackageRestoreMessage>();
+        this.unresolvedDependencies = CompositeObservable<OmniSharp.Models.UnresolvedDependenciesMessage>();
+
         _.each(clients, client => this.addObserversForClient(client));
     }
 
@@ -22,70 +57,52 @@ export class CompositeClient<T extends ServerClient> implements OmniSharp.Events
     }
 
     public removeAll() {
-        _.each(this._keys, key =>
-            this[key].removeAll());
-    }
-
-    private setupKeys(client: T) {
-        _.each(client, (value: any, key) => {
-            if (value.subscribe && _.contains(_.keys(client), key) && !_.startsWith(key, '_')) { // assume its an observable
-                this._keys.push(key)
-                this[key] = CompositeObservable();
-            }
-        });
+        _.each(_.keys(this), key => this[key].removeAll && this[key].removeAll());
     }
 
     private addObserversForClient(client: T) {
-        if (!this._keys || !this._keys.length) { this.setupKeys(client); }
-
-        _.each(this._keys, key =>
-            this[key].add(client[key]));
-        //this._clients.push(client);
+        _.each(_.keys(client), key => this[key] && this[key].add(client[key]));
     }
 
     private removeObserversForClient(client: T) {
-        if (!this._keys || !this._keys.length) { this.setupKeys(client); }
-
-        _.each(this._keys, key =>
-            this[key].remove(client[key]));
-        //_.pull(this._clients, client);
+        _.each(_.keys(client), key => this[key] && this[key].remove(client[key]));
     }
 
-    public observeUpdatebuffer: Rx.Observable<Context<OmniSharp.Models.Request, any>>;
-    public observeChangebuffer: Rx.Observable<Context<OmniSharp.Models.Request, any>>;
-    public observeCodecheck: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>;
-    public observeFormatAfterKeystroke: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.FormatRangeResponse>>;
-    public observeFormatRange: Rx.Observable<Context<OmniSharp.Models.FormatRangeRequest, OmniSharp.Models.FormatRangeResponse>>;
-    public observeCodeformat: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.CodeFormatResponse>>;
-    public observeAutocomplete: Rx.Observable<Context<OmniSharp.Models.AutoCompleteRequest, OmniSharp.Models.AutoCompleteResponse[]>>;
-    public observeFindimplementations: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>;
-    public observeFindsymbols: Rx.Observable<Context<OmniSharp.Models.FindSymbolsRequest, OmniSharp.Models.QuickFixResponse>>;
-    public observeFindusages: Rx.Observable<Context<OmniSharp.Models.FindUsagesRequest, OmniSharp.Models.QuickFixResponse>>;
-    public observeGotodefinition: Rx.Observable<Context<OmniSharp.Models.Request, any>>;
-    public observeGotofile: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>;
-    public observeGotoregion: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>;
-    public observeNavigateup: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>>;
-    public observeNavigatedown: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>>;
-    public observeRename: Rx.Observable<Context<OmniSharp.Models.RenameRequest, OmniSharp.Models.RenameResponse>>;
-    public observeSignatureHelp: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.SignatureHelp>>;
-    public observeCheckalivestatus: Rx.Observable<Context<any, boolean>>;
-    public observeCheckreadystatus: Rx.Observable<Context<any, boolean>>;
-    public observeCurrentfilemembersastree: Rx.Observable<Context<OmniSharp.Models.Request, any>>;
-    public observeCurrentfilemembersasflat: Rx.Observable<Context<OmniSharp.Models.Request, any>>;
-    public observeTypelookup: Rx.Observable<Context<OmniSharp.Models.TypeLookupRequest, OmniSharp.Models.TypeLookupResponse>>;
-    public observeFilesChanged: Rx.Observable<Context<OmniSharp.Models.Request[], boolean>>;
-    public observeProjects: Rx.Observable<Context<OmniSharp.Models.WorkspaceInformationResponse, OmniSharp.Models.WorkspaceInformationResponse>>;
-    public observeProject: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.ProjectInformationResponse>>;
-    public observeGetcodeactions: Rx.Observable<Context<OmniSharp.Models.CodeActionRequest, OmniSharp.Models.GetCodeActionsResponse>>;
-    public observeRuncodeaction: Rx.Observable<Context<OmniSharp.Models.CodeActionRequest, OmniSharp.Models.RunCodeActionResponse>>;
-    public observeGettestcontext: Rx.Observable<Context<OmniSharp.Models.TestCommandRequest, OmniSharp.Models.GetTestCommandResponse>>;
+    public observeUpdatebuffer: CompositeObservable<Context<OmniSharp.Models.Request, any>>;
+    public observeChangebuffer: CompositeObservable<Context<OmniSharp.Models.Request, any>>;
+    public observeCodecheck: CompositeObservable<Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>;
+    public observeFormatAfterKeystroke: CompositeObservable<Context<OmniSharp.Models.Request, OmniSharp.Models.FormatRangeResponse>>;
+    public observeFormatRange: CompositeObservable<Context<OmniSharp.Models.FormatRangeRequest, OmniSharp.Models.FormatRangeResponse>>;
+    public observeCodeformat: CompositeObservable<Context<OmniSharp.Models.Request, OmniSharp.Models.CodeFormatResponse>>;
+    public observeAutocomplete: CompositeObservable<Context<OmniSharp.Models.AutoCompleteRequest, OmniSharp.Models.AutoCompleteResponse[]>>;
+    public observeFindimplementations: CompositeObservable<Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>;
+    public observeFindsymbols: CompositeObservable<Context<OmniSharp.Models.FindSymbolsRequest, OmniSharp.Models.QuickFixResponse>>;
+    public observeFindusages: CompositeObservable<Context<OmniSharp.Models.FindUsagesRequest, OmniSharp.Models.QuickFixResponse>>;
+    public observeGotodefinition: CompositeObservable<Context<OmniSharp.Models.Request, any>>;
+    public observeGotofile: CompositeObservable<Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>;
+    public observeGotoregion: CompositeObservable<Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>;
+    public observeNavigateup: CompositeObservable<Context<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>>;
+    public observeNavigatedown: CompositeObservable<Context<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>>;
+    public observeRename: CompositeObservable<Context<OmniSharp.Models.RenameRequest, OmniSharp.Models.RenameResponse>>;
+    public observeSignatureHelp: CompositeObservable<Context<OmniSharp.Models.Request, OmniSharp.Models.SignatureHelp>>;
+    public observeCheckalivestatus: CompositeObservable<Context<any, boolean>>;
+    public observeCheckreadystatus: CompositeObservable<Context<any, boolean>>;
+    public observeCurrentfilemembersastree: CompositeObservable<Context<OmniSharp.Models.Request, any>>;
+    public observeCurrentfilemembersasflat: CompositeObservable<Context<OmniSharp.Models.Request, any>>;
+    public observeTypelookup: CompositeObservable<Context<OmniSharp.Models.TypeLookupRequest, OmniSharp.Models.TypeLookupResponse>>;
+    public observeFilesChanged: CompositeObservable<Context<OmniSharp.Models.Request[], boolean>>;
+    public observeProjects: CompositeObservable<Context<OmniSharp.Models.WorkspaceInformationResponse, OmniSharp.Models.WorkspaceInformationResponse>>;
+    public observeProject: CompositeObservable<Context<OmniSharp.Models.Request, OmniSharp.Models.ProjectInformationResponse>>;
+    public observeGetcodeactions: CompositeObservable<Context<OmniSharp.Models.CodeActionRequest, OmniSharp.Models.GetCodeActionsResponse>>;
+    public observeRuncodeaction: CompositeObservable<Context<OmniSharp.Models.CodeActionRequest, OmniSharp.Models.RunCodeActionResponse>>;
+    public observeGettestcontext: CompositeObservable<Context<OmniSharp.Models.TestCommandRequest, OmniSharp.Models.GetTestCommandResponse>>;
 
-    public projectAdded: Rx.Observable<OmniSharp.Models.ProjectInformationResponse>;
-    public projectChanged: Rx.Observable<OmniSharp.Models.ProjectInformationResponse>;
-    public projectRemoved: Rx.Observable<OmniSharp.Models.ProjectInformationResponse>;
-    public error: Rx.Observable<OmniSharp.Models.ErrorMessage>;
-    public msBuildProjectDiagnostics: Rx.Observable<OmniSharp.Models.MSBuildProjectDiagnostics>;
-    public packageRestoreStarted: Rx.Observable<OmniSharp.Models.PackageRestoreMessage>;
-    public packageRestoreFinished: Rx.Observable<OmniSharp.Models.PackageRestoreMessage>;
-    public unresolvedDependencies: Rx.Observable<OmniSharp.Models.UnresolvedDependenciesMessage>;
+    public projectAdded: CompositeObservable<OmniSharp.Models.ProjectInformationResponse>;
+    public projectChanged: CompositeObservable<OmniSharp.Models.ProjectInformationResponse>;
+    public projectRemoved: CompositeObservable<OmniSharp.Models.ProjectInformationResponse>;
+    public error: CompositeObservable<OmniSharp.Models.ErrorMessage>;
+    public msBuildProjectDiagnostics: CompositeObservable<OmniSharp.Models.MSBuildProjectDiagnostics>;
+    public packageRestoreStarted: CompositeObservable<OmniSharp.Models.PackageRestoreMessage>;
+    public packageRestoreFinished: CompositeObservable<OmniSharp.Models.PackageRestoreMessage>;
+    public unresolvedDependencies: CompositeObservable<OmniSharp.Models.UnresolvedDependenciesMessage>;
 }

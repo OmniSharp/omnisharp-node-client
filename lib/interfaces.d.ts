@@ -1,4 +1,5 @@
 import {DriverState, Driver} from "./enums";
+import {RequestContext, ResponseContext, CommandContext} from "./clients/contexts";
 
 export interface IStaticDriver {
     new (options: IDriverOptions): IDriver;
@@ -45,4 +46,16 @@ export interface OmnisharpClientStatus {
     operationsPerSecond: number;
     outgoingRequests: number;
     hasOutgoingRequests: boolean;
+}
+
+declare module Omnisharp {
+    interface Events {
+        events: Rx.Observable<OmniSharp.Stdio.Protocol.EventPacket>;
+        commands: Rx.Observable<OmniSharp.Stdio.Protocol.ResponsePacket>;
+        state: Rx.Observable<DriverState>;
+        status: Rx.Observable<OmnisharpClientStatus>;
+        requests: Rx.Observable<RequestContext<any>>;
+        responses: Rx.Observable<ResponseContext<any, any>>;
+        errors: Rx.Observable<CommandContext<any>>;
+    }
 }
