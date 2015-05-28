@@ -1,5 +1,5 @@
 import {Observable, Subject, AsyncSubject, BehaviorSubject} from "rx";
-import {extend, isObject, some} from "lodash";
+import {extend, isObject, some, uniqueId} from "lodash";
 import {assert} from "chai";
 //import {extend, uniqueId, some, endsWith, isObject, clone} from "lodash";
 import {IDriver, IStaticDriver, IDriverOptions, OmnisharpClientStatus, OmnisharpClientOptions} from "../interfaces";
@@ -25,6 +25,9 @@ export class ServerClient implements OmniSharp.Api, OmniSharp.Events, IDriver {
     private _statusStream: Rx.Observable<OmnisharpClientStatus>;
     private _errorStream = new Subject<CommandContext<any>>();
     private _customEvents = new Subject<OmniSharp.Stdio.Protocol.EventPacket>();
+
+    private _uniqueId = uniqueId("client");
+    public get uniqueId() { return this._uniqueId; }
 
     public static DriverState = DriverState;
 
