@@ -114,7 +114,8 @@ export class ServerClient implements OmniSharp.Api, OmniSharp.Events, IDriver {
 
                 return true;
             })
-            .startWith(true);
+            .startWith(true)
+            .debounce(120);
 
         // These are operations that should wait until after
         // we have executed all the current priority commands
