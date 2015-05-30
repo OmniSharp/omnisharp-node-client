@@ -231,10 +231,10 @@ declare module OmniSharp.Models {
 }
 declare module OmniSharp.ScriptCs {
     interface ScriptCsContext {
-        CsxFiles: string;
-        References: string;
-        Usings: string;
-        ScriptPacks: string;
+        CsxFiles: string[];
+        References: string[];
+        Usings: string[];
+        ScriptPacks: string[];
         Path: string;
     }
 }
