@@ -51,15 +51,18 @@ export class ServerClient implements OmniSharp.Api, OmniSharp.Events, IDriver {
 
         var requestsPerSecond = this._requestStream
             .bufferWithTime(1000, 100)
-            .select(x => x.length);
+            .select(x => x.length)
+            .startWith(0);
 
         var responsesPerSecond = this._responseStream
             .bufferWithTime(1000, 100)
-            .select(x => x.length);
+            .select(x => x.length)
+            .startWith(0);
 
         var eventsPerSecond = this._driver.events
             .bufferWithTime(1000, 100)
-            .select(x => x.length);
+            .select(x => x.length)
+            .startWith(0);
 
         this._statusStream = Observable.combineLatest(
             requestsPerSecond,
@@ -74,8 +77,9 @@ export class ServerClient implements OmniSharp.Api, OmniSharp.Events, IDriver {
                 outgoingRequests: this._driver.outstandingRequests,
                 hasOutgoingRequests: this._driver.outstandingRequests > 0
             }))
-            .sample(250)
+            //.sample(200)
             .map(Object.freeze)
+            .distinctUntilChanged()
             .share();
 
         if (this._options.debug) {
