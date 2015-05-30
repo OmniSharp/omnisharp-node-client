@@ -1,4 +1,4 @@
-import {Observable, Subject, AsyncSubject, BehaviorSubject} from "rx";
+import {Observable, Subject, AsyncSubject, BehaviorSubject, Scheduler} from "rx";
 import {extend, isObject, some, uniqueId} from "lodash";
 import {assert} from "chai";
 //import {extend, uniqueId, some, endsWith, isObject, clone} from "lodash";
@@ -77,6 +77,7 @@ export class ServerClient implements OmniSharp.Api, OmniSharp.Events, IDriver {
                 outgoingRequests: this._driver.outstandingRequests,
                 hasOutgoingRequests: this._driver.outstandingRequests > 0
             }))
+            .delaySubscription(0)
             //.sample(200)
             .map(Object.freeze)
             .distinctUntilChanged()
