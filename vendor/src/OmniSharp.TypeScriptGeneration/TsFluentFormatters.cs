@@ -32,6 +32,11 @@ namespace OmniSharp.TypeScriptGeneration
                 return memberTypeName + "[]";
             }
 
+            if (property.MemberInfo.DeclaringType.GetProperty(property.MemberInfo.Name).PropertyType.Name.StartsWith(nameof(IList), StringComparison.Ordinal))
+            {
+                return memberTypeName + "[]";
+            }
+
             if (property.MemberInfo.DeclaringType.GetProperty(property.MemberInfo.Name).PropertyType.Name.StartsWith(nameof(HashSet<object>), StringComparison.Ordinal))
             {
                 return memberTypeName + "[]";

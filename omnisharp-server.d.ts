@@ -4,11 +4,11 @@ declare module OmniSharp.Models {
         Path: string;
         Name: string;
         Commands: { [key: string]: string };
-        Configurations: string;
-        ProjectSearchPaths: string;
-        Frameworks: string;
+        Configurations: string[];
+        ProjectSearchPaths: string[];
+        Frameworks: string[];
         GlobalJsonPath: string;
-        SourceFiles: string;
+        SourceFiles: string[];
     }
     interface AspNet5WorkspaceInformation {
         Projects: OmniSharp.Models.AspNet5Project[];
@@ -145,7 +145,7 @@ declare module OmniSharp.Models {
         AssemblyName: string;
         TargetPath: string;
         TargetFramework: string;
-        SourceFiles: string;
+        SourceFiles: string[];
     }
     interface MSBuildProjectDiagnostics {
         FileName: string;
