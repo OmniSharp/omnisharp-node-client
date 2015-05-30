@@ -1,5 +1,6 @@
 import {Observable} from "rx";
 import {uniqueId, isObject, clone} from "lodash";
+var stripBom = require('strip-bom');
 
 export class CommandContext<T> {
     constructor(public command: string, public value: T) { }
@@ -13,6 +14,9 @@ export class RequestContext<T> {
 
     constructor(public clientId, public command: string, request: T, {silent}: OmniSharp.RequestOptions) {
         if (isObject(request)) {
+            if (request['Buffer']) {
+                request['Buffer'] = stripBom(request['Buffer']);
+            }
             this.request = Object.freeze(clone(request));
         } else {
             this.request = request;

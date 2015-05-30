@@ -5,9 +5,7 @@ import * as readline from "readline";
 import {Observable, Observer, Subject, AsyncSubject} from "rx";
 import {resolve} from 'path';
 import {omnisharpLocation} from '../omnisharp-path';
-
 import {findProject as projectFinder} from "../project-finder";
-var stripBom = require('strip-bom');
 
 class StdioDriver implements IDriver {
     private _seq: number = 1;
@@ -127,10 +125,6 @@ class StdioDriver implements IDriver {
             Seq: sequence,
             Arguments: request
         };
-
-        if (request && request['Buffer']) {
-            request['Buffer'] = stripBom(request['Buffer']);
-        }
 
         var subject = new AsyncSubject<TResponse>();
         this._outstandingRequests.set(sequence, subject);
