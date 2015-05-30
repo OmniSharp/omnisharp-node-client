@@ -206,7 +206,7 @@ export class ServerClient implements OmniSharp.Api, OmniSharp.Events, IDriver {
             return response;
         }
 
-        var Context = new RequestContext(action, request, options);
+        var Context = new RequestContext(this._uniqueId, action, request, options);
         this._requestStream.onNext(Context);
 
         return Context.getResponse<TResponse>(this._responseStream);

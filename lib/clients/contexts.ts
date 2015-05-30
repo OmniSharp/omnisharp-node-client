@@ -11,7 +11,7 @@ export class RequestContext<T> {
     public time: Date;
     public silent: boolean;
 
-    constructor(public command: string, request: T, {silent}: OmniSharp.RequestOptions) {
+    constructor(public clientId, public command: string, request: T, {silent}: OmniSharp.RequestOptions) {
         if (isObject(request)) {
             this.request = Object.freeze(clone(request));
         } else {
@@ -30,6 +30,7 @@ export class RequestContext<T> {
 }
 
 export class ResponseContext<TRequest, TResponse> {
+    public clientId: string;
     public request: TRequest;
     public response: TResponse;
     public command: string;
@@ -38,13 +39,14 @@ export class ResponseContext<TRequest, TResponse> {
     public responseTime: number;
     public silent: boolean;
 
-    constructor({request, command, sequence, time, silent}: RequestContext<any>, response: TResponse) {
+    constructor({clientId, request, command, sequence, time, silent}: RequestContext<any>, response: TResponse) {
         if (isObject(response)) {
             this.response = Object.freeze(response);
         } else {
             this.response = response;
         }
 
+        this.clientId = clientId;
         this.request = request;
         this.command = command;
         this.sequence = sequence;

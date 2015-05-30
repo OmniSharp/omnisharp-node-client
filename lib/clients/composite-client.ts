@@ -1,7 +1,9 @@
 import {ReplaySubject, Observable} from "rx";
 import * as _ from 'lodash';
-import {ServerClient} from "./server-client";
+import {ServerClient, } from "./server-client";
 import {DriverState} from "../enums";
+import {OmnisharpClientStatus} from "../interfaces";
+import {RequestContext, ResponseContext, CommandContext} from "./contexts";
 
 
 export class ObservationClient<T extends ServerClient> implements OmniSharp.Events {
@@ -50,6 +52,11 @@ export class ObservationClient<T extends ServerClient> implements OmniSharp.Even
         this.events = this.makeMergeObserable(client => client.events);
         this.commands = this.makeMergeObserable(client => client.commands);
         this.state = this.makeMergeObserable(client => client.state);
+
+        this.status = this.makeMergeObserable(client => client.status);
+        this.requests = this.makeMergeObserable(client => client.requests);
+        this.responses = this.makeMergeObserable(client => client.responses);
+        this.errors = this.makeMergeObserable(client => client.errors);
 
         this.onNext();
     }
@@ -121,6 +128,11 @@ export class ObservationClient<T extends ServerClient> implements OmniSharp.Even
     public commands: Rx.Observable<OmniSharp.Stdio.Protocol.ResponsePacket>;
     public state: Rx.Observable<DriverState>;
 
+    public status: Rx.Observable<OmnisharpClientStatus>;
+    public requests: Rx.Observable<RequestContext<any>>;
+    public responses: Rx.Observable<ResponseContext<any, any>>;
+    public errors: Rx.Observable<CommandContext<any>>;
+
 }
 
 interface CombinationKey<T> {
@@ -171,9 +183,8 @@ export class CombinationClient<T extends ServerClient> {
         this.packageRestoreFinished = this.makeCombineObserable(client => client.packageRestoreFinished);
         this.unresolvedDependencies = this.makeCombineObserable(client => client.unresolvedDependencies);
 
-        this.events = this.makeCombineObserable(client => client.events);
-        this.commands = this.makeCombineObserable(client => client.commands);
         this.state = this.makeCombineObserable(client => client.state);
+        this.status = this.makeCombineObserable(client => client.status);
 
         this.onNext();
     }
@@ -182,7 +193,7 @@ export class CombinationClient<T extends ServerClient> {
 
         // Caches the value, so that when the underlying clients change
         // we can start with the old value of the remaining clients
-        var cache : { [key: string]: T } = {};
+        var cache: { [key: string]: T } = {};
 
         return this._clientsSubject.flatMapLatest(clients => {
             // clean up after ourselves.
@@ -192,15 +203,15 @@ export class CombinationClient<T extends ServerClient> {
             return Observable.combineLatest(
                 clients.map(z => selector(z).startWith(cache[z.uniqueId])),
                 (...values: T[]) =>
-                values.map((value, index) => {
-                    cache[clients[index].uniqueId] = value;
-                    
-                    return {
-                        key: clients[index].uniqueId,
-                        value: value
-                    };
-                })
-            )
+                    values.map((value, index) => {
+                        cache[clients[index].uniqueId] = value;
+
+                        return {
+                            key: clients[index].uniqueId,
+                            value: value
+                        };
+                    })
+                )
         }).share();
     }
 
@@ -263,8 +274,6 @@ export class CombinationClient<T extends ServerClient> {
     public packageRestoreFinished: Observable<CombinationKey<OmniSharp.Models.PackageRestoreMessage>[]>;
     public unresolvedDependencies: Observable<CombinationKey<OmniSharp.Models.UnresolvedDependenciesMessage>[]>;
 
-    public events: Rx.Observable<CombinationKey<OmniSharp.Stdio.Protocol.EventPacket>[]>;
-    public commands: Rx.Observable<CombinationKey<OmniSharp.Stdio.Protocol.ResponsePacket>[]>;
     public state: Rx.Observable<CombinationKey<DriverState>[]>;
-
+    public status: Rx.Observable<CombinationKey<OmnisharpClientStatus>[]>;
 }
