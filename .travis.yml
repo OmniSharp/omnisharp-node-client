@@ -1,6 +1,8 @@
 language: csharp
 mono:
 - 3.12.0
+env:
+- TRAVIS: true
 sudo: required
 before_script:
 - sudo apt-get install build-essential

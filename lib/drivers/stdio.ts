@@ -3,7 +3,7 @@ import {DriverState} from "../enums";
 import {spawn, exec, ChildProcess} from "child_process";
 import * as readline from "readline";
 import {Observable, Observer, Subject, AsyncSubject} from "rx";
-import {resolve} from 'path';
+import {resolve, join} from 'path';
 import {omnisharpLocation} from '../omnisharp-path';
 import {findProject as projectFinder} from "../project-finder";
 
@@ -66,8 +66,13 @@ class StdioDriver implements IDriver {
 
         this._connectionStream.onNext(DriverState.Connecting);
 
-        var serverArguments: any[] = ["--stdio", "-s", projectPath, "--hostPID", process.pid];
-        this._process = spawn(this._serverPath, serverArguments);
+        var serverArguments: any[] = [join(__dirname, "../stdio/child.js"), "--serverPath", this._serverPath, "--projectPath", projectPath];
+        this._process = spawn(process.execPath, serverArguments, { env: { ATOM_SHELL_INTERNAL_RUN_AS_NODE: '1' } });
+        if (!this._process.stdout || !this._process.stdin) {
+            this.serverErr('failed to connect to connect to server');
+            return;
+        }
+
         this._process.stderr.on('data', (data) => this._logger.error(data.toString()));
         this._process.stderr.on('data', (data) => this.serverErr(data));
 
@@ -75,6 +80,7 @@ class StdioDriver implements IDriver {
             input: this._process.stdout,
             output: undefined
         });
+        
         rl.on('line', (data) => this.handleData(data));
 
         if (this._process.pid)
@@ -108,14 +114,11 @@ class StdioDriver implements IDriver {
     }
 
     public disconnect() {
-        this._connectionStream.onNext(DriverState.Disconnected);
         if (this._process != null && this._process.pid) {
             this._process.kill("SIGTERM");
-            if (process.platform === "win32") {
-                exec("taskkill", ["/PID", this._process.pid.toString(), '/T', '/F']);
-            }
         }
         this._process = null;
+        this._connectionStream.onNext(DriverState.Disconnected);
     }
 
     public request<TRequest, TResponse>(command: string, request?: TRequest): Rx.Observable<TResponse> {
