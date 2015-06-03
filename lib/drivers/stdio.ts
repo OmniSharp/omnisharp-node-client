@@ -8,8 +8,15 @@ import {resolve, join} from 'path';
 import {omnisharpLocation} from '../omnisharp-path';
 import {findProject as projectFinder} from "../project-finder";
 
+var win32 = false;
 // Setup the new process env.
-var env = defaults({ ATOM_SHELL_INTERNAL_RUN_AS_NODE: '1' }, process.env);
+if (process.platform === 'win32') {
+    win32 = true;
+    // ALL I have to say is WTF.
+    var env: any = { ATOM_SHELL_INTERNAL_RUN_AS_NODE: '1' };
+} else {
+    var env: any = defaults({ ATOM_SHELL_INTERNAL_RUN_AS_NODE: '1' }, process.env);
+}
 
 class StdioDriver implements IDriver {
     private _seq: number = 1;
@@ -70,9 +77,20 @@ class StdioDriver implements IDriver {
 
         this._connectionStream.onNext(DriverState.Connecting);
 
-        var serverArguments: any[] = [join(__dirname, "../stdio/child.js"), "--serverPath", this._serverPath, "--projectPath", projectPath];
-        this._process = spawn(process.execPath, serverArguments, { env });
-        if (!this._process.stdout || !this._process.stdin) {
+        this._logger.log(`Connecting to child @ ${process.execPath}`);
+        this._logger.log(`Path to server: ${this._serverPath}`);
+        this._logger.log(`Selected project: ${this._projectPath}`);
+
+        if (win32) {
+            // Spawn a special windows only node client... so that we can shutdown nicely.
+            var serverArguments: any[] = [join(__dirname, "../stdio/child.js"), "--serverPath", this._serverPath, "--projectPath", projectPath];
+            this._process = spawn(process.execPath, serverArguments, { env });
+        } else {
+            var serverArguments: any[] = ["--stdio", "-s", this._projectPath, "--hostPID", process.pid];
+            this._process = spawn(this._serverPath, serverArguments, { env });
+        }
+
+        if (!this._process.pid) {
             this.serverErr('failed to connect to connect to server');
             return;
         }
@@ -87,9 +105,7 @@ class StdioDriver implements IDriver {
 
         rl.on('line', (data) => this.handleData(data));
 
-        if (this._process.pid)
-            this.id = this._process.pid.toString();
-
+        this.id = this._process.pid.toString();
         this._process.on('error', (data) => this.serverErr(data));
         this._process.on('close', () => this.disconnect());
     }
