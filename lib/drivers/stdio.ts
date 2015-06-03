@@ -8,6 +8,9 @@ import {resolve, join} from 'path';
 import {omnisharpLocation} from '../omnisharp-path';
 import {findProject as projectFinder} from "../project-finder";
 
+// Setup the new process env.
+var env = defaults({ ATOM_SHELL_INTERNAL_RUN_AS_NODE: '1' }, process.env);
+
 class StdioDriver implements IDriver {
     private _seq: number = 1;
     private _process: ChildProcess;
@@ -68,7 +71,6 @@ class StdioDriver implements IDriver {
         this._connectionStream.onNext(DriverState.Connecting);
 
         var serverArguments: any[] = [join(__dirname, "../stdio/child.js"), "--serverPath", this._serverPath, "--projectPath", projectPath];
-        var env = defaults({ ATOM_SHELL_INTERNAL_RUN_AS_NODE: '1' }, process.env, );
         this._process = spawn(process.execPath, serverArguments, { env });
         if (!this._process.stdout || !this._process.stdin) {
             this.serverErr('failed to connect to connect to server');
