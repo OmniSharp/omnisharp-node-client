@@ -67,7 +67,8 @@ class StdioDriver implements IDriver {
         this._connectionStream.onNext(DriverState.Connecting);
 
         var serverArguments: any[] = [join(__dirname, "../stdio/child.js"), "--serverPath", this._serverPath, "--projectPath", projectPath];
-        this._process = spawn(process.execPath, serverArguments, { env: { ATOM_SHELL_INTERNAL_RUN_AS_NODE: '1' } });
+        var env = _.assign({ATOM_SHELL_INTERNAL_RUN_AS_NODE: '1'}, process.env)
+        this._process = spawn(process.execPath, serverArguments, { env });
         if (!this._process.stdout || !this._process.stdin) {
             this.serverErr('failed to connect to connect to server');
             return;
@@ -80,7 +81,7 @@ class StdioDriver implements IDriver {
             input: this._process.stdout,
             output: undefined
         });
-        
+
         rl.on('line', (data) => this.handleData(data));
 
         if (this._process.pid)

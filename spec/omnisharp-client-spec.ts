@@ -18,55 +18,51 @@ describe("Omnisharp Server", function() {
         });
     });
 
-    // These tests fail on travis for some reason the $HOME env variable isn't set.
-    if (!process.env.TRAVIS) {
-        describe('state', function() {
+    describe('state', function() {
 
-            this.timeout(20000);
-            var server: OmnisharpClient;
+        this.timeout(20000);
+        var server: OmnisharpClient;
 
-            before((done) => {
-                server = new OmnisharpClient({
-                    driver: Driver.Stdio,
-                    projectPath: process.cwd()
-                });
-
-                server.connect();
-
-                var sub = server.state.subscribe(state => {
-                    if (state === DriverState.Connected) {
-                        sub.dispose();
-                        done();
-                    }
-                });
-            })
-
-            it("must respond to all requests", function(done) {
-                var count = 4;
-                server.observeCheckalivestatus.subscribe((data) => {
-                    count--;
-                    if (!count)
-                        done();
-                });
-
-                server.checkalivestatus();
-                server.checkalivestatus();
-                server.checkalivestatus();
-                server.checkalivestatus();
+        before((done) => {
+            server = new OmnisharpClient({
+                driver: Driver.Stdio,
+                projectPath: process.cwd()
             });
 
-            it("must give status", function(done) {
+            server.connect();
 
-                var sub = server.status.subscribe(status => {
+            var sub = server.state.subscribe(state => {
+                if (state === DriverState.Connected) {
                     sub.dispose();
                     done();
-                })
-
-                server.checkalivestatus();
-                server.checkalivestatus();
-
+                }
             });
-        });
-    }
+        })
 
+        it("must respond to all requests", function(done) {
+            var count = 4;
+            server.observeCheckalivestatus.subscribe((data) => {
+                count--;
+                if (!count)
+                    done();
+            });
+
+            server.checkalivestatus();
+            server.checkalivestatus();
+            server.checkalivestatus();
+            server.checkalivestatus();
+        });
+
+        it("must give status", function(done) {
+
+            var sub = server.status.subscribe(status => {
+                sub.dispose();
+                done();
+            })
+
+            server.checkalivestatus();
+            server.checkalivestatus();
+
+        });
+    });
 });

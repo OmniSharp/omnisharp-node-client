@@ -20,45 +20,42 @@ describe("Omnisharp Local - Stdio", function() {
         });
     });
 
-    // These tests fail on travis for some reason the $HOME env variable isn't set.
-    if (!process.env.TRAVIS) {
-        describe('state', function() {
+    describe('state', function() {
 
-            var server: Stdio;
-            this.timeout(20000);
+        var server: Stdio;
+        this.timeout(20000);
 
-            before(() => {
-                server = new Stdio({
-                    driver: Driver.Stdio,
-                    projectPath: resolve(__dirname, '../vendor/omnisharp-roslyn/')
-                });
-            })
-
-            it("must connect", function(done) {
-
-                expect(server.currentState).to.be.eq(DriverState.Disconnected);
-
-                server.connect({});
-                expect(server.currentState).to.be.eq(DriverState.Connecting);
-
-                var sub = server.state.subscribe(state => {
-                    expect(server.currentState).to.be.eq(DriverState.Connected);
-                    sub.dispose();
-                    done();
-                });
+        before(() => {
+            server = new Stdio({
+                driver: Driver.Stdio,
+                projectPath: resolve(__dirname, '../vendor/omnisharp-roslyn/')
             });
+        })
 
-            it("must disconnect", function(done) {
-                var sub2 = server.state.subscribe(state => {
-                    expect(server.currentState).to.be.eq(DriverState.Disconnected);
-                    sub2.dispose();
-                    done();
-                });
+        it("must connect", function(done) {
 
-                server.disconnect();
+            expect(server.currentState).to.be.eq(DriverState.Disconnected);
+
+            server.connect({});
+            expect(server.currentState).to.be.eq(DriverState.Connecting);
+
+            var sub = server.state.subscribe(state => {
+                expect(server.currentState).to.be.eq(DriverState.Connected);
+                sub.dispose();
+                done();
             });
         });
-    }
+
+        it("must disconnect", function(done) {
+            var sub2 = server.state.subscribe(state => {
+                expect(server.currentState).to.be.eq(DriverState.Disconnected);
+                sub2.dispose();
+                done();
+            });
+
+            server.disconnect();
+        });
+    });
 
     describe("properties", function() {
         this.timeout(20000);
