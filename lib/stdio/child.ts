@@ -4,8 +4,6 @@ var argv = require('yargs').argv;
 var serverPath = argv.serverPath;
 var projectPath = argv.projectPath;
 
-console.log(serverPath, ["--stdio", "-s", projectPath, "--hostPID", process.pid]);
-
 var childProcess = spawn(serverPath, ["--stdio", "-s", projectPath, "--hostPID", process.pid]);
 
 process.stdin.pipe(childProcess.stdin);

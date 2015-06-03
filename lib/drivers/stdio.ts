@@ -1,4 +1,5 @@
 import {IDriver, IDriverOptions, ILogger} from "../interfaces";
+import {defaults} from "lodash";
 import {DriverState} from "../enums";
 import {spawn, exec, ChildProcess} from "child_process";
 import * as readline from "readline";
@@ -57,17 +58,17 @@ class StdioDriver implements IDriver {
         }
 
         if (!projectPath) {
-          var error = "Failed to determine project path for omnisharp, aborting connect()";
-          this._logger.error(error);
-          this.serverErr(error);
-          this.disconnect();
-          return;
+            var error = "Failed to determine project path for omnisharp, aborting connect()";
+            this._logger.error(error);
+            this.serverErr(error);
+            this.disconnect();
+            return;
         }
 
         this._connectionStream.onNext(DriverState.Connecting);
 
         var serverArguments: any[] = [join(__dirname, "../stdio/child.js"), "--serverPath", this._serverPath, "--projectPath", projectPath];
-        var env = _.assign({ATOM_SHELL_INTERNAL_RUN_AS_NODE: '1'}, process.env)
+        var env = defaults({ ATOM_SHELL_INTERNAL_RUN_AS_NODE: '1' }, process.env, );
         this._process = spawn(process.execPath, serverArguments, { env });
         if (!this._process.stdout || !this._process.stdin) {
             this.serverErr('failed to connect to connect to server');
