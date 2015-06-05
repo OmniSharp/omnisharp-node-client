@@ -271,7 +271,7 @@ export class ServerClient implements OmniSharp.Api, OmniSharp.Events, IDriver {
     }
 
     public updatebufferPromise(request: OmniSharp.Models.Request, options?: OmniSharp.RequestOptions) {
-        return this.updatebuffer(request).toPromise();
+        return this.updatebuffer(request, options).toPromise();
     }
 
     public observeUpdatebuffer: Rx.Observable<Context<OmniSharp.Models.Request, any>>;
@@ -292,7 +292,7 @@ export class ServerClient implements OmniSharp.Api, OmniSharp.Events, IDriver {
     }
 
     public changebufferPromise(request: OmniSharp.Models.ChangeBufferRequest, options?: OmniSharp.RequestOptions) {
-        return this.changebuffer(request).toPromise();
+        return this.changebuffer(request, options).toPromise();
     }
 
     public observeChangebuffer: Rx.Observable<Context<OmniSharp.Models.Request, any>>;
@@ -302,7 +302,7 @@ export class ServerClient implements OmniSharp.Api, OmniSharp.Events, IDriver {
     }
 
     public codecheckPromise(request: OmniSharp.Models.Request, options?: OmniSharp.RequestOptions) {
-        return this.codecheck(request).toPromise();
+        return this.codecheck(request, options).toPromise();
     }
 
     public observeCodecheck: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>;
@@ -319,7 +319,7 @@ export class ServerClient implements OmniSharp.Api, OmniSharp.Events, IDriver {
     }
 
     public formatAfterKeystrokePromise(request: OmniSharp.Models.FormatAfterKeystrokeRequest, options?: OmniSharp.RequestOptions) {
-        return this.formatAfterKeystroke(request).toPromise();
+        return this.formatAfterKeystroke(request, options).toPromise();
     }
 
     public observeFormatAfterKeystroke: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.FormatRangeResponse>>;
@@ -339,7 +339,7 @@ export class ServerClient implements OmniSharp.Api, OmniSharp.Events, IDriver {
     }
 
     public formatRangePromise(request: OmniSharp.Models.FormatRangeRequest, options?: OmniSharp.RequestOptions) {
-        return this.formatRange(request).toPromise();
+        return this.formatRange(request, options).toPromise();
     }
 
     public observeFormatRange: Rx.Observable<Context<OmniSharp.Models.FormatRangeRequest, OmniSharp.Models.FormatRangeResponse>>;
@@ -351,7 +351,7 @@ export class ServerClient implements OmniSharp.Api, OmniSharp.Events, IDriver {
     }
 
     public codeformatPromise(request: OmniSharp.Models.Request, options?: OmniSharp.RequestOptions) {
-        return this.codeformat(request).toPromise();
+        return this.codeformat(request, options).toPromise();
     }
 
     public observeCodeformat: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.CodeFormatResponse>>;
@@ -368,7 +368,7 @@ export class ServerClient implements OmniSharp.Api, OmniSharp.Events, IDriver {
     }
 
     public autocompletePromise(request: OmniSharp.Models.AutoCompleteRequest, options?: OmniSharp.RequestOptions) {
-        return this.autocomplete(request).toPromise();
+        return this.autocomplete(request, options).toPromise();
     }
 
     public observeAutocomplete: Rx.Observable<Context<OmniSharp.Models.AutoCompleteRequest, OmniSharp.Models.AutoCompleteResponse[]>>;
@@ -384,7 +384,7 @@ export class ServerClient implements OmniSharp.Api, OmniSharp.Events, IDriver {
     }
 
     public findimplementationsPromise(request: OmniSharp.Models.Request, options?: OmniSharp.RequestOptions) {
-        return this.findimplementations(request).toPromise();
+        return this.findimplementations(request, options).toPromise();
     }
 
     public observeFindimplementations: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>;
@@ -398,7 +398,7 @@ export class ServerClient implements OmniSharp.Api, OmniSharp.Events, IDriver {
     }
 
     public findsymbolsPromise(request: OmniSharp.Models.FindSymbolsRequest, options?: OmniSharp.RequestOptions) {
-        return this.findsymbols(request).toPromise();
+        return this.findsymbols(request, options).toPromise();
     }
 
     public observeFindsymbols: Rx.Observable<Context<OmniSharp.Models.FindSymbolsRequest, OmniSharp.Models.QuickFixResponse>>;
@@ -414,7 +414,7 @@ export class ServerClient implements OmniSharp.Api, OmniSharp.Events, IDriver {
     }
 
     public findusagesPromise(request: OmniSharp.Models.FindUsagesRequest, options?: OmniSharp.RequestOptions) {
-        return this.findusages(request).toPromise();
+        return this.findusages(request, options).toPromise();
     }
 
     public observeFindusages: Rx.Observable<Context<OmniSharp.Models.FindUsagesRequest, OmniSharp.Models.QuickFixResponse>>;
@@ -430,7 +430,7 @@ export class ServerClient implements OmniSharp.Api, OmniSharp.Events, IDriver {
     }
 
     public gotodefinitionPromise(request: OmniSharp.Models.Request, options?: OmniSharp.RequestOptions) {
-        return this.gotodefinition(request).toPromise();
+        return this.gotodefinition(request, options).toPromise();
     }
 
     public observeGotodefinition: Rx.Observable<Context<OmniSharp.Models.Request, any>>;
@@ -449,8 +449,8 @@ export class ServerClient implements OmniSharp.Api, OmniSharp.Events, IDriver {
         return this.request<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>("gotofile", request, options);
     }
 
-    public gotofilePromise(request?: OmniSharp.Models.Request) {
-        return this.gotofile(request).toPromise();
+    public gotofilePromise(request?: OmniSharp.Models.Request, options?: OmniSharp.RequestOptions) {
+        return this.gotofile(request, options).toPromise();
     }
 
     public observeGotofile: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>;
@@ -462,13 +462,13 @@ export class ServerClient implements OmniSharp.Api, OmniSharp.Events, IDriver {
     }
 
     public gotoregionPromise(request: OmniSharp.Models.Request, options?: OmniSharp.RequestOptions) {
-        return this.gotofile(request).toPromise();
+        return this.gotofile(request, options).toPromise();
     }
 
     public observeGotoregion: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>;
 
     public navigateupPromise(request: OmniSharp.Models.Request, options?: OmniSharp.RequestOptions) {
-        return this.navigateup(request).toPromise();
+        return this.navigateup(request, options).toPromise();
     }
 
     public observeNavigateup: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>>;
@@ -484,7 +484,7 @@ export class ServerClient implements OmniSharp.Api, OmniSharp.Events, IDriver {
     }
 
     public navigatedownPromise(request: OmniSharp.Models.Request, options?: OmniSharp.RequestOptions) {
-        return this.navigatedown(request).toPromise();
+        return this.navigatedown(request, options).toPromise();
     }
 
     public observeNavigatedown: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>>;
@@ -502,7 +502,7 @@ export class ServerClient implements OmniSharp.Api, OmniSharp.Events, IDriver {
     }
 
     public renamePromise(request: OmniSharp.Models.RenameRequest, options?: OmniSharp.RequestOptions) {
-        return this.rename(request).toPromise();
+        return this.rename(request, options).toPromise();
     }
 
     public observeRename: Rx.Observable<Context<OmniSharp.Models.RenameRequest, OmniSharp.Models.RenameResponse>>;
@@ -518,7 +518,7 @@ export class ServerClient implements OmniSharp.Api, OmniSharp.Events, IDriver {
     }
 
     public signatureHelpPromise(request: OmniSharp.Models.Request, options?: OmniSharp.RequestOptions) {
-        return this.signatureHelp(request).toPromise();
+        return this.signatureHelp(request, options).toPromise();
     }
 
     public observeSignatureHelp: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.SignatureHelp>>;
@@ -550,7 +550,7 @@ export class ServerClient implements OmniSharp.Api, OmniSharp.Events, IDriver {
     }
 
     public currentfilemembersastreePromise(request: OmniSharp.Models.Request, options?: OmniSharp.RequestOptions) {
-        return this.currentfilemembersastree(request).toPromise();
+        return this.currentfilemembersastree(request, options).toPromise();
     }
 
     public observeCurrentfilemembersastree: Rx.Observable<Context<OmniSharp.Models.Request, any>>;
@@ -562,7 +562,7 @@ export class ServerClient implements OmniSharp.Api, OmniSharp.Events, IDriver {
     }
 
     public currentfilemembersasflatPromise(request: OmniSharp.Models.Request, options?: OmniSharp.RequestOptions) {
-        return this.currentfilemembersasflat(request).toPromise();
+        return this.currentfilemembersasflat(request, options).toPromise();
     }
 
     public observeCurrentfilemembersasflat: Rx.Observable<Context<OmniSharp.Models.Request, any>>;
@@ -578,7 +578,7 @@ export class ServerClient implements OmniSharp.Api, OmniSharp.Events, IDriver {
     }
 
     public typelookupPromise(request: OmniSharp.Models.TypeLookupRequest, options?: OmniSharp.RequestOptions) {
-        return this.typelookup(request).toPromise();
+        return this.typelookup(request, options).toPromise();
     }
 
     public observeTypelookup: Rx.Observable<Context<OmniSharp.Models.TypeLookupRequest, OmniSharp.Models.TypeLookupResponse>>;
@@ -589,7 +589,7 @@ export class ServerClient implements OmniSharp.Api, OmniSharp.Events, IDriver {
     }
 
     public filesChangedPromise(request: OmniSharp.Models.Request[], options?: OmniSharp.RequestOptions) {
-        return this.filesChanged(request).toPromise();
+        return this.filesChanged(request, options).toPromise();
     }
 
     public observeFilesChanged: Rx.Observable<Context<OmniSharp.Models.Request[], boolean>>;
@@ -611,7 +611,7 @@ export class ServerClient implements OmniSharp.Api, OmniSharp.Events, IDriver {
     }
 
     public projectPromise(request: OmniSharp.Models.Request, options?: OmniSharp.RequestOptions) {
-        return this.project(request).toPromise();
+        return this.project(request, options).toPromise();
     }
 
     public observeProject: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.ProjectInformationResponse>>;
@@ -627,7 +627,7 @@ export class ServerClient implements OmniSharp.Api, OmniSharp.Events, IDriver {
     }
 
     public getcodeactionsPromise(request: OmniSharp.Models.CodeActionRequest, options?: OmniSharp.RequestOptions) {
-        return this.getcodeactions(request).toPromise();
+        return this.getcodeactions(request, options).toPromise();
     }
 
     public observeGetcodeactions: Rx.Observable<Context<OmniSharp.Models.CodeActionRequest, OmniSharp.Models.GetCodeActionsResponse>>;
@@ -645,7 +645,7 @@ export class ServerClient implements OmniSharp.Api, OmniSharp.Events, IDriver {
     }
 
     public runcodeactionPromise(request: OmniSharp.Models.CodeActionRequest, options?: OmniSharp.RequestOptions) {
-        return this.runcodeaction(request).toPromise();
+        return this.runcodeaction(request, options).toPromise();
     }
 
     public observeRuncodeaction: Rx.Observable<Context<OmniSharp.Models.CodeActionRequest, OmniSharp.Models.RunCodeActionResponse>>;
@@ -663,7 +663,7 @@ export class ServerClient implements OmniSharp.Api, OmniSharp.Events, IDriver {
     }
 
     public gettestcontextPromise(request: OmniSharp.Models.TestCommandRequest, options?: OmniSharp.RequestOptions) {
-        return this.gettestcontext(request).toPromise();
+        return this.gettestcontext(request, options).toPromise();
     }
 
     public observeGettestcontext: Rx.Observable<Context<OmniSharp.Models.TestCommandRequest, OmniSharp.Models.GetTestCommandResponse>>;
