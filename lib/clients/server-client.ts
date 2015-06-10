@@ -229,8 +229,8 @@ export class ServerClient implements OmniSharp.Api, OmniSharp.Events, IDriver {
         this.observeUpdatebuffer = observerStream.filter(z => z.command == "updatebuffer").share();
         this.observeChangebuffer = observerStream.filter(z => z.command == "changebuffer").share();
         this.observeCodecheck = observerStream.filter(z => z.command == "codecheck").share();
-        this.observeFormatAfterKeystroke = observerStream.filter(z => z.command == "formatafterkeystroke").share();
-        this.observeFormatRange = observerStream.filter(z => z.command == "formatrange").share();
+        this.observeFormatAfterKeystroke = observerStream.filter(z => z.command == "formatAfterKeystroke").share();
+        this.observeFormatRange = observerStream.filter(z => z.command == "formatRange").share();
         this.observeCodeformat = observerStream.filter(z => z.command == "codeformat").share();
         this.observeAutocomplete = observerStream.filter(z => z.command == "autocomplete").share();
         this.observeFindimplementations = observerStream.filter(z => z.command == "findimplementations").share();
@@ -240,13 +240,13 @@ export class ServerClient implements OmniSharp.Api, OmniSharp.Events, IDriver {
         this.observeNavigateup = observerStream.filter(z => z.command == "navigateup").share();
         this.observeNavigatedown = observerStream.filter(z => z.command == "navigatedown").share();
         this.observeRename = observerStream.filter(z => z.command == "rename").share();
-        this.observeSignatureHelp = observerStream.filter(z => z.command == "signaturehelp").share();
+        this.observeSignatureHelp = observerStream.filter(z => z.command == "signatureHelp").share();
         this.observeCheckalivestatus = observerStream.filter(z => z.command == "checkalivestatus").share();
         this.observeCheckreadystatus = observerStream.filter(z => z.command == "checkreadystatus").share();
         this.observeCurrentfilemembersastree = observerStream.filter(z => z.command == "currentfilemembersastree").share();
         this.observeCurrentfilemembersasflat = observerStream.filter(z => z.command == "currentfilemembersasflat").share();
         this.observeTypelookup = observerStream.filter(z => z.command == "typelookup").share();
-        this.observeFilesChanged = observerStream.filter(z => z.command == "fileschanged").share();
+        this.observeFilesChanged = observerStream.filter(z => z.command == "filesChanged").share();
         this.observeProjects = observerStream.filter(z => z.command == "projects").share();
         this.observeProject = observerStream.filter(z => z.command == "project").share();
         this.observeGetcodeactions = observerStream.filter(z => z.command == "getcodeactions").share();
