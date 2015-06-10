@@ -1,5 +1,5 @@
 import {Observable} from "rx";
-import {uniqueId, isObject, clone} from "lodash";
+import {uniqueId, isObject, clone, } from "lodash";
 var stripBom = require('strip-bom');
 
 export class CommandContext<T> {
@@ -7,12 +7,21 @@ export class CommandContext<T> {
 }
 
 export class RequestContext<T> {
+    public command: string;
     public request: T;
     public sequence: string;
     public time: Date;
     public silent: boolean;
+    public isCommand(command: string) {
+        if (command && this.command) {
+            return command.toLowerCase() === this.command;
+        }
+        return null;
+    }
 
-    constructor(public clientId, public command: string, request: T, {silent}: OmniSharp.RequestOptions) {
+    constructor(public clientId, command: string, request: T, {silent}: OmniSharp.RequestOptions) {
+        if (command) this.command = command.toLowerCase();
+
         if (isObject(request)) {
             if (request['Buffer']) {
                 request['Buffer'] = stripBom(request['Buffer']);
@@ -42,8 +51,16 @@ export class ResponseContext<TRequest, TResponse> {
     public time: Date;
     public responseTime: number;
     public silent: boolean;
+    public isCommand(command: string) {
+        if (command && this.command) {
+            return command.toLowerCase() === this.command;
+        }
+        return null;
+    }
 
     constructor({clientId, request, command, sequence, time, silent}: RequestContext<any>, response: TResponse) {
+        if (command) this.command = command.toLowerCase();
+
         if (isObject(response)) {
             this.response = Object.freeze(response);
         } else {
