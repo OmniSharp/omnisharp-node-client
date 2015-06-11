@@ -11,6 +11,8 @@ cp -a vendor/omnisharp-roslyn/artifacts/build/omnisharp/approot/* roslyn
 curl -LO http://nuget.org/nuget.exe
 
 mono nuget.exe install dnx-clr-win-x86 -Prerelease -OutputDirectory roslyn/packages
+mono nuget.exe install dnx-mono -Prerelease -OutputDirectory roslyn/packages
+
 if [ ! -d "roslyn/packages/dnx-clr-win-x86.1.0.0-beta4" ]; then
     echo 'ERROR: Can not find dnx-clr-win-x86.1.0.0-beta4 in output exiting!'
     exit 1
