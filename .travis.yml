@@ -1,6 +1,6 @@
 language: csharp
 mono:
-- 3.12.0
+- beta
 env:
 - TRAVIS: true
 sudo: required
