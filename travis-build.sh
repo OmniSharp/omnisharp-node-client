@@ -35,8 +35,8 @@ dnvm install 1.0.0-beta4
 dnvm use 1.0.0-beta4
 
 pushd vendor/src/OmniSharp.TypeScriptGeneration
-kpm restore
-k run ../../..
+dnu restore
+dnx . run ../../..
 popd
 
 npm --no-git-tag-version version $TRAVIS_TAG -m "updating to $TRAVIS_TAG"
