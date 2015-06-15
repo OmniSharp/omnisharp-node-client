@@ -155,16 +155,21 @@ export class ServerClient implements OmniSharp.Api, OmniSharp.Events, IDriver {
         priorityQueue.request(1);
     }
 
-    private handleResult(Context: RequestContext<any>) {
-        var result = this._driver.request<any, any>(Context.command, Context.request);
+    private handleResult(context: RequestContext<any>) {
+        var result = this._driver.request<any, any>(context.command, context.request);
 
         result.subscribe((data) => {
-            this._responseStream.onNext(new ResponseContext(Context, data));
+            this._responseStream.onNext(new ResponseContext(context, this.responseMutator(data)));
         }, (error) => {
-            this._errorStream.onNext(new CommandContext(Context.command, error));
+            this._errorStream.onNext(new CommandContext(context.command, error));
         });
 
         return result;
+    }
+
+    protected responseMutator(data: any)
+    {
+        return data;
     }
 
     public log(message: string, logLevel?: string) {
