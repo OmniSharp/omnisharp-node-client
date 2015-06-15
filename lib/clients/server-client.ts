@@ -172,6 +172,11 @@ export class ServerClient implements OmniSharp.Api, OmniSharp.Events, IDriver {
         return data;
     }
 
+    protected requestMutator(data: any)
+    {
+        return data;
+    }
+
     public log(message: string, logLevel?: string) {
         // log our complete response time
         this._customEvents.onNext({
@@ -205,7 +210,7 @@ export class ServerClient implements OmniSharp.Api, OmniSharp.Events, IDriver {
 
             var sub = this.state.where(z => z === DriverState.Connected).subscribe(z => {
                 sub.dispose();
-                this.request<TRequest, TResponse>(action, request, options).subscribe(z => response.onNext(z));
+                this.request<TRequest, TResponse>(action, this.requestMutator(request), options).subscribe(z => response.onNext(z));
             });
 
             return response;
