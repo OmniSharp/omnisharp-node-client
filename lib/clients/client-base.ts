@@ -233,7 +233,7 @@ export class ClientBase implements IDriver {
             return data;
 
         if (isArray(data)) {
-            each(data, item => this.requestMutator(item));
+            each(data, item => this.responseMutator(item));
             return data;
         }
 
@@ -246,7 +246,7 @@ export class ClientBase implements IDriver {
             }
         });
 
-        each(filter(data, z => isArray(z)), item => this.requestMutator(item));
+        each(filter(data, z => isArray(z)), item => this.responseMutator(item));
 
         return data;
     }
