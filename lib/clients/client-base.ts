@@ -1,5 +1,5 @@
 import {Observable, Subject, AsyncSubject, BehaviorSubject, Scheduler} from "rx";
-import {extend, isObject, some, uniqueId, isArray, each, intersection, keys, filter} from "lodash";
+import {extend, isObject, some, uniqueId, isArray, each, intersection, keys, filter, isNumber, has, get, set} from "lodash";
 import {IDriver, IStaticDriver, IDriverOptions, OmnisharpClientStatus, OmnisharpClientOptions} from "../interfaces";
 import {Driver, DriverState} from "../enums";
 import {RequestContext, ResponseContext, CommandContext} from "./contexts";
@@ -13,15 +13,6 @@ var priorityCommands = [
     'updatebuffer', 'changebuffer', 'filesChanged'
 ];
 var undeferredCommands = normalCommands.concat(priorityCommands);
-
-var serverLineNumbers = [
-    'Line', 'Column',
-    'Start', 'End',
-    'StartLine', 'StartColumn',
-    'EndLine', 'EndColumn',
-    'SelectionStartColumn', 'SelectionStartLine',
-    'SelectionEndColumn', 'SelectionEndLine'
-];
 
 export class ClientBase implements IDriver {
     private _driver: IDriver;
@@ -202,6 +193,16 @@ export class ClientBase implements IDriver {
         return result;
     }
 
+    private static serverLineNumbers = [
+        'Line', 'Column',
+        'StartLine', 'StartColumn',
+        'EndLine', 'EndColumn',
+        'SelectionStartColumn', 'SelectionStartLine',
+        'SelectionEndColumn', 'SelectionEndLine',
+        'Selection.Start.Line', 'Selection.Start.Column',
+        'Selection.End.Line', 'Selection.End.Column',
+    ];
+
     protected requestMutator(data: any) {
         // Assume one based indexes
         if (this._options.oneBasedIndexes)
@@ -212,9 +213,16 @@ export class ClientBase implements IDriver {
             return data;
         }
 
-        var itemsToChange = intersection(serverLineNumbers, keys(data));
-        each(itemsToChange, key => data[key] = data[key] + 1);
-        each(filter(data, z => isArray(z) || isObject(z)), item => this.requestMutator(item));
+        each(ClientBase.serverLineNumbers, path => {
+            var hasPath = has(data, path);
+            if (hasPath) {
+                var value = get(data, path);
+                value = value + 1;
+                set(data, path, value);
+            }
+        });
+
+        each(filter(data, z => isArray(z)), item => this.requestMutator(item));
 
         return data;
     }
@@ -225,13 +233,20 @@ export class ClientBase implements IDriver {
             return data;
 
         if (isArray(data)) {
-            each(data, item => this.responseMutator(item));
+            each(data, item => this.requestMutator(item));
             return data;
         }
 
-        var itemsToChange = intersection(serverLineNumbers, keys(data));
-        each(itemsToChange, key => data[key] = data[key] - 1);
-        each(filter(data, z => isArray(z) || isObject(z)), item => this.requestMutator(item));
+        each(ClientBase.serverLineNumbers, path => {
+            var hasPath = has(data, path);
+            if (hasPath) {
+                var value = get(data, path);
+                value = value - 1;
+                set(data, path, value);
+            }
+        });
+
+        each(filter(data, z => isArray(z)), item => this.requestMutator(item));
 
         return data;
     }
