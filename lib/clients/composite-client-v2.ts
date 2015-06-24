@@ -1,9 +1,12 @@
 import {ReplaySubject, Observable} from "rx";
 import * as _ from 'lodash';
+import {ClientV1} from "./client-v1";
 import {ClientV2} from "./client-v2";
+import {ObservationClientV1} from "./composite-client-v1";
 import {ObservationClientBase, CombinationClientBase, CombinationKey} from "./composite-client-base";
 
 export class ObservationClientV2<T extends ClientV2> extends ObservationClientBase<T> {
+    public v1: ObservationClientV1<ClientV1>;
     public observeUpdatebuffer: typeof ClientV2.prototype.observeUpdatebuffer;
     public observeChangebuffer: typeof ClientV2.prototype.observeChangebuffer;
     public observeCodecheck: typeof ClientV2.prototype.observeCodecheck;
@@ -36,6 +39,8 @@ export class ObservationClientV2<T extends ClientV2> extends ObservationClientBa
     constructor(clients: T[] = []) {
         super(clients);
 
+        this.v1 = new ObservationClientV1(clients.map(z => z.v1));
+
         this.observeUpdatebuffer = this.makeMergeObserable(client => client.observeUpdatebuffer);
         this.observeChangebuffer = this.makeMergeObserable(client => client.observeChangebuffer);
         this.observeCodecheck = this.makeMergeObserable(client => client.observeCodecheck);
@@ -64,6 +69,21 @@ export class ObservationClientV2<T extends ClientV2> extends ObservationClientBa
         this.observeGetcodeactions = this.makeMergeObserable(client => client.observeGetcodeactions);
         this.observeRuncodeaction = this.makeMergeObserable(client => client.observeRuncodeaction);
         this.observeGettestcontext = this.makeMergeObserable(client => client.observeGettestcontext);
+    }
+
+    public add(client: T) {
+        ObservationClientBase.prototype.add.call(this, client);
+        this.v1.add(client.v1);
+    }
+
+    public remove(client: T) {
+        ObservationClientBase.prototype.remove.call(this, client);
+        this.v1.remove(client.v1);
+    }
+
+    public removeAll() {
+        ObservationClientBase.prototype.removeAll.call(this);
+        this.v1.removeAll();
     }
 }
 
