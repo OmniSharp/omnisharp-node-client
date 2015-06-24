@@ -1,6 +1,6 @@
 import {expect} from 'chai';
 import {Driver, DriverState} from "../lib/enums";
-import {ClientV1 as OmnisharpClient} from "../lib/clients/client-v1";
+import {ClientV2 as OmnisharpClient} from "../lib/clients/client-v2";
 
 declare var xdescribe: Function;
 
@@ -1003,6 +1003,159 @@ describe("Commands", function() {
                 })
             }).to.not.throw;
         });
+        it("should throw if Selection.Start.Line is null", function() {
+            expect(() => {
+                server.getcodeactions({
+                    FileName: '',
+                    Selection: {
+                        Start: {
+                            Line: null,
+                            Column: 1
+                        },
+                        End: {
+                            Line: 1,
+                            Column: 1
+                        }
+                    }
+                })
+            }).to.throw(/must not be null/);
+        });
+        it("should throw if Selection.Start.Line is less than 0", function() {
+            expect(() => {
+                server.getcodeactions({
+                    FileName: '',
+                    Selection: {
+                        Start: {
+                            Line: -1,
+                            Column: 1
+                        },
+                        End: {
+                            Line: 1,
+                            Column: 1
+                        }
+                    }
+                })
+            }).to.throw(/must be greater than or equal to 0/);
+        });
+        it("should throw if Selection.Start.Column is null", function() {
+            expect(() => {
+                server.getcodeactions({
+                    FileName: '',
+                    Selection: {
+                        Start: {
+                            Line: 1,
+                            Column: null
+                        },
+                        End: {
+                            Line: 1,
+                            Column: 1
+                        }
+                    }
+                })
+            }).to.throw(/must not be null/);
+        });
+        it("should throw if Selection.Start.Column is less than 0", function() {
+            expect(() => {
+                server.getcodeactions({
+                    FileName: '',
+                    Selection: {
+                        Start: {
+                            Line: 1,
+                            Column: -1
+                        },
+                        End: {
+                            Line: 1,
+                            Column: 1
+                        }
+                    }
+                })
+            }).to.throw(/must be greater than or equal to 0/);
+        });
+        it("should throw if Selection.End.Line is null", function() {
+            expect(() => {
+                server.getcodeactions({
+                    FileName: '',
+                    Selection: {
+                        End: {
+                            Line: null,
+                            Column: 1
+                        },
+                        Start: {
+                            Line: 1,
+                            Column: 1
+                        }
+                    }
+                })
+            }).to.throw(/must not be null/);
+        });
+        it("should throw if Selection.End.Line is less than 0", function() {
+            expect(() => {
+                server.getcodeactions({
+                    FileName: '',
+                    Selection: {
+                        End: {
+                            Line: -1,
+                            Column: 1
+                        },
+                        Start: {
+                            Line: 1,
+                            Column: 1
+                        }
+                    }
+                })
+            }).to.throw(/must be greater than or equal to 0/);
+        });
+        it("should throw if Selection.End.Column is null", function() {
+            expect(() => {
+                server.getcodeactions({
+                    FileName: '',
+                    Selection: {
+                        End: {
+                            Line: 1,
+                            Column: null
+                        },
+                        Start: {
+                            Line: 1,
+                            Column: 1
+                        }
+                    }
+                })
+            }).to.throw(/must not be null/);
+        });
+        it("should throw if Selection.End.Column is less than 0", function() {
+            expect(() => {
+                server.getcodeactions({
+                    FileName: '',
+                    Selection: {
+                        End: {
+                            Line: 1,
+                            Column: -1
+                        },
+                        Start: {
+                            Line: 1,
+                            Column: 1
+                        }
+                    }
+                })
+            }).to.throw(/must be greater than or equal to 0/);
+        });
+        it("should not throw of required fields are set", function() {
+            expect(() => {
+                server.getcodeactions({
+                    FileName: '',
+                    Selection: {
+                        End: {
+                            Line: 1,
+                            Column: 1
+                        },
+                        Start: {
+                            Line: 1,
+                            Column: 1
+                        }
+                    }
+                })
+            }).to.not.throw;
+        });
     });
 
     describe("checkalivestatus", function() {
@@ -1100,7 +1253,7 @@ describe("Commands", function() {
                     FileName: null,
                     Line: 1,
                     Column: 1,
-                    CodeAction: 1
+                    Identifier: ''
                 })
             }).to.throw(/must not be null/);
         });
@@ -1110,7 +1263,7 @@ describe("Commands", function() {
                     FileName: '',
                     Line: null,
                     Column: 1,
-                    CodeAction: 1
+                    Identifier: ''
                 })
             }).to.throw(/must not be null/);
         });
@@ -1120,7 +1273,7 @@ describe("Commands", function() {
                     FileName: '',
                     Line: -1,
                     Column: 1,
-                    CodeAction: 1
+                    Identifier: ''
                 })
             }).to.throw(/must be greater than or equal to 0/);
         });
@@ -1130,7 +1283,7 @@ describe("Commands", function() {
                     FileName: '',
                     Line: 1,
                     Column: null,
-                    CodeAction: 1
+                    Identifier: ''
                 })
             }).to.throw(/must not be null/);
         });
@@ -1140,29 +1293,19 @@ describe("Commands", function() {
                     FileName: '',
                     Line: 1,
                     Column: -1,
-                    CodeAction: 1
+                    Identifier: ''
                 })
             }).to.throw(/must be greater than or equal to 0/);
         });
-        it("should throw if CodeAction is null", function() {
+        it("should throw if Identifier is null", function() {
             expect(() => {
                 server.runcodeaction({
                     FileName: '',
                     Line: 1,
                     Column: 1,
-                    CodeAction: null
+                    Identifier: null
                 })
             }).to.throw(/must not be null/);
-        });
-        it("should throw if CodeAction is less than 0", function() {
-            expect(() => {
-                server.runcodeaction({
-                    FileName: '',
-                    Line: 1,
-                    Column: -1,
-                    CodeAction: -1
-                })
-            }).to.throw(/must be greater than or equal to 0/);
         });
         it("should not throw of required fields are set", function() {
             expect(() => {
@@ -1170,7 +1313,161 @@ describe("Commands", function() {
                     FileName: '',
                     Line: 1,
                     Column: 1,
-                    CodeAction: 1
+                    Identifier: ''
+                })
+            }).to.not.throw;
+        });
+        it("should throw if Selection.Start.Line is null", function() {
+            expect(() => {
+                server.runcodeaction({
+                    FileName: '',
+                    Selection: {
+                        Start: {
+                            Line: null,
+                            Column: 1
+                        },
+                        End: {
+                            Line: 1,
+                            Column: 1
+                        }
+                    }
+                })
+            }).to.throw(/must not be null/);
+        });
+        it("should throw if Selection.Start.Line is less than 0", function() {
+            expect(() => {
+                server.runcodeaction({
+                    FileName: '',
+                    Selection: {
+                        Start: {
+                            Line: -1,
+                            Column: 1
+                        },
+                        End: {
+                            Line: 1,
+                            Column: 1
+                        }
+                    }
+                })
+            }).to.throw(/must be greater than or equal to 0/);
+        });
+        it("should throw if Selection.Start.Column is null", function() {
+            expect(() => {
+                server.runcodeaction({
+                    FileName: '',
+                    Selection: {
+                        Start: {
+                            Line: 1,
+                            Column: null
+                        },
+                        End: {
+                            Line: 1,
+                            Column: 1
+                        }
+                    }
+                })
+            }).to.throw(/must not be null/);
+        });
+        it("should throw if Selection.Start.Column is less than 0", function() {
+            expect(() => {
+                server.runcodeaction({
+                    FileName: '',
+                    Selection: {
+                        Start: {
+                            Line: 1,
+                            Column: -1
+                        },
+                        End: {
+                            Line: 1,
+                            Column: 1
+                        }
+                    }
+                })
+            }).to.throw(/must be greater than or equal to 0/);
+        });
+        it("should throw if Selection.End.Line is null", function() {
+            expect(() => {
+                server.runcodeaction({
+                    FileName: '',
+                    Selection: {
+                        End: {
+                            Line: null,
+                            Column: 1
+                        },
+                        Start: {
+                            Line: 1,
+                            Column: 1
+                        }
+                    }
+                })
+            }).to.throw(/must not be null/);
+        });
+        it("should throw if Selection.End.Line is less than 0", function() {
+            expect(() => {
+                server.runcodeaction({
+                    FileName: '',
+                    Selection: {
+                        End: {
+                            Line: -1,
+                            Column: 1
+                        },
+                        Start: {
+                            Line: 1,
+                            Column: 1
+                        }
+                    }
+                })
+            }).to.throw(/must be greater than or equal to 0/);
+        });
+        it("should throw if Selection.End.Column is null", function() {
+            expect(() => {
+                server.runcodeaction({
+                    FileName: '',
+                    Selection: {
+                        End: {
+                            Line: 1,
+                            Column: null
+                        },
+                        Start: {
+                            Line: 1,
+                            Column: 1
+                        }
+                    }
+                })
+            }).to.throw(/must not be null/);
+        });
+        it("should throw if Selection.End.Column is less than 0", function() {
+            expect(() => {
+                server.runcodeaction({
+                    FileName: '',
+                    Selection: {
+                        End: {
+                            Line: 1,
+                            Column: -1
+                        },
+                        Start: {
+                            Line: 1,
+                            Column: 1
+                        }
+                    }
+                })
+            }).to.throw(/must be greater than or equal to 0/);
+        });
+        it("should not throw of required fields are set", function() {
+            expect(() => {
+                server.runcodeaction({
+                    FileName: '',
+                    Selection: {
+                        End: {
+                            Line: 1,
+                            Column: -1
+                        },
+                        Start: {
+                            Line: 1,
+                            Column: 1
+                        }
+                    },
+                    Identifier: ''
                 })
             }).to.not.throw;
         });
