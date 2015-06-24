@@ -14,10 +14,10 @@ export var DriverState = enums.DriverState;
 export var findCandidates = candidateFinder;
 
 export class OmnisharpClientV1 extends ClientV1 {}
-export class OmnisharpClientV2 extends ClientV1 {}
+export class OmnisharpClientV2 extends ClientV2 {}
 
-export class OmnisharpObservationClientV1<T extends ClientV1> extends ObservationClientV1<T> {}
-export class OmnisharpCombinationClientV1<T extends ClientV1> extends CombinationClientV1<T> {}
+export class OmnisharpObservationClientV1<T extends OmnisharpClientV1> extends ObservationClientV1<T> {}
+export class OmnisharpCombinationClientV1<T extends OmnisharpClientV1> extends CombinationClientV1<T> {}
 
-export class OmnisharpObservationClientV2<T extends ClientV2> extends ObservationClientV2<T> {}
-export class OmnisharpCombinationClientV2<T extends ClientV2> extends CombinationClientV2<T> {}
+export class OmnisharpObservationClientV2<T extends OmnisharpClientV2> extends ObservationClientV2<T> {}
+export class OmnisharpCombinationClientV2<T extends OmnisharpClientV2> extends CombinationClientV2<T> {}
