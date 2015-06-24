@@ -92,7 +92,7 @@ export class ClientV2 extends ClientBase implements OmniSharp.Api.V2, OmniSharp.
             (<any>assert).isAbove(request.Selection.End.Column, this._lowestIndexValue - 1, `request.Selection.End.Column must be greater than or equal to ${this._lowestIndexValue}`);
         }
 
-        return this.request<OmniSharp.Models.V2.GetCodeActionsRequest, OmniSharp.Models.V2.GetCodeActionsResponse>("getcodeactions", request, options);
+        return this.request<OmniSharp.Models.V2.GetCodeActionsRequest, OmniSharp.Models.V2.GetCodeActionsResponse>("v2/getcodeactions", request, options);
     }
 
     public getcodeactionsPromise(request: OmniSharp.Models.V2.GetCodeActionsRequest, options?: OmniSharp.RequestOptions) {
@@ -118,7 +118,7 @@ export class ClientV2 extends ClientBase implements OmniSharp.Api.V2, OmniSharp.
             (<any>assert).isAbove(request.Selection.End.Column, this._lowestIndexValue - 1, `request.Selection.End.Column must be greater than or equal to ${this._lowestIndexValue}`);
         }
 
-        return this.request<OmniSharp.Models.V2.RunCodeActionRequest, OmniSharp.Models.V2.RunCodeActionResponse>("runcodeaction", request, options);
+        return this.request<OmniSharp.Models.V2.RunCodeActionRequest, OmniSharp.Models.V2.RunCodeActionResponse>("v2/runcodeaction", request, options);
     }
 
     public runcodeactionPromise(request: OmniSharp.Models.V2.RunCodeActionRequest, options?: OmniSharp.RequestOptions) {
