@@ -36,6 +36,7 @@ export interface IDriver {
 
 export interface OmnisharpClientOptions extends IDriverOptions {
     driver?: Driver;
+    oneBasedIndexes?: boolean;
 }
 
 export interface OmnisharpClientStatus {

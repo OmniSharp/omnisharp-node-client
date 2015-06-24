@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,24 +11,107 @@ namespace OmniSharp.TypeScriptGeneration
 {
     public static class OmnisharpControllerExtractor
     {
+        public class ItemVersion
+        {
+            public ItemVersion(string version, string actionName, string value)
+            {
+                Version = version;
+                Value = value;
+                ActionName = actionName;
+            }
+
+            public string Version { get; set; }
+            public string ActionName { get; set; }
+            public string Value { get; set; }
+        }
+
         public static IEnumerable<string> GetInterface()
         {
-            var methods = "        " + string.Join("\n        ", GetInterfaceMethods()) + "\n";
-            var events = "        " + string.Join("\n        ", GetEvents()) + "\n";
+            var methodStrings = GetMethods().GroupBy(z => z.Version).ToDictionary(z => z.Key, z => z.GroupBy(x => x.ActionName).ToArray());
+            var eventStrings = GetEvents().GroupBy(z => z.Version).ToDictionary(z => z.Key, z => z.GroupBy(x => x.ActionName).ToArray());
 
-            yield return $"declare module {nameof(OmniSharp)} {{\n{ContextInterface}{RequestOptionsInterface}    interface Api {{\n{methods}    }}\n}}";
-            yield return $"declare module {nameof(OmniSharp)} {{\n    interface Events {{\n{events}    }}\n}}";
+            var keys = methodStrings.Keys;
+            yield return $"declare module {nameof(OmniSharp)} {{\n{ContextInterface}{RequestOptionsInterface}}}";
+
+            yield return $"declare module {nameof(OmniSharp)} {{\n    module Api {{\n";
+
+            foreach (var kvp in methodStrings)
+            {
+                var key = kvp.Key;
+                var items = kvp.Value.ToList();
+
+                foreach (var previousKey in keys.TakeWhile(z => z != key).Reverse())
+                {
+                    items.AddRange(methodStrings[previousKey].Where(x => !items.Any(z => z.Key == x.Key)));
+                }
+
+                var results = items.SelectMany(x => x).OrderBy(x => x.ActionName).Select(z => z.Value);
+                var methods = "            " + string.Join("\n            ", results) + "\n";
+                yield return $"        interface {key.ToUpper()} {{\n{methods}        }}\n";
+            }
+
+            yield return $"    }}\n}}";
+
+            yield return $"declare module {nameof(OmniSharp)} {{\n    module Events {{\n";
+
+            foreach (var kvp in eventStrings)
+            {
+                var key = kvp.Key;
+                var items = kvp.Value.ToList();
+
+                foreach (var previousKey in keys.TakeWhile(z => z != key).Reverse())
+                {
+                    items.AddRange(eventStrings[previousKey].Where(x => !items.Any(z => z.Key == x.Key)));
+                }
+
+                var results = items.SelectMany(x => x).OrderBy(x => x.ActionName).Select(z => z.Value);
+                var events = "            " + string.Join("\n            ", results) + "\n";
+                yield return $"        interface {key.ToUpper()} {{\n{events}        }}\n";
+            }
+
+            yield return $"    }}\n}}";
         }
 
-        private static string ContextInterface = "    interface Context<TRequest, TResponse>\n    {\n        request: TRequest;\n        response: TResponse;\n    }\n\n";
-        private static string RequestOptionsInterface = "    interface RequestOptions\n    {\n        silent?: boolean;\n    }\n\n";
+        private static string ContextInterface = "    interface Context<TRequest, TResponse>\n    {\n        request: TRequest;\n        response: TResponse;\n    }\n";
+        private static string RequestOptionsInterface = "    interface RequestOptions\n    {\n        silent?: boolean;\n    }\n";
 
-        private static IEnumerable<string> GetInterfaceMethods()
+        private static IEnumerable<ItemVersion> GetMethods()
         {
             var methods = GetControllerMethods().ToArray();
             foreach (var method in methods)
             {
-                var observeName = $"observe{method.Action[0].ToString().ToUpper()}{method.Action.Substring(1)}";
+                var actionName = method.Action;
+                var version = GetVersion(ref actionName);
+                var requestType = method.RequestType;
+                if (method.RequestArray)
+                    requestType += "[]";
+
+                var returnType = method.ReturnType;
+                if (method.ReturnArray)
+                    returnType += "[]";
+
+                yield return new ItemVersion(version, actionName, $"// '{actionName}'");
+                if (method.RequestType != null)
+                {
+                    yield return new ItemVersion(version, actionName, $"{actionName}(request: {requestType}, options?: RequestOptions): Rx.Observable<{returnType}>;");
+                    yield return new ItemVersion(version, actionName, $"{actionName}Promise(request: {requestType}, options?: RequestOptions): Rx.IPromise<{returnType}>;");
+                }
+                else
+                {
+                    yield return new ItemVersion(version, actionName, $"{actionName}(): Rx.Observable<{returnType}, options?: RequestOptions>;");
+                    yield return new ItemVersion(version, actionName, $"{actionName}Promise(): Rx.IPromise<{returnType}, options?: RequestOptions>;");
+                }
+            }
+        }
+
+        private static IEnumerable<ItemVersion> GetEvents()
+        {
+            var methods = GetControllerMethods().ToArray();
+            foreach (var method in methods)
+            {
+                var actionName = method.Action;
+                var version = GetVersion(ref actionName);
+                var observeName = $"observe{actionName[0].ToString().ToUpper()}{actionName.Substring(1)}";
 
                 var requestType = method.RequestType;
                 if (method.RequestArray)
@@ -38,43 +121,27 @@ namespace OmniSharp.TypeScriptGeneration
                 if (method.ReturnArray)
                     returnType += "[]";
 
+                yield return new ItemVersion(version, actionName, $"// '{actionName}'");
                 if (method.RequestType != null)
                 {
-                    yield return $"{method.Action}(request: {requestType}, options?: RequestOptions): Rx.Observable<{returnType}>;";
-                    yield return $"{method.Action}Promise(request: {requestType}, options?: RequestOptions): Rx.IPromise<{returnType}>;";
+                    yield return new ItemVersion(version, actionName, $"{observeName}: Rx.Observable<Context<{requestType}, {returnType}>>;");
                 }
                 else
                 {
-                    yield return $"{method.Action}(): Rx.Observable<{returnType}, options?: RequestOptions>;";
-                    yield return $"{method.Action}Promise(): Rx.IPromise<{returnType}, options?: RequestOptions>;";
+                    yield return new ItemVersion(version, actionName, $"{observeName}: Rx.Observable<{returnType}>;");
                 }
             }
         }
 
-        private static IEnumerable<string> GetEvents()
+        private static string GetVersion(ref string actionName)
         {
-            var methods = GetControllerMethods().ToArray();
-            foreach (var method in methods)
+            if (actionName.Contains("/"))
             {
-                var observeName = $"observe{method.Action[0].ToString().ToUpper()}{method.Action.Substring(1)}";
-
-                var requestType = method.RequestType;
-                if (method.RequestArray)
-                    requestType += "[]";
-
-                var returnType = method.ReturnType;
-                if (method.ReturnArray)
-                    returnType += "[]";
-
-                if (method.RequestType != null)
-                {
-                    yield return $"{observeName}: Rx.Observable<Context<{requestType}, {returnType}>>;";
-                }
-                else
-                {
-                    yield return $"{observeName}: Rx.Observable<{returnType}>;";
-                }
+                var s = actionName.Split('/');
+                actionName = s[1];
+                return s[0];
             }
+            return "v1";
         }
 
         class MethodResult
