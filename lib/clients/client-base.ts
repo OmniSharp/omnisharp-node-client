@@ -15,12 +15,12 @@ var priorityCommands = [
 var undeferredCommands = normalCommands.concat(priorityCommands);
 
 var serverLineNumbers = [
-    'Line','Column',
-    'Start','End',
-    'StartLine','StartColumn',
-    'EndLine','EndColumn',
-    'SelectionStartColumn','SelectionStartLine',
-    'SelectionEndColumn','SelectionEndLine'
+    'Line', 'Column',
+    'Start', 'End',
+    'StartLine', 'StartColumn',
+    'EndLine', 'EndColumn',
+    'SelectionStartColumn', 'SelectionStartLine',
+    'SelectionEndColumn', 'SelectionEndLine'
 ];
 
 export class ClientBase implements IDriver {
@@ -35,7 +35,7 @@ export class ClientBase implements IDriver {
     protected _lowestIndexValue: number;
 
     public static fromClient<T extends ClientBase>(ctor: any, client: ClientBase) {
-        var v1 : ClientBase = <any>new ctor(client._options);
+        var v1: ClientBase = <any>new ctor(client._options);
 
         v1._driver = client._driver;
         v1._requestStream = client._requestStream;
@@ -45,6 +45,15 @@ export class ClientBase implements IDriver {
         v1._customEvents = client._customEvents;
         v1._uniqueId = client._uniqueId;
         v1._events = client._events;
+
+        v1.projectAdded  = client.projectAdded;
+        v1.projectChanged = client.projectChanged;
+        v1.projectRemoved = client.projectRemoved;
+        v1.error = client.error;
+        v1.msBuildProjectDiagnostics = client.msBuildProjectDiagnostics;
+        v1.packageRestoreStarted = client.packageRestoreStarted;
+        v1.packageRestoreFinished = client.packageRestoreFinished;
+        v1.unresolvedDependencies = client.unresolvedDependencies;
 
         return <T>v1;
     }
@@ -80,6 +89,8 @@ export class ClientBase implements IDriver {
             })
             .share();
 
+        this._lowestIndexValue = _options.oneBasedIndexes ? 1 : 0;
+
         var requestsPerSecond = this._requestStream
             .bufferWithTime(1000, 100)
             .select(x => x.length)
@@ -109,7 +120,7 @@ export class ClientBase implements IDriver {
                 hasOutgoingRequests: this._driver.outstandingRequests > 0
             }))
             .delaySubscription(0)
-            //.sample(200)
+        //.sample(200)
             .map(Object.freeze)
             .distinctUntilChanged()
             .share();
@@ -128,8 +139,6 @@ export class ClientBase implements IDriver {
                 })
             });
         }
-
-        this._lowestIndexValue = _options.oneBasedIndexes ? 1 : 0;
 
         this.setupRequestStreams();
         this.setupObservers();
