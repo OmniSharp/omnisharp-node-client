@@ -46,14 +46,7 @@ export class ClientBase implements IDriver {
         v1._uniqueId = client._uniqueId;
         v1._events = client._events;
 
-        v1.projectAdded  = client.projectAdded;
-        v1.projectChanged = client.projectChanged;
-        v1.projectRemoved = client.projectRemoved;
-        v1.error = client.error;
-        v1.msBuildProjectDiagnostics = client.msBuildProjectDiagnostics;
-        v1.packageRestoreStarted = client.packageRestoreStarted;
-        v1.packageRestoreFinished = client.packageRestoreFinished;
-        v1.unresolvedDependencies = client.unresolvedDependencies;
+        v1.setupObservers();
 
         return <T>v1;
     }
