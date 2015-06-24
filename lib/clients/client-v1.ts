@@ -37,6 +37,8 @@ export class ClientV1 extends ClientBase implements OmniSharp.Api.V1, OmniSharp.
     public observeGettestcontext: Rx.Observable<OmniSharp.Context<OmniSharp.Models.TestCommandRequest, OmniSharp.Models.GetTestCommandResponse>>;
 
     protected setupObservers() {
+        super.setupObservers();
+        
         var observerStream = this.responses.filter(z => !z.silent);
         this.observeUpdatebuffer = observerStream.filter(z => z.isCommand("updatebuffer")).share();
         this.observeChangebuffer = observerStream.filter(z => z.isCommand("changebuffer")).share();
@@ -414,3 +416,8 @@ export class ClientV1 extends ClientBase implements OmniSharp.Api.V1, OmniSharp.
         return this.gettestcontext(request, options).toPromise();
     }
 }
+
+// Hack to workaround issue with ts.transpile not working correctly
+(function(Client: any) {
+    Client.setupObservers = Client.prototype.setupObservers;
+})(ClientV1);
