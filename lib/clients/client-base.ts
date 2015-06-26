@@ -75,20 +75,20 @@ export class ClientBase implements IDriver {
 
         this._lowestIndexValue = _options.oneBasedIndexes ? 1 : 0;
 
-        var requestsPerSecond = this._requestStream
-            .bufferWithTime(1000, 100)
-            .select(x => x.length)
+        var requestsPerSecond = this._requestStream.throttleFirst(1000)
+            .flatMap(x => this._requestStream.scan(0, (acc, value) => acc + 1))
             .startWith(0);
+        requestsPerSecond = Observable.merge(requestsPerSecond, requestsPerSecond.debounce(1001).select(x => 0));
 
-        var responsesPerSecond = this._responseStream
-            .bufferWithTime(1000, 100)
-            .select(x => x.length)
+        var responsesPerSecond = this._responseStream.throttleFirst(1000)
+            .flatMap(x => this._responseStream.scan(0, (acc, value) => acc + 1))
             .startWith(0);
+        responsesPerSecond = Observable.merge(responsesPerSecond, responsesPerSecond.debounce(1001).select(x => 0));
 
-        var eventsPerSecond = this._driver.events
-            .bufferWithTime(1000, 100)
-            .select(x => x.length)
+        var eventsPerSecond = this._driver.events.throttleFirst(1000)
+            .flatMap(x => this._driver.events.scan(0, (acc, value) => acc + 1))
             .startWith(0);
+        eventsPerSecond = Observable.merge(eventsPerSecond, eventsPerSecond.debounce(1001).select(x => 0));
 
         this._statusStream = Observable.combineLatest(
             requestsPerSecond,
@@ -216,7 +216,7 @@ export class ClientBase implements IDriver {
         each(ClientBase.serverLineNumbers, path => {
             var hasPath = has(data, path);
             if (hasPath) {
-                var value = get(data, path);
+                var value = get<number>(data, path);
                 value = value + 1;
                 set(data, path, value);
             }
@@ -240,7 +240,7 @@ export class ClientBase implements IDriver {
         each(ClientBase.serverLineNumbers, path => {
             var hasPath = has(data, path);
             if (hasPath) {
-                var value = get(data, path);
+                var value = get<number>(data, path);
                 value = value - 1;
                 set(data, path, value);
             }

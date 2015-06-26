@@ -29,6 +29,7 @@
         "./lib/drivers/stdio.ts",
         "./lib/drivers/websocket.ts",
         "./lib/enums.ts",
+        "./lib/es6.d.ts",
         "./lib/interfaces.d.ts",
         "./lib/omnisharp-client.ts",
         "./lib/omnisharp-path.ts",
