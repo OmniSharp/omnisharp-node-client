@@ -78,19 +78,16 @@ export class ClientBase implements IDriver {
         var requestsPerSecond = this._requestStream.throttleFirst(1000)
             .flatMap(x => this._requestStream.scan(0, (acc, value) => acc + 1))
             .startWith(0);
-        requestsPerSecond = Observable.merge(requestsPerSecond, requestsPerSecond.debounce(1001).select(x => 0));
 
         var responsesPerSecond = this._responseStream.throttleFirst(1000)
             .flatMap(x => this._responseStream.scan(0, (acc, value) => acc + 1))
             .startWith(0);
-        responsesPerSecond = Observable.merge(responsesPerSecond, responsesPerSecond.debounce(1001).select(x => 0));
 
         var eventsPerSecond = this._driver.events.throttleFirst(1000)
             .flatMap(x => this._driver.events.scan(0, (acc, value) => acc + 1))
             .startWith(0);
-        eventsPerSecond = Observable.merge(eventsPerSecond, eventsPerSecond.debounce(1001).select(x => 0));
 
-        this._statusStream = Observable.combineLatest(
+        var status = Observable.combineLatest(
             requestsPerSecond,
             responsesPerSecond,
             eventsPerSecond,
@@ -103,8 +100,17 @@ export class ClientBase implements IDriver {
                 outgoingRequests: this._driver.outstandingRequests,
                 hasOutgoingRequests: this._driver.outstandingRequests > 0
             }))
-            .delaySubscription(0)
-        //.sample(200)
+            .throttleFirst(100);
+
+        this._statusStream = Observable.merge(status, status.debounce(200, Scheduler.timeout).map(x => ({
+                state: this._driver.currentState,
+                requestsPerSecond: 0,
+                responsesPerSecond: 0,
+                eventsPerSecond: 0,
+                operationsPerSecond: 0,
+                outgoingRequests: 0,
+                hasOutgoingRequests: false
+        })))
             .map(Object.freeze)
             .distinctUntilChanged()
             .share();
