@@ -103,13 +103,13 @@ export class ClientBase implements IDriver {
             .throttleFirst(100);
 
         this._statusStream = Observable.merge(status, status.debounce(200, Scheduler.timeout).map(x => ({
-                state: this._driver.currentState,
-                requestsPerSecond: 0,
-                responsesPerSecond: 0,
-                eventsPerSecond: 0,
-                operationsPerSecond: 0,
-                outgoingRequests: 0,
-                hasOutgoingRequests: false
+            state: this._driver.currentState,
+            requestsPerSecond: 0,
+            responsesPerSecond: 0,
+            eventsPerSecond: 0,
+            operationsPerSecond: 0,
+            outgoingRequests: 0,
+            hasOutgoingRequests: false
         })))
             .map(Object.freeze)
             .distinctUntilChanged()
@@ -207,6 +207,8 @@ export class ClientBase implements IDriver {
         'SelectionEndColumn', 'SelectionEndLine',
         'Selection.Start.Line', 'Selection.Start.Column',
         'Selection.End.Line', 'Selection.End.Column',
+        'Location.Line', 'Location.Column',
+        'Location.EndLine', 'Location.EndColumn',
     ];
 
     protected requestMutator(data: any) {
@@ -228,7 +230,15 @@ export class ClientBase implements IDriver {
             }
         });
 
-        each(filter(data, z => isArray(z)), item => this.requestMutator(item));
+        each(filter(data, z => isArray(z)), (item: any[]) => {
+            if (isNumber(item[0])) {
+                for (var i = 0; i < item.length; i++) {
+                    item[i] = item[i] + 1;
+                }
+            } else {
+                this.requestMutator(item);
+            }
+        });
 
         return data;
     }
@@ -252,7 +262,15 @@ export class ClientBase implements IDriver {
             }
         });
 
-        each(filter(data, z => isArray(z)), item => this.responseMutator(item));
+        each(filter(data, z => isArray(z)), (item: any[]) => {
+            if (isNumber(item[0])) {
+                for (var i = 0; i < item.length; i++) {
+                    item[i] = item[i] - 1;
+                }
+            } else {
+                this.responseMutator(item);
+            }
+        });
 
         return data;
     }
