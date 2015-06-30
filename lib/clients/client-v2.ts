@@ -45,33 +45,32 @@ export class ClientV2 extends ClientBase implements OmniSharp.Api.V2, OmniSharp.
     protected setupObservers() {
         (<any>ClientBase).prototype.setupObservers.call(this);
 
-        var observerStream = this.responses.filter(z => !z.silent);
-        this.observeUpdatebuffer = observerStream.filter(z => z.isCommand("updatebuffer")).share();
-        this.observeChangebuffer = observerStream.filter(z => z.isCommand("changebuffer")).share();
-        this.observeCodecheck = observerStream.filter(z => z.isCommand("codecheck")).share();
-        this.observeFormatAfterKeystroke = observerStream.filter(z => z.isCommand("formatafterkeystroke")).share();
-        this.observeFormatRange = observerStream.filter(z => z.isCommand("formatrange")).share();
-        this.observeCodeformat = observerStream.filter(z => z.isCommand("codeformat")).share();
-        this.observeAutocomplete = observerStream.filter(z => z.isCommand("autocomplete")).share();
-        this.observeFindimplementations = observerStream.filter(z => z.isCommand("findimplementations")).share();
-        this.observeFindsymbols = observerStream.filter(z => z.isCommand("findsymbols")).share();
-        this.observeFindusages = observerStream.filter(z => z.isCommand("findusages")).share();
-        this.observeGotodefinition = observerStream.filter(z => z.isCommand("gotodefinition")).share();
-        this.observeNavigateup = observerStream.filter(z => z.isCommand("navigateup")).share();
-        this.observeNavigatedown = observerStream.filter(z => z.isCommand("navigatedown")).share();
-        this.observeRename = observerStream.filter(z => z.isCommand("rename")).share();
-        this.observeSignatureHelp = observerStream.filter(z => z.isCommand("signaturehelp")).share();
-        this.observeCheckalivestatus = observerStream.filter(z => z.isCommand("checkalivestatus")).share();
-        this.observeCheckreadystatus = observerStream.filter(z => z.isCommand("checkreadystatus")).share();
-        this.observeCurrentfilemembersastree = observerStream.filter(z => z.isCommand("currentfilemembersastree")).share();
-        this.observeCurrentfilemembersasflat = observerStream.filter(z => z.isCommand("currentfilemembersasflat")).share();
-        this.observeTypelookup = observerStream.filter(z => z.isCommand("typelookup")).share();
-        this.observeFilesChanged = observerStream.filter(z => z.isCommand("fileschanged")).share();
-        this.observeProjects = observerStream.filter(z => z.isCommand("projects")).share();
-        this.observeProject = observerStream.filter(z => z.isCommand("project")).share();
-        this.observeGetcodeactions = observerStream.filter(z => z.isCommand("v2/getcodeactions")).share();
-        this.observeRuncodeaction = observerStream.filter(z => z.isCommand("v2/runcodeaction")).share();
-        this.observeGettestcontext = observerStream.filter(z => z.isCommand("gettestcontext")).share();
+        this.observeUpdatebuffer = this.watchCommand("updatebuffer");
+        this.observeChangebuffer = this.watchCommand("changebuffer");
+        this.observeCodecheck = this.watchCommand("codecheck");
+        this.observeFormatAfterKeystroke = this.watchCommand("formatafterkeystroke");
+        this.observeFormatRange = this.watchCommand("formatrange");
+        this.observeCodeformat = this.watchCommand("codeformat");
+        this.observeAutocomplete = this.watchCommand("autocomplete");
+        this.observeFindimplementations = this.watchCommand("findimplementations");
+        this.observeFindsymbols = this.watchCommand("findsymbols");
+        this.observeFindusages = this.watchCommand("findusages");
+        this.observeGotodefinition = this.watchCommand("gotodefinition");
+        this.observeNavigateup = this.watchCommand("navigateup");
+        this.observeNavigatedown = this.watchCommand("navigatedown");
+        this.observeRename = this.watchCommand("rename");
+        this.observeSignatureHelp = this.watchCommand("signaturehelp");
+        this.observeCheckalivestatus = this.watchCommand("checkalivestatus");
+        this.observeCheckreadystatus = this.watchCommand("checkreadystatus");
+        this.observeCurrentfilemembersastree = this.watchCommand("currentfilemembersastree");
+        this.observeCurrentfilemembersasflat = this.watchCommand("currentfilemembersasflat");
+        this.observeTypelookup = this.watchCommand("typelookup");
+        this.observeFilesChanged = this.watchCommand("fileschanged");
+        this.observeProjects = this.watchCommand("projects");
+        this.observeProject = this.watchCommand("project");
+        this.observeGetcodeactions = this.watchCommand("v2/getcodeactions");
+        this.observeRuncodeaction = this.watchCommand("v2/runcodeaction");
+        this.observeGettestcontext = this.watchCommand("gettestcontext");
     }
 
     public getcodeactions(request: OmniSharp.Models.V2.GetCodeActionsRequest, options?: OmniSharp.RequestOptions): Rx.Observable<OmniSharp.Models.V2.GetCodeActionsResponse> {

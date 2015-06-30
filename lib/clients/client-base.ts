@@ -23,6 +23,8 @@ export class ClientBase implements IDriver {
     private _customEvents = new Subject<OmniSharp.Stdio.Protocol.EventPacket>();
     private _uniqueId = uniqueId("client");
     protected _lowestIndexValue: number;
+    private _eventWatchers = new Map<string, Subject<CommandContext<any>>>();
+    private _commandWatchers = new Map<string, Subject<ResponseContext<any, any>>>();
 
     public static fromClient<T extends ClientBase>(ctor: any, client: ClientBase) {
         var v1: ClientBase = <any>new ctor(client._options);
@@ -340,14 +342,36 @@ export class ClientBase implements IDriver {
     }
 
     protected setupObservers() {
-        this.projectAdded = this._driver.events.filter(z => z.Event === "ProjectAdded").map(z => <OmniSharp.Models.ProjectInformationResponse>z.Body).share();
-        this.projectChanged = this._driver.events.filter(z => z.Event === "ProjectChanged").map(z => <OmniSharp.Models.ProjectInformationResponse>z.Body).share();
-        this.projectRemoved = this._driver.events.filter(z => z.Event === "ProjectRemoved").map(z => <OmniSharp.Models.ProjectInformationResponse>z.Body).share();
-        this.error = this._driver.events.filter(z => z.Event === "Error").map(z => <OmniSharp.Models.ErrorMessage>z.Body).share();
-        this.msBuildProjectDiagnostics = this._driver.events.filter(z => z.Event === "MsBuildProjectDiagnostics").map(z => <OmniSharp.Models.MSBuildProjectDiagnostics>z.Body).share();
-        this.packageRestoreStarted = this._driver.events.filter(z => z.Event === "PackageRestoreStarted").map(z => <OmniSharp.Models.PackageRestoreMessage>z.Body).share();
-        this.packageRestoreFinished = this._driver.events.filter(z => z.Event === "PackageRestoreFinished").map(z => <OmniSharp.Models.PackageRestoreMessage>z.Body).share();
-        this.unresolvedDependencies = this._driver.events.filter(z => z.Event === "UnresolvedDependencies").map(z => <OmniSharp.Models.UnresolvedDependenciesMessage>z.Body).share();
+        this._driver.events.subscribe(x => {
+            if (this._eventWatchers.has(x.Event))
+                this._eventWatchers.get(x.Event).onNext(x.Body);
+        });
+
+        this._enqueuedResponses.subscribe(x => {
+            if (!x.silent && this._commandWatchers.has(x.command))
+                this._commandWatchers.get(x.command).onNext(x);
+        });
+
+        this.projectAdded = this.watchEvent<OmniSharp.Models.ProjectInformationResponse>("ProjectAdded");
+        this.projectChanged = this.watchEvent<OmniSharp.Models.ProjectInformationResponse>("ProjectChanged");
+        this.projectRemoved = this.watchEvent<OmniSharp.Models.ProjectInformationResponse>("ProjectRemoved");
+        this.error = this.watchEvent<OmniSharp.Models.ErrorMessage>("ProjectRemoved");
+        this.msBuildProjectDiagnostics = this.watchEvent<OmniSharp.Models.MSBuildProjectDiagnostics>("MsBuildProjectDiagnostics");
+        this.packageRestoreStarted = this.watchEvent<OmniSharp.Models.PackageRestoreMessage>("PackageRestoreStarted");
+        this.packageRestoreFinished = this.watchEvent<OmniSharp.Models.PackageRestoreMessage>("PackageRestoreFinished");
+        this.unresolvedDependencies = this.watchEvent<OmniSharp.Models.UnresolvedDependenciesMessage>("UnresolvedDependencies");
+    }
+
+    protected watchEvent<TBody>(event: string): Observable<TBody> {
+        var subject = new Subject<CommandContext<any>>();
+        this._eventWatchers.set(event, subject);
+        return <any>subject.asObservable().share();
+    }
+
+    protected watchCommand(command: string): Observable<OmniSharp.Context<any, any>> {
+        var subject = new Subject<ResponseContext<any, any>>();
+        this._commandWatchers.set(command, subject);
+        return subject.asObservable().share();
     }
 
     public projectAdded: Rx.Observable<OmniSharp.Models.ProjectInformationResponse>;

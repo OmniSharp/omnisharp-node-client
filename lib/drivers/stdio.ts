@@ -104,7 +104,8 @@ class StdioDriver implements IDriver {
             output: undefined
         });
 
-        rl.on('line', (data) => enqueue(() => this.handleData(data)));
+        rl.on('line', (data) => this.handleData(data));
+        //rl.on('line', (data) => enqueue(() => this.handleData(data)));
 
         this.id = this._process.pid.toString();
         this._process.on('error', (data) => this.serverErr(data));
