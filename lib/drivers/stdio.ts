@@ -7,6 +7,7 @@ import {Observable, Observer, Subject, AsyncSubject} from "rx";
 import {resolve, join} from 'path';
 import {omnisharpLocation} from '../omnisharp-path';
 import {findProject as projectFinder} from "../project-finder";
+import {enqueue} from "../queue";
 
 var win32 = false;
 // Setup the new process env.
@@ -103,7 +104,7 @@ class StdioDriver implements IDriver {
             output: undefined
         });
 
-        rl.on('line', (data) => this.handleData(data));
+        rl.on('line', (data) => enqueue(() => this.handleData(data)));
 
         this.id = this._process.pid.toString();
         this._process.on('error', (data) => this.serverErr(data));
@@ -168,7 +169,6 @@ class StdioDriver implements IDriver {
     }
 
     private handlePacket(packet: OmniSharp.Stdio.Protocol.Packet) {
-        // enum?
         if (packet.Type === "response") {
             this.handlePacketResponse(<OmniSharp.Stdio.Protocol.ResponsePacket>packet);
         } else if (packet.Type === "event") {
@@ -189,15 +189,11 @@ class StdioDriver implements IDriver {
             observer.onCompleted();
 
         } else {
-
-            if (!response.Success) {
+            if (response.Success) {
+                this._commandStream.onNext(response);
+            } else {
                 // TODO: make notification?
             }
-
-        }
-
-        if (response.Success) {
-            this._commandStream.onNext(response);
         }
     }
 

@@ -34,6 +34,7 @@
         "./lib/omnisharp-client.ts",
         "./lib/omnisharp-path.ts",
         "./lib/project-finder.ts",
+        "./lib/queue.ts",
         "./lib/stdio/child.ts",
         "./spec/candidate-find-spec.ts",
         "./spec/omnisharp-client-commands-v2.ts",

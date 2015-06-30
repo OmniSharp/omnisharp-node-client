@@ -19,7 +19,7 @@ export class RequestContext<T> {
         return null;
     }
 
-    constructor(public clientId, command: string, request: T, {silent}: OmniSharp.RequestOptions) {
+    constructor(public clientId, command: string, request: T, {silent}: OmniSharp.RequestOptions, sequence = uniqueId("__request")) {
         if (command) this.command = command.toLowerCase();
 
         if (isObject(request)) {
@@ -32,7 +32,7 @@ export class RequestContext<T> {
         }
 
         this.silent = !!silent;
-        this.sequence = uniqueId("__request");
+        this.sequence = sequence;
         this.time = new Date();
         Object.freeze(this);
     }

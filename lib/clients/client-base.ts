@@ -22,7 +22,6 @@ export class ClientBase implements IDriver {
     private _errorStream = new Subject<CommandContext<any>>();
     private _customEvents = new Subject<OmniSharp.Stdio.Protocol.EventPacket>();
     private _uniqueId = uniqueId("client");
-    private _events: Rx.Observable<OmniSharp.Stdio.Protocol.EventPacket>;
     protected _lowestIndexValue: number;
 
     public static fromClient<T extends ClientBase>(ctor: any, client: ClientBase) {
@@ -35,8 +34,6 @@ export class ClientBase implements IDriver {
         v1._errorStream = client._errorStream;
         v1._customEvents = client._customEvents;
         v1._uniqueId = client._uniqueId;
-        v1._events = client._events;
-
         v1.setupObservers();
 
         return <T>v1;
@@ -49,14 +46,17 @@ export class ClientBase implements IDriver {
     public get projectPath() { return this._driver.projectPath; }
 
     public get currentState() { return this._driver.currentState; }
-    public get events(): Rx.Observable<OmniSharp.Stdio.Protocol.EventPacket> { return this._events; }
+    private _enqueuedEvents: Rx.Observable<OmniSharp.Stdio.Protocol.EventPacket>;
+    public get events(): Rx.Observable<OmniSharp.Stdio.Protocol.EventPacket> { return this._enqueuedEvents; }
     public get commands(): Rx.Observable<OmniSharp.Stdio.Protocol.ResponsePacket> { return this._driver.commands; }
     public get state(): Rx.Observable<DriverState> { return this._driver.state; }
     public get outstandingRequests() { return this._driver.outstandingRequests; }
 
     public get status(): Rx.Observable<OmnisharpClientStatus> { return this._statusStream; }
     public get requests(): Rx.Observable<RequestContext<any>> { return this._requestStream; }
-    public get responses(): Rx.Observable<ResponseContext<any, any>> { return this._responseStream; }
+
+    private _enqueuedResponses: Rx.Observable<ResponseContext<any, any>>;
+    public get responses(): Rx.Observable<ResponseContext<any, any>> { return this._enqueuedResponses; }
     public get errors(): Rx.Observable<CommandContext<any>> { return this._errorStream; }
 
     constructor(private _options: OmnisharpClientOptions = {}) {
@@ -64,14 +64,21 @@ export class ClientBase implements IDriver {
 
         var driverFactory: IStaticDriver = require('../drivers/' + Driver[driver].toLowerCase());
         this._driver = new driverFactory(_options);
-        this._events = Observable.merge(this._customEvents, this._driver.events)
+
+        this._enqueuedEvents = Observable.merge(this._customEvents, this._driver.events)
             .map(event => {
                 if (isObject(event.Body)) {
                     Object.freeze(event.Body);
                 }
                 return Object.freeze(event);
-            })
-            .share();
+            });
+
+        this._enqueuedResponses = Observable.merge(
+            this._responseStream,
+            this._driver.commands
+                .map(packet => new ResponseContext(
+                    new RequestContext(this._uniqueId, packet.Command, {}, {}, 'command'),
+                    this.responseMutator(packet.Body))));
 
         this._lowestIndexValue = _options.oneBasedIndexes ? 1 : 0;
 
@@ -102,15 +109,17 @@ export class ClientBase implements IDriver {
             }))
             .throttleFirst(100);
 
-        this._statusStream = Observable.merge(status, status.debounce(200, Scheduler.timeout).map(x => ({
-            state: this._driver.currentState,
-            requestsPerSecond: 0,
-            responsesPerSecond: 0,
-            eventsPerSecond: 0,
-            operationsPerSecond: 0,
-            outgoingRequests: 0,
-            hasOutgoingRequests: false
-        })))
+        this._statusStream = Observable.merge(status, status
+            .debounce(200, Scheduler.timeout)
+            .map(x => ({
+                state: this._driver.currentState,
+                requestsPerSecond: 0,
+                responsesPerSecond: 0,
+                eventsPerSecond: 0,
+                operationsPerSecond: 0,
+                outgoingRequests: 0,
+                hasOutgoingRequests: false
+            })))
             .map(Object.freeze)
             .distinctUntilChanged()
             .share();
@@ -211,6 +220,10 @@ export class ClientBase implements IDriver {
         'Location.EndLine', 'Location.EndColumn',
     ];
 
+    private static serverLineNumberArrays = [
+        'Lines'
+    ];
+
     protected requestMutator(data: any) {
         // Assume one based indexes
         if (this._options.oneBasedIndexes)
@@ -230,15 +243,18 @@ export class ClientBase implements IDriver {
             }
         });
 
-        each(filter(data, z => isArray(z)), (item: any[]) => {
-            if (isNumber(item[0])) {
-                for (var i = 0; i < item.length; i++) {
-                    item[i] = item[i] + 1;
+        each(ClientBase.serverLineNumberArrays, path => {
+            var hasPath = has(data, path);
+            if (hasPath) {
+                var value = get<number[]>(data, path);
+                for (var i = 0; i < value.length; i++) {
+                    value[i] = value[i] + 1;
                 }
-            } else {
-                this.requestMutator(item);
+                set(data, path, value);
             }
         });
+
+        each(filter(data, z => isArray(z)), (item: any[]) => this.requestMutator(item));
 
         return data;
     }
@@ -262,15 +278,18 @@ export class ClientBase implements IDriver {
             }
         });
 
-        each(filter(data, z => isArray(z)), (item: any[]) => {
-            if (isNumber(item[0])) {
-                for (var i = 0; i < item.length; i++) {
-                    item[i] = item[i] - 1;
+        each(ClientBase.serverLineNumberArrays, path => {
+            var hasPath = has(data, path);
+            if (hasPath) {
+                var value = get<number[]>(data, path);
+                for (var i = 0; i < value.length; i++) {
+                    value[i] = value[i] + 1;
                 }
-            } else {
-                this.responseMutator(item);
+                set(data, path, value);
             }
         });
+
+        each(filter(data, z => isArray(z)), (item: any[]) => this.responseMutator(item));
 
         return data;
     }
