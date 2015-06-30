@@ -1,5 +1,6 @@
 import {Observable} from "rx";
-import {uniqueId, isObject, clone, } from "lodash";
+import {uniqueId, isObject, cloneDeep} from "lodash";
+import {requestMutator, responseMutator} from "./response-handling";
 var stripBom = require('strip-bom');
 
 export class CommandContext<T> {
@@ -12,6 +13,7 @@ export class RequestContext<T> {
     public sequence: string;
     public time: Date;
     public silent: boolean;
+    public oneBasedIndices: boolean;
     public isCommand(command: string) {
         if (command && this.command) {
             return command.toLowerCase() === this.command;
@@ -19,14 +21,18 @@ export class RequestContext<T> {
         return null;
     }
 
-    constructor(public clientId, command: string, request: T, {silent}: OmniSharp.RequestOptions, sequence = uniqueId("__request")) {
+    constructor(public clientId, command: string, request: T, {silent, oneBasedIndices}: OmniSharp.RequestOptions, sequence = uniqueId("__request")) {
         if (command) this.command = command.toLowerCase();
 
         if (isObject(request)) {
             if (request['Buffer']) {
                 request['Buffer'] = stripBom(request['Buffer']);
             }
-            this.request = Object.freeze(clone(request));
+            var obj = cloneDeep(request);
+            if (oneBasedIndices) {
+                obj = requestMutator(obj);
+            }
+            this.request = Object.freeze(obj);
         } else {
             this.request = request;
         }
@@ -58,10 +64,13 @@ export class ResponseContext<TRequest, TResponse> {
         return null;
     }
 
-    constructor({clientId, request, command, sequence, time, silent}: RequestContext<any>, response: TResponse) {
+    constructor({clientId, request, command, sequence, time, silent, oneBasedIndices}: RequestContext<any>, response: TResponse) {
         if (command) this.command = command.toLowerCase();
 
         if (isObject(response)) {
+            if (oneBasedIndices) {
+                response = responseMutator(response);
+            }
             this.response = Object.freeze(response);
         } else {
             this.response = response;

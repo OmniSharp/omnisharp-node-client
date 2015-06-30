@@ -1,8 +1,9 @@
 import {Observable, Subject, AsyncSubject, BehaviorSubject, Scheduler} from "rx";
-import {extend, isObject, some, uniqueId, isArray, each, intersection, keys, filter, isNumber, has, get, set, cloneDeep} from "lodash";
+import {extend, isObject, some, uniqueId, isArray, each, intersection, keys, filter, isNumber, has, get, set} from "lodash";
 import {IDriver, IStaticDriver, IDriverOptions, OmnisharpClientStatus, OmnisharpClientOptions} from "../interfaces";
 import {Driver, DriverState} from "../enums";
 import {RequestContext, ResponseContext, CommandContext} from "./contexts";
+import {serverLineNumbers, serverLineNumberArrays} from "./response-handling";
 
 var normalCommands = [
     'findimplementations', 'findsymbols', 'findusages',
@@ -210,91 +211,8 @@ export class ClientBase implements IDriver {
         return result;
     }
 
-    private static serverLineNumbers = [
-        'Line', 'Column',
-        'StartLine', 'StartColumn',
-        'EndLine', 'EndColumn',
-        'SelectionStartColumn', 'SelectionStartLine',
-        'SelectionEndColumn', 'SelectionEndLine',
-        'Selection.Start.Line', 'Selection.Start.Column',
-        'Selection.End.Line', 'Selection.End.Column',
-        'Location.Line', 'Location.Column',
-        'Location.EndLine', 'Location.EndColumn',
-    ];
-
-    private static serverLineNumberArrays = [
-        'Lines'
-    ];
-
-    protected requestMutator(data: any) {
-        // Assume one based indexes
-        if (this._options.oneBasedIndexes)
-            return data;
-
-        if (isArray(data)) {
-            each(data, item => this.requestMutator(item));
-            return data;
-        }
-
-        each(ClientBase.serverLineNumbers, path => {
-            var hasPath = has(data, path);
-            if (hasPath) {
-                var value = get<number>(data, path);
-                value = value + 1;
-                set(data, path, value);
-            }
-        });
-
-        each(ClientBase.serverLineNumberArrays, path => {
-            var hasPath = has(data, path);
-            if (hasPath) {
-                var value = get<number[]>(data, path);
-                for (var i = 0; i < value.length; i++) {
-                    value[i] = value[i] + 1;
-                }
-                set(data, path, value);
-            }
-        });
-
-        each(filter(data, z => isArray(z)), (item: any[]) => this.requestMutator(item));
-
-        return data;
-    }
-
-    protected responseMutator(data: any) {
-        // Assume one based indexes
-        if (this._options.oneBasedIndexes)
-            return data;
-
-        if (isArray(data)) {
-            each(data, item => this.responseMutator(item));
-            return data;
-        }
-
-        each(ClientBase.serverLineNumbers, path => {
-            var hasPath = has(data, path);
-            if (hasPath) {
-                var value = get<number>(data, path);
-                value = value - 1;
-                set(data, path, value);
-            }
-        });
-
-        each(ClientBase.serverLineNumberArrays, path => {
-            var hasPath = has(data, path);
-            if (hasPath) {
-                var value = get<number[]>(data, path);
-                for (var i = 0; i < value.length; i++) {
-                    value[i] = value[i] + 1;
-                }
-                set(data, path, value);
-            }
-        });
-
-        each(filter(data, z => isArray(z)), (item: any[]) => this.responseMutator(item));
-
-        return data;
-    }
+    public static serverLineNumbers = serverLineNumbers;
+    public static serverLineNumberArrays = serverLineNumberArrays;
 
     public log(message: string, logLevel?: string) {
         // log our complete response time
@@ -329,13 +247,13 @@ export class ClientBase implements IDriver {
 
             var sub = this.state.where(z => z === DriverState.Connected).subscribe(z => {
                 sub.dispose();
-                this.request<TRequest, TResponse>(action, this.requestMutator(cloneDeep(request)), options).subscribe(z => response.onNext(z));
+                this.request<TRequest, TResponse>(action, request, options).subscribe(z => response.onNext(z));
             });
 
             return response;
         }
 
-        var Context = new RequestContext(this._uniqueId, action, this.requestMutator(cloneDeep(request)), options);
+        var Context = new RequestContext(this._uniqueId, action, this.requestMutator(request), options);
         this._requestStream.onNext(Context);
 
         return Context.getResponse<TResponse>(this._responseStream);

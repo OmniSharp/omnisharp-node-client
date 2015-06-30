@@ -312,6 +312,7 @@ declare module OmniSharp {
     interface RequestOptions
     {
         silent?: boolean;
+        oneBasedIndices?: boolean;
     }
 }
 declare module OmniSharp {

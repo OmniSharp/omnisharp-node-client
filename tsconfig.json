@@ -25,6 +25,7 @@
         "./lib/clients/composite-client-v1.ts",
         "./lib/clients/composite-client-v2.ts",
         "./lib/clients/contexts.ts",
+        "./lib/clients/response-handling.ts",
         "./lib/drivers/http.ts",
         "./lib/drivers/stdio.ts",
         "./lib/drivers/websocket.ts",
