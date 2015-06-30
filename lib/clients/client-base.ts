@@ -1,5 +1,5 @@
 import {Observable, Subject, AsyncSubject, BehaviorSubject, Scheduler} from "rx";
-import {extend, isObject, some, uniqueId, isArray, each, intersection, keys, filter, isNumber, has, get, set} from "lodash";
+import {extend, isObject, some, uniqueId, isArray, each, intersection, keys, filter, isNumber, has, get, set, cloneDeep} from "lodash";
 import {IDriver, IStaticDriver, IDriverOptions, OmnisharpClientStatus, OmnisharpClientOptions} from "../interfaces";
 import {Driver, DriverState} from "../enums";
 import {RequestContext, ResponseContext, CommandContext} from "./contexts";
@@ -329,13 +329,13 @@ export class ClientBase implements IDriver {
 
             var sub = this.state.where(z => z === DriverState.Connected).subscribe(z => {
                 sub.dispose();
-                this.request<TRequest, TResponse>(action, this.requestMutator(request), options).subscribe(z => response.onNext(z));
+                this.request<TRequest, TResponse>(action, this.requestMutator(cloneDeep(request)), options).subscribe(z => response.onNext(z));
             });
 
             return response;
         }
 
-        var Context = new RequestContext(this._uniqueId, action, this.requestMutator(request), options);
+        var Context = new RequestContext(this._uniqueId, action, this.requestMutator(cloneDeep(request)), options);
         this._requestStream.onNext(Context);
 
         return Context.getResponse<TResponse>(this._responseStream);
