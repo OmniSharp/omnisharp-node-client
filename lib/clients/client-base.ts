@@ -1,5 +1,5 @@
 import {Observable, Subject, AsyncSubject, BehaviorSubject, Scheduler} from "rx";
-import {extend, isObject, some, uniqueId, isArray, each, intersection, keys, filter, isNumber, has, get, set} from "lodash";
+import {extend, isObject, some, uniqueId, isArray, each, intersection, keys, filter, isNumber, has, get, set, defaults} from "lodash";
 import {IDriver, IStaticDriver, IDriverOptions, OmnisharpClientStatus, OmnisharpClientOptions} from "../interfaces";
 import {Driver, DriverState} from "../enums";
 import {RequestContext, ResponseContext, CommandContext} from "./contexts";
@@ -80,10 +80,9 @@ export class ClientBase implements IDriver {
             this._responseStream,
             this._driver.commands
                 .map(packet => new ResponseContext(
-                    new RequestContext(this._uniqueId, packet.Command, {}, {}, 'command'),
-                    this.responseMutator(packet.Body))));
+                    new RequestContext(this._uniqueId, packet.Command, {}, {}, 'command'), packet.Body)));
 
-        this._lowestIndexValue = _options.oneBasedIndexes ? 1 : 0;
+        this._lowestIndexValue = _options.oneBasedIndices ? 1 : 0;
 
         var requestsPerSecond = this._requestStream.throttleFirst(1000)
             .flatMap(x => this._requestStream.scan(0, (acc, value) => acc + 1))
@@ -203,7 +202,7 @@ export class ClientBase implements IDriver {
         var result = this._driver.request<any, any>(context.command, context.request);
 
         result.subscribe((data) => {
-            this._responseStream.onNext(new ResponseContext(context, this.responseMutator(data)));
+            this._responseStream.onNext(new ResponseContext(context, data));
         }, (error) => {
             this._errorStream.onNext(new CommandContext(context.command, error));
         });
@@ -240,6 +239,7 @@ export class ClientBase implements IDriver {
 
     public request<TRequest, TResponse>(action: string, request: TRequest, options?: OmniSharp.RequestOptions): Rx.Observable<TResponse> {
         if (!options) options = <OmniSharp.RequestOptions>{};
+        defaults(options, { oneBasedIndices: this._options.oneBasedIndices });
 
         // Handle disconnected requests
         if (this.currentState !== DriverState.Connected && this.currentState !== DriverState.Error) {
@@ -253,7 +253,7 @@ export class ClientBase implements IDriver {
             return response;
         }
 
-        var Context = new RequestContext(this._uniqueId, action, this.requestMutator(request), options);
+        var Context = new RequestContext(this._uniqueId, action, request, options);
         this._requestStream.onNext(Context);
 
         return Context.getResponse<TResponse>(this._responseStream);

@@ -29,7 +29,7 @@ export class RequestContext<T> {
                 request['Buffer'] = stripBom(request['Buffer']);
             }
             var obj = cloneDeep(request);
-            if (oneBasedIndices) {
+            if (!oneBasedIndices) {
                 obj = requestMutator(obj);
             }
             this.request = Object.freeze(obj);
@@ -68,7 +68,7 @@ export class ResponseContext<TRequest, TResponse> {
         if (command) this.command = command.toLowerCase();
 
         if (isObject(response)) {
-            if (oneBasedIndices) {
+            if (!oneBasedIndices) {
                 response = responseMutator(response);
             }
             this.response = Object.freeze(response);
