@@ -1,24 +1,14 @@
-echo update submodules...
-git submodule update --init --recursive
-git submodule foreach git pull origin master
-pushd vendor/omnisharp-roslyn
-./build.cmd
+Remove-Item roslyn -Recurse -Force
+mkdir roslyn
+pushd roslyn
+$client = New-Object System.NET.Webclient
+$client.Headers.Add("user-agent", "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.2;)")
+Invoke-WebRequest ($client.DownloadString("https://api.github.com/repos/omnisharp/omnisharp-roslyn/releases/latest") | convertfrom-json).assets[0].browser_download_url -OutFile '.\omnisharp.tar.gz'
+tar zxvf omnisharp.tar.gz
+Remove-Item omnisharp.tar.gz
+Copy-Item approot/* . -Recurse
+Remove-Item approot -Recurse
 popd
-
-if (Test-Path ./roslyn) { Remove-Item ./roslyn -Recurse -Force }
-New-Item -ItemType Directory ./roslyn | Out-Null
-Copy-Item vendor/omnisharp-roslyn/artifacts/build/omnisharp/approot/* ./roslyn -Recurse
-
-if (!(Test-Path .\NuGet.exe)) {
-	Invoke-WebRequest 'https://www.nuget.org/nuget.exe' -OutFile '.\NuGet.exe'
-}
-
-# Needed?
-#.\nuget.exe install kre-clr-win-x86 -Prerelease -OutputDirectory roslyn/packages
-#if (!(Test-Path roslyn/packages/kre-clr-win-x86.1.0.0-beta3)) {
-#	echo 'ERROR: Can not find kre-clr-win-x86.1.0.0-beta3 in output exiting!'
-#	exit 1
-#}
 
 Copy-Item -Force vendor/omnisharp.cmd.patch roslyn/omnisharp.cmd
 Copy-Item -Force vendor/omnisharp.patch roslyn/omnisharp

@@ -73,7 +73,7 @@ namespace OmniSharp.TypeScriptGeneration
         }
 
         private static string ContextInterface = "    interface Context<TRequest, TResponse>\n    {\n        request: TRequest;\n        response: TResponse;\n    }\n";
-        private static string RequestOptionsInterface = "    interface RequestOptions\n    {\n        silent?: boolean;\n    }\n";
+        private static string RequestOptionsInterface = "    interface RequestOptions\n    {\n        silent?: boolean;\n        oneBasedIndices?: boolean\n    }\n";
 
         private static IEnumerable<ItemVersion> GetMethods()
         {
