@@ -144,6 +144,9 @@ class StdioDriver implements IDriver {
     }
 
     public request<TRequest, TResponse>(command: string, request?: TRequest): Rx.Observable<TResponse> {
+        if (!this._process) {
+            return Observable.throwError<any>(new Error("Server is not connected, erroring out"));
+        }
         var sequence = this._seq++;
         var packet: OmniSharp.Stdio.Protocol.RequestPacket = {
             Command: command,
