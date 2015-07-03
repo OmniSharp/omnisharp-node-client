@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -25,6 +25,11 @@ namespace OmniSharp.TypeScriptGeneration
             if (property.MemberInfo.DeclaringType.GetProperty(property.MemberInfo.Name).PropertyType == typeof(Stream))
             {
                 return "any";
+            }
+
+            if (property.MemberInfo.DeclaringType.GetProperty(property.MemberInfo.Name).PropertyType.Name.EndsWith("[]", StringComparison.Ordinal))
+            {
+                return memberTypeName + "[]";
             }
 
             if (property.MemberInfo.DeclaringType.GetProperty(property.MemberInfo.Name).PropertyType.Name.StartsWith(nameof(IEnumerable), StringComparison.Ordinal))

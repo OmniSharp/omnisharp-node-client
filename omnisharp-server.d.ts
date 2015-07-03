@@ -146,13 +146,13 @@ declare module OmniSharp.Models {
         Projects: string[];
     }
     interface HighlightRequest extends OmniSharp.Models.Request {
-        Lines?: number;
-        ProjectNames?: string;
-        Classifications?: OmniSharp.Models.HighlightClassification;
-        ExcludeClassifications?: OmniSharp.Models.HighlightClassification;
+        Lines?: number[];
+        ProjectNames?: string[];
+        Classifications?: OmniSharp.Models.HighlightClassification[];
+        ExcludeClassifications?: OmniSharp.Models.HighlightClassification[];
     }
     interface HighlightResponse {
-        Highlights: OmniSharp.Models.HighlightSpan;
+        Highlights: OmniSharp.Models.HighlightSpan[];
     }
     interface ModifiedFileResponse {
         FileName: string;
