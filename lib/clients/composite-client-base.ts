@@ -74,25 +74,20 @@ export class ObservationClientBase<C extends ClientBase> implements OmniSharp.Ev
     }
 }
 
-export interface CombinationKey<T> {
-    key: string;
-    value: T;
-}
-
-export class CombinationClientBase<C extends ClientBase> {
+export class CombinationClientBase<C extends ClientBase> implements OmniSharp.Aggregate.Events {
     public _clientsSubject = new ReplaySubject<C[]>(1);
 
-    public projectAdded: Observable<CombinationKey<OmniSharp.Models.ProjectInformationResponse>[]>;
-    public projectChanged: Observable<CombinationKey<OmniSharp.Models.ProjectInformationResponse>[]>;
-    public projectRemoved: Observable<CombinationKey<OmniSharp.Models.ProjectInformationResponse>[]>;
-    public error: Observable<CombinationKey<OmniSharp.Models.ErrorMessage>[]>;
-    public msBuildProjectDiagnostics: Observable<CombinationKey<OmniSharp.Models.MSBuildProjectDiagnostics>[]>;
-    public packageRestoreStarted: Observable<CombinationKey<OmniSharp.Models.PackageRestoreMessage>[]>;
-    public packageRestoreFinished: Observable<CombinationKey<OmniSharp.Models.PackageRestoreMessage>[]>;
-    public unresolvedDependencies: Observable<CombinationKey<OmniSharp.Models.UnresolvedDependenciesMessage>[]>;
+    public projectAdded: Observable<OmniSharp.CombinationKey<OmniSharp.Models.ProjectInformationResponse>[]>;
+    public projectChanged: Observable<OmniSharp.CombinationKey<OmniSharp.Models.ProjectInformationResponse>[]>;
+    public projectRemoved: Observable<OmniSharp.CombinationKey<OmniSharp.Models.ProjectInformationResponse>[]>;
+    public error: Observable<OmniSharp.CombinationKey<OmniSharp.Models.ErrorMessage>[]>;
+    public msBuildProjectDiagnostics: Observable<OmniSharp.CombinationKey<OmniSharp.Models.MSBuildProjectDiagnostics>[]>;
+    public packageRestoreStarted: Observable<OmniSharp.CombinationKey<OmniSharp.Models.PackageRestoreMessage>[]>;
+    public packageRestoreFinished: Observable<OmniSharp.CombinationKey<OmniSharp.Models.PackageRestoreMessage>[]>;
+    public unresolvedDependencies: Observable<OmniSharp.CombinationKey<OmniSharp.Models.UnresolvedDependenciesMessage>[]>;
 
-    public state: Rx.Observable<CombinationKey<DriverState>[]>;
-    public status: Rx.Observable<CombinationKey<OmnisharpClientStatus>[]>;
+    public state: Rx.Observable<OmniSharp.CombinationKey<DriverState>[]>;
+    public status: Rx.Observable<OmniSharp.CombinationKey<OmnisharpClientStatus>[]>;
 
     constructor(private clients: C[] = []) {
         this.projectAdded = this.makeCombineObserable(client => client.projectAdded);

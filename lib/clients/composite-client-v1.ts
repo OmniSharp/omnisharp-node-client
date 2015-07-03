@@ -1,9 +1,9 @@
 import {ReplaySubject, Observable} from "rx";
 import * as _ from 'lodash';
 import {ClientV1} from "./client-v1";
-import {ObservationClientBase, CombinationClientBase, CombinationKey} from "./composite-client-base";
+import {ObservationClientBase, CombinationClientBase} from "./composite-client-base";
 
-export class ObservationClientV1<T extends ClientV1> extends ObservationClientBase<T> {
+export class ObservationClientV1<T extends ClientV1> extends ObservationClientBase<T> implements OmniSharp.Events.V1 {
     public observeUpdatebuffer: typeof ClientV1.prototype.observeUpdatebuffer;
     public observeChangebuffer: typeof ClientV1.prototype.observeChangebuffer;
     public observeCodecheck: typeof ClientV1.prototype.observeCodecheck;
@@ -17,6 +17,7 @@ export class ObservationClientV1<T extends ClientV1> extends ObservationClientBa
     public observeGotodefinition: typeof ClientV1.prototype.observeGotodefinition;
     public observeGotofile: typeof ClientV1.prototype.observeGotofile;
     public observeGotoregion: typeof ClientV1.prototype.observeGotoregion;
+    public observeHighlight: Rx.Observable<OmniSharp.Context<OmniSharp.Models.HighlightRequest, OmniSharp.Models.HighlightResponse>>;
     public observeNavigateup: typeof ClientV1.prototype.observeNavigateup;
     public observeNavigatedown: typeof ClientV1.prototype.observeNavigatedown;
     public observeRename: typeof ClientV1.prototype.observeRename;
@@ -49,6 +50,7 @@ export class ObservationClientV1<T extends ClientV1> extends ObservationClientBa
         this.observeGotodefinition = this.makeMergeObserable(client => client.observeGotodefinition);
         this.observeGotofile = this.makeMergeObserable(client => client.observeGotofile);
         this.observeGotoregion = this.makeMergeObserable(client => client.observeGotoregion);
+        this.observeHighlight = this.makeMergeObserable(client => client.observeHighlight);
         this.observeNavigateup = this.makeMergeObserable(client => client.observeNavigateup);
         this.observeNavigatedown = this.makeMergeObserable(client => client.observeNavigatedown);
         this.observeRename = this.makeMergeObserable(client => client.observeRename);
@@ -67,35 +69,36 @@ export class ObservationClientV1<T extends ClientV1> extends ObservationClientBa
     }
 }
 
-export class CombinationClientV1<T extends ClientV1> extends CombinationClientBase<T> {
-    public observeUpdatebuffer: Observable<CombinationKey<OmniSharp.Context<OmniSharp.Models.Request, any>>[]>;
-    public observeChangebuffer: Observable<CombinationKey<OmniSharp.Context<OmniSharp.Models.Request, any>>[]>;
-    public observeCodecheck: Observable<CombinationKey<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>[]>;
-    public observeFormatAfterKeystroke: Observable<CombinationKey<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.FormatRangeResponse>>[]>;
-    public observeFormatRange: Observable<CombinationKey<OmniSharp.Context<OmniSharp.Models.FormatRangeRequest, OmniSharp.Models.FormatRangeResponse>>[]>;
-    public observeCodeformat: Observable<CombinationKey<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.CodeFormatResponse>>[]>;
-    public observeAutocomplete: Observable<CombinationKey<OmniSharp.Context<OmniSharp.Models.AutoCompleteRequest, OmniSharp.Models.AutoCompleteResponse[]>>[]>;
-    public observeFindimplementations: Observable<CombinationKey<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>[]>;
-    public observeFindsymbols: Observable<CombinationKey<OmniSharp.Context<OmniSharp.Models.FindSymbolsRequest, OmniSharp.Models.QuickFixResponse>>[]>;
-    public observeFindusages: Observable<CombinationKey<OmniSharp.Context<OmniSharp.Models.FindUsagesRequest, OmniSharp.Models.QuickFixResponse>>[]>;
-    public observeGotodefinition: Observable<CombinationKey<OmniSharp.Context<OmniSharp.Models.Request, any>>[]>;
-    public observeGotofile: Observable<CombinationKey<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>[]>;
-    public observeGotoregion: Observable<CombinationKey<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>[]>;
-    public observeNavigateup: Observable<CombinationKey<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>>[]>;
-    public observeNavigatedown: Observable<CombinationKey<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>>[]>;
-    public observeRename: Observable<CombinationKey<OmniSharp.Context<OmniSharp.Models.RenameRequest, OmniSharp.Models.RenameResponse>>[]>;
-    public observeSignatureHelp: Observable<CombinationKey<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.SignatureHelp>>[]>;
-    public observeCheckalivestatus: Observable<CombinationKey<OmniSharp.Context<any, boolean>>[]>;
-    public observeCheckreadystatus: Observable<CombinationKey<OmniSharp.Context<any, boolean>>[]>;
-    public observeCurrentfilemembersastree: Observable<CombinationKey<OmniSharp.Context<OmniSharp.Models.Request, any>>[]>;
-    public observeCurrentfilemembersasflat: Observable<CombinationKey<OmniSharp.Context<OmniSharp.Models.Request, any>>[]>;
-    public observeTypelookup: Observable<CombinationKey<OmniSharp.Context<OmniSharp.Models.TypeLookupRequest, OmniSharp.Models.TypeLookupResponse>>[]>;
-    public observeFilesChanged: Observable<CombinationKey<OmniSharp.Context<OmniSharp.Models.Request[], boolean>>[]>;
-    public observeProjects: Observable<CombinationKey<OmniSharp.Context<OmniSharp.Models.WorkspaceInformationResponse, OmniSharp.Models.WorkspaceInformationResponse>>[]>;
-    public observeProject: Observable<CombinationKey<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.ProjectInformationResponse>>[]>;
-    public observeGetcodeactions: Observable<CombinationKey<OmniSharp.Context<OmniSharp.Models.CodeActionRequest, OmniSharp.Models.GetCodeActionsResponse>>[]>;
-    public observeRuncodeaction: Observable<CombinationKey<OmniSharp.Context<OmniSharp.Models.CodeActionRequest, OmniSharp.Models.RunCodeActionResponse>>[]>;
-    public observeGettestcontext: Observable<CombinationKey<OmniSharp.Context<OmniSharp.Models.TestCommandRequest, OmniSharp.Models.GetTestCommandResponse>>[]>;
+export class CombinationClientV1<T extends ClientV1> extends CombinationClientBase<T> implements OmniSharp.Events.Aggregate.V1 {
+    public observeUpdatebuffer: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.Request, any>>[]>;
+    public observeChangebuffer: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.Request, any>>[]>;
+    public observeCodecheck: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>[]>;
+    public observeFormatAfterKeystroke: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.FormatRangeResponse>>[]>;
+    public observeFormatRange: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.FormatRangeRequest, OmniSharp.Models.FormatRangeResponse>>[]>;
+    public observeCodeformat: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.CodeFormatResponse>>[]>;
+    public observeAutocomplete: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.AutoCompleteRequest, OmniSharp.Models.AutoCompleteResponse[]>>[]>;
+    public observeFindimplementations: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>[]>;
+    public observeFindsymbols: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.FindSymbolsRequest, OmniSharp.Models.QuickFixResponse>>[]>;
+    public observeFindusages: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.FindUsagesRequest, OmniSharp.Models.QuickFixResponse>>[]>;
+    public observeGotodefinition: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.Request, any>>[]>;
+    public observeGotofile: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>[]>;
+    public observeGotoregion: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>[]>;
+    public observeHighlight: Rx.Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.HighlightRequest, OmniSharp.Models.HighlightResponse>>[]>;
+    public observeNavigateup: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>>[]>;
+    public observeNavigatedown: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>>[]>;
+    public observeRename: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.RenameRequest, OmniSharp.Models.RenameResponse>>[]>;
+    public observeSignatureHelp: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.SignatureHelp>>[]>;
+    public observeCheckalivestatus: Observable<OmniSharp.CombinationKey<OmniSharp.Context<any, boolean>>[]>;
+    public observeCheckreadystatus: Observable<OmniSharp.CombinationKey<OmniSharp.Context<any, boolean>>[]>;
+    public observeCurrentfilemembersastree: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.Request, any>>[]>;
+    public observeCurrentfilemembersasflat: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.Request, any>>[]>;
+    public observeTypelookup: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.TypeLookupRequest, OmniSharp.Models.TypeLookupResponse>>[]>;
+    public observeFilesChanged: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.Request[], boolean>>[]>;
+    public observeProjects: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.WorkspaceInformationResponse, OmniSharp.Models.WorkspaceInformationResponse>>[]>;
+    public observeProject: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.ProjectInformationResponse>>[]>;
+    public observeGetcodeactions: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.CodeActionRequest, OmniSharp.Models.GetCodeActionsResponse>>[]>;
+    public observeRuncodeaction: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.CodeActionRequest, OmniSharp.Models.RunCodeActionResponse>>[]>;
+    public observeGettestcontext: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.TestCommandRequest, OmniSharp.Models.GetTestCommandResponse>>[]>;
 
     constructor(clients: T[] = []) {
         super(clients);
@@ -113,6 +116,7 @@ export class CombinationClientV1<T extends ClientV1> extends CombinationClientBa
         this.observeGotodefinition = this.makeCombineObserable(client => client.observeGotodefinition);
         this.observeGotofile = this.makeCombineObserable(client => client.observeGotofile);
         this.observeGotoregion = this.makeCombineObserable(client => client.observeGotoregion);
+        this.observeHighlight = this.makeCombineObserable(client => client.observeHighlight);
         this.observeNavigateup = this.makeCombineObserable(client => client.observeNavigateup);
         this.observeNavigatedown = this.makeCombineObserable(client => client.observeNavigatedown);
         this.observeRename = this.makeCombineObserable(client => client.observeRename);

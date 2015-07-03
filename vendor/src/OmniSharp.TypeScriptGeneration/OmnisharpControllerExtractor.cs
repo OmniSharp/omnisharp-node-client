@@ -29,11 +29,12 @@ namespace OmniSharp.TypeScriptGeneration
         {
             var methodStrings = GetMethods().GroupBy(z => z.Version).ToDictionary(z => z.Key, z => z.GroupBy(x => x.ActionName).ToArray());
             var eventStrings = GetEvents().GroupBy(z => z.Version).ToDictionary(z => z.Key, z => z.GroupBy(x => x.ActionName).ToArray());
+            var aggregateEventStrings = GetAggregateEvents().GroupBy(z => z.Version).ToDictionary(z => z.Key, z => z.GroupBy(x => x.ActionName).ToArray());
 
             var keys = methodStrings.Keys;
-            yield return $"declare module {nameof(OmniSharp)} {{\n{ContextInterface}{RequestOptionsInterface}}}";
+            yield return $"declare module {nameof(OmniSharp)} {{\n{ContextInterface}{RequestOptionsInterface}{CombinationKeyInterface}}}";
 
-            yield return $"declare module {nameof(OmniSharp)} {{\n    module Api {{\n";
+            yield return $"declare module {nameof(OmniSharp)}.Api {{\n";
 
             foreach (var kvp in methodStrings)
             {
@@ -46,13 +47,13 @@ namespace OmniSharp.TypeScriptGeneration
                 }
 
                 var results = items.SelectMany(x => x).OrderBy(x => x.ActionName).Select(z => z.Value);
-                var methods = "            " + string.Join("\n            ", results) + "\n";
-                yield return $"        interface {key.ToUpper()} {{\n{methods}        }}\n";
+                var methods = "        " + string.Join("\n        ", results) + "\n";
+                yield return $"    interface {key.ToUpper()} {{\n{methods}    }}\n";
             }
 
-            yield return $"    }}\n}}";
+            yield return $"}}";
 
-            yield return $"declare module {nameof(OmniSharp)} {{\n    module Events {{\n";
+            yield return $"declare module {nameof(OmniSharp)}.Events {{\n";
 
             foreach (var kvp in eventStrings)
             {
@@ -65,15 +66,35 @@ namespace OmniSharp.TypeScriptGeneration
                 }
 
                 var results = items.SelectMany(x => x).OrderBy(x => x.ActionName).Select(z => z.Value);
-                var events = "            " + string.Join("\n            ", results) + "\n";
-                yield return $"        interface {key.ToUpper()} {{\n{events}        }}\n";
+                var events = "        " + string.Join("\n        ", results) + "\n";
+                yield return $"    interface {key.ToUpper()} {{\n{events}    }}\n";
             }
 
-            yield return $"    }}\n}}";
+            yield return $"}}";
+
+            yield return $"declare module {nameof(OmniSharp)}.Events.Aggregate {{\n";
+
+            foreach (var kvp in aggregateEventStrings)
+            {
+                var key = kvp.Key;
+                var items = kvp.Value.ToList();
+
+                foreach (var previousKey in keys.TakeWhile(z => z != key).Reverse())
+                {
+                    items.AddRange(aggregateEventStrings[previousKey].Where(x => !items.Any(z => z.Key == x.Key)));
+                }
+
+                var results = items.SelectMany(x => x).OrderBy(x => x.ActionName).Select(z => z.Value);
+                var events = "        " + string.Join("\n        ", results) + "\n";
+                yield return $"    interface {key.ToUpper()} {{\n{events}    }}\n";
+            }
+
+            yield return $"}}";
         }
 
         private static string ContextInterface = "    interface Context<TRequest, TResponse>\n    {\n        request: TRequest;\n        response: TResponse;\n    }\n";
         private static string RequestOptionsInterface = "    interface RequestOptions\n    {\n        silent?: boolean;\n        oneBasedIndices?: boolean\n    }\n";
+        private static string CombinationKeyInterface = "    interface CombinationKey<T>\n    {\n        key: string;\n        value: T;\n    }\n";
 
         private static IEnumerable<ItemVersion> GetMethods()
         {
@@ -129,6 +150,35 @@ namespace OmniSharp.TypeScriptGeneration
                 else
                 {
                     yield return new ItemVersion(version, actionName, $"{observeName}: Rx.Observable<{returnType}>;");
+                }
+            }
+        }
+
+        private static IEnumerable<ItemVersion> GetAggregateEvents()
+        {
+            var methods = GetControllerMethods().ToArray();
+            foreach (var method in methods)
+            {
+                var actionName = method.Action;
+                var version = GetVersion(ref actionName);
+                var observeName = $"observe{actionName[0].ToString().ToUpper()}{actionName.Substring(1)}";
+
+                var requestType = method.RequestType;
+                if (method.RequestArray)
+                    requestType += "[]";
+
+                var returnType = method.ReturnType;
+                if (method.ReturnArray)
+                    returnType += "[]";
+
+                yield return new ItemVersion(version, actionName, $"// '{actionName}'");
+                if (method.RequestType != null)
+                {
+                    yield return new ItemVersion(version, actionName, $"{observeName}: Rx.Observable<CombinationKey<Context<{requestType}, {returnType}>>[]>;");
+                }
+                else
+                {
+                    yield return new ItemVersion(version, actionName, $"{observeName}: Rx.Observable<CombinationKey<{returnType}>[]>;");
                 }
             }
         }

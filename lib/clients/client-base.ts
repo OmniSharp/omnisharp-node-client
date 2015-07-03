@@ -15,7 +15,7 @@ var priorityCommands = [
 ];
 var undeferredCommands = normalCommands.concat(priorityCommands);
 
-export class ClientBase implements IDriver {
+export class ClientBase implements IDriver, OmniSharp.Events {
     private _driver: IDriver;
     private _requestStream = new Subject<RequestContext<any>>();
     private _responseStream = new Subject<ResponseContext<any, any>>();

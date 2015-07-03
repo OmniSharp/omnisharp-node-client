@@ -26,6 +26,7 @@ export class ClientV2 extends ClientBase implements OmniSharp.Api.V2, OmniSharp.
     public observeGotodefinition: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request, any>>;
     public observeGotofile: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>;
     public observeGotoregion: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>;
+    public observeHighlight: Rx.Observable<OmniSharp.Context<OmniSharp.Models.HighlightRequest, OmniSharp.Models.HighlightResponse>>;
     public observeNavigateup: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>>;
     public observeNavigatedown: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>>;
     public observeRename: Rx.Observable<OmniSharp.Context<OmniSharp.Models.RenameRequest, OmniSharp.Models.RenameResponse>>;
@@ -56,6 +57,9 @@ export class ClientV2 extends ClientBase implements OmniSharp.Api.V2, OmniSharp.
         this.observeFindsymbols = this.watchCommand("findsymbols");
         this.observeFindusages = this.watchCommand("findusages");
         this.observeGotodefinition = this.watchCommand("gotodefinition");
+        this.observeGotofile = this.watchCommand("gotofile");
+        this.observeGotoregion = this.watchCommand("gotoregion");
+        this.observeHighlight = this.watchCommand("highlight");
         this.observeNavigateup = this.watchCommand("navigateup");
         this.observeNavigatedown = this.watchCommand("navigatedown");
         this.observeRename = this.watchCommand("rename");
@@ -157,14 +161,17 @@ export class ClientV2 extends ClientBase implements OmniSharp.Api.V2, OmniSharp.
     public gotodefinition: typeof ClientV1.prototype.gotodefinition;
     public gotodefinitionPromise: typeof ClientV1.prototype.gotodefinitionPromise;
 
-    public navigateup: typeof ClientV1.prototype.navigateup;
-    public navigateupPromise: typeof ClientV1.prototype.navigateupPromise;
-
     public gotofile: typeof ClientV1.prototype.gotofile;
     public gotofilePromise: typeof ClientV1.prototype.gotofilePromise;
 
     public gotoregion: typeof ClientV1.prototype.gotoregion;
     public gotoregionPromise: typeof ClientV1.prototype.gotoregionPromise;
+
+    public highlight: typeof ClientV1.prototype.highlight;
+    public highlightPromise: typeof ClientV1.prototype.highlightPromise;
+
+    public navigateup: typeof ClientV1.prototype.navigateup;
+    public navigateupPromise: typeof ClientV1.prototype.navigateupPromise;
 
     public navigatedown: typeof ClientV1.prototype.navigatedown;
     public navigatedownPromise: typeof ClientV1.prototype.navigatedownPromise;
