@@ -10,6 +10,6 @@ DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 export SET DNX_APPBASE="$DIR/packages/OmniSharp/1.0.0/root"
 
-export PATH=$PATH:/usr/local/bin # this is required for the users of the Homebrew Mono package
+export PATH=/usr/local/bin:$PATH # this is required for the users of the Homebrew Mono package
 
 exec "$DIR/packages/dnx-mono.1.0.0-beta4/bin/dnx" "$DNX_APPBASE" run "$@"
