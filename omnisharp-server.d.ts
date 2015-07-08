@@ -12,21 +12,6 @@ declare module OmniSharp.Models {
         PreprocessorKeyword = 9,
         ExcludedCode = 10
     }
-    interface DnxProject {
-        Path: string;
-        Name: string;
-        Commands: { [key: string]: string };
-        Configurations: string[];
-        ProjectSearchPaths: string[];
-        Frameworks: string[];
-        GlobalJsonPath: string;
-        SourceFiles: string[];
-    }
-    interface DnxWorkspaceInformation {
-        Projects: OmniSharp.Models.DnxProject[];
-        RuntimePath: string;
-        DesignTimeHostPort: number;
-    }
     interface AutoCompleteRequest extends OmniSharp.Models.Request {
         WordToComplete?: string;
         WantDocumentationForEveryCompletionResult?: boolean;
@@ -82,6 +67,27 @@ declare module OmniSharp.Models {
         EndColumn: number;
         Text: string;
         Projects: string[];
+    }
+    interface DnxFramework {
+        Name: string;
+        FriendlyName: string;
+        ShortName: string;
+    }
+    interface DnxProject {
+        Path: string;
+        Name: string;
+        Commands: { [key: string]: string };
+        Configurations: string[];
+        ProjectSearchPaths: string[];
+        Frameworks: string[];
+        DnxFrameworks: OmniSharp.Models.DnxFramework[];
+        GlobalJsonPath: string;
+        SourceFiles: string[];
+    }
+    interface DnxWorkspaceInformation {
+        Projects: OmniSharp.Models.DnxProject[];
+        RuntimePath: string;
+        DesignTimeHostPort: number;
     }
     interface ErrorMessage {
         Text: string;
@@ -302,6 +308,11 @@ declare module OmniSharp.Models.V2 {
         Changes: OmniSharp.Models.ModifiedFileResponse[];
     }
 }
+declare module OmniSharp.Models.v1 {
+    interface ProjectInformationRequest {
+        ExcludeSourceFiles?: boolean;
+    }
+}
 declare module OmniSharp.Stdio.Protocol {
     interface EventPacket extends OmniSharp.Stdio.Protocol.Packet {
         Event: string;
@@ -422,8 +433,8 @@ declare module OmniSharp.Api {
         project(request: OmniSharp.Models.Request, options?: RequestOptions): Rx.Observable<OmniSharp.Models.ProjectInformationResponse>;
         projectPromise(request: OmniSharp.Models.Request, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.ProjectInformationResponse>;
         // 'projects'
-        projects(request: any, options?: RequestOptions): Rx.Observable<OmniSharp.Models.WorkspaceInformationResponse>;
-        projectsPromise(request: any, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.WorkspaceInformationResponse>;
+        projects(request: OmniSharp.Models.v1.ProjectInformationRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.WorkspaceInformationResponse>;
+        projectsPromise(request: OmniSharp.Models.v1.ProjectInformationRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.WorkspaceInformationResponse>;
         // 'rename'
         rename(request: OmniSharp.Models.RenameRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.RenameResponse>;
         renamePromise(request: OmniSharp.Models.RenameRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.RenameResponse>;
@@ -512,8 +523,8 @@ declare module OmniSharp.Api {
         project(request: OmniSharp.Models.Request, options?: RequestOptions): Rx.Observable<OmniSharp.Models.ProjectInformationResponse>;
         projectPromise(request: OmniSharp.Models.Request, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.ProjectInformationResponse>;
         // 'projects'
-        projects(request: any, options?: RequestOptions): Rx.Observable<OmniSharp.Models.WorkspaceInformationResponse>;
-        projectsPromise(request: any, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.WorkspaceInformationResponse>;
+        projects(request: OmniSharp.Models.v1.ProjectInformationRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.WorkspaceInformationResponse>;
+        projectsPromise(request: OmniSharp.Models.v1.ProjectInformationRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.WorkspaceInformationResponse>;
         // 'rename'
         rename(request: OmniSharp.Models.RenameRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.RenameResponse>;
         renamePromise(request: OmniSharp.Models.RenameRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.RenameResponse>;
@@ -582,7 +593,7 @@ declare module OmniSharp.Events {
         // 'project'
         observeProject: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.ProjectInformationResponse>>;
         // 'projects'
-        observeProjects: Rx.Observable<Context<any, OmniSharp.Models.WorkspaceInformationResponse>>;
+        observeProjects: Rx.Observable<Context<OmniSharp.Models.v1.ProjectInformationRequest, OmniSharp.Models.WorkspaceInformationResponse>>;
         // 'rename'
         observeRename: Rx.Observable<Context<OmniSharp.Models.RenameRequest, OmniSharp.Models.RenameResponse>>;
         // 'runcodeaction'
@@ -643,7 +654,7 @@ declare module OmniSharp.Events {
         // 'project'
         observeProject: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.ProjectInformationResponse>>;
         // 'projects'
-        observeProjects: Rx.Observable<Context<any, OmniSharp.Models.WorkspaceInformationResponse>>;
+        observeProjects: Rx.Observable<Context<OmniSharp.Models.v1.ProjectInformationRequest, OmniSharp.Models.WorkspaceInformationResponse>>;
         // 'rename'
         observeRename: Rx.Observable<Context<OmniSharp.Models.RenameRequest, OmniSharp.Models.RenameResponse>>;
         // 'runcodeaction'
@@ -707,7 +718,7 @@ declare module OmniSharp.Events.Aggregate {
         // 'project'
         observeProject: Rx.Observable<CombinationKey<Context<OmniSharp.Models.Request, OmniSharp.Models.ProjectInformationResponse>>[]>;
         // 'projects'
-        observeProjects: Rx.Observable<CombinationKey<Context<any, OmniSharp.Models.WorkspaceInformationResponse>>[]>;
+        observeProjects: Rx.Observable<CombinationKey<Context<OmniSharp.Models.v1.ProjectInformationRequest, OmniSharp.Models.WorkspaceInformationResponse>>[]>;
         // 'rename'
         observeRename: Rx.Observable<CombinationKey<Context<OmniSharp.Models.RenameRequest, OmniSharp.Models.RenameResponse>>[]>;
         // 'runcodeaction'
@@ -768,7 +779,7 @@ declare module OmniSharp.Events.Aggregate {
         // 'project'
         observeProject: Rx.Observable<CombinationKey<Context<OmniSharp.Models.Request, OmniSharp.Models.ProjectInformationResponse>>[]>;
         // 'projects'
-        observeProjects: Rx.Observable<CombinationKey<Context<any, OmniSharp.Models.WorkspaceInformationResponse>>[]>;
+        observeProjects: Rx.Observable<CombinationKey<Context<OmniSharp.Models.v1.ProjectInformationRequest, OmniSharp.Models.WorkspaceInformationResponse>>[]>;
         // 'rename'
         observeRename: Rx.Observable<CombinationKey<Context<OmniSharp.Models.RenameRequest, OmniSharp.Models.RenameResponse>>[]>;
         // 'runcodeaction'

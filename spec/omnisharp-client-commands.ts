@@ -1071,7 +1071,7 @@ describe("Commands", function() {
     describe("projects", function() {
         it("should not throw of required fields are set", function() {
             expect(() => {
-                server.projects()
+                server.projects({})
             }).to.not.throw;
         });
     });

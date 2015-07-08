@@ -31,7 +31,7 @@ export class ClientV1 extends ClientBase implements OmniSharp.Api.V1, OmniSharp.
     public observeCurrentfilemembersasflat: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request, any>>;
     public observeTypelookup: Rx.Observable<OmniSharp.Context<OmniSharp.Models.TypeLookupRequest, OmniSharp.Models.TypeLookupResponse>>;
     public observeFilesChanged: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request[], boolean>>;
-    public observeProjects: Rx.Observable<OmniSharp.Context<OmniSharp.Models.WorkspaceInformationResponse, OmniSharp.Models.WorkspaceInformationResponse>>;
+    public observeProjects: Rx.Observable<OmniSharp.Context<OmniSharp.Models.v1.ProjectInformationRequest, OmniSharp.Models.WorkspaceInformationResponse>>;
     public observeProject: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.ProjectInformationResponse>>;
     public observeGetcodeactions: Rx.Observable<OmniSharp.Context<OmniSharp.Models.CodeActionRequest, OmniSharp.Models.GetCodeActionsResponse>>;
     public observeRuncodeaction: Rx.Observable<OmniSharp.Context<OmniSharp.Models.CodeActionRequest, OmniSharp.Models.RunCodeActionResponse>>;
@@ -364,11 +364,11 @@ export class ClientV1 extends ClientBase implements OmniSharp.Api.V1, OmniSharp.
         return this.filesChanged(request, options).toPromise();
     }
 
-    public projects(options?: OmniSharp.RequestOptions) {
-        return this.request<any, OmniSharp.Models.WorkspaceInformationResponse>("projects", {}, options);
+    public projects(request: OmniSharp.Models.v1.ProjectInformationRequest, options?: OmniSharp.RequestOptions) {
+        return this.request<OmniSharp.Models.v1.ProjectInformationRequest, OmniSharp.Models.WorkspaceInformationResponse>("projects", request, options);
     }
 
-    public projectsPromise(options?: OmniSharp.RequestOptions) {
+    public projectsPromise(request: OmniSharp.Models.v1.ProjectInformationRequest, options?: OmniSharp.RequestOptions) {
         return this.projects(options).toPromise();
     }
 
