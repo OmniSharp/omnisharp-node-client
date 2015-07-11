@@ -227,6 +227,10 @@ export class ClientBase implements IDriver, OmniSharp.Events {
     }
 
     public connect(_options?: OmnisharpClientOptions) {
+        // There is no return from error for this client
+        if (this.currentState === DriverState.Error) return;
+        if (this.currentState === DriverState.Connected || this.currentState === DriverState.Connecting) return;
+
         var driver = this._options.driver;
         extend(this._options, _options || {});
         this._options.driver = driver;

@@ -110,6 +110,8 @@ class StdioDriver implements IDriver {
         this.id = this._process.pid.toString();
         this._process.on('error', (data) => this.serverErr(data));
         this._process.on('close', () => this.disconnect());
+        this._process.on('exit', () => this.disconnect());
+        this._process.on('disconnect', () => this.disconnect());
     }
 
     private serverErr(data) {

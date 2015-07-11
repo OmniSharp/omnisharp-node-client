@@ -15,3 +15,7 @@ process.on('message', function(message) {
     if (message === 'kill')
         process.exit();
 });
+
+childProcess.on('exit', () => process.exit());
+childProcess.on('disconnect', () => process.exit());
+childProcess.on('close', () => process.exit());
