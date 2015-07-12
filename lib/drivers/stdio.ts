@@ -84,14 +84,15 @@ class StdioDriver implements IDriver {
         this._logger.log(`Connecting to child @ ${process.execPath}`);
         this._logger.log(`Path to server: ${this._serverPath}`);
         this._logger.log(`Selected project: ${this._projectPath}`);
-        this._logger.log(`Arguments: ${additionalArguments}`);
 
         if (win32) {
             // Spawn a special windows only node client... so that we can shutdown nicely.
             var serverArguments: any[] = [join(__dirname, "../stdio/child.js"), "--serverPath", this._serverPath, "--projectPath", projectPath].concat(additionalArguments);
+            this._logger.log(`Arguments: ${serverArguments}`);
             this._process = spawn(process.execPath, serverArguments, { env });
         } else {
             var serverArguments: any[] = ["--stdio", "-s", this._projectPath, "--hostPID", process.pid].concat(additionalArguments);
+            this._logger.log(`Arguments: ${serverArguments}`);
             this._process = spawn(this._serverPath, serverArguments, { env });
         }
 

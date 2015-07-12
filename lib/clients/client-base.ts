@@ -19,11 +19,11 @@ function flattenArguments(obj, prefix = '') {
     var result: any[] = [];
     each(obj, (value, key) => {
         if (isObject(value)) {
-            result.push(...flattenArguments(value, `${prefix ? prefix + '.' : ''}${key}`));
+            result.push(...flattenArguments(value, `${prefix ? prefix + ':' : ''}${key[0].toUpperCase() + key.substr(1)}`));
             return
         }
 
-        result.push(`--${prefix ? prefix + '.' : ''}${key}`, value);
+        result.push(`--${prefix ? prefix + ':' : ''}${key[0].toUpperCase() + key.substr(1)}=${value}`);
     });
 
     return result;

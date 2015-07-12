@@ -76,7 +76,7 @@ describe("Omnisharp Server", function() {
                 logger: {
                     log: (message) => {
                         if (_.startsWith(message, "Arguments: ")) {
-                            expect(message).to.contain('--dnx.alias,notdefault')
+                            expect(message).to.contain('--Dnx:Alias=notdefault')
                             done();
                         }
                     },
@@ -97,8 +97,8 @@ describe("Omnisharp Server", function() {
                 logger: {
                     log: (message) => {
                         if (_.startsWith(message, "Arguments: ")) {
-                            expect(message).to.contain('--dnx.alias,beta4')
-                            expect(message).to.contain('--formattingOptions.newLine,blah')
+                            expect(message).to.contain('--Dnx:Alias=beta4')
+                            expect(message).to.contain('--FormattingOptions:NewLine=blah')
                             done();
                         }
                     },
