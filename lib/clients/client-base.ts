@@ -247,7 +247,7 @@ export class ClientBase implements IDriver, OmniSharp.Events {
         if (this.currentState === DriverState.Error) return;
         if (this.currentState === DriverState.Connected || this.currentState === DriverState.Connecting) return;
 
-        if (_options.omnisharp) {
+        if (_options && _options.omnisharp) {
             _options.additionalArguments = flattenArguments(_options.omnisharp || {});
         }
 
