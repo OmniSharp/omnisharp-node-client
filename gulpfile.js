@@ -42,7 +42,6 @@ var metadata = {
     spec: ['spec/**/*.ts'],
 }
 
-
 gulp.task('typescript', ['clean'], function() {
     var lib = tsTranspiler(gulp.src(metadata.lib), './lib');
     var spec = tsTranspiler(gulp.src(metadata.spec), './spec');

@@ -2,6 +2,7 @@ import {expect} from 'chai';
 import {Driver, DriverState} from "../lib/enums";
 import {resolve} from "path";
 import {ClientV2 as OmnisharpClient} from "../lib/clients/client-v2";
+import * as _ from "lodash";
 
 declare var xdescribe: Function;
 
@@ -64,6 +65,52 @@ describe("Omnisharp Server", function() {
             server.checkalivestatus();
             server.checkalivestatus();
 
+        });
+    });
+
+    describe("configuration", function() {
+        it('should call with given omnisharp parameters', function(done) {
+            var server = new OmnisharpClient({
+                driver: Driver.Stdio,
+                projectPath: resolve(__dirname, '../roslyn/'),
+                logger: {
+                    log: (message) => {
+                        if (_.startsWith(message, "Arguments: ")) {
+                            expect(message).to.contain('--dnx.alias,notdefault')
+                            done();
+                        }
+                    },
+                    error: (message) => { }
+                },
+                omnisharp: {
+                    dnx: { alias: 'notdefault' }
+                }
+            });
+
+            server.connect({});
+        });
+
+        it('should call with given omnisharp parameters', function(done) {
+            var server = new OmnisharpClient({
+                driver: Driver.Stdio,
+                projectPath: resolve(__dirname, '../roslyn/'),
+                logger: {
+                    log: (message) => {
+                        if (_.startsWith(message, "Arguments: ")) {
+                            expect(message).to.contain('--dnx.alias,beta4')
+                            expect(message).to.contain('--formattingOptions.newLine,blah')
+                            done();
+                        }
+                    },
+                    error: (message) => { }
+                },
+                omnisharp: {
+                    formattingOptions: { newLine: "blah" },
+                    dnx: { alias: 'beta4' }
+                }
+            });
+
+            server.connect({});
         });
     });
 });

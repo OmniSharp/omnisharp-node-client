@@ -110,5 +110,5 @@ describe("Omnisharp Local - Stdio", function() {
             });
             server.connect({});
         })
-    })
+    });
 });

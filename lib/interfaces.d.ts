@@ -18,6 +18,7 @@ export interface IDriverOptions {
     findProject?: boolean; // Should try and find the project using the project finder
     logger?: ILogger;
     timeout?: number; // timeout in seconds
+    additionalArguments?: string[];
 }
 
 export interface IDriver {
@@ -37,6 +38,19 @@ export interface IDriver {
 export interface OmnisharpClientOptions extends IDriverOptions {
     driver?: Driver;
     oneBasedIndices?: boolean;
+    omnisharp?: {
+        dnx?: {
+            alias?: string;
+            projects?: string;
+            enablePackageRestore?: string;
+            packageRestoreTimeout?: number;
+        };
+        formattingOptions?: {
+            newLine?: string;
+            useTabs?: boolean;
+            tabSize?: number;
+        }
+    }
 }
 
 export interface OmnisharpClientStatus {

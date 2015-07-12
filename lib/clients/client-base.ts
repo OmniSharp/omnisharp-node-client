@@ -15,6 +15,20 @@ var priorityCommands = [
 ];
 var undeferredCommands = normalCommands.concat(priorityCommands);
 
+function flattenArguments(obj, prefix = '') {
+    var result: any[] = [];
+    each(obj, (value, key) => {
+        if (isObject(value)) {
+            result.push(...flattenArguments(value, `${prefix ? prefix + '.' : ''}${key}`));
+            return
+        }
+
+        result.push(`--${prefix ? prefix + '.' : ''}${key}`, value);
+    });
+
+    return result;
+}
+
 export class ClientBase implements IDriver, OmniSharp.Events {
     private _driver: IDriver;
     private _requestStream = new Subject<RequestContext<any>>();
@@ -64,6 +78,8 @@ export class ClientBase implements IDriver, OmniSharp.Events {
 
     constructor(private _options: OmnisharpClientOptions = {}) {
         var driver = _options.driver || Driver.Stdio;
+
+        _options.additionalArguments = flattenArguments(_options.omnisharp || {});
 
         var driverFactory: IStaticDriver = require('../drivers/' + Driver[driver].toLowerCase());
         this._driver = new driverFactory(_options);
@@ -230,6 +246,10 @@ export class ClientBase implements IDriver, OmniSharp.Events {
         // There is no return from error for this client
         if (this.currentState === DriverState.Error) return;
         if (this.currentState === DriverState.Connected || this.currentState === DriverState.Connecting) return;
+
+        if (_options.omnisharp) {
+            _options.additionalArguments = flattenArguments(_options.omnisharp || {});
+        }
 
         var driver = this._options.driver;
         extend(this._options, _options || {});

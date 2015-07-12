@@ -25,6 +25,7 @@ class StdioDriver implements IDriver {
     private _outstandingRequests = new Map<number, AsyncSubject<any>>();
     private _projectPath: string;
     private _serverPath: string;
+    private _additionalArguments: string[];
     private _currentState: DriverState = DriverState.Disconnected;
     public get currentState() { return this._currentState; }
     public set currentState(value) {
@@ -39,13 +40,14 @@ class StdioDriver implements IDriver {
     private _timeout: number;
     public id: string;
 
-    constructor({projectPath, debug, serverPath, findProject, logger, timeout}: IDriverOptions) {
+    constructor({projectPath, debug, serverPath, findProject, logger, timeout, additionalArguments}: IDriverOptions) {
         this._projectPath = projectPath;
         this._findProject = findProject || false;
         this._serverPath = serverPath || omnisharpLocation;
         this._connectionStream.subscribe(state => this.currentState = state);
         this._logger = logger || console;
         this._timeout = (timeout || 60) * 1000;
+        this._additionalArguments = additionalArguments;
     }
 
     public get serverPath() { return this._serverPath; }
@@ -62,8 +64,9 @@ class StdioDriver implements IDriver {
 
     public get outstandingRequests() { return this._outstandingRequests.size; }
 
-    public connect({projectPath, findProject}: IDriverOptions) {
+    public connect({projectPath, findProject, additionalArguments}: IDriverOptions) {
         projectPath = projectPath || this._projectPath;
+        additionalArguments = additionalArguments || this._additionalArguments;
         if (findProject || this._findProject) {
             projectPath = projectFinder(projectPath, this._logger);
         }
@@ -81,13 +84,14 @@ class StdioDriver implements IDriver {
         this._logger.log(`Connecting to child @ ${process.execPath}`);
         this._logger.log(`Path to server: ${this._serverPath}`);
         this._logger.log(`Selected project: ${this._projectPath}`);
+        this._logger.log(`Arguments: ${additionalArguments}`);
 
         if (win32) {
             // Spawn a special windows only node client... so that we can shutdown nicely.
-            var serverArguments: any[] = [join(__dirname, "../stdio/child.js"), "--serverPath", this._serverPath, "--projectPath", projectPath];
+            var serverArguments: any[] = [join(__dirname, "../stdio/child.js"), "--serverPath", this._serverPath, "--projectPath", projectPath].concat(additionalArguments);
             this._process = spawn(process.execPath, serverArguments, { env });
         } else {
-            var serverArguments: any[] = ["--stdio", "-s", this._projectPath, "--hostPID", process.pid];
+            var serverArguments: any[] = ["--stdio", "-s", this._projectPath, "--hostPID", process.pid].concat(additionalArguments);
             this._process = spawn(this._serverPath, serverArguments, { env });
         }
 
