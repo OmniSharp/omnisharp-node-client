@@ -9,51 +9,14 @@ declare var xdescribe: Function;
 describe("Omnisharp Local - Stdio", function() {
     it("must construct", () => {
         new Stdio({
-            projectPath: resolve(__dirname, '../vendor/omnisharp-roslyn/')
+            projectPath: resolve(__dirname, '../roslyn/')
         });
     });
 
     it("must construct with a specific driver", () => {
         new Stdio({
             driver: Driver.Stdio,
-            projectPath: resolve(__dirname, '../vendor/omnisharp-roslyn/')
-        });
-    });
-
-    describe('state', function() {
-
-        var server: Stdio;
-        this.timeout(20000);
-
-        before(() => {
-            server = new Stdio({
-                driver: Driver.Stdio,
-                projectPath: resolve(__dirname, '../vendor/omnisharp-roslyn/')
-            });
-        })
-
-        it("must connect", function(done) {
-
-            expect(server.currentState).to.be.eq(DriverState.Disconnected);
-
-            server.connect({});
-            expect(server.currentState).to.be.eq(DriverState.Connecting);
-
-            var sub = server.state.subscribe(state => {
-                expect(server.currentState).to.be.eq(DriverState.Connected);
-                sub.dispose();
-                done();
-            });
-        });
-
-        it("must disconnect", function(done) {
-            var sub2 = server.state.subscribe(state => {
-                expect(server.currentState).to.be.eq(DriverState.Disconnected);
-                sub2.dispose();
-                done();
-            });
-
-            server.disconnect();
+            projectPath: resolve(__dirname, '../roslyn/')
         });
     });
 
@@ -62,7 +25,7 @@ describe("Omnisharp Local - Stdio", function() {
         it('should implement the interface', function(done) {
             var server = new Stdio({
                 driver: Driver.Stdio,
-                projectPath: resolve(__dirname, '../vendor/omnisharp-roslyn/')
+                projectPath: resolve(__dirname, '../roslyn/')
             });
 
             var sub = server.state.subscribe(state => {

@@ -31,6 +31,7 @@ Remove-Item source.tar.gz
 $dir = (gci . -Directory)[0].FullName;
 Copy-Item $dir\* . -Recurse
 Remove-Item $dir -Recurse
+dnu restore
 popd
 
 pushd vendor/src/OmniSharp.TypeScriptGeneration
