@@ -55,10 +55,6 @@ export interface OmnisharpClientOptions extends IDriverOptions {
 
 export interface OmnisharpClientStatus {
     state: DriverState;
-    requestsPerSecond: number;
-    responsesPerSecond: number;
-    eventsPerSecond: number;
-    operationsPerSecond: number;
     outgoingRequests: number;
     hasOutgoingRequests: boolean;
 }

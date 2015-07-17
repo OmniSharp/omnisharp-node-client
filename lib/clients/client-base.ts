@@ -19,11 +19,11 @@ function flattenArguments(obj, prefix = '') {
     var result: any[] = [];
     each(obj, (value, key) => {
         if (isObject(value)) {
-            result.push(...flattenArguments(value, `${prefix ? prefix + ':' : ''}${key[0].toUpperCase() + key.substr(1)}`));
+            result.push(...flattenArguments(value, `${prefix ? prefix + ':' : ''}${key[0].toUpperCase() + key.substr(1) }`));
             return
         }
 
-        result.push(`--${prefix ? prefix + ':' : ''}${key[0].toUpperCase() + key.substr(1)}=${value}`);
+        result.push(`--${prefix ? prefix + ':' : ''}${key[0].toUpperCase() + key.substr(1) }=${value}`);
     });
 
     return result;
@@ -100,44 +100,15 @@ export class ClientBase implements IDriver, OmniSharp.Events {
 
         this._lowestIndexValue = _options.oneBasedIndices ? 1 : 0;
 
-        var requestsPerSecond = this._requestStream.throttleFirst(1000)
-            .flatMap(x => this._requestStream.scan(0, (acc, value) => acc + 1))
-            .startWith(0);
-
-        var responsesPerSecond = this._responseStream.throttleFirst(1000)
-            .flatMap(x => this._responseStream.scan(0, (acc, value) => acc + 1))
-            .startWith(0);
-
-        var eventsPerSecond = this._driver.events.throttleFirst(1000)
-            .flatMap(x => this._driver.events.scan(0, (acc, value) => acc + 1))
-            .startWith(0);
-
-        var status = Observable.combineLatest(
-            requestsPerSecond,
-            responsesPerSecond,
-            eventsPerSecond,
-            (requests, responses, events) => <OmnisharpClientStatus> ({
+        this._statusStream = Observable.merge(
+                <Observable<any>>this._requestStream,
+                <Observable<any>>this._responseStream
+            )
+            .map(() => <OmnisharpClientStatus> ({
                 state: this._driver.currentState,
-                requestsPerSecond: requests,
-                responsesPerSecond: responses,
-                eventsPerSecond: events,
-                operationsPerSecond: requests + responses + events,
                 outgoingRequests: this._driver.outstandingRequests,
                 hasOutgoingRequests: this._driver.outstandingRequests > 0
             }))
-            .throttleFirst(100);
-
-        this._statusStream = Observable.merge(status, status
-            .debounce(200, Scheduler.timeout)
-            .map(x => ({
-                state: this._driver.currentState,
-                requestsPerSecond: 0,
-                responsesPerSecond: 0,
-                eventsPerSecond: 0,
-                operationsPerSecond: 0,
-                outgoingRequests: 0,
-                hasOutgoingRequests: false
-            })))
             .map(Object.freeze)
             .distinctUntilChanged()
             .share();
