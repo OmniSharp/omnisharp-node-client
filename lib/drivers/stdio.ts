@@ -20,7 +20,7 @@ if (process.platform === 'win32') {
 }
 
 class StdioDriver implements IDriver {
-    private _seq: number = 1;
+    private _seq: number;
     private _process: ChildProcess;
     private _outstandingRequests = new Map<number, AsyncSubject<any>>();
     private _projectPath: string;
@@ -65,6 +65,9 @@ class StdioDriver implements IDriver {
     public get outstandingRequests() { return this._outstandingRequests.size; }
 
     public connect({projectPath, findProject, additionalArguments}: IDriverOptions) {
+        this._seq = 1;
+        this._outstandingRequests.clear();
+
         projectPath = projectPath || this._projectPath;
         additionalArguments = additionalArguments || this._additionalArguments;
         if (findProject || this._findProject) {
