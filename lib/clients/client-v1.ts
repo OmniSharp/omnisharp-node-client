@@ -23,6 +23,8 @@ export class ClientV1 extends ClientBase implements OmniSharp.Api.V1, OmniSharp.
     public observeHighlight: Rx.Observable<OmniSharp.Context<OmniSharp.Models.HighlightRequest, OmniSharp.Models.HighlightResponse>>;
     public observeNavigateup: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>>;
     public observeNavigatedown: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>>;
+    public observePackagesearch: Rx.Observable<OmniSharp.Context<OmniSharp.Models.PackageSearchRequest, OmniSharp.Models.PackageSearchResponse>>;
+    public observePackageversion: Rx.Observable<OmniSharp.Context<OmniSharp.Models.PackageVersionRequest, OmniSharp.Models.PackageVersionResponse>>;
     public observeRename: Rx.Observable<OmniSharp.Context<OmniSharp.Models.RenameRequest, OmniSharp.Models.RenameResponse>>;
     public observeSignatureHelp: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.SignatureHelp>>;
     public observeCheckalivestatus: Rx.Observable<OmniSharp.Context<any, boolean>>;
@@ -56,6 +58,8 @@ export class ClientV1 extends ClientBase implements OmniSharp.Api.V1, OmniSharp.
         this.observeHighlight = this.watchCommand("highlight");
         this.observeNavigateup = this.watchCommand("navigateup");
         this.observeNavigatedown = this.watchCommand("navigatedown");
+        this.observePackagesearch = this.watchCommand("packagesearch");
+        this.observePackageversion = this.watchCommand("packageversion");
         this.observeRename = this.watchCommand("rename");
         this.observeSignatureHelp = this.watchCommand("signaturehelp");
         this.observeCheckalivestatus = this.watchCommand("checkalivestatus");
@@ -274,6 +278,29 @@ export class ClientV1 extends ClientBase implements OmniSharp.Api.V1, OmniSharp.
 
     public navigatedownPromise(request: OmniSharp.Models.Request, options?: OmniSharp.RequestOptions) {
         return this.navigatedown(request, options).toPromise();
+    }
+
+    // 'packagesearch'
+    public packagesearch(request: OmniSharp.Models.PackageSearchRequest, options?: OmniSharp.RequestOptions): Rx.Observable<OmniSharp.Models.PackageSearchResponse> {
+        assert.isNotNull(request.ProjectPath, 'request.ProjectPath must not be null');
+        assert.isNotNull(request.Search, 'request.Search must not be null');
+
+        return this.request<OmniSharp.Models.PackageSearchRequest, OmniSharp.Models.PackageSearchResponse>("packagesearch", request, options);
+    }
+
+    public packagesearchPromise(request: OmniSharp.Models.PackageSearchRequest, options?: OmniSharp.RequestOptions): Rx.IPromise<OmniSharp.Models.PackageSearchResponse> {
+        return this.packagesearch(request, options).toPromise();
+    }
+    // 'packageversion'
+    public packageversion(request: OmniSharp.Models.PackageVersionRequest, options?: OmniSharp.RequestOptions): Rx.Observable<OmniSharp.Models.PackageVersionResponse> {
+        assert.isNotNull(request.ProjectPath, 'request.ProjectPath must not be null');
+        assert.isNotNull(request.Id, 'request.Id must not be null');
+
+        return this.request<OmniSharp.Models.PackageVersionRequest, OmniSharp.Models.PackageVersionResponse>("packagesearch", request, options);
+    }
+
+    public packageversionPromise(request: OmniSharp.Models.PackageVersionRequest, options?: OmniSharp.RequestOptions): Rx.IPromise<OmniSharp.Models.PackageVersionResponse> {
+        return this.packageversion(request, options).toPromise();
     }
 
     public rename(request: OmniSharp.Models.RenameRequest, options?: OmniSharp.RequestOptions) {

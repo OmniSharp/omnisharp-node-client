@@ -203,6 +203,31 @@ declare module OmniSharp.Models {
         FileName: string;
         Succeeded: boolean;
     }
+    interface PackageSearchItem {
+        Id: string;
+        HasVersion: boolean;
+        Version: string;
+        Description: string;
+    }
+    interface PackageSearchRequest {
+        ProjectPath?: string;
+        Search?: string;
+        SupportedFrameworks?: string[];
+        IncludePrerelease?: boolean;
+        PackageTypes?: string[];
+    }
+    interface PackageSearchResponse {
+        Packages: OmniSharp.Models.PackageSearchItem[];
+        Sources: string[];
+    }
+    interface PackageVersionRequest {
+        ProjectPath?: string;
+        Id?: string;
+        IncludePrerelease?: boolean;
+    }
+    interface PackageVersionResponse {
+        Versions: string[];
+    }
     interface ProjectInformationResponse {
         MsBuildProject: OmniSharp.Models.MSBuildProject;
         DnxProject: OmniSharp.Models.DnxProject;
@@ -429,6 +454,12 @@ declare module OmniSharp.Api {
         // 'navigateup'
         navigateup(request: OmniSharp.Models.Request, options?: RequestOptions): Rx.Observable<OmniSharp.Models.NavigateResponse>;
         navigateupPromise(request: OmniSharp.Models.Request, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.NavigateResponse>;
+        // 'packagesearch'
+        packagesearch(request: OmniSharp.Models.PackageSearchRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.PackageSearchResponse>;
+        packagesearchPromise(request: OmniSharp.Models.PackageSearchRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.PackageSearchResponse>;
+        // 'packageversion'
+        packageversion(request: OmniSharp.Models.PackageVersionRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.PackageVersionResponse>;
+        packageversionPromise(request: OmniSharp.Models.PackageVersionRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.PackageVersionResponse>;
         // 'project'
         project(request: OmniSharp.Models.Request, options?: RequestOptions): Rx.Observable<OmniSharp.Models.ProjectInformationResponse>;
         projectPromise(request: OmniSharp.Models.Request, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.ProjectInformationResponse>;
@@ -519,6 +550,12 @@ declare module OmniSharp.Api {
         // 'navigateup'
         navigateup(request: OmniSharp.Models.Request, options?: RequestOptions): Rx.Observable<OmniSharp.Models.NavigateResponse>;
         navigateupPromise(request: OmniSharp.Models.Request, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.NavigateResponse>;
+        // 'packagesearch'
+        packagesearch(request: OmniSharp.Models.PackageSearchRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.PackageSearchResponse>;
+        packagesearchPromise(request: OmniSharp.Models.PackageSearchRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.PackageSearchResponse>;
+        // 'packageversion'
+        packageversion(request: OmniSharp.Models.PackageVersionRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.PackageVersionResponse>;
+        packageversionPromise(request: OmniSharp.Models.PackageVersionRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.PackageVersionResponse>;
         // 'project'
         project(request: OmniSharp.Models.Request, options?: RequestOptions): Rx.Observable<OmniSharp.Models.ProjectInformationResponse>;
         projectPromise(request: OmniSharp.Models.Request, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.ProjectInformationResponse>;
@@ -590,6 +627,10 @@ declare module OmniSharp.Events {
         observeNavigatedown: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>>;
         // 'navigateup'
         observeNavigateup: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>>;
+        // 'packagesearch'
+        observePackagesearch: Rx.Observable<Context<OmniSharp.Models.PackageSearchRequest, OmniSharp.Models.PackageSearchResponse>>;
+        // 'packageversion'
+        observePackageversion: Rx.Observable<Context<OmniSharp.Models.PackageVersionRequest, OmniSharp.Models.PackageVersionResponse>>;
         // 'project'
         observeProject: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.ProjectInformationResponse>>;
         // 'projects'
@@ -651,6 +692,10 @@ declare module OmniSharp.Events {
         observeNavigatedown: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>>;
         // 'navigateup'
         observeNavigateup: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>>;
+        // 'packagesearch'
+        observePackagesearch: Rx.Observable<Context<OmniSharp.Models.PackageSearchRequest, OmniSharp.Models.PackageSearchResponse>>;
+        // 'packageversion'
+        observePackageversion: Rx.Observable<Context<OmniSharp.Models.PackageVersionRequest, OmniSharp.Models.PackageVersionResponse>>;
         // 'project'
         observeProject: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.ProjectInformationResponse>>;
         // 'projects'
@@ -715,6 +760,10 @@ declare module OmniSharp.Events.Aggregate {
         observeNavigatedown: Rx.Observable<CombinationKey<Context<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>>[]>;
         // 'navigateup'
         observeNavigateup: Rx.Observable<CombinationKey<Context<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>>[]>;
+        // 'packagesearch'
+        observePackagesearch: Rx.Observable<CombinationKey<Context<OmniSharp.Models.PackageSearchRequest, OmniSharp.Models.PackageSearchResponse>>[]>;
+        // 'packageversion'
+        observePackageversion: Rx.Observable<CombinationKey<Context<OmniSharp.Models.PackageVersionRequest, OmniSharp.Models.PackageVersionResponse>>[]>;
         // 'project'
         observeProject: Rx.Observable<CombinationKey<Context<OmniSharp.Models.Request, OmniSharp.Models.ProjectInformationResponse>>[]>;
         // 'projects'
@@ -776,6 +825,10 @@ declare module OmniSharp.Events.Aggregate {
         observeNavigatedown: Rx.Observable<CombinationKey<Context<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>>[]>;
         // 'navigateup'
         observeNavigateup: Rx.Observable<CombinationKey<Context<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>>[]>;
+        // 'packagesearch'
+        observePackagesearch: Rx.Observable<CombinationKey<Context<OmniSharp.Models.PackageSearchRequest, OmniSharp.Models.PackageSearchResponse>>[]>;
+        // 'packageversion'
+        observePackageversion: Rx.Observable<CombinationKey<Context<OmniSharp.Models.PackageVersionRequest, OmniSharp.Models.PackageVersionResponse>>[]>;
         // 'project'
         observeProject: Rx.Observable<CombinationKey<Context<OmniSharp.Models.Request, OmniSharp.Models.ProjectInformationResponse>>[]>;
         // 'projects'

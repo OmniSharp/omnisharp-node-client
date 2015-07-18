@@ -20,9 +20,11 @@ export class ObservationClientV2<T extends ClientV2> extends ObservationClientBa
     public observeGotodefinition: typeof ClientV2.prototype.observeGotodefinition;
     public observeGotofile: typeof ClientV2.prototype.observeGotofile;
     public observeGotoregion: typeof ClientV2.prototype.observeGotoregion;
-    public observeHighlight: Rx.Observable<OmniSharp.Context<OmniSharp.Models.HighlightRequest, OmniSharp.Models.HighlightResponse>>;
+    public observeHighlight: typeof ClientV2.prototype.observeHighlight;
     public observeNavigateup: typeof ClientV2.prototype.observeNavigateup;
     public observeNavigatedown: typeof ClientV2.prototype.observeNavigatedown;
+    public observePackagesearch: typeof ClientV2.prototype.observePackagesearch;
+    public observePackageversion: typeof ClientV2.prototype.observePackageversion;
     public observeRename: typeof ClientV2.prototype.observeRename;
     public observeSignatureHelp: typeof ClientV2.prototype.observeSignatureHelp;
     public observeCheckalivestatus: typeof ClientV2.prototype.observeCheckalivestatus;
@@ -58,6 +60,8 @@ export class ObservationClientV2<T extends ClientV2> extends ObservationClientBa
         this.observeHighlight = this.makeMergeObserable(client => client.observeHighlight);
         this.observeNavigateup = this.makeMergeObserable(client => client.observeNavigateup);
         this.observeNavigatedown = this.makeMergeObserable(client => client.observeNavigatedown);
+        this.observePackagesearch = this.makeMergeObserable(client => client.observePackagesearch);
+        this.observePackageversion = this.makeMergeObserable(client => client.observePackageversion);
         this.observeRename = this.makeMergeObserable(client => client.observeRename);
         this.observeSignatureHelp = this.makeMergeObserable(client => client.observeSignatureHelp);
         this.observeCheckalivestatus = this.makeMergeObserable(client => client.observeCheckalivestatus);
@@ -106,6 +110,8 @@ export class CombinationClientV2<T extends ClientV2> extends CombinationClientBa
     public observeHighlight: Rx.Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.HighlightRequest, OmniSharp.Models.HighlightResponse>>[]>;
     public observeNavigateup: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>>[]>;
     public observeNavigatedown: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>>[]>;
+    public observePackagesearch: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.PackageSearchRequest, OmniSharp.Models.PackageSearchResponse>>[]>;
+    public observePackageversion: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.PackageVersionRequest, OmniSharp.Models.PackageVersionResponse>>[]>;
     public observeRename: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.RenameRequest, OmniSharp.Models.RenameResponse>>[]>;
     public observeSignatureHelp: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.SignatureHelp>>[]>;
     public observeCheckalivestatus: Observable<OmniSharp.CombinationKey<OmniSharp.Context<any, boolean>>[]>;
@@ -139,6 +145,8 @@ export class CombinationClientV2<T extends ClientV2> extends CombinationClientBa
         this.observeHighlight = this.makeCombineObserable(client => client.observeHighlight);
         this.observeNavigateup = this.makeCombineObserable(client => client.observeNavigateup);
         this.observeNavigatedown = this.makeCombineObserable(client => client.observeNavigatedown);
+        this.observePackagesearch = this.makeCombineObserable(client => client.observePackagesearch);
+        this.observePackageversion = this.makeCombineObserable(client => client.observePackageversion);
         this.observeRename = this.makeCombineObserable(client => client.observeRename);
         this.observeSignatureHelp = this.makeCombineObserable(client => client.observeSignatureHelp);
         this.observeCheckalivestatus = this.makeCombineObserable(client => client.observeCheckalivestatus);

@@ -29,6 +29,8 @@ export class ClientV2 extends ClientBase implements OmniSharp.Api.V2, OmniSharp.
     public observeHighlight: Rx.Observable<OmniSharp.Context<OmniSharp.Models.HighlightRequest, OmniSharp.Models.HighlightResponse>>;
     public observeNavigateup: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>>;
     public observeNavigatedown: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>>;
+    public observePackagesearch: Rx.Observable<OmniSharp.Context<OmniSharp.Models.PackageSearchRequest, OmniSharp.Models.PackageSearchResponse>>;
+    public observePackageversion: Rx.Observable<OmniSharp.Context<OmniSharp.Models.PackageVersionRequest, OmniSharp.Models.PackageVersionResponse>>;
     public observeRename: Rx.Observable<OmniSharp.Context<OmniSharp.Models.RenameRequest, OmniSharp.Models.RenameResponse>>;
     public observeSignatureHelp: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.SignatureHelp>>;
     public observeCheckalivestatus: Rx.Observable<OmniSharp.Context<any, boolean>>;
@@ -62,6 +64,8 @@ export class ClientV2 extends ClientBase implements OmniSharp.Api.V2, OmniSharp.
         this.observeHighlight = this.watchCommand("highlight");
         this.observeNavigateup = this.watchCommand("navigateup");
         this.observeNavigatedown = this.watchCommand("navigatedown");
+        this.observePackagesearch = this.watchCommand("packagesearch");
+        this.observePackageversion = this.watchCommand("packageversion");
         this.observeRename = this.watchCommand("rename");
         this.observeSignatureHelp = this.watchCommand("signaturehelp");
         this.observeCheckalivestatus = this.watchCommand("checkalivestatus");
@@ -175,6 +179,12 @@ export class ClientV2 extends ClientBase implements OmniSharp.Api.V2, OmniSharp.
 
     public navigatedown: typeof ClientV1.prototype.navigatedown;
     public navigatedownPromise: typeof ClientV1.prototype.navigatedownPromise;
+
+    public packagesearch: typeof ClientV1.prototype.packagesearch;
+    public packagesearchPromise: typeof ClientV1.prototype.packagesearchPromise;
+
+    public packageversion: typeof ClientV1.prototype.packageversion;
+    public packageversionPromise: typeof ClientV1.prototype.packageversionPromise;
 
     public rename: typeof ClientV1.prototype.rename;
     public renamePromise: typeof ClientV1.prototype.renamePromise;
