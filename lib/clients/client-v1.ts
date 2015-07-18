@@ -296,7 +296,7 @@ export class ClientV1 extends ClientBase implements OmniSharp.Api.V1, OmniSharp.
         assert.isNotNull(request.ProjectPath, 'request.ProjectPath must not be null');
         assert.isNotNull(request.Id, 'request.Id must not be null');
 
-        return this.request<OmniSharp.Models.PackageVersionRequest, OmniSharp.Models.PackageVersionResponse>("packagesearch", request, options);
+        return this.request<OmniSharp.Models.PackageVersionRequest, OmniSharp.Models.PackageVersionResponse>("packageversion", request, options);
     }
 
     public packageversionPromise(request: OmniSharp.Models.PackageVersionRequest, options?: OmniSharp.RequestOptions): Rx.IPromise<OmniSharp.Models.PackageVersionResponse> {
