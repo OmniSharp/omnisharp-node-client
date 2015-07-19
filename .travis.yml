@@ -17,7 +17,7 @@ deploy:
   provider: npm
   email: david.driscoll@gmail.com
   api_key:
-    secure: dlMX8XtGw+opljevthxhEbRQFlJDiymowv4vHw/cvYSOm31flDJiZ+nljioQ72FEjWYGM8ZtcO8/j90gH8l9WeCAmE/JC0bc57MCSbxkTBifb1HYiPsgZfls1K5E8KlCv1WQEu7+Gfk0fGqiemOjAFL9+YDGMA8vdtT2LFH1jaY=
+    secure: S/hBll25AR2IA+aalF990P4sBetrMmM1yFtjiElZvuftgjgDqOy96dVnfKl3x4Y51k61TadNWYq0eicqpxVtG9AsBgV5Q2NM9OSLIE22OXYe3UwKQktFL1yMI1YmnEn4aoydoOAZjvEptcLrBhPZ0chUz/TDfb3TvbfU8BVQrYQ=
   on:
     tags: true
     repo: OmniSharp/omnisharp-node-client
