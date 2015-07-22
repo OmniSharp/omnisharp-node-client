@@ -79,8 +79,7 @@ declare module OmniSharp.Models {
         Commands: { [key: string]: string };
         Configurations: string[];
         ProjectSearchPaths: string[];
-        Frameworks: string[];
-        DnxFrameworks: OmniSharp.Models.DnxFramework[];
+        Frameworks: OmniSharp.Models.DnxFramework[];
         GlobalJsonPath: string;
         SourceFiles: string[];
     }
