@@ -210,6 +210,7 @@ declare module OmniSharp.Models {
     }
     interface PackageSearchRequest {
         ProjectPath?: string;
+        Sources?: string[];
         Search?: string;
         SupportedFrameworks?: string[];
         IncludePrerelease?: boolean;
@@ -217,10 +218,16 @@ declare module OmniSharp.Models {
     }
     interface PackageSearchResponse {
         Packages: OmniSharp.Models.PackageSearchItem[];
+    }
+    interface PackageSourceRequest {
+        ProjectPath?: string;
+    }
+    interface PackageSourceResponse {
         Sources: string[];
     }
     interface PackageVersionRequest {
         ProjectPath?: string;
+        Sources?: string[];
         Id?: string;
         IncludePrerelease?: boolean;
     }
@@ -456,6 +463,9 @@ declare module OmniSharp.Api {
         // 'packagesearch'
         packagesearch(request: OmniSharp.Models.PackageSearchRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.PackageSearchResponse>;
         packagesearchPromise(request: OmniSharp.Models.PackageSearchRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.PackageSearchResponse>;
+        // 'packagesource'
+        packagesource(request: OmniSharp.Models.PackageSourceRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.PackageSourceResponse>;
+        packagesourcePromise(request: OmniSharp.Models.PackageSourceRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.PackageSourceResponse>;
         // 'packageversion'
         packageversion(request: OmniSharp.Models.PackageVersionRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.PackageVersionResponse>;
         packageversionPromise(request: OmniSharp.Models.PackageVersionRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.PackageVersionResponse>;
@@ -552,6 +562,9 @@ declare module OmniSharp.Api {
         // 'packagesearch'
         packagesearch(request: OmniSharp.Models.PackageSearchRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.PackageSearchResponse>;
         packagesearchPromise(request: OmniSharp.Models.PackageSearchRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.PackageSearchResponse>;
+        // 'packagesource'
+        packagesource(request: OmniSharp.Models.PackageSourceRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.PackageSourceResponse>;
+        packagesourcePromise(request: OmniSharp.Models.PackageSourceRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.PackageSourceResponse>;
         // 'packageversion'
         packageversion(request: OmniSharp.Models.PackageVersionRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.PackageVersionResponse>;
         packageversionPromise(request: OmniSharp.Models.PackageVersionRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.PackageVersionResponse>;
@@ -628,6 +641,8 @@ declare module OmniSharp.Events {
         observeNavigateup: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>>;
         // 'packagesearch'
         observePackagesearch: Rx.Observable<Context<OmniSharp.Models.PackageSearchRequest, OmniSharp.Models.PackageSearchResponse>>;
+        // 'packagesource'
+        observePackagesource: Rx.Observable<Context<OmniSharp.Models.PackageSourceRequest, OmniSharp.Models.PackageSourceResponse>>;
         // 'packageversion'
         observePackageversion: Rx.Observable<Context<OmniSharp.Models.PackageVersionRequest, OmniSharp.Models.PackageVersionResponse>>;
         // 'project'
@@ -693,6 +708,8 @@ declare module OmniSharp.Events {
         observeNavigateup: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>>;
         // 'packagesearch'
         observePackagesearch: Rx.Observable<Context<OmniSharp.Models.PackageSearchRequest, OmniSharp.Models.PackageSearchResponse>>;
+        // 'packagesource'
+        observePackagesource: Rx.Observable<Context<OmniSharp.Models.PackageSourceRequest, OmniSharp.Models.PackageSourceResponse>>;
         // 'packageversion'
         observePackageversion: Rx.Observable<Context<OmniSharp.Models.PackageVersionRequest, OmniSharp.Models.PackageVersionResponse>>;
         // 'project'
@@ -761,6 +778,8 @@ declare module OmniSharp.Events.Aggregate {
         observeNavigateup: Rx.Observable<CombinationKey<Context<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>>[]>;
         // 'packagesearch'
         observePackagesearch: Rx.Observable<CombinationKey<Context<OmniSharp.Models.PackageSearchRequest, OmniSharp.Models.PackageSearchResponse>>[]>;
+        // 'packagesource'
+        observePackagesource: Rx.Observable<CombinationKey<Context<OmniSharp.Models.PackageSourceRequest, OmniSharp.Models.PackageSourceResponse>>[]>;
         // 'packageversion'
         observePackageversion: Rx.Observable<CombinationKey<Context<OmniSharp.Models.PackageVersionRequest, OmniSharp.Models.PackageVersionResponse>>[]>;
         // 'project'
@@ -826,6 +845,8 @@ declare module OmniSharp.Events.Aggregate {
         observeNavigateup: Rx.Observable<CombinationKey<Context<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>>[]>;
         // 'packagesearch'
         observePackagesearch: Rx.Observable<CombinationKey<Context<OmniSharp.Models.PackageSearchRequest, OmniSharp.Models.PackageSearchResponse>>[]>;
+        // 'packagesource'
+        observePackagesource: Rx.Observable<CombinationKey<Context<OmniSharp.Models.PackageSourceRequest, OmniSharp.Models.PackageSourceResponse>>[]>;
         // 'packageversion'
         observePackageversion: Rx.Observable<CombinationKey<Context<OmniSharp.Models.PackageVersionRequest, OmniSharp.Models.PackageVersionResponse>>[]>;
         // 'project'

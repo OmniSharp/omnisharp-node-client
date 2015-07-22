@@ -24,6 +24,7 @@ export class ClientV1 extends ClientBase implements OmniSharp.Api.V1, OmniSharp.
     public observeNavigateup: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>>;
     public observeNavigatedown: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>>;
     public observePackagesearch: Rx.Observable<OmniSharp.Context<OmniSharp.Models.PackageSearchRequest, OmniSharp.Models.PackageSearchResponse>>;
+    public observePackagesource: Rx.Observable<OmniSharp.Context<OmniSharp.Models.PackageSourceRequest, OmniSharp.Models.PackageSourceResponse>>;
     public observePackageversion: Rx.Observable<OmniSharp.Context<OmniSharp.Models.PackageVersionRequest, OmniSharp.Models.PackageVersionResponse>>;
     public observeRename: Rx.Observable<OmniSharp.Context<OmniSharp.Models.RenameRequest, OmniSharp.Models.RenameResponse>>;
     public observeSignatureHelp: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.SignatureHelp>>;
@@ -59,6 +60,7 @@ export class ClientV1 extends ClientBase implements OmniSharp.Api.V1, OmniSharp.
         this.observeNavigateup = this.watchCommand("navigateup");
         this.observeNavigatedown = this.watchCommand("navigatedown");
         this.observePackagesearch = this.watchCommand("packagesearch");
+        this.observePackagesource = this.watchCommand("packagesource");
         this.observePackageversion = this.watchCommand("packageversion");
         this.observeRename = this.watchCommand("rename");
         this.observeSignatureHelp = this.watchCommand("signaturehelp");
@@ -288,9 +290,21 @@ export class ClientV1 extends ClientBase implements OmniSharp.Api.V1, OmniSharp.
         return this.request<OmniSharp.Models.PackageSearchRequest, OmniSharp.Models.PackageSearchResponse>("packagesearch", request, options);
     }
 
-    public packagesearchPromise(request: OmniSharp.Models.PackageSearchRequest, options?: OmniSharp.RequestOptions): Rx.IPromise<OmniSharp.Models.PackageSearchResponse> {
+    public packagesearchPromise(request: OmniSharp.Models.PackageSearchRequest, options?: OmniSharp.RequestOptions) {
         return this.packagesearch(request, options).toPromise();
     }
+
+    // 'packagesource'
+    public packagesource(request: OmniSharp.Models.PackageSourceRequest, options?: OmniSharp.RequestOptions): Rx.Observable<OmniSharp.Models.PackageSourceResponse> {
+        assert.isNotNull(request.ProjectPath, 'request.ProjectPath must not be null');
+
+        return this.request<OmniSharp.Models.PackageSourceRequest, OmniSharp.Models.PackageSourceResponse>("packagesource", request, options);
+    }
+
+    public packagesourcePromise(request: OmniSharp.Models.PackageSourceRequest, options?: OmniSharp.RequestOptions) {
+        return this.packagesource(request, options).toPromise();
+    }
+
     // 'packageversion'
     public packageversion(request: OmniSharp.Models.PackageVersionRequest, options?: OmniSharp.RequestOptions): Rx.Observable<OmniSharp.Models.PackageVersionResponse> {
         assert.isNotNull(request.ProjectPath, 'request.ProjectPath must not be null');
@@ -299,7 +313,7 @@ export class ClientV1 extends ClientBase implements OmniSharp.Api.V1, OmniSharp.
         return this.request<OmniSharp.Models.PackageVersionRequest, OmniSharp.Models.PackageVersionResponse>("packageversion", request, options);
     }
 
-    public packageversionPromise(request: OmniSharp.Models.PackageVersionRequest, options?: OmniSharp.RequestOptions): Rx.IPromise<OmniSharp.Models.PackageVersionResponse> {
+    public packageversionPromise(request: OmniSharp.Models.PackageVersionRequest, options?: OmniSharp.RequestOptions) {
         return this.packageversion(request, options).toPromise();
     }
 

@@ -17,10 +17,11 @@ export class ObservationClientV1<T extends ClientV1> extends ObservationClientBa
     public observeGotodefinition: typeof ClientV1.prototype.observeGotodefinition;
     public observeGotofile: typeof ClientV1.prototype.observeGotofile;
     public observeGotoregion: typeof ClientV1.prototype.observeGotoregion;
-    public observeHighlight: Rx.Observable<OmniSharp.Context<OmniSharp.Models.HighlightRequest, OmniSharp.Models.HighlightResponse>>;
+    public observeHighlight: typeof ClientV1.prototype.observeHighlight;
     public observeNavigateup: typeof ClientV1.prototype.observeNavigateup;
     public observeNavigatedown: typeof ClientV1.prototype.observeNavigatedown;
     public observePackagesearch: typeof ClientV1.prototype.observePackagesearch;
+    public observePackagesource: typeof ClientV1.prototype.observePackagesource;
     public observePackageversion: typeof ClientV1.prototype.observePackageversion;
     public observeRename: typeof ClientV1.prototype.observeRename;
     public observeSignatureHelp: typeof ClientV1.prototype.observeSignatureHelp;
@@ -56,6 +57,7 @@ export class ObservationClientV1<T extends ClientV1> extends ObservationClientBa
         this.observeNavigateup = this.makeMergeObserable(client => client.observeNavigateup);
         this.observeNavigatedown = this.makeMergeObserable(client => client.observeNavigatedown);
         this.observePackagesearch = this.makeMergeObserable(client => client.observePackagesearch);
+        this.observePackagesource = this.makeMergeObserable(client => client.observePackagesource);
         this.observePackageversion = this.makeMergeObserable(client => client.observePackageversion);
         this.observeRename = this.makeMergeObserable(client => client.observeRename);
         this.observeSignatureHelp = this.makeMergeObserable(client => client.observeSignatureHelp);
@@ -91,6 +93,7 @@ export class CombinationClientV1<T extends ClientV1> extends CombinationClientBa
     public observeNavigateup: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>>[]>;
     public observeNavigatedown: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>>[]>;
     public observePackagesearch: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.PackageSearchRequest, OmniSharp.Models.PackageSearchResponse>>[]>;
+    public observePackagesource: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.PackageSourceRequest, OmniSharp.Models.PackageSourceResponse>>[]>;
     public observePackageversion: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.PackageVersionRequest, OmniSharp.Models.PackageVersionResponse>>[]>;
     public observeRename: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.RenameRequest, OmniSharp.Models.RenameResponse>>[]>;
     public observeSignatureHelp: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.SignatureHelp>>[]>;
@@ -126,6 +129,7 @@ export class CombinationClientV1<T extends ClientV1> extends CombinationClientBa
         this.observeNavigateup = this.makeCombineObserable(client => client.observeNavigateup);
         this.observeNavigatedown = this.makeCombineObserable(client => client.observeNavigatedown);
         this.observePackagesearch = this.makeCombineObserable(client => client.observePackagesearch);
+        this.observePackagesource = this.makeCombineObserable(client => client.observePackagesource);
         this.observePackageversion = this.makeCombineObserable(client => client.observePackageversion);
         this.observeRename = this.makeCombineObserable(client => client.observeRename);
         this.observeSignatureHelp = this.makeCombineObserable(client => client.observeSignatureHelp);

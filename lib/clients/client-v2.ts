@@ -30,6 +30,7 @@ export class ClientV2 extends ClientBase implements OmniSharp.Api.V2, OmniSharp.
     public observeNavigateup: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>>;
     public observeNavigatedown: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>>;
     public observePackagesearch: Rx.Observable<OmniSharp.Context<OmniSharp.Models.PackageSearchRequest, OmniSharp.Models.PackageSearchResponse>>;
+    public observePackagesource: Rx.Observable<OmniSharp.Context<OmniSharp.Models.PackageSourceRequest, OmniSharp.Models.PackageSourceResponse>>;
     public observePackageversion: Rx.Observable<OmniSharp.Context<OmniSharp.Models.PackageVersionRequest, OmniSharp.Models.PackageVersionResponse>>;
     public observeRename: Rx.Observable<OmniSharp.Context<OmniSharp.Models.RenameRequest, OmniSharp.Models.RenameResponse>>;
     public observeSignatureHelp: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.SignatureHelp>>;
@@ -65,6 +66,7 @@ export class ClientV2 extends ClientBase implements OmniSharp.Api.V2, OmniSharp.
         this.observeNavigateup = this.watchCommand("navigateup");
         this.observeNavigatedown = this.watchCommand("navigatedown");
         this.observePackagesearch = this.watchCommand("packagesearch");
+        this.observePackagesource = this.watchCommand("packagesource");
         this.observePackageversion = this.watchCommand("packageversion");
         this.observeRename = this.watchCommand("rename");
         this.observeSignatureHelp = this.watchCommand("signaturehelp");
@@ -182,6 +184,9 @@ export class ClientV2 extends ClientBase implements OmniSharp.Api.V2, OmniSharp.
 
     public packagesearch: typeof ClientV1.prototype.packagesearch;
     public packagesearchPromise: typeof ClientV1.prototype.packagesearchPromise;
+
+    public packagesource: typeof ClientV1.prototype.packagesource;
+    public packagesourcePromise: typeof ClientV1.prototype.packagesourcePromise;
 
     public packageversion: typeof ClientV1.prototype.packageversion;
     public packageversionPromise: typeof ClientV1.prototype.packageversionPromise;
