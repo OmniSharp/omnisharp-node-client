@@ -21,7 +21,7 @@ export interface IDriverOptions {
     additionalArguments?: string[];
 }
 
-export interface IDriver {
+export interface IDriver extends Rx.IDisposable {
     id: string;
     connect({projectPath}: IDriverOptions);
     currentState: DriverState;

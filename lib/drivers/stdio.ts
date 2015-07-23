@@ -3,7 +3,7 @@ import {defaults} from "lodash";
 import {DriverState} from "../enums";
 import {spawn, exec, ChildProcess} from "child_process";
 import * as readline from "readline";
-import {Observable, Observer, Subject, AsyncSubject} from "rx";
+import {Observable, Observer, Subject, AsyncSubject, CompositeDisposable, Disposable} from "rx";
 import {resolve, join} from 'path';
 import {omnisharpLocation} from '../omnisharp-path';
 import {findProject as projectFinder} from "../project-finder";
@@ -27,6 +27,7 @@ class StdioDriver implements IDriver {
     private _serverPath: string;
     private _additionalArguments: string[];
     private _currentState: DriverState = DriverState.Disconnected;
+    private _disposable = new CompositeDisposable();
     public get currentState() { return this._currentState; }
     public set currentState(value) {
         // Prevent the client from leaving the error state
@@ -48,6 +49,36 @@ class StdioDriver implements IDriver {
         this._logger = logger || console;
         this._timeout = (timeout || 60) * 1000;
         this._additionalArguments = additionalArguments;
+
+        this._disposable.add(this._commandStream);
+        this._disposable.add(this._eventStream);
+        this._disposable.add(this._connectionStream);
+
+        this._disposable.add(Disposable.create(() => {
+            var iterator = this._outstandingRequests.entries();
+            var iteratee = iterator.next();
+
+            while (!iteratee.done) {
+                var [key, disposable] = iteratee.value;
+
+                this._outstandingRequests.delete(key);
+                disposable.dispose();
+
+                iteratee = iterator.next();
+            }
+        }));
+
+        this._disposable.add(Disposable.create(() => {
+            if (this._process) {
+                this._process.removeAllListeners();
+            }
+        }))
+    }
+
+    public dispose() {
+        if (this._disposable.isDisposed) return;
+        this.disconnect();
+        this._disposable.dispose();
     }
 
     public get serverPath() { return this._serverPath; }
@@ -150,7 +181,8 @@ class StdioDriver implements IDriver {
             this._process.kill("SIGTERM");
         }
         this._process = null;
-        this._connectionStream.onNext(DriverState.Disconnected);
+        if (!(<any>this._connectionStream).isDisposed)
+            this._connectionStream.onNext(DriverState.Disconnected);
     }
 
     public request<TRequest, TResponse>(command: string, request?: TRequest): Rx.Observable<TResponse> {

@@ -1,4 +1,4 @@
-import {ReplaySubject, Observable} from "rx";
+import {ReplaySubject, Observable, CompositeDisposable} from "rx";
 import * as _ from 'lodash';
 import {ClientV1} from "./client-v1";
 import {ClientV2} from "./client-v2";
@@ -80,18 +80,12 @@ export class ObservationClientV2<T extends ClientV2> extends ObservationClientBa
     }
 
     public add(client: T) {
-        ObservationClientBase.prototype.add.call(this, client);
-        this.v1.add(client.v1);
-    }
-
-    public remove(client: T) {
-        ObservationClientBase.prototype.remove.call(this, client);
-        this.v1.remove(client.v1);
-    }
-
-    public removeAll() {
-        ObservationClientBase.prototype.removeAll.call(this);
-        this.v1.removeAll();
+        var d = ObservationClientBase.prototype.add.call(this, client);
+        var d2 = this.v1.add(client.v1);
+        var cd = new CompositeDisposable();
+        cd.add(d);
+        cd.add(d2);
+        return cd;
     }
 }
 
