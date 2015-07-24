@@ -78,15 +78,6 @@ export class ObservationClientV2<T extends ClientV2> extends ObservationClientBa
         this.observeRuncodeaction = this.makeMergeObserable(client => client.observeRuncodeaction);
         this.observeGettestcontext = this.makeMergeObserable(client => client.observeGettestcontext);
     }
-
-    public add(client: T) {
-        var d = ObservationClientBase.prototype.add.call(this, client);
-        var d2 = this.v1.add(client.v1);
-        var cd = new CompositeDisposable();
-        cd.add(d);
-        cd.add(d2);
-        return cd;
-    }
 }
 
 export class CombinationClientV2<T extends ClientV2> extends CombinationClientBase<T> implements OmniSharp.Events.Aggregate.V2 {

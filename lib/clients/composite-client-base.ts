@@ -66,7 +66,7 @@ export class ObservationClientBase<C extends ClientBase> implements OmniSharp.Ev
         return this.makeMergeObserable(selector);
     }
 
-    private onNext = () => _.debounce(() => this._clientsSubject.onNext(this.clients.slice()), 100);
+    private onNext = () => this._clientsSubject.onNext(this.clients.slice());
 
     public add(client: C) {
         this.clients.push(client);
@@ -151,7 +151,7 @@ export class CombinationClientBase<C extends ClientBase> implements OmniSharp.Ag
         return this.makeCombineObserable(selector);
     }
 
-    private onNext = () => _.debounce(() => this._clientsSubject.onNext(this.clients.slice()), 100);
+    private onNext = () => this._clientsSubject.onNext(this.clients.slice());
 
     public add(client: C) {
         this.clients.push(client);
