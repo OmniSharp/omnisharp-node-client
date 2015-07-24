@@ -52,8 +52,6 @@ export class ClientBase implements IDriver, OmniSharp.Events, Rx.IDisposable {
         v1._errorStream = client._errorStream;
         v1._customEvents = client._customEvents;
         v1._uniqueId = client._uniqueId;
-        v1._eventWatchers = client._eventWatchers;
-        v1._commandWatchers = client._commandWatchers;
         v1._disposable = client._disposable;
 
         v1.setupObservers();
