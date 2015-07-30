@@ -1,11 +1,13 @@
-import {ReplaySubject, Observable} from "rx";
+import {ReplaySubject, Observable, CompositeDisposable, Disposable} from "rx";
 import * as _ from 'lodash';
 import {ClientBase} from "./client-base";
 import {DriverState} from "../enums";
 import {OmnisharpClientStatus} from "../interfaces";
 import {RequestContext, ResponseContext, CommandContext} from "./contexts";
 
-export class ObservationClientBase<C extends ClientBase> implements OmniSharp.Events {
+export class ObservationClientBase<C extends ClientBase> implements OmniSharp.Events, Rx.IDisposable {
+    protected _disposable = new CompositeDisposable();
+    private _clientDisposable = new CompositeDisposable();
     protected _clientsSubject = new ReplaySubject<C[]>(1);
 
     public projectAdded: Observable<OmniSharp.Models.ProjectInformationResponse>;
@@ -46,6 +48,14 @@ export class ObservationClientBase<C extends ClientBase> implements OmniSharp.Ev
         this.errors = this.makeMergeObserable(client => client.errors);
 
         this.onNext();
+
+        this._disposable.add(this._clientsSubject);
+        this._disposable.add(this._clientDisposable);
+    }
+
+    public dispose() {
+        if (this._disposable.isDisposed) return;
+        this._disposable.dispose();
     }
 
     protected makeMergeObserable<T>(selector: (client: C) => Observable<T>) {
@@ -61,20 +71,18 @@ export class ObservationClientBase<C extends ClientBase> implements OmniSharp.Ev
     public add(client: C) {
         this.clients.push(client);
         this.onNext();
-    }
-
-    public remove(client: C) {
-        _.pull(this.clients, client);
-        this.onNext();
-    }
-
-    public removeAll() {
-        this.clients = [];
-        this.onNext();
+        var d = Disposable.create(() => {
+            _.pull(this.clients, client);
+            this.onNext();
+        });
+        this._clientDisposable.add(d);
+        return d;
     }
 }
 
-export class CombinationClientBase<C extends ClientBase> implements OmniSharp.Aggregate.Events {
+export class CombinationClientBase<C extends ClientBase> implements OmniSharp.Aggregate.Events, Rx.IDisposable {
+    protected _disposable = new CompositeDisposable();
+    private _clientDisposable = new CompositeDisposable();
     public _clientsSubject = new ReplaySubject<C[]>(1);
 
     public projectAdded: Observable<OmniSharp.CombinationKey<OmniSharp.Models.ProjectInformationResponse>[]>;
@@ -103,6 +111,14 @@ export class CombinationClientBase<C extends ClientBase> implements OmniSharp.Ag
         this.status = this.makeCombineObserable(client => client.status);
 
         this.onNext();
+
+        this._disposable.add(this._clientsSubject);
+        this._disposable.add(this._clientDisposable);
+    }
+
+    public dispose() {
+        if (this._disposable.isDisposed) return;
+        this._disposable.dispose();
     }
 
     protected makeCombineObserable<T>(selector: (client: C) => Observable<T>) {
@@ -140,15 +156,11 @@ export class CombinationClientBase<C extends ClientBase> implements OmniSharp.Ag
     public add(client: C) {
         this.clients.push(client);
         this.onNext();
-    }
-
-    public remove(client: C) {
-        _.pull(this.clients, client);
-        this.onNext();
-    }
-
-    public removeAll() {
-        this.clients = [];
-        this.onNext();
+        var d = Disposable.create(() => {
+            _.pull(this.clients, client);
+            this.onNext();
+        });
+        this._clientDisposable.add(d);
+        return d;
     }
 }

@@ -1,4 +1,4 @@
-import {ReplaySubject, Observable} from "rx";
+import {ReplaySubject, Observable, CompositeDisposable} from "rx";
 import * as _ from 'lodash';
 import {ClientV1} from "./client-v1";
 import {ClientV2} from "./client-v2";
@@ -77,21 +77,6 @@ export class ObservationClientV2<T extends ClientV2> extends ObservationClientBa
         this.observeGetcodeactions = this.makeMergeObserable(client => client.observeGetcodeactions);
         this.observeRuncodeaction = this.makeMergeObserable(client => client.observeRuncodeaction);
         this.observeGettestcontext = this.makeMergeObserable(client => client.observeGettestcontext);
-    }
-
-    public add(client: T) {
-        ObservationClientBase.prototype.add.call(this, client);
-        this.v1.add(client.v1);
-    }
-
-    public remove(client: T) {
-        ObservationClientBase.prototype.remove.call(this, client);
-        this.v1.remove(client.v1);
-    }
-
-    public removeAll() {
-        ObservationClientBase.prototype.removeAll.call(this);
-        this.v1.removeAll();
     }
 }
 

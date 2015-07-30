@@ -1,4 +1,4 @@
-import {Observable, Subject, AsyncSubject, BehaviorSubject, Scheduler} from "rx";
+import {Observable, Subject, AsyncSubject, BehaviorSubject, Scheduler, CompositeDisposable} from "rx";
 import {extend, isObject, some, uniqueId, isArray, each, intersection, keys, filter, isNumber, has, get, set, defaults} from "lodash";
 import {IDriver, IStaticDriver, IDriverOptions, OmnisharpClientStatus, OmnisharpClientOptions} from "../interfaces";
 import {Driver, DriverState} from "../enums";
@@ -29,7 +29,7 @@ function flattenArguments(obj, prefix = '') {
     return result;
 }
 
-export class ClientBase implements IDriver, OmniSharp.Events {
+export class ClientBase implements IDriver, OmniSharp.Events, Rx.IDisposable {
     private _driver: IDriver;
     private _requestStream = new Subject<RequestContext<any>>();
     private _responseStream = new Subject<ResponseContext<any, any>>();
@@ -40,6 +40,7 @@ export class ClientBase implements IDriver, OmniSharp.Events {
     protected _lowestIndexValue: number;
     private _eventWatchers = new Map<string, Subject<CommandContext<any>>>();
     private _commandWatchers = new Map<string, Subject<ResponseContext<any, any>>>();
+    private _disposable = new CompositeDisposable();
 
     public static fromClient<T extends ClientBase>(ctor: any, client: ClientBase) {
         var v1: ClientBase = <any>new ctor(client._options);
@@ -51,6 +52,8 @@ export class ClientBase implements IDriver, OmniSharp.Events {
         v1._errorStream = client._errorStream;
         v1._customEvents = client._customEvents;
         v1._uniqueId = client._uniqueId;
+        v1._disposable = client._disposable;
+
         v1.setupObservers();
 
         return <T>v1;
@@ -84,6 +87,12 @@ export class ClientBase implements IDriver, OmniSharp.Events {
         var driverFactory: IStaticDriver = require('../drivers/' + Driver[driver].toLowerCase());
         this._driver = new driverFactory(_options);
 
+        this._disposable.add(this._driver);
+        this._disposable.add(this._requestStream);
+        this._disposable.add(this._responseStream);
+        this._disposable.add(this._errorStream);
+        this._disposable.add(this._customEvents);
+
         this._enqueuedEvents = Observable.merge(this._customEvents, this._driver.events)
             .map(event => {
                 if (isObject(event.Body)) {
@@ -101,8 +110,8 @@ export class ClientBase implements IDriver, OmniSharp.Events {
         this._lowestIndexValue = _options.oneBasedIndices ? 1 : 0;
 
         this._statusStream = Observable.merge(
-                <Observable<any>>this._requestStream,
-                <Observable<any>>this._responseStream
+            <Observable<any>>this._requestStream,
+            <Observable<any>>this._responseStream
             )
             .map(() => <OmnisharpClientStatus> ({
                 state: this._driver.currentState,
@@ -114,7 +123,7 @@ export class ClientBase implements IDriver, OmniSharp.Events {
             .share();
 
         if (this._options.debug) {
-            this._responseStream.subscribe(Context => {
+            this._disposable.add(this._responseStream.subscribe(Context => {
                 // log our complete response time
                 this._customEvents.onNext({
                     Event: "log",
@@ -125,11 +134,17 @@ export class ClientBase implements IDriver, OmniSharp.Events {
                     Seq: -1,
                     Type: "log"
                 })
-            });
+            }));
         }
 
         this.setupRequestStreams();
         this.setupObservers();
+    }
+
+    public dispose() {
+        if (this._disposable.isDisposed) return;
+        this.disconnect();
+        this._disposable.dispose();
     }
 
     private setupRequestStreams() {
@@ -278,12 +293,14 @@ export class ClientBase implements IDriver, OmniSharp.Events {
     protected watchEvent<TBody>(event: string): Observable<TBody> {
         var subject = new Subject<CommandContext<any>>();
         this._eventWatchers.set(event, subject);
+        this._disposable.add(subject);
         return <any>subject.asObservable().share();
     }
 
     protected watchCommand(command: string): Observable<OmniSharp.Context<any, any>> {
         var subject = new Subject<ResponseContext<any, any>>();
         this._commandWatchers.set(command, subject);
+        this._disposable.add(subject);
         return subject.asObservable().share();
     }
 
