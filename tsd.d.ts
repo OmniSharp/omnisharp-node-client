@@ -16,12 +16,6 @@ declare module chai {
     }
 }
 
-declare module Rx {
-    interface Observable<T> {
-        throttleFirst(windowDuration: number, scheduler?: Rx.Scheduler): Observable<T>;
-    }
-}
-
 declare module _ {
     interface LoDashStatic {
         set: any;

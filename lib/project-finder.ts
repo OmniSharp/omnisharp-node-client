@@ -1,10 +1,9 @@
 import _ = require('lodash');
 import {ILogger} from './interfaces';
-import {join, dirname, sep} from 'path';
+import {join, dirname, sep, normalize} from 'path';
 var glob = require('glob');
 var primaryFilesToSearch = ['global.json', '*.sln', '*.csx'];
-var secondaryFilesToSearch = ['project.json', '*.csproj'];
-import {findCandidates} from './candidate-finder';
+var secondaryFilesToSearch = ['project.json', '*.csproj', '*.cs'];
 
 export function findProject(location: string, logger: ILogger) {
     location = _.trimRight(location, sep);
@@ -30,31 +29,35 @@ export function findProject(location: string, logger: ILogger) {
 }
 
 function searchForFolder(locations: string[], filesToSearch: string[], logger: ILogger) {
-    var foundFile: string;
-    var results = locations.map(location => ({
+    var foundFiles: string[];
+
+    var foundFiles = _(locations)
+    .map(location => ({
         location,
         files: filesToSearch.map(fileName => join(location, fileName))
-    }));
-
-    _.each(results, ({location, files} : { location: string; files: string[] }) => {
+    }))
+    .map(({location, files}) => {
         logger.log(`Omnisharp Project Finder: Searching ${location} for ${filesToSearch}`);
 
-        var found = _.find(files, file => {
-            var g = glob.sync(file);
+        return _(files).map(file => {
+            var g : string[] = glob.sync(file);
             if (g && g.length) {
-                return true;
+                return g;
             }
-            return false;
-        });
+            return [];
+        })
+        .filter(x => x && x.length)
+        .first();
+    })
+    .filter(x => x && x.length)
+    .tap(x => logger.log(`Omnisharp Project Finder: Found ${x}`))
+    .first();
 
-        if (found) {
-            foundFile = found;
-            logger.log(`Omnisharp Project Finder: Found ${found}`);
-            return false;
-        }
-    });
-
-    if (foundFile) {
-        return dirname(foundFile);
+    if (foundFiles) {
+        if (_.any(foundFiles, x => _.endsWith(x, '.sln')))
+            return normalize(foundFiles[0]);
+        if (foundFiles.length === 1)
+            return normalize(dirname(foundFiles[0]));
+        // WTH JUST HAPPENED!
     }
 }

@@ -8,6 +8,14 @@ declare var xdescribe: Function;
 
 describe("Project Finder", function() {
     it('should support files existing in the same folder', function() {
+        var cs = findProject(join(__dirname, 'fixture/project-finder/same-folder/cs'), console);
+        expect(cs).to.not.be.null;
+        expect(cs).to.be.eql(join(__dirname, 'fixture/project-finder/same-folder/cs'));
+
+        var cs = findProject(join(__dirname, 'fixture/project-finder/same-folder/cs/'), console);
+        expect(cs).to.not.be.null;
+        expect(cs).to.be.eql(join(__dirname, 'fixture/project-finder/same-folder/cs'));
+
         var csproj = findProject(join(__dirname, 'fixture/project-finder/same-folder/csproj'), console);
         expect(csproj).to.not.be.null;
         expect(csproj).to.be.eql(join(__dirname, 'fixture/project-finder/same-folder/csproj'));
@@ -42,11 +50,11 @@ describe("Project Finder", function() {
 
         var solution = findProject(join(__dirname, 'fixture/project-finder/same-folder/solution'), console);
         expect(solution).to.not.be.null;
-        expect(solution).to.be.eql(join(__dirname, 'fixture/project-finder/same-folder/solution'));
+        expect(solution).to.be.eql(join(__dirname, 'fixture/project-finder/same-folder/solution/something.sln'));
 
         var solution = findProject(join(__dirname, 'fixture/project-finder/same-folder/solution/'), console);
         expect(solution).to.not.be.null;
-        expect(solution).to.be.eql(join(__dirname, 'fixture/project-finder/same-folder/solution'));
+        expect(solution).to.be.eql(join(__dirname, 'fixture/project-finder/same-folder/solution/something.sln'));
     });
 
     it('should find projects up the folder heirarchy if not found', function() {
@@ -68,7 +76,7 @@ describe("Project Finder", function() {
 
         var solution = findProject(join(__dirname, 'fixture/project-finder/global-root-folder/solution'), console);
         expect(solution).to.not.be.null;
-        expect(solution).to.be.eql(join(__dirname, 'fixture/project-finder/global-root-folder/solution'));
+        expect(solution).to.be.eql(join(__dirname, 'fixture/project-finder/global-root-folder/solution/something.sln'));
 
         var csproj = findProject(join(__dirname, 'fixture/project-finder/csx-root-folder'), console);
         expect(csproj).to.not.be.null;
@@ -88,11 +96,11 @@ describe("Project Finder", function() {
 
         var solution = findProject(join(__dirname, 'fixture/project-finder/csx-root-folder/solution'), console);
         expect(solution).to.not.be.null;
-        expect(solution).to.be.eql(join(__dirname, 'fixture/project-finder/csx-root-folder/solution'));
+        expect(solution).to.be.eql(join(__dirname, 'fixture/project-finder/csx-root-folder/solution/something.sln'));
 
         var csproj = findProject(join(__dirname, 'fixture/project-finder/solution-root-folder'), console);
         expect(csproj).to.not.be.null;
-        expect(csproj).to.be.eql(join(__dirname, 'fixture/project-finder/solution-root-folder'));
+        expect(csproj).to.be.eql(join(__dirname, 'fixture/project-finder/solution-root-folder/something.sln'));
 
         var csx = findProject(join(__dirname, 'fixture/project-finder/solution-root-folder/csx'), console);
         expect(csx).to.not.be.null;
@@ -104,11 +112,15 @@ describe("Project Finder", function() {
 
         var project = findProject(join(__dirname, 'fixture/project-finder/solution-root-folder'), console);
         expect(project).to.not.be.null;
-        expect(project).to.be.eql(join(__dirname, 'fixture/project-finder/solution-root-folder'));
+        expect(project).to.be.eql(join(__dirname, 'fixture/project-finder/solution-root-folder/something.sln'));
 
         var solution = findProject(join(__dirname, 'fixture/project-finder/solution-root-folder/solution'), console);
         expect(solution).to.not.be.null;
-        expect(solution).to.be.eql(join(__dirname, 'fixture/project-finder/solution-root-folder/solution'));
+        expect(solution).to.be.eql(join(__dirname, 'fixture/project-finder/solution-root-folder/solution/something.sln'));
+
+        var csproj = findProject(join(__dirname, 'fixture/project-finder/no-solution'), console);
+        expect(csproj).to.not.be.null;
+        expect(csproj).to.be.eql(join(__dirname, 'fixture/project-finder/no-solution'));
 
     });
 });

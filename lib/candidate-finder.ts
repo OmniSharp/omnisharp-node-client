@@ -1,25 +1,46 @@
 import _ = require('lodash');
 import {ILogger} from './interfaces';
-import {join, dirname, sep} from 'path';
+import {join, dirname, sep, normalize} from 'path';
 import {Observable, AsyncSubject, Scheduler} from "rx";
 var sepRegex = /[\\|\/]/g;
 var glob: (file: string[]) => Observable<string[]> = <any> Observable.fromNodeCallback(require('globby'));
 var solutionFilesToSearch = ['global.json', '*.sln'];
 var projectFilesToSearch = ['project.json', '*.csproj'];
 var scriptCsFilesToSearch = ['*.csx'];
+var csharpFilesToSearch = ['*.cs'];
 
 export function findCandidates(location: string, logger: ILogger) {
     location = _.trimRight(location, sep);
 
-    var solutionCandidates = searchForCandidates(location, solutionFilesToSearch, logger);
-    var projectCandidates = searchForCandidates(location, projectFilesToSearch, logger);
-    var scriptCsCandidates = searchForCandidates(location, scriptCsFilesToSearch, logger);
-    return Observable.zip(solutionCandidates, projectCandidates, scriptCsCandidates, (solutionCandidates, projectCandidates, scriptCsCandidates) => {
-        var candidates = squashCandidates(solutionCandidates.concat(projectCandidates)).concat(scriptCsCandidates);
-        return _.unique(candidates)
-            .map(z => z.split(sepRegex).join(sep));
-    })
-    .tapOnNext(candidates => logger.log(`Omni Project Candidates: Found ${candidates}`));
+    var projects = Observable.merge(
+        searchForCandidates(location, solutionFilesToSearch, logger),
+        searchForCandidates(location, projectFilesToSearch, logger)
+    )
+        .map(z => z.split(sepRegex).join(sep))
+        .toArray()
+        .map(squashCandidates);
+
+    var scriptCs = searchForCandidates(location, scriptCsFilesToSearch, logger)
+        .map(z => z.split(sepRegex).join(sep))
+        .toArray();
+
+    var baseFiles = Observable.concat(projects, scriptCs)
+        .flatMap(x => Observable.from(x))
+        .shareReplay();
+
+    return baseFiles.isEmpty()
+        .flatMap(isEmpty => {
+            if (isEmpty) {
+                // Load csharp files as a fallback
+                return searchForCandidates(location, csharpFilesToSearch, logger)
+                    .map(z => z.split(sepRegex).join(sep));
+            } else {
+                return baseFiles;
+            }
+        })
+        .distinct()
+        .toArray()
+        .tapOnNext(candidates => logger.log(`Omni Project Candidates: Found ${candidates}`));
 }
 
 function squashCandidates(candidates: string[]) {
@@ -42,24 +63,44 @@ function searchForCandidates(location: string, filesToSearch: string[], logger: 
         return _.take(locations, locations.length - index).join(sep);
     });
 
-    // TODO: Searching is expensive, should we control the max depth?
-    // locations = _.take(locations, 5);
+    locations = locations.slice(0, Math.min(5, locations.length));
 
-    var rootObservable = Observable.from(locations, x => x, Scheduler.timeout)
+    var rootObservable = Observable.from(locations)
+        .subscribeOn(Scheduler.timeout)
         .map(loc => ({
             loc,
             files: filesToSearch.map(fileName => join(loc, fileName))
         }))
         .flatMap(function({loc, files}) {
             logger.log(`Omni Project Candidates: Searching ${loc} for ${filesToSearch}`);
-            return Observable.from(files, x => x, Scheduler.timeout)
+
+            return Observable.from(files)
                 .flatMap(file => glob([file]))
-                .selectMany(x => Observable.from(x))
-                .map(file => dirname(file))
-                .distinct()
+                .map(x => {
+                    if (x.length > 1) {
+                        // Handle the unity project case
+                        // Also handle optional solutions that may also exist with the unity ones.
+                        var unitySolutionIndex = _.findIndex(x, z => _.endsWith(z, '-csharp.sln'));
+                        if (unitySolutionIndex > -1) {
+                            var unitySolution = x[unitySolutionIndex];
+                            var baseSolution = unitySolution.substr(0, unitySolution.indexOf('-csharp.sln')) + '.sln';
+
+                            var baseSolutionIndex = _.findIndex(x, x => x.toLowerCase() === baseSolution.toLowerCase());
+                            if (baseSolutionIndex > -1) {
+                                // Remove the index
+                                x.splice(baseSolutionIndex, 1);
+                            }
+                        }
+                    }
+                    return x;
+                });
         })
-        .take(1)
-        .toArray();
+        .filter(z => z.length > 0)
+        .defaultIfEmpty([])
+        .first()
+        .flatMap(z => Observable.from(z))
+        .map(file => _.endsWith(file, ".sln") ? file : dirname(file))
+        .tapOnNext(x => console.log('hell!!!!', x));
 
     return rootObservable;
 }
