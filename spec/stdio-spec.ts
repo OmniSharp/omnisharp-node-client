@@ -15,7 +15,6 @@ describe("Omnisharp Local - Stdio", function() {
 
     it("must construct with a specific driver", () => {
         new Stdio({
-            driver: Driver.Stdio,
             projectPath: resolve(__dirname, '../roslyn/')
         });
     });
@@ -24,7 +23,6 @@ describe("Omnisharp Local - Stdio", function() {
         this.timeout(20000);
         it('should implement the interface', function(done) {
             var server = new Stdio({
-                driver: Driver.Stdio,
                 projectPath: resolve(__dirname, '../roslyn/')
             });
 
@@ -44,9 +42,7 @@ describe("Omnisharp Local - Stdio", function() {
     describe("properties", function() {
         this.timeout(20000);
         it('should disconnect if no project path is given', function(done) {
-            var server = new Stdio({
-                driver: Driver.Stdio
-            });
+            var server = new Stdio({});
 
             var sub = server.state.subscribe(state => {
                 expect(state).to.be.eql(DriverState.Error);
@@ -58,7 +54,6 @@ describe("Omnisharp Local - Stdio", function() {
 
         it('should disconnect if no an invalid project path is given', function(done) {
             var server = new Stdio({
-                driver: Driver.Stdio,
                 projectPath: '/invalid/path/to/things/'
             });
 

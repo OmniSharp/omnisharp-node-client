@@ -4,7 +4,7 @@ export var enqueue = (function() {
     var _queue : Function[] = [];
     var _queueFinished = true;
     // Fake RAF for environments that don't have it.
-    var requestAnimationFrame = window && window.requestAnimationFrame || function (cb: Function) { delay(cb, 33); }
+    var requestAnimationFrame : any = window && window.requestAnimationFrame || function (cb: Function): number { delay(cb, 33); return -1; }
 
     var _raf = () => requestAnimationFrame(() => _dequeue());
 
