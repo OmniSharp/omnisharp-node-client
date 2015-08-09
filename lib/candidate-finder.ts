@@ -5,8 +5,9 @@ import {Observable, AsyncSubject, Scheduler} from "rx";
 var sepRegex = /[\\|\/]/g;
 var glob: (file: string[]) => Observable<string[]> = <any> Observable.fromNodeCallback(require('globby'));
 var solutionFilesToSearch = ['global.json', '*.sln'];
-var projectFilesToSearch = ['project.json', '*.csproj', '*.cs'];
+var projectFilesToSearch = ['project.json', '*.csproj'];
 var scriptCsFilesToSearch = ['*.csx'];
+var csharpFilesToSearch = ['*.cs'];
 
 export function findCandidates(location: string, logger: ILogger) {
     location = _.trimRight(location, sep);
@@ -23,10 +24,22 @@ export function findCandidates(location: string, logger: ILogger) {
         .map(z => z.split(sepRegex).join(sep))
         .toArray();
 
-    return Observable.concat(projects, scriptCs)
+    var baseFiles = Observable.concat(projects, scriptCs)
         .flatMap(x => Observable.from(x))
+        .shareReplay();
+
+    return baseFiles.isEmpty()
+        .flatMap(isEmpty => {
+            if (isEmpty) {
+                // Load csharp files as a fallback
+                return searchForCandidates(location, csharpFilesToSearch, logger)
+                    .map(z => z.split(sepRegex).join(sep));
+            } else {
+                return baseFiles;
+            }
+        })
+        .distinct()
         .toArray()
-        .map(z => _.unique(z))
         .tapOnNext(candidates => logger.log(`Omni Project Candidates: Found ${candidates}`));
 }
 
