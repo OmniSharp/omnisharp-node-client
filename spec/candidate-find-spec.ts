@@ -264,5 +264,65 @@ describe("Candidate Finder", function() {
         });
     });
 
+    it('z28 should return one solution for unity based projects when targeting a folder with a csproj', function(done) {
+        findCandidates(join(__dirname, 'fixture/candidate-finder/two-solution-unity/csproj'), console).subscribe(csproj => {
+            expect(csproj).to.not.be.null;
+            expect(csproj).to.be.deep.equal([join(__dirname, 'fixture/candidate-finder/two-solution-unity/something-csharp.sln')]);
+            done();
+        });
+    });
+
+    it('z28b should return one solution for unity based projects when targeting a folder with a project.json', function(done) {
+        findCandidates(join(__dirname, 'fixture/candidate-finder/two-solution-unity/project'), console).subscribe(csproj => {
+            expect(csproj).to.not.be.null;
+            expect(csproj).to.be.deep.equal([join(__dirname, 'fixture/candidate-finder/two-solution-unity/something-csharp.sln')]);
+            done();
+        });
+    });
+
+    it('z29 should return two solutions for unity based projects with extra solutions when targeting a folder with a csproj', function(done) {
+        findCandidates(join(__dirname, 'fixture/candidate-finder/three-solution-unity/csproj'), console).subscribe(csproj => {
+            expect(csproj).to.not.be.null;
+            expect(csproj).to.be.deep.equal([
+                join(__dirname, 'fixture/candidate-finder/three-solution-unity/something-csharp.sln'),
+                join(__dirname, 'fixture/candidate-finder/three-solution-unity/somethingelse.sln'),
+            ]);
+            done();
+        });
+    });
+
+    it('z29b should return two solutions for unity based projects with extra solutions when targeting a folder with a project.json', function(done) {
+        findCandidates(join(__dirname, 'fixture/candidate-finder/three-solution-unity/project'), console).subscribe(csproj => {
+            expect(csproj).to.not.be.null;
+            expect(csproj).to.be.deep.equal([
+                join(__dirname, 'fixture/candidate-finder/three-solution-unity/something-csharp.sln'),
+                join(__dirname, 'fixture/candidate-finder/three-solution-unity/somethingelse.sln'),
+            ]);
+            done();
+        });
+    });
+
+    it('z30 should return two solutions projects with extra solutions when targeting a folder with a csproj', function(done) {
+        findCandidates(join(__dirname, 'fixture/candidate-finder/two-solution/csproj/project'), console).subscribe(csproj => {
+            expect(csproj).to.not.be.null;
+            expect(csproj).to.be.deep.equal([
+                join(__dirname, 'fixture/candidate-finder/two-solution/something.sln'),
+                join(__dirname, 'fixture/candidate-finder/two-solution/somethingelse.sln'),
+            ]);
+            done();
+        });
+    });
+
+    it('z30b should return two solutions projects with extra solutions when targeting a folder with a project.json', function(done) {
+        findCandidates(join(__dirname, 'fixture/candidate-finder/two-solution'), console).subscribe(csproj => {
+            expect(csproj).to.not.be.null;
+            expect(csproj).to.be.deep.equal([
+                join(__dirname, 'fixture/candidate-finder/two-solution/something.sln'),
+                join(__dirname, 'fixture/candidate-finder/two-solution/somethingelse.sln'),
+            ]);
+            done();
+        });
+    });
+
 
 });

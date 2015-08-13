@@ -12,10 +12,9 @@ var csharpFilesToSearch = ['*.cs'];
 export function findCandidates(location: string, logger: ILogger) {
     location = _.trimRight(location, sep);
 
-    var projects = Observable.merge(
-        searchForCandidates(location, solutionFilesToSearch, logger),
-        searchForCandidates(location, projectFilesToSearch, logger)
-    )
+    var projects = searchForCandidates(location, solutionFilesToSearch, logger)
+        .toArray()
+        .flatMap(result => result.length ? Observable.from(result) : searchForCandidates(location, projectFilesToSearch, logger))
         .map(z => z.split(sepRegex).join(sep))
         .toArray()
         .map(squashCandidates);
