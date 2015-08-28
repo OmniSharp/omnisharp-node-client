@@ -17,10 +17,11 @@ export class ClientV1 extends ClientBase implements OmniSharp.Api.V1, OmniSharp.
     public observeFindimplementations: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>;
     public observeFindsymbols: Rx.Observable<OmniSharp.Context<OmniSharp.Models.FindSymbolsRequest, OmniSharp.Models.QuickFixResponse>>;
     public observeFindusages: Rx.Observable<OmniSharp.Context<OmniSharp.Models.FindUsagesRequest, OmniSharp.Models.QuickFixResponse>>;
-    public observeGotodefinition: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.GotoDefinitionResponse>>;
+    public observeGotodefinition: Rx.Observable<OmniSharp.Context<OmniSharp.Models.GotoDefinitionRequest, OmniSharp.Models.GotoDefinitionResponse>>;
     public observeGotofile: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>;
     public observeGotoregion: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>;
     public observeHighlight: Rx.Observable<OmniSharp.Context<OmniSharp.Models.HighlightRequest, OmniSharp.Models.HighlightResponse>>;
+    public observeMetadata: Rx.Observable<OmniSharp.Context<OmniSharp.Models.MetadataRequest, OmniSharp.Models.MetadataResponse>>;
     public observeNavigateup: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>>;
     public observeNavigatedown: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>>;
     public observePackagesearch: Rx.Observable<OmniSharp.Context<OmniSharp.Models.PackageSearchRequest, OmniSharp.Models.PackageSearchResponse>>;
@@ -57,6 +58,7 @@ export class ClientV1 extends ClientBase implements OmniSharp.Api.V1, OmniSharp.
         this.observeGotofile = this.watchCommand("gotofile");
         this.observeGotoregion = this.watchCommand("gotoregion");
         this.observeHighlight = this.watchCommand("highlight");
+        this.observeMetadata = this.watchCommand("metadata");
         this.observeNavigateup = this.watchCommand("navigateup");
         this.observeNavigatedown = this.watchCommand("navigatedown");
         this.observePackagesearch = this.watchCommand("packagesearch");
@@ -213,7 +215,7 @@ export class ClientV1 extends ClientBase implements OmniSharp.Api.V1, OmniSharp.
         return this.findusages(request, options).toPromise();
     }
 
-    public gotodefinition(request: OmniSharp.Models.Request, options?: OmniSharp.RequestOptions) {
+    public gotodefinition(request: OmniSharp.Models.GotoDefinitionRequest, options?: OmniSharp.RequestOptions) {
         assert.isNotNull(request.FileName, 'request.FileName must not be null');
         assert.isNotNull(request.Line, 'request.Line must not be null');
         (<any>assert).isAbove(request.Line, this._lowestIndexValue - 1, `request.Line must be greater than or equal to ${this._lowestIndexValue}`);
@@ -223,7 +225,7 @@ export class ClientV1 extends ClientBase implements OmniSharp.Api.V1, OmniSharp.
         return this.request<OmniSharp.Models.Request, any>("gotodefinition", request, options);
     }
 
-    public gotodefinitionPromise(request: OmniSharp.Models.Request, options?: OmniSharp.RequestOptions) {
+    public gotodefinitionPromise(request: OmniSharp.Models.GotoDefinitionRequest, options?: OmniSharp.RequestOptions) {
         return this.gotodefinition(request, options).toPromise();
     }
 
@@ -266,6 +268,16 @@ export class ClientV1 extends ClientBase implements OmniSharp.Api.V1, OmniSharp.
 
     public highlightPromise(request: OmniSharp.Models.HighlightRequest, options?: OmniSharp.RequestOptions) {
         return this.highlight(request, options).toPromise();
+    }
+
+    public metadata(request: OmniSharp.Models.MetadataRequest, options?: OmniSharp.RequestOptions) {
+        assert.isNotNull(request.AssemblyName);
+        assert.isNotNull(request.TypeName);
+        return this.request<OmniSharp.Models.MetadataRequest, OmniSharp.Models.MetadataResponse>("metadata", request, options);
+    }
+
+    public metadataPromise(request: OmniSharp.Models.MetadataRequest, options?: OmniSharp.RequestOptions) {
+        return this.metadata(request, options).toPromise();
     }
 
     public navigatedown(request: OmniSharp.Models.Request, options?: OmniSharp.RequestOptions) {

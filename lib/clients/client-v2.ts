@@ -23,10 +23,11 @@ export class ClientV2 extends ClientBase implements OmniSharp.Api.V2, OmniSharp.
     public observeFindimplementations: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>;
     public observeFindsymbols: Rx.Observable<OmniSharp.Context<OmniSharp.Models.FindSymbolsRequest, OmniSharp.Models.QuickFixResponse>>;
     public observeFindusages: Rx.Observable<OmniSharp.Context<OmniSharp.Models.FindUsagesRequest, OmniSharp.Models.QuickFixResponse>>;
-    public observeGotodefinition: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.GotoDefinitionResponse>>;
+    public observeGotodefinition: Rx.Observable<OmniSharp.Context<OmniSharp.Models.GotoDefinitionRequest, OmniSharp.Models.GotoDefinitionResponse>>;
     public observeGotofile: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>;
     public observeGotoregion: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>;
     public observeHighlight: Rx.Observable<OmniSharp.Context<OmniSharp.Models.HighlightRequest, OmniSharp.Models.HighlightResponse>>;
+    public observeMetadata: Rx.Observable<OmniSharp.Context<OmniSharp.Models.MetadataRequest, OmniSharp.Models.MetadataResponse>>;
     public observeNavigateup: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>>;
     public observeNavigatedown: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>>;
     public observePackagesearch: Rx.Observable<OmniSharp.Context<OmniSharp.Models.PackageSearchRequest, OmniSharp.Models.PackageSearchResponse>>;
@@ -63,6 +64,7 @@ export class ClientV2 extends ClientBase implements OmniSharp.Api.V2, OmniSharp.
         this.observeGotofile = this.watchCommand("gotofile");
         this.observeGotoregion = this.watchCommand("gotoregion");
         this.observeHighlight = this.watchCommand("highlight");
+        this.observeMetadata = this.watchCommand("metadata");
         this.observeNavigateup = this.watchCommand("navigateup");
         this.observeNavigatedown = this.watchCommand("navigatedown");
         this.observePackagesearch = this.watchCommand("packagesearch");
@@ -175,6 +177,9 @@ export class ClientV2 extends ClientBase implements OmniSharp.Api.V2, OmniSharp.
 
     public highlight: typeof ClientV1.prototype.highlight;
     public highlightPromise: typeof ClientV1.prototype.highlightPromise;
+
+    public metadata: typeof ClientV1.prototype.metadata;
+    public metadataPromise: typeof ClientV1.prototype.metadataPromise;
 
     public navigateup: typeof ClientV1.prototype.navigateup;
     public navigateupPromise: typeof ClientV1.prototype.navigateupPromise;

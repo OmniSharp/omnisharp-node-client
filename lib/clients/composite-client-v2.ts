@@ -21,6 +21,7 @@ export class ObservationClientV2<T extends ClientV2> extends ObservationClientBa
     public observeGotofile: typeof ClientV2.prototype.observeGotofile;
     public observeGotoregion: typeof ClientV2.prototype.observeGotoregion;
     public observeHighlight: typeof ClientV2.prototype.observeHighlight;
+    public observeMetadata: typeof ClientV1.prototype.observeMetadata;
     public observeNavigateup: typeof ClientV2.prototype.observeNavigateup;
     public observeNavigatedown: typeof ClientV2.prototype.observeNavigatedown;
     public observePackagesearch: typeof ClientV2.prototype.observePackagesearch;
@@ -59,6 +60,7 @@ export class ObservationClientV2<T extends ClientV2> extends ObservationClientBa
         this.observeGotofile = this.makeMergeObserable(client => client.observeGotofile);
         this.observeGotoregion = this.makeMergeObserable(client => client.observeGotoregion);
         this.observeHighlight = this.makeMergeObserable(client => client.observeHighlight);
+        this.observeMetadata = this.makeMergeObserable(client => client.observeMetadata);
         this.observeNavigateup = this.makeMergeObserable(client => client.observeNavigateup);
         this.observeNavigatedown = this.makeMergeObserable(client => client.observeNavigatedown);
         this.observePackagesearch = this.makeMergeObserable(client => client.observePackagesearch);
@@ -91,10 +93,11 @@ export class CombinationClientV2<T extends ClientV2> extends CombinationClientBa
     public observeFindimplementations: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>[]>;
     public observeFindsymbols: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.FindSymbolsRequest, OmniSharp.Models.QuickFixResponse>>[]>;
     public observeFindusages: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.FindUsagesRequest, OmniSharp.Models.QuickFixResponse>>[]>;
-    public observeGotodefinition: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.GotoDefinitionResponse>>[]>;
+    public observeGotodefinition: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.GotoDefinitionRequest, OmniSharp.Models.GotoDefinitionResponse>>[]>;
     public observeGotofile: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>[]>;
     public observeGotoregion: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>[]>;
     public observeHighlight: Rx.Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.HighlightRequest, OmniSharp.Models.HighlightResponse>>[]>;
+    public observeMetadata: Rx.Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.MetadataRequest, OmniSharp.Models.MetadataResponse>>[]>;
     public observeNavigateup: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>>[]>;
     public observeNavigatedown: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>>[]>;
     public observePackagesearch: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.PackageSearchRequest, OmniSharp.Models.PackageSearchResponse>>[]>;
@@ -131,6 +134,7 @@ export class CombinationClientV2<T extends ClientV2> extends CombinationClientBa
         this.observeGotofile = this.makeCombineObserable(client => client.observeGotofile);
         this.observeGotoregion = this.makeCombineObserable(client => client.observeGotoregion);
         this.observeHighlight = this.makeCombineObserable(client => client.observeHighlight);
+        this.observeMetadata = this.makeCombineObserable(client => client.observeMetadata);
         this.observeNavigateup = this.makeCombineObserable(client => client.observeNavigateup);
         this.observeNavigatedown = this.makeCombineObserable(client => client.observeNavigatedown);
         this.observePackagesearch = this.makeCombineObserable(client => client.observePackagesearch);
