@@ -34,16 +34,18 @@
     "del": "^1.1.1",
     "glob": "^5.0.6",
     "globby": "^2.0.0",
-    "gulp": "^3.8.11",
-    "gulp-util": "^3.0.4",
     "lodash": "^3.9.3",
-    "merge-stream": "^0.1.7",
-    "mocha": "^2.2.4",
     "rx": "^2.5.2",
     "strip-bom": "^1.0.0",
+    "yargs": "^3.10.0"
+  },
+  "devDependencies": {
+    "gulp": "^3.8.11",
+    "gulp-util": "^3.0.4",
+    "merge-stream": "^0.1.7",
+    "mocha": "^2.2.4",
     "through2": "^2.0.0",
     "tsd": "~0.6.0-beta.5",
-    "typescript": "^1.5.0-beta",
-    "yargs": "^3.10.0"
+    "typescript": "^1.5.0-beta"
   }
 }
