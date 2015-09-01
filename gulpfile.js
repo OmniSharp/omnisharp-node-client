@@ -15,16 +15,11 @@ var metadata = {
 
 gulp.task('typescript', ['clean'], function() {
     var args = ['--declaration', '-p', path.resolve(__dirname.toString())];
-    console.log(args);
     var compile = new Promise(function(resolve, reject) {
         var tsc = spawn(path.resolve(__dirname + '/node_modules/.bin/ntsc' + (win32 && '.cmd' || '')), args);
         tsc.on('data', function(data) { gutil.log(data); });
         tsc.on('close', function(code) {
-            if (code !== 0) {
-                reject('failed');
-            } else {
-                resolve('success');
-            }
+            resolve();
         });
     });
 
@@ -86,6 +81,4 @@ gulp.task('file-watch', function() {
 gulp.task('npm-prepublish', ['typescript']);
 
 // The default task (called when you run `gulp` from CLI)
-gulp.task('default', ['typescript'], function() {
-
-});
+gulp.task('default', ['typescript']);
