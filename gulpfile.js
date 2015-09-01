@@ -1,5 +1,4 @@
 var gulp = require('gulp');
-var ts = require('typescript');
 var through = require('through2');
 var gutil = require('gulp-util');
 var merge = require('merge-stream');
