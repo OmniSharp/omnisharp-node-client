@@ -23,7 +23,6 @@
   },
   "main": "lib/omnisharp-client.js",
   "scripts": {
-    "postinstall": "./node_modules/.bin/gulp npm-postinstall",
     "prepublish": "./node_modules/.bin/gulp npm-prepublish",
     "test": "mocha spec"
   },
@@ -31,20 +30,20 @@
   "license": "MIT",
   "dependencies": {
     "chai": "^3.0.0",
-    "del": "^1.2.1",
     "glob": "^5.0.14",
     "globby": "^2.1.0",
     "lodash": "^3.10.1",
     "rx": "^3.1.1",
     "strip-bom": "^2.0.0",
-    "through2": "^2.0.0",
     "yargs": "^3.21.0"
   },
   "devDependencies": {
+    "del": "^1.2.1",
     "gulp": "^3.9.0",
     "gulp-util": "^3.0.6",
     "merge-stream": "^1.0.0",
     "mocha": "^2.2.4",
+    "through2": "^2.0.0",
     "tsd": "^0.6.3",
     "typescript": "^1.5.3"
   }
