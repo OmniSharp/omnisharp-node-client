@@ -2,6 +2,7 @@
 npm-debug.log
 node_modules
 lib/**/*.ts
+!lib/**/*.d.ts
 spec
 NuGet.exe
 vendor

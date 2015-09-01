@@ -2,6 +2,8 @@
 npm-debug.log
 node_modules
 lib/**/*.js
+lib/**/*.d.ts
 spec/**/*.js
+spec/**/*.d.ts
 roslyn
 NuGet.exe
