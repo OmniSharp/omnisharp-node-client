@@ -1,6 +1,20 @@
 import {ClientBase} from "./client-base";
-import {assert} from "chai";
 import {OmnisharpClientOptions} from "../interfaces";
+
+function isNotNull<T>(value: T, errorText: string) {
+    if (value === null || value === undefined) {
+        throw new Error(errorText);
+    }
+}
+
+function isAbove(value: number, minValue: number, errorText: string) {
+    if (value === null || value === undefined) {
+        return;
+    }
+    if (value <= minValue) {
+        throw new Error(errorText);
+    }
+}
 
 export class ClientV1 extends ClientBase implements OmniSharp.Api.V1, OmniSharp.Events.V1 {
     constructor(_options: OmnisharpClientOptions = {}) {
@@ -80,8 +94,8 @@ export class ClientV1 extends ClientBase implements OmniSharp.Api.V1, OmniSharp.
     }
 
     public updatebuffer(request: OmniSharp.Models.Request, options?: OmniSharp.RequestOptions) {
-        assert.isNotNull(request.FileName, 'request.FileName must not be null');
-        assert.isNotNull(request.Buffer, 'request.Buffer must not be null');
+        isNotNull(request.FileName, 'request.FileName must not be null');
+        isNotNull(request.Buffer, 'request.Buffer must not be null');
 
         return this.request<OmniSharp.Models.Request, any>("updatebuffer", request, options);
     }
@@ -91,16 +105,16 @@ export class ClientV1 extends ClientBase implements OmniSharp.Api.V1, OmniSharp.
     }
 
     public changebuffer(request: OmniSharp.Models.ChangeBufferRequest, options?: OmniSharp.RequestOptions) {
-        assert.isNotNull(request.FileName, 'request.FileName must not be null');
-        assert.isNotNull(request.NewText, 'request.NewText must not be null');
-        assert.isNotNull(request.StartLine, 'request.StartLine must not be null');
-        (<any>assert).isAbove(request.StartLine, this._lowestIndexValue - 1, `request.StartLine must be greater than or equal to ${this._lowestIndexValue}`);
-        assert.isNotNull(request.StartColumn, 'request.StartColumn must not be null');
-        (<any>assert).isAbove(request.StartColumn, this._lowestIndexValue - 1, `request.StartColumn must be greater than or equal to ${this._lowestIndexValue}`);
-        assert.isNotNull(request.EndLine, 'request.EndLine must not be null');
-        (<any>assert).isAbove(request.EndLine, this._lowestIndexValue - 1, `request.EndLine must be greater than or equal to ${this._lowestIndexValue}`);
-        assert.isNotNull(request.EndColumn, 'request.EndColumn must not be null');
-        (<any>assert).isAbove(request.EndColumn, this._lowestIndexValue - 1, `request.EndColumn must be greater than or equal to ${this._lowestIndexValue}`);
+        isNotNull(request.FileName, 'request.FileName must not be null');
+        isNotNull(request.NewText, 'request.NewText must not be null');
+        isNotNull(request.StartLine, 'request.StartLine must not be null');
+        isAbove(request.StartLine, this._lowestIndexValue - 1, `request.StartLine must be greater than or equal to ${this._lowestIndexValue}`);
+        isNotNull(request.StartColumn, 'request.StartColumn must not be null');
+        isAbove(request.StartColumn, this._lowestIndexValue - 1, `request.StartColumn must be greater than or equal to ${this._lowestIndexValue}`);
+        isNotNull(request.EndLine, 'request.EndLine must not be null');
+        isAbove(request.EndLine, this._lowestIndexValue - 1, `request.EndLine must be greater than or equal to ${this._lowestIndexValue}`);
+        isNotNull(request.EndColumn, 'request.EndColumn must not be null');
+        isAbove(request.EndColumn, this._lowestIndexValue - 1, `request.EndColumn must be greater than or equal to ${this._lowestIndexValue}`);
 
         return this.request<OmniSharp.Models.ChangeBufferRequest, any>("changebuffer", request, options);
     }
@@ -118,12 +132,12 @@ export class ClientV1 extends ClientBase implements OmniSharp.Api.V1, OmniSharp.
     }
 
     public formatAfterKeystroke(request: OmniSharp.Models.FormatAfterKeystrokeRequest, options?: OmniSharp.RequestOptions) {
-        assert.isNotNull(request.FileName, 'request.FileName must not be null');
-        assert.isNotNull(request.Line, 'request.Line must not be null');
-        (<any>assert).isAbove(request.Line, this._lowestIndexValue - 1, `request.Line must be greater than or equal to ${this._lowestIndexValue}`);
-        assert.isNotNull(request.Column, 'request.Column must not be null');
-        (<any>assert).isAbove(request.Column, this._lowestIndexValue - 1, `request.Column must be greater than or equal to ${this._lowestIndexValue}`);
-        assert.isNotNull(request.Character || request.Char, 'request.Character || request.Char must not be null');
+        isNotNull(request.FileName, 'request.FileName must not be null');
+        isNotNull(request.Line, 'request.Line must not be null');
+        isAbove(request.Line, this._lowestIndexValue - 1, `request.Line must be greater than or equal to ${this._lowestIndexValue}`);
+        isNotNull(request.Column, 'request.Column must not be null');
+        isAbove(request.Column, this._lowestIndexValue - 1, `request.Column must be greater than or equal to ${this._lowestIndexValue}`);
+        isNotNull(request.Character || request.Char, 'request.Character || request.Char must not be null');
 
         return this.request<OmniSharp.Models.FormatAfterKeystrokeRequest, OmniSharp.Models.FormatRangeResponse>("formatAfterKeystroke", request, options);
     }
@@ -133,15 +147,15 @@ export class ClientV1 extends ClientBase implements OmniSharp.Api.V1, OmniSharp.
     }
 
     public formatRange(request: OmniSharp.Models.FormatRangeRequest, options?: OmniSharp.RequestOptions) {
-        assert.isNotNull(request.FileName, 'request.FileName must not be null');
-        assert.isNotNull(request.Line, 'request.Line must not be null');
-        (<any>assert).isAbove(request.Line, this._lowestIndexValue - 1, `request.Line must be greater than or equal to ${this._lowestIndexValue}`);
-        assert.isNotNull(request.Column, 'request.Column must not be null');
-        (<any>assert).isAbove(request.Column, this._lowestIndexValue - 1, `request.Column must be greater than or equal to ${this._lowestIndexValue}`);
-        assert.isNotNull(request.EndLine, 'request.EndLine must not be null');
-        (<any>assert).isAbove(request.EndLine, this._lowestIndexValue - 1, `request.EndLine must be greater than or equal to ${this._lowestIndexValue}`);
-        assert.isNotNull(request.EndColumn, 'request.EndColumn must not be null');
-        (<any>assert).isAbove(request.EndColumn, this._lowestIndexValue - 1, `request.EndColumn must be greater than or equal to ${this._lowestIndexValue}`);
+        isNotNull(request.FileName, 'request.FileName must not be null');
+        isNotNull(request.Line, 'request.Line must not be null');
+        isAbove(request.Line, this._lowestIndexValue - 1, `request.Line must be greater than or equal to ${this._lowestIndexValue}`);
+        isNotNull(request.Column, 'request.Column must not be null');
+        isAbove(request.Column, this._lowestIndexValue - 1, `request.Column must be greater than or equal to ${this._lowestIndexValue}`);
+        isNotNull(request.EndLine, 'request.EndLine must not be null');
+        isAbove(request.EndLine, this._lowestIndexValue - 1, `request.EndLine must be greater than or equal to ${this._lowestIndexValue}`);
+        isNotNull(request.EndColumn, 'request.EndColumn must not be null');
+        isAbove(request.EndColumn, this._lowestIndexValue - 1, `request.EndColumn must be greater than or equal to ${this._lowestIndexValue}`);
 
         return this.request<OmniSharp.Models.FormatRangeRequest, OmniSharp.Models.FormatRangeResponse>("formatRange", request, options);
     }
@@ -151,7 +165,7 @@ export class ClientV1 extends ClientBase implements OmniSharp.Api.V1, OmniSharp.
     }
 
     public codeformat(request: OmniSharp.Models.Request, options?: OmniSharp.RequestOptions) {
-        assert.isNotNull(request.FileName, 'request.FileName must not be null');
+        isNotNull(request.FileName, 'request.FileName must not be null');
 
         return this.request<OmniSharp.Models.Request, OmniSharp.Models.CodeFormatResponse>("codeformat", request, options);
     }
@@ -161,12 +175,12 @@ export class ClientV1 extends ClientBase implements OmniSharp.Api.V1, OmniSharp.
     }
 
     public autocomplete(request: OmniSharp.Models.AutoCompleteRequest, options?: OmniSharp.RequestOptions) {
-        assert.isNotNull(request.FileName, 'request.FileName must not be null');
-        assert.isNotNull(request.Line, 'request.Line must not be null');
-        (<any>assert).isAbove(request.Line, this._lowestIndexValue - 1, `request.Line must be greater than or equal to ${this._lowestIndexValue}`);
-        assert.isNotNull(request.Column, 'request.Column must not be null');
-        (<any>assert).isAbove(request.Column, this._lowestIndexValue - 1, `request.Column must be greater than or equal to ${this._lowestIndexValue}`);
-        assert.isNotNull(request.WordToComplete, 'request.WordToComplete must not be null');
+        isNotNull(request.FileName, 'request.FileName must not be null');
+        isNotNull(request.Line, 'request.Line must not be null');
+        isAbove(request.Line, this._lowestIndexValue - 1, `request.Line must be greater than or equal to ${this._lowestIndexValue}`);
+        isNotNull(request.Column, 'request.Column must not be null');
+        isAbove(request.Column, this._lowestIndexValue - 1, `request.Column must be greater than or equal to ${this._lowestIndexValue}`);
+        isNotNull(request.WordToComplete, 'request.WordToComplete must not be null');
 
         return this.request<OmniSharp.Models.AutoCompleteRequest, OmniSharp.Models.AutoCompleteResponse[]>("autocomplete", request, options);
     }
@@ -176,11 +190,11 @@ export class ClientV1 extends ClientBase implements OmniSharp.Api.V1, OmniSharp.
     }
 
     public findimplementations(request: OmniSharp.Models.Request, options?: OmniSharp.RequestOptions) {
-        assert.isNotNull(request.FileName, 'request.FileName must not be null');
-        assert.isNotNull(request.Line, 'request.Line must not be null');
-        (<any>assert).isAbove(request.Line, this._lowestIndexValue - 1, `request.Line must be greater than or equal to ${this._lowestIndexValue}`);
-        assert.isNotNull(request.Column, 'request.Column must not be null');
-        (<any>assert).isAbove(request.Column, this._lowestIndexValue - 1, `request.Column must be greater than or equal to ${this._lowestIndexValue}`);
+        isNotNull(request.FileName, 'request.FileName must not be null');
+        isNotNull(request.Line, 'request.Line must not be null');
+        isAbove(request.Line, this._lowestIndexValue - 1, `request.Line must be greater than or equal to ${this._lowestIndexValue}`);
+        isNotNull(request.Column, 'request.Column must not be null');
+        isAbove(request.Column, this._lowestIndexValue - 1, `request.Column must be greater than or equal to ${this._lowestIndexValue}`);
 
         return this.request<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>("findimplementations", request, options);
     }
@@ -192,7 +206,7 @@ export class ClientV1 extends ClientBase implements OmniSharp.Api.V1, OmniSharp.
     public findsymbols(request: OmniSharp.Models.FindSymbolsRequest, options?: OmniSharp.RequestOptions) {
         // This isn't technically required... but looks like the server will get all symbols then...
         // Not sure if that is useful to us or not.
-        assert.isNotNull(request.Filter, 'request.Filter must not be null');
+        isNotNull(request.Filter, 'request.Filter must not be null');
 
         return this.request<OmniSharp.Models.FindSymbolsRequest, OmniSharp.Models.QuickFixResponse>("findsymbols", request, options);
     }
@@ -202,11 +216,11 @@ export class ClientV1 extends ClientBase implements OmniSharp.Api.V1, OmniSharp.
     }
 
     public findusages(request: OmniSharp.Models.FindUsagesRequest, options?: OmniSharp.RequestOptions) {
-        assert.isNotNull(request.FileName, 'request.FileName must not be null');
-        assert.isNotNull(request.Line, 'request.Line must not be null');
-        (<any>assert).isAbove(request.Line, this._lowestIndexValue - 1, `request.Line must be greater than or equal to ${this._lowestIndexValue}`);
-        assert.isNotNull(request.Column, 'request.Column must not be null');
-        (<any>assert).isAbove(request.Column, this._lowestIndexValue - 1, `request.Column must be greater than or equal to ${this._lowestIndexValue}`);
+        isNotNull(request.FileName, 'request.FileName must not be null');
+        isNotNull(request.Line, 'request.Line must not be null');
+        isAbove(request.Line, this._lowestIndexValue - 1, `request.Line must be greater than or equal to ${this._lowestIndexValue}`);
+        isNotNull(request.Column, 'request.Column must not be null');
+        isAbove(request.Column, this._lowestIndexValue - 1, `request.Column must be greater than or equal to ${this._lowestIndexValue}`);
 
         return this.request<OmniSharp.Models.FindUsagesRequest, OmniSharp.Models.QuickFixResponse>("findusages", request, options);
     }
@@ -215,12 +229,21 @@ export class ClientV1 extends ClientBase implements OmniSharp.Api.V1, OmniSharp.
         return this.findusages(request, options).toPromise();
     }
 
+<<<<<<< HEAD
     public gotodefinition(request: OmniSharp.Models.GotoDefinitionRequest, options?: OmniSharp.RequestOptions) {
         assert.isNotNull(request.FileName, 'request.FileName must not be null');
         assert.isNotNull(request.Line, 'request.Line must not be null');
         (<any>assert).isAbove(request.Line, this._lowestIndexValue - 1, `request.Line must be greater than or equal to ${this._lowestIndexValue}`);
         assert.isNotNull(request.Column, 'request.Column must not be null');
         (<any>assert).isAbove(request.Column, this._lowestIndexValue - 1, `request.Column must be greater than or equal to ${this._lowestIndexValue}`);
+=======
+    public gotodefinition(request: OmniSharp.Models.Request, options?: OmniSharp.RequestOptions) {
+        isNotNull(request.FileName, 'request.FileName must not be null');
+        isNotNull(request.Line, 'request.Line must not be null');
+        isAbove(request.Line, this._lowestIndexValue - 1, `request.Line must be greater than or equal to ${this._lowestIndexValue}`);
+        isNotNull(request.Column, 'request.Column must not be null');
+        isAbove(request.Column, this._lowestIndexValue - 1, `request.Column must be greater than or equal to ${this._lowestIndexValue}`);
+>>>>>>> Drop chai as a dep, and moved to devDeps
 
         return this.request<OmniSharp.Models.Request, any>("gotodefinition", request, options);
     }
@@ -230,11 +253,11 @@ export class ClientV1 extends ClientBase implements OmniSharp.Api.V1, OmniSharp.
     }
 
     public navigateup(request: OmniSharp.Models.Request, options?: OmniSharp.RequestOptions) {
-        assert.isNotNull(request.FileName, 'request.FileName must not be null');
-        assert.isNotNull(request.Line, 'request.Line must not be null');
-        (<any>assert).isAbove(request.Line, this._lowestIndexValue - 1, `request.Line must be greater than or equal to ${this._lowestIndexValue}`);
-        assert.isNotNull(request.Column, 'request.Column must not be null');
-        (<any>assert).isAbove(request.Column, this._lowestIndexValue - 1, `request.Column must be greater than or equal to ${this._lowestIndexValue}`);
+        isNotNull(request.FileName, 'request.FileName must not be null');
+        isNotNull(request.Line, 'request.Line must not be null');
+        isAbove(request.Line, this._lowestIndexValue - 1, `request.Line must be greater than or equal to ${this._lowestIndexValue}`);
+        isNotNull(request.Column, 'request.Column must not be null');
+        isAbove(request.Column, this._lowestIndexValue - 1, `request.Column must be greater than or equal to ${this._lowestIndexValue}`);
 
         return this.request<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>("navigateup", request, options);
     }
@@ -252,7 +275,7 @@ export class ClientV1 extends ClientBase implements OmniSharp.Api.V1, OmniSharp.
     }
 
     public gotoregion(request: OmniSharp.Models.Request, options?: OmniSharp.RequestOptions) {
-        assert.isNotNull(request.FileName, 'request.FileName must not be null');
+        isNotNull(request.FileName, 'request.FileName must not be null');
 
         return this.request<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>("gotoregion", request, options);
     }
@@ -262,7 +285,7 @@ export class ClientV1 extends ClientBase implements OmniSharp.Api.V1, OmniSharp.
     }
 
     public highlight(request: OmniSharp.Models.HighlightRequest, options?: OmniSharp.RequestOptions) {
-        assert.isNotNull(request.FileName, 'request.FileName must not be null');
+        isNotNull(request.FileName, 'request.FileName must not be null');
         return this.request<OmniSharp.Models.HighlightRequest, OmniSharp.Models.HighlightResponse>("highlight", request, options);
     }
 
@@ -281,11 +304,11 @@ export class ClientV1 extends ClientBase implements OmniSharp.Api.V1, OmniSharp.
     }
 
     public navigatedown(request: OmniSharp.Models.Request, options?: OmniSharp.RequestOptions) {
-        assert.isNotNull(request.FileName, 'request.FileName must not be null');
-        assert.isNotNull(request.Line, 'request.Line must not be null');
-        (<any>assert).isAbove(request.Line, this._lowestIndexValue - 1, `request.Line must be greater than or equal to ${this._lowestIndexValue}`);
-        assert.isNotNull(request.Column, 'request.Column must not be null');
-        (<any>assert).isAbove(request.Column, this._lowestIndexValue - 1, `request.Column must be greater than or equal to ${this._lowestIndexValue}`);
+        isNotNull(request.FileName, 'request.FileName must not be null');
+        isNotNull(request.Line, 'request.Line must not be null');
+        isAbove(request.Line, this._lowestIndexValue - 1, `request.Line must be greater than or equal to ${this._lowestIndexValue}`);
+        isNotNull(request.Column, 'request.Column must not be null');
+        isAbove(request.Column, this._lowestIndexValue - 1, `request.Column must be greater than or equal to ${this._lowestIndexValue}`);
 
         return this.request<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>("navigatedown", request, options);
     }
@@ -296,8 +319,8 @@ export class ClientV1 extends ClientBase implements OmniSharp.Api.V1, OmniSharp.
 
     // 'packagesearch'
     public packagesearch(request: OmniSharp.Models.PackageSearchRequest, options?: OmniSharp.RequestOptions): Rx.Observable<OmniSharp.Models.PackageSearchResponse> {
-        assert.isNotNull(request.ProjectPath, 'request.ProjectPath must not be null');
-        assert.isNotNull(request.Search, 'request.Search must not be null');
+        isNotNull(request.ProjectPath, 'request.ProjectPath must not be null');
+        isNotNull(request.Search, 'request.Search must not be null');
 
         return this.request<OmniSharp.Models.PackageSearchRequest, OmniSharp.Models.PackageSearchResponse>("packagesearch", request, options);
     }
@@ -308,7 +331,7 @@ export class ClientV1 extends ClientBase implements OmniSharp.Api.V1, OmniSharp.
 
     // 'packagesource'
     public packagesource(request: OmniSharp.Models.PackageSourceRequest, options?: OmniSharp.RequestOptions): Rx.Observable<OmniSharp.Models.PackageSourceResponse> {
-        assert.isNotNull(request.ProjectPath, 'request.ProjectPath must not be null');
+        isNotNull(request.ProjectPath, 'request.ProjectPath must not be null');
 
         return this.request<OmniSharp.Models.PackageSourceRequest, OmniSharp.Models.PackageSourceResponse>("packagesource", request, options);
     }
@@ -319,8 +342,8 @@ export class ClientV1 extends ClientBase implements OmniSharp.Api.V1, OmniSharp.
 
     // 'packageversion'
     public packageversion(request: OmniSharp.Models.PackageVersionRequest, options?: OmniSharp.RequestOptions): Rx.Observable<OmniSharp.Models.PackageVersionResponse> {
-        assert.isNotNull(request.ProjectPath, 'request.ProjectPath must not be null');
-        assert.isNotNull(request.Id, 'request.Id must not be null');
+        isNotNull(request.ProjectPath, 'request.ProjectPath must not be null');
+        isNotNull(request.Id, 'request.Id must not be null');
 
         return this.request<OmniSharp.Models.PackageVersionRequest, OmniSharp.Models.PackageVersionResponse>("packageversion", request, options);
     }
@@ -330,12 +353,12 @@ export class ClientV1 extends ClientBase implements OmniSharp.Api.V1, OmniSharp.
     }
 
     public rename(request: OmniSharp.Models.RenameRequest, options?: OmniSharp.RequestOptions) {
-        assert.isNotNull(request.FileName, 'request.FileName must not be null');
-        assert.isNotNull(request.Line, 'request.Line must not be null');
-        (<any>assert).isAbove(request.Line, this._lowestIndexValue - 1, `request.Line must be greater than or equal to ${this._lowestIndexValue}`);
-        assert.isNotNull(request.Column, 'request.Column must not be null');
-        (<any>assert).isAbove(request.Column, this._lowestIndexValue - 1, `request.Column must be greater than or equal to ${this._lowestIndexValue}`);
-        assert.isNotNull(request.RenameTo, 'request.RenameTo must not be null');
+        isNotNull(request.FileName, 'request.FileName must not be null');
+        isNotNull(request.Line, 'request.Line must not be null');
+        isAbove(request.Line, this._lowestIndexValue - 1, `request.Line must be greater than or equal to ${this._lowestIndexValue}`);
+        isNotNull(request.Column, 'request.Column must not be null');
+        isAbove(request.Column, this._lowestIndexValue - 1, `request.Column must be greater than or equal to ${this._lowestIndexValue}`);
+        isNotNull(request.RenameTo, 'request.RenameTo must not be null');
 
         return this.request<OmniSharp.Models.RenameRequest, OmniSharp.Models.RenameResponse>("rename", request, options);
     }
@@ -345,11 +368,11 @@ export class ClientV1 extends ClientBase implements OmniSharp.Api.V1, OmniSharp.
     }
 
     public signatureHelp(request: OmniSharp.Models.Request, options?: OmniSharp.RequestOptions) {
-        assert.isNotNull(request.FileName, 'request.FileName must not be null');
-        assert.isNotNull(request.Line, 'request.Line must not be null');
-        (<any>assert).isAbove(request.Line, this._lowestIndexValue - 1, `request.Line must be greater than or equal to ${this._lowestIndexValue}`);
-        assert.isNotNull(request.Column, 'request.Column must not be null');
-        (<any>assert).isAbove(request.Column, this._lowestIndexValue - 1, `request.Column must be greater than or equal to ${this._lowestIndexValue}`);
+        isNotNull(request.FileName, 'request.FileName must not be null');
+        isNotNull(request.Line, 'request.Line must not be null');
+        isAbove(request.Line, this._lowestIndexValue - 1, `request.Line must be greater than or equal to ${this._lowestIndexValue}`);
+        isNotNull(request.Column, 'request.Column must not be null');
+        isAbove(request.Column, this._lowestIndexValue - 1, `request.Column must be greater than or equal to ${this._lowestIndexValue}`);
 
         return this.request<OmniSharp.Models.Request, OmniSharp.Models.SignatureHelp>("signatureHelp", request, options);
     }
@@ -375,7 +398,7 @@ export class ClientV1 extends ClientBase implements OmniSharp.Api.V1, OmniSharp.
     }
 
     public currentfilemembersastree(request: OmniSharp.Models.Request, options?: OmniSharp.RequestOptions) {
-        assert.isNotNull(request.FileName, 'request.FileName must not be null');
+        isNotNull(request.FileName, 'request.FileName must not be null');
 
         return this.request<OmniSharp.Models.Request, any>("currentfilemembersastree", request, options);
     }
@@ -385,7 +408,7 @@ export class ClientV1 extends ClientBase implements OmniSharp.Api.V1, OmniSharp.
     }
 
     public currentfilemembersasflat(request: OmniSharp.Models.Request, options?: OmniSharp.RequestOptions) {
-        assert.isNotNull(request.FileName, 'request.FileName must not be null');
+        isNotNull(request.FileName, 'request.FileName must not be null');
 
         return this.request<OmniSharp.Models.Request, any>("currentfilemembersasflat", request, options);
     }
@@ -395,11 +418,11 @@ export class ClientV1 extends ClientBase implements OmniSharp.Api.V1, OmniSharp.
     }
 
     public typelookup(request: OmniSharp.Models.TypeLookupRequest, options?: OmniSharp.RequestOptions) {
-        assert.isNotNull(request.FileName, 'request.FileName must not be null');
-        assert.isNotNull(request.Line, 'request.Line must not be null');
-        (<any>assert).isAbove(request.Line, this._lowestIndexValue - 1, `request.Line must be greater than or equal to ${this._lowestIndexValue}`);
-        assert.isNotNull(request.Column, 'request.Column must not be null');
-        (<any>assert).isAbove(request.Column, this._lowestIndexValue - 1, `request.Column must be greater than or equal to ${this._lowestIndexValue}`);
+        isNotNull(request.FileName, 'request.FileName must not be null');
+        isNotNull(request.Line, 'request.Line must not be null');
+        isAbove(request.Line, this._lowestIndexValue - 1, `request.Line must be greater than or equal to ${this._lowestIndexValue}`);
+        isNotNull(request.Column, 'request.Column must not be null');
+        isAbove(request.Column, this._lowestIndexValue - 1, `request.Column must be greater than or equal to ${this._lowestIndexValue}`);
 
         return this.request<OmniSharp.Models.TypeLookupRequest, OmniSharp.Models.TypeLookupResponse>("typelookup", request, options);
     }
@@ -409,7 +432,7 @@ export class ClientV1 extends ClientBase implements OmniSharp.Api.V1, OmniSharp.
     }
 
     public filesChanged(request: OmniSharp.Models.Request[], options?: OmniSharp.RequestOptions) {
-        assert.isNotNull(request, 'request must not be null');
+        isNotNull(request, 'request must not be null');
         return this.request<OmniSharp.Models.Request[], boolean>("filesChanged", request, options);
     }
 
@@ -426,7 +449,7 @@ export class ClientV1 extends ClientBase implements OmniSharp.Api.V1, OmniSharp.
     }
 
     public project(request: OmniSharp.Models.Request, options?: OmniSharp.RequestOptions) {
-        assert.isNotNull(request.FileName, 'request.FileName must not be null');
+        isNotNull(request.FileName, 'request.FileName must not be null');
 
         return this.request<OmniSharp.Models.Request, OmniSharp.Models.ProjectInformationResponse>("project", request, options);
     }
@@ -436,11 +459,11 @@ export class ClientV1 extends ClientBase implements OmniSharp.Api.V1, OmniSharp.
     }
 
     public getcodeactions(request: OmniSharp.Models.CodeActionRequest, options?: OmniSharp.RequestOptions) {
-        assert.isNotNull(request.FileName, 'request.FileName must not be null');
-        assert.isNotNull(request.Line, 'request.Line must not be null');
-        (<any>assert).isAbove(request.Line, this._lowestIndexValue - 1, `request.Line must be greater than or equal to ${this._lowestIndexValue}`);
-        assert.isNotNull(request.Column, 'request.Column must not be null');
-        (<any>assert).isAbove(request.Column, this._lowestIndexValue - 1, `request.Column must be greater than or equal to ${this._lowestIndexValue}`);
+        isNotNull(request.FileName, 'request.FileName must not be null');
+        isNotNull(request.Line, 'request.Line must not be null');
+        isAbove(request.Line, this._lowestIndexValue - 1, `request.Line must be greater than or equal to ${this._lowestIndexValue}`);
+        isNotNull(request.Column, 'request.Column must not be null');
+        isAbove(request.Column, this._lowestIndexValue - 1, `request.Column must be greater than or equal to ${this._lowestIndexValue}`);
 
         return this.request<OmniSharp.Models.CodeActionRequest, OmniSharp.Models.GetCodeActionsResponse>("getcodeactions", request, options);
     }
@@ -450,13 +473,13 @@ export class ClientV1 extends ClientBase implements OmniSharp.Api.V1, OmniSharp.
     }
 
     public runcodeaction(request: OmniSharp.Models.CodeActionRequest, options?: OmniSharp.RequestOptions) {
-        assert.isNotNull(request.FileName, 'request.FileName must not be null');
-        assert.isNotNull(request.Line, 'request.Line must not be null');
-        (<any>assert).isAbove(request.Line, this._lowestIndexValue - 1, `request.Line must be greater than or equal to ${this._lowestIndexValue}`);
-        assert.isNotNull(request.Column, 'request.Column must not be null');
-        (<any>assert).isAbove(request.Column, this._lowestIndexValue - 1, `request.Column must be greater than or equal to ${this._lowestIndexValue}`);
-        assert.isNotNull(request.CodeAction, 'request.CodeAction must not be null');
-        (<any>assert).isAbove(request.CodeAction, this._lowestIndexValue - 1, `request.CodeAction must be greater than or equal to ${this._lowestIndexValue}`);
+        isNotNull(request.FileName, 'request.FileName must not be null');
+        isNotNull(request.Line, 'request.Line must not be null');
+        isAbove(request.Line, this._lowestIndexValue - 1, `request.Line must be greater than or equal to ${this._lowestIndexValue}`);
+        isNotNull(request.Column, 'request.Column must not be null');
+        isAbove(request.Column, this._lowestIndexValue - 1, `request.Column must be greater than or equal to ${this._lowestIndexValue}`);
+        isNotNull(request.CodeAction, 'request.CodeAction must not be null');
+        isAbove(request.CodeAction, this._lowestIndexValue - 1, `request.CodeAction must be greater than or equal to ${this._lowestIndexValue}`);
 
         return this.request<OmniSharp.Models.CodeActionRequest, OmniSharp.Models.RunCodeActionResponse>("runcodeaction", request, options);
     }
@@ -466,13 +489,13 @@ export class ClientV1 extends ClientBase implements OmniSharp.Api.V1, OmniSharp.
     }
 
     public gettestcontext(request: OmniSharp.Models.TestCommandRequest, options?: OmniSharp.RequestOptions) {
-        assert.isNotNull(request.FileName, 'request.FileName must not be null');
-        assert.isNotNull(request.Line, 'request.Line must not be null');
-        (<any>assert).isAbove(request.Line, this._lowestIndexValue - 1, `request.Line must be greater than or equal to ${this._lowestIndexValue}`);
-        assert.isNotNull(request.Column, 'request.Column must not be null');
-        (<any>assert).isAbove(request.Column, this._lowestIndexValue - 1, `request.Column must be greater than or equal to ${this._lowestIndexValue}`);
-        assert.isNotNull(request.Type, 'request.Type must not be null');
-        (<any>assert).isAbove(request.Type, this._lowestIndexValue - 1, `request.Type must be greater than or equal to ${this._lowestIndexValue}`);
+        isNotNull(request.FileName, 'request.FileName must not be null');
+        isNotNull(request.Line, 'request.Line must not be null');
+        isAbove(request.Line, this._lowestIndexValue - 1, `request.Line must be greater than or equal to ${this._lowestIndexValue}`);
+        isNotNull(request.Column, 'request.Column must not be null');
+        isAbove(request.Column, this._lowestIndexValue - 1, `request.Column must be greater than or equal to ${this._lowestIndexValue}`);
+        isNotNull(request.Type, 'request.Type must not be null');
+        isAbove(request.Type, this._lowestIndexValue - 1, `request.Type must be greater than or equal to ${this._lowestIndexValue}`);
 
         return this.request<OmniSharp.Models.TestCommandRequest, OmniSharp.Models.GetTestCommandResponse>("gettestcontext", request, options);
     }

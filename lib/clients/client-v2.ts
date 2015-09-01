@@ -1,8 +1,22 @@
 import {ClientBase} from "./client-base";
 import {ClientV1} from "./client-v1";
-import {assert} from "chai";
 import {OmnisharpClientOptions} from "../interfaces";
 import {defaults} from "lodash";
+
+function isNotNull<T>(value: T, errorText: string) {
+    if (value === null || value === undefined) {
+        throw new Error(errorText);
+    }
+}
+
+function isAbove(value: number, minValue: number, errorText: string) {
+    if (value === null || value === undefined) {
+        return;
+    }
+    if (value <= minValue) {
+        throw new Error(errorText);
+    }
+}
 
 export class ClientV2 extends ClientBase implements OmniSharp.Api.V2, OmniSharp.Events.V2 {
     public v1: ClientV1;
@@ -86,21 +100,21 @@ export class ClientV2 extends ClientBase implements OmniSharp.Api.V2, OmniSharp.
     }
 
     public getcodeactions(request: OmniSharp.Models.V2.GetCodeActionsRequest, options?: OmniSharp.RequestOptions): Rx.Observable<OmniSharp.Models.V2.GetCodeActionsResponse> {
-        assert.isNotNull(request.FileName, 'request.FileName must not be null');
+        isNotNull(request.FileName, 'request.FileName must not be null');
         if (!request.Selection) {
-            assert.isNotNull(request.Line, 'request.Line must not be null');
-            (<any>assert).isAbove(request.Line, this._lowestIndexValue - 1, `request.Line must be greater than or equal to ${this._lowestIndexValue}`);
-            assert.isNotNull(request.Column, 'request.Column must not be null');
-            (<any>assert).isAbove(request.Column, this._lowestIndexValue - 1, `request.Column must be greater than or equal to ${this._lowestIndexValue}`);
+            isNotNull(request.Line, 'request.Line must not be null');
+            isAbove(request.Line, this._lowestIndexValue - 1, `request.Line must be greater than or equal to ${this._lowestIndexValue}`);
+            isNotNull(request.Column, 'request.Column must not be null');
+            isAbove(request.Column, this._lowestIndexValue - 1, `request.Column must be greater than or equal to ${this._lowestIndexValue}`);
         } else {
-            assert.isNotNull(request.Selection.Start.Line, 'request.Selection.Start.Line must not be null');
-            (<any>assert).isAbove(request.Selection.Start.Line, this._lowestIndexValue - 1, `request.Selection.Start.Line must be greater than or equal to ${this._lowestIndexValue}`);
-            assert.isNotNull(request.Selection.Start.Column, 'request.Selection.Start.Column must not be null');
-            (<any>assert).isAbove(request.Selection.Start.Column, this._lowestIndexValue - 1, `request.Selection.Start.Column must be greater than or equal to ${this._lowestIndexValue}`);
-            assert.isNotNull(request.Selection.End.Line, 'request.Selection.End.Line must not be null');
-            (<any>assert).isAbove(request.Selection.End.Line, this._lowestIndexValue - 1, `request.Selection.End.Line must be greater than or equal to ${this._lowestIndexValue}`);
-            assert.isNotNull(request.Selection.End.Column, 'request.Selection.End.Column must not be null');
-            (<any>assert).isAbove(request.Selection.End.Column, this._lowestIndexValue - 1, `request.Selection.End.Column must be greater than or equal to ${this._lowestIndexValue}`);
+            isNotNull(request.Selection.Start.Line, 'request.Selection.Start.Line must not be null');
+            isAbove(request.Selection.Start.Line, this._lowestIndexValue - 1, `request.Selection.Start.Line must be greater than or equal to ${this._lowestIndexValue}`);
+            isNotNull(request.Selection.Start.Column, 'request.Selection.Start.Column must not be null');
+            isAbove(request.Selection.Start.Column, this._lowestIndexValue - 1, `request.Selection.Start.Column must be greater than or equal to ${this._lowestIndexValue}`);
+            isNotNull(request.Selection.End.Line, 'request.Selection.End.Line must not be null');
+            isAbove(request.Selection.End.Line, this._lowestIndexValue - 1, `request.Selection.End.Line must be greater than or equal to ${this._lowestIndexValue}`);
+            isNotNull(request.Selection.End.Column, 'request.Selection.End.Column must not be null');
+            isAbove(request.Selection.End.Column, this._lowestIndexValue - 1, `request.Selection.End.Column must be greater than or equal to ${this._lowestIndexValue}`);
         }
 
         return this.request<OmniSharp.Models.V2.GetCodeActionsRequest, OmniSharp.Models.V2.GetCodeActionsResponse>("v2/getcodeactions", request, options);
@@ -111,22 +125,22 @@ export class ClientV2 extends ClientBase implements OmniSharp.Api.V2, OmniSharp.
     }
 
     public runcodeaction(request: OmniSharp.Models.V2.RunCodeActionRequest, options?: OmniSharp.RequestOptions): Rx.Observable<OmniSharp.Models.V2.RunCodeActionResponse> {
-        assert.isNotNull(request.FileName, 'request.FileName must not be null');
-        assert.isNotNull(request.Identifier, 'request.Identifier must not be null');
+        isNotNull(request.FileName, 'request.FileName must not be null');
+        isNotNull(request.Identifier, 'request.Identifier must not be null');
         if (!request.Selection) {
-            assert.isNotNull(request.Line, 'request.Line must not be null');
-            (<any>assert).isAbove(request.Line, this._lowestIndexValue - 1, `request.Line must be greater than or equal to ${this._lowestIndexValue}`);
-            assert.isNotNull(request.Column, 'request.Column must not be null');
-            (<any>assert).isAbove(request.Column, this._lowestIndexValue - 1, `request.Column must be greater than or equal to ${this._lowestIndexValue}`);
+            isNotNull(request.Line, 'request.Line must not be null');
+            isAbove(request.Line, this._lowestIndexValue - 1, `request.Line must be greater than or equal to ${this._lowestIndexValue}`);
+            isNotNull(request.Column, 'request.Column must not be null');
+            isAbove(request.Column, this._lowestIndexValue - 1, `request.Column must be greater than or equal to ${this._lowestIndexValue}`);
         } else {
-            assert.isNotNull(request.Selection.Start.Line, 'request.Selection.Start.Line must not be null');
-            (<any>assert).isAbove(request.Selection.Start.Line, this._lowestIndexValue - 1, `request.Selection.Start.Line must be greater than or equal to ${this._lowestIndexValue}`);
-            assert.isNotNull(request.Selection.Start.Column, 'request.Selection.Start.Column must not be null');
-            (<any>assert).isAbove(request.Selection.Start.Column, this._lowestIndexValue - 1, `request.Selection.Start.Column must be greater than or equal to ${this._lowestIndexValue}`);
-            assert.isNotNull(request.Selection.End.Line, 'request.Selection.End.Line must not be null');
-            (<any>assert).isAbove(request.Selection.End.Line, this._lowestIndexValue - 1, `request.Selection.End.Line must be greater than or equal to ${this._lowestIndexValue}`);
-            assert.isNotNull(request.Selection.End.Column, 'request.Selection.End.Column must not be null');
-            (<any>assert).isAbove(request.Selection.End.Column, this._lowestIndexValue - 1, `request.Selection.End.Column must be greater than or equal to ${this._lowestIndexValue}`);
+            isNotNull(request.Selection.Start.Line, 'request.Selection.Start.Line must not be null');
+            isAbove(request.Selection.Start.Line, this._lowestIndexValue - 1, `request.Selection.Start.Line must be greater than or equal to ${this._lowestIndexValue}`);
+            isNotNull(request.Selection.Start.Column, 'request.Selection.Start.Column must not be null');
+            isAbove(request.Selection.Start.Column, this._lowestIndexValue - 1, `request.Selection.Start.Column must be greater than or equal to ${this._lowestIndexValue}`);
+            isNotNull(request.Selection.End.Line, 'request.Selection.End.Line must not be null');
+            isAbove(request.Selection.End.Line, this._lowestIndexValue - 1, `request.Selection.End.Line must be greater than or equal to ${this._lowestIndexValue}`);
+            isNotNull(request.Selection.End.Column, 'request.Selection.End.Column must not be null');
+            isAbove(request.Selection.End.Column, this._lowestIndexValue - 1, `request.Selection.End.Column must be greater than or equal to ${this._lowestIndexValue}`);
         }
 
         return this.request<OmniSharp.Models.V2.RunCodeActionRequest, OmniSharp.Models.V2.RunCodeActionResponse>("v2/runcodeaction", request, options);

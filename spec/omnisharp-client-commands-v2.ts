@@ -1321,6 +1321,7 @@ describe("Commands", function() {
             expect(() => {
                 server.runcodeaction({
                     FileName: '',
+                    Identifier: '',
                     Selection: {
                         Start: {
                             Line: null,
@@ -1338,6 +1339,7 @@ describe("Commands", function() {
             expect(() => {
                 server.runcodeaction({
                     FileName: '',
+                    Identifier: '',
                     Selection: {
                         Start: {
                             Line: -1,
@@ -1355,6 +1357,7 @@ describe("Commands", function() {
             expect(() => {
                 server.runcodeaction({
                     FileName: '',
+                    Identifier: '',
                     Selection: {
                         Start: {
                             Line: 1,
@@ -1372,6 +1375,7 @@ describe("Commands", function() {
             expect(() => {
                 server.runcodeaction({
                     FileName: '',
+                    Identifier: '',
                     Selection: {
                         Start: {
                             Line: 1,
@@ -1389,6 +1393,7 @@ describe("Commands", function() {
             expect(() => {
                 server.runcodeaction({
                     FileName: '',
+                    Identifier: '',
                     Selection: {
                         End: {
                             Line: null,
@@ -1406,6 +1411,7 @@ describe("Commands", function() {
             expect(() => {
                 server.runcodeaction({
                     FileName: '',
+                    Identifier: '',
                     Selection: {
                         End: {
                             Line: -1,
@@ -1423,6 +1429,7 @@ describe("Commands", function() {
             expect(() => {
                 server.runcodeaction({
                     FileName: '',
+                    Identifier: '',
                     Selection: {
                         End: {
                             Line: 1,
@@ -1440,6 +1447,7 @@ describe("Commands", function() {
             expect(() => {
                 server.runcodeaction({
                     FileName: '',
+                    Identifier: '',
                     Selection: {
                         End: {
                             Line: 1,
@@ -1457,6 +1465,7 @@ describe("Commands", function() {
             expect(() => {
                 server.runcodeaction({
                     FileName: '',
+                    Identifier: '',
                     Selection: {
                         End: {
                             Line: 1,
@@ -1466,8 +1475,7 @@ describe("Commands", function() {
                             Line: 1,
                             Column: 1
                         }
-                    },
-                    Identifier: ''
+                    }
                 })
             }).to.not.throw;
         });
