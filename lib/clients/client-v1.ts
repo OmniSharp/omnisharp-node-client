@@ -229,21 +229,12 @@ export class ClientV1 extends ClientBase implements OmniSharp.Api.V1, OmniSharp.
         return this.findusages(request, options).toPromise();
     }
 
-<<<<<<< HEAD
     public gotodefinition(request: OmniSharp.Models.GotoDefinitionRequest, options?: OmniSharp.RequestOptions) {
-        assert.isNotNull(request.FileName, 'request.FileName must not be null');
-        assert.isNotNull(request.Line, 'request.Line must not be null');
-        (<any>assert).isAbove(request.Line, this._lowestIndexValue - 1, `request.Line must be greater than or equal to ${this._lowestIndexValue}`);
-        assert.isNotNull(request.Column, 'request.Column must not be null');
-        (<any>assert).isAbove(request.Column, this._lowestIndexValue - 1, `request.Column must be greater than or equal to ${this._lowestIndexValue}`);
-=======
-    public gotodefinition(request: OmniSharp.Models.Request, options?: OmniSharp.RequestOptions) {
         isNotNull(request.FileName, 'request.FileName must not be null');
         isNotNull(request.Line, 'request.Line must not be null');
         isAbove(request.Line, this._lowestIndexValue - 1, `request.Line must be greater than or equal to ${this._lowestIndexValue}`);
         isNotNull(request.Column, 'request.Column must not be null');
         isAbove(request.Column, this._lowestIndexValue - 1, `request.Column must be greater than or equal to ${this._lowestIndexValue}`);
->>>>>>> Drop chai as a dep, and moved to devDeps
 
         return this.request<OmniSharp.Models.Request, any>("gotodefinition", request, options);
     }
@@ -294,8 +285,9 @@ export class ClientV1 extends ClientBase implements OmniSharp.Api.V1, OmniSharp.
     }
 
     public metadata(request: OmniSharp.Models.MetadataRequest, options?: OmniSharp.RequestOptions) {
-        assert.isNotNull(request.AssemblyName);
-        assert.isNotNull(request.TypeName);
+        isNotNull(request.AssemblyName, 'request.AssemblyName must not be null');
+        isNotNull(request.TypeName, 'request.TypeName must not be null');
+
         return this.request<OmniSharp.Models.MetadataRequest, OmniSharp.Models.MetadataResponse>("metadata", request, options);
     }
 
