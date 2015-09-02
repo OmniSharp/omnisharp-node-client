@@ -1,3 +1,4 @@
+/// <reference path="./tsd.d.ts" />
 import {expect} from 'chai';
 import {Driver, DriverState} from "../lib/enums";
 import {ClientV2 as OmnisharpClient} from "../lib/clients/client-v2";
@@ -456,6 +457,31 @@ describe("Commands", function() {
                     FileName: null
                 })
             }).to.not.throw;
+        });
+    });
+
+    describe("metadata", function() {
+        it("should throw if AssemblyName is null", function() {
+            expect(() => {
+                server.metadata({
+                    AssemblyName: null,
+                    TypeName: '',
+                    Timeout: 0,
+                    ProjectName: '',
+                    VersionNumber: ''
+                })
+            }).to.throw(/must not be null/);
+        });
+        it("should throw if TypeName is null", function() {
+            expect(() => {
+                server.metadata({
+                    AssemblyName: '',
+                    TypeName: null,
+                    Timeout: 0,
+                    ProjectName: '',
+                    VersionNumber: ''
+                })
+            }).to.throw(/must not be null/);
         });
     });
 
@@ -1321,6 +1347,7 @@ describe("Commands", function() {
             expect(() => {
                 server.runcodeaction({
                     FileName: '',
+                    Identifier: '',
                     Selection: {
                         Start: {
                             Line: null,
@@ -1338,6 +1365,7 @@ describe("Commands", function() {
             expect(() => {
                 server.runcodeaction({
                     FileName: '',
+                    Identifier: '',
                     Selection: {
                         Start: {
                             Line: -1,
@@ -1355,6 +1383,7 @@ describe("Commands", function() {
             expect(() => {
                 server.runcodeaction({
                     FileName: '',
+                    Identifier: '',
                     Selection: {
                         Start: {
                             Line: 1,
@@ -1372,6 +1401,7 @@ describe("Commands", function() {
             expect(() => {
                 server.runcodeaction({
                     FileName: '',
+                    Identifier: '',
                     Selection: {
                         Start: {
                             Line: 1,
@@ -1389,6 +1419,7 @@ describe("Commands", function() {
             expect(() => {
                 server.runcodeaction({
                     FileName: '',
+                    Identifier: '',
                     Selection: {
                         End: {
                             Line: null,
@@ -1406,6 +1437,7 @@ describe("Commands", function() {
             expect(() => {
                 server.runcodeaction({
                     FileName: '',
+                    Identifier: '',
                     Selection: {
                         End: {
                             Line: -1,
@@ -1423,6 +1455,7 @@ describe("Commands", function() {
             expect(() => {
                 server.runcodeaction({
                     FileName: '',
+                    Identifier: '',
                     Selection: {
                         End: {
                             Line: 1,
@@ -1440,6 +1473,7 @@ describe("Commands", function() {
             expect(() => {
                 server.runcodeaction({
                     FileName: '',
+                    Identifier: '',
                     Selection: {
                         End: {
                             Line: 1,
@@ -1457,6 +1491,7 @@ describe("Commands", function() {
             expect(() => {
                 server.runcodeaction({
                     FileName: '',
+                    Identifier: '',
                     Selection: {
                         End: {
                             Line: 1,
@@ -1466,8 +1501,7 @@ describe("Commands", function() {
                             Line: 1,
                             Column: 1
                         }
-                    },
-                    Identifier: ''
+                    }
                 })
             }).to.not.throw;
         });

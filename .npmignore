@@ -1,7 +1,8 @@
 .DS_Store
 npm-debug.log
 node_modules
-lib/**/*.js
-spec/**/*.js
+lib/**/*.ts
+!lib/**/*.d.ts
+spec
 NuGet.exe
 vendor

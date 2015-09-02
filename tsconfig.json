@@ -11,6 +11,7 @@
     "compileOnSave": true,
     "filesGlob": [
         "./**/*.ts",
+        "!./*/**/*.d.ts",
         "!./omnisharp-client.d.ts",
         "!./omnisharp-server.d.ts",
         "!./typings/**/*.d.ts",
@@ -30,8 +31,6 @@
         "./lib/drivers/stdio.ts",
         "./lib/drivers/websocket.ts",
         "./lib/enums.ts",
-        "./lib/es6.d.ts",
-        "./lib/interfaces.d.ts",
         "./lib/omnisharp-client.ts",
         "./lib/omnisharp-path.ts",
         "./lib/project-finder.ts",
@@ -43,7 +42,6 @@
         "./spec/omnisharp-client-spec.ts",
         "./spec/project-find-spec.ts",
         "./spec/stdio-spec.ts",
-        "./spec/tsd.d.ts",
         "./tsd.d.ts"
     ]
 }

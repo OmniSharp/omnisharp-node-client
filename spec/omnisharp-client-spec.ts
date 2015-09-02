@@ -1,3 +1,4 @@
+/// <reference path="./tsd.d.ts" />
 import {expect} from 'chai';
 import {Driver, DriverState} from "../lib/enums";
 import {resolve} from "path";
