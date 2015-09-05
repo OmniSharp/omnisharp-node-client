@@ -5,8 +5,10 @@ var merge = require('merge-stream');
 var del = require('del');
 var _ = require('lodash');
 var path = require('path');
+var fs = require('fs');
 var win32 = process.platform === "win32";
 var spawn = require('child_process').spawn;
+var glob = require('glob');
 var gulpPath = path.join(__dirname, 'node_modules/.bin/gulp' + (win32 && '.cmd' || ''));
 var metadata = {
     lib: ['lib/**/*.ts', '!lib/**/*.d.ts'],
@@ -24,6 +26,37 @@ gulp.task('typescript', ['clean'], function() {
     });
 
     return compile;
+});
+
+gulp.task('omnisharp-client-declaration', ['typescript'], function() {
+    return new Promise(function(resolve) {
+        glob('lib/**/*.d.ts', {}, function(e, files) {
+            files = _.filter(files, function(x) { return !(_.endsWith(x, 'es6.d.ts') || _.contains(x, 'drivers/')) });
+            var output = ['/// <reference path="./omnisharp-server.d.ts" />'];
+            var temp = _.template('declare module "${name}" {\n${content}\n}\n');
+            _.each(files, function(file) {
+                var name = 'omnisharp-client/' + file.substring(0, file.length - 5).replace(/lib\//g, '');
+                var dot = name.split('/');
+                dot = dot.slice(0, dot.length - 1).join('/');
+                var dotdot = name.split('/');
+                dotdot = dotdot.slice(0, dotdot.length - 2).join('/');
+                console.log(file);
+                var content = fs.readFileSync(file).toString();
+                content = content.replace(/\.\.\//g, '' + dotdot + '/');
+                content = content.replace(/\.\//g, '' + dot + '/');
+                content = content.replace(/export declare/g, 'export');
+                content = content.replace(/declare module/g, 'export module');
+
+                output.push(temp({name: name, content: content }));
+            });
+
+                output = output.join('\n\n').replace('declare module "omnisharp-client/omnisharp-client"', 'declare module "omnisharp-client"');
+
+            fs.writeFileSync('omnisharp-client.d.ts', output);
+
+            resolve();
+        });
+    });
 });
 
 gulp.task('clean', ['clean:lib', 'clean:spec']);
@@ -78,7 +111,7 @@ gulp.task('file-watch', function() {
     return merge(lib, spec);
 });
 
-gulp.task('npm-prepublish', ['typescript']);
+gulp.task('npm-prepublish', ['typescript', 'omnisharp-client-declaration']);
 
 // The default task (called when you run `gulp` from CLI)
-gulp.task('default', ['typescript']);
+gulp.task('default', ['typescript', 'omnisharp-client-declaration']);
