@@ -6,12 +6,15 @@ import {RequestContext, ResponseContext, CommandContext} from "./contexts";
 import {serverLineNumbers, serverLineNumberArrays} from "./response-handling";
 
 var normalCommands = [
-    'findimplementations', 'findsymbols', 'findusages',
+    'findimplementations', 'findsymbols',/*'findusages',*/
     'gotodefinition', 'gotofile', 'gotoregion', 'typelookup',
-    'navigateup', 'navigatedown', 'projects', 'project'
+    'navigateup', 'navigatedown', 'projects', 'project',
+    'autocomplete', 'getcodeactions', 'highlight', 'runcodeaction',
+    'signatureHelp', 'packagesearch', 'packagesource', 'packageversion',
+    'formatRange','codecheck'
 ];
 var priorityCommands = [
-    'updatebuffer', 'changebuffer', 'filesChanged'
+    'updatebuffer', 'changebuffer', 'filesChanged', 'formatAfterKeystroke'
 ];
 var undeferredCommands = normalCommands.concat(priorityCommands);
 
@@ -81,6 +84,9 @@ export class ClientBase implements IDriver, OmniSharp.Events, Rx.IDisposable {
 
     constructor(private _options: OmnisharpClientOptions = {}) {
         var driver = _options.driver || Driver.Stdio;
+        var statusSampleTime = _options.statusSampleTime || (_options.statusSampleTime = 500);
+        var responseSampleTime = _options.responseSampleTime || (_options.responseSampleTime = 200);
+        var responseConcurrency = _options.responseConcurrency || (_options.responseConcurrency = 4);
 
         _options.additionalArguments = flattenArguments(_options.omnisharp || {});
 
@@ -93,7 +99,7 @@ export class ClientBase implements IDriver, OmniSharp.Events, Rx.IDisposable {
         this._disposable.add(this._errorStream);
         this._disposable.add(this._customEvents);
 
-        this._enqueuedEvents = Observable.merge(this._customEvents, this._driver.events)
+        var ee = Observable.merge(this._customEvents, this._driver.events)
             .map(event => {
                 if (isObject(event.Body)) {
                     Object.freeze(event.Body);
@@ -101,25 +107,37 @@ export class ClientBase implements IDriver, OmniSharp.Events, Rx.IDisposable {
                 return Object.freeze(event);
             });
 
-        this._enqueuedResponses = Observable.merge(
+        this._enqueuedEvents = ee
+            .window(ee.throttle(responseSampleTime), () => Observable.timer(responseSampleTime))
+            .merge(responseConcurrency);
+
+
+        var er = Observable.merge(
             this._responseStream,
             this._driver.commands
-                .map(packet => new ResponseContext(
-                    new RequestContext(this._uniqueId, packet.Command, {}, {}, 'command'), packet.Body)));
+                .map(packet => new ResponseContext(new RequestContext(this._uniqueId, packet.Command, {}, {}, 'command'), packet.Body)));
+
+        this._enqueuedResponses = er
+            .window(er.throttle(responseSampleTime), () => Observable.timer(responseSampleTime))
+            .merge(responseConcurrency);
 
         this._lowestIndexValue = _options.oneBasedIndices ? 1 : 0;
 
-        this._statusStream = Observable.merge(
-            <Observable<any>>this._requestStream,
-            <Observable<any>>this._responseStream
-            )
-            .map(() => <OmnisharpClientStatus> ({
-                state: this._driver.currentState,
-                outgoingRequests: this._driver.outstandingRequests,
-                hasOutgoingRequests: this._driver.outstandingRequests > 0
-            }))
-            .map(Object.freeze)
+        var getStatusValues = () => <OmnisharpClientStatus>({
+            state: this._driver.currentState,
+            outgoingRequests: this._driver.outstandingRequests,
+            hasOutgoingRequests: this._driver.outstandingRequests > 0
+        });
+
+        var status = Observable.merge(<Observable<any>>this._requestStream, <Observable<any>>this._responseStream)
+            .map(() => getStatusValues());
+        var tstatus = status.throttle(statusSampleTime).share();
+
+        this._statusStream = Observable.merge(status, tstatus)
+            .buffer(tstatus, () => Observable.timer(statusSampleTime))
+            .map(x => x.length > 0 ? (x[x.length - 1]) : getStatusValues())
             .distinctUntilChanged()
+            .map(Object.freeze)
             .share();
 
         if (this._options.debug) {
@@ -172,11 +190,15 @@ export class ClientBase implements IDriver, OmniSharp.Events, Rx.IDisposable {
         var deferredQueue = this._requestStream
             .where(z => !some(undeferredCommands, x => x === z.command))
             .pausableBuffered(pauser)
+            .map(x => Observable.just(x))
+            .merge(Math.max(Math.floor(this._options.responseConcurrency / 2), 1))
             .subscribe(request => this.handleResult(request));
 
         // We just pass these operations through as soon as possible
         var normalQueue = this._requestStream
             .where(z => some(normalCommands, x => x === z.command))
+            .map(x => Observable.just(x))
+            .merge(this._options.responseConcurrency)
             .subscribe(request => this.handleResult(request))
 
         // We must wait for these commands
