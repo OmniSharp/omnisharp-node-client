@@ -5,18 +5,56 @@ import {Driver, DriverState} from "../enums";
 import {RequestContext, ResponseContext, CommandContext} from "./contexts";
 import {serverLineNumbers, serverLineNumberArrays} from "./response-handling";
 
-var normalCommands = [
-    'findimplementations', 'findsymbols',/*'findusages',*/
-    'gotodefinition', 'gotofile', 'gotoregion', 'typelookup',
-    'navigateup', 'navigatedown', 'projects', 'project',
-    'autocomplete', 'getcodeactions', 'highlight', 'runcodeaction',
-    'signatureHelp', 'packagesearch', 'packagesource', 'packageversion',
-    'formatRange','codecheck'
-];
-var priorityCommands = [
-    'updatebuffer', 'changebuffer', 'filesChanged', 'formatAfterKeystroke'
-];
-var undeferredCommands = normalCommands.concat(priorityCommands);
+var {isPriorityCommand, isNormalCommand, isDeferredCommand} = (function() {
+    var normalCommands = [
+        'findimplementations', 'findsymbols', 'findusages',
+        'gotodefinition', 'typelookup',
+        'navigateup', 'navigatedown',
+        'autocomplete', 'getcodeactions', 'highlight', 'runcodeaction',
+        'autocomplete', 'signatureHelp'
+    ];
+    var priorityCommands = [
+        'updatebuffer', 'changebuffer', 'filesChanged', 'formatAfterKeystroke'
+    ];
+
+    var prioritySet = new Set<string>();
+    var normalSet = new Set<string>();
+    var deferredSet = new Set<string>();
+    var undeferredSet = new Set<string>();
+
+    each(normalCommands, x => {
+        normalSet.add(x);
+        undeferredSet.add(x);
+    });
+
+    each(priorityCommands, x => {
+        prioritySet.add(x);
+        undeferredSet.add(x);
+    });
+
+    var isPriorityCommand = (request: RequestContext<any>) => prioritySet.has(request.command);
+    var isNormalCommand = (request: RequestContext<any>) => normalSet.has(request.command);
+
+    function isDeferredCommand(request: RequestContext<any>) {
+        if (request.silent && !isPriorityCommand(request)) {
+            return true;
+        }
+
+        if (deferredSet.has(request.command)) {
+            return true;
+        }
+
+        if (undeferredSet.has(request.command)) {
+            return false;
+        }
+
+        deferredSet.add(request.command);
+        return true;
+    }
+
+    return { isPriorityCommand, isNormalCommand, isDeferredCommand };
+})()
+
 
 function flattenArguments(obj, prefix = '') {
     var result: any[] = [];
@@ -86,7 +124,7 @@ export class ClientBase implements IDriver, OmniSharp.Events, Rx.IDisposable {
         var driver = _options.driver || Driver.Stdio;
         var statusSampleTime = _options.statusSampleTime || (_options.statusSampleTime = 500);
         var responseSampleTime = _options.responseSampleTime || (_options.responseSampleTime = 200);
-        var responseConcurrency = _options.responseConcurrency || (_options.responseConcurrency = 4);
+        var responseConcurrency = _options.concurrency || (_options.concurrency = 4);
 
         _options.additionalArguments = flattenArguments(_options.omnisharp || {});
 
@@ -187,24 +225,25 @@ export class ClientBase implements IDriver, OmniSharp.Events, Rx.IDisposable {
 
         // These are operations that should wait until after
         // we have executed all the current priority commands
+        // We also defer silent commands to this queue, as they are generally for "background" work
         var deferredQueue = this._requestStream
-            .where(z => !some(undeferredCommands, x => x === z.command))
+            .where(isDeferredCommand)
             .pausableBuffered(pauser)
             .map(x => Observable.just(x))
-            .merge(Math.max(Math.floor(this._options.responseConcurrency / 2), 1))
+            .merge(Math.max(Math.floor(this._options.concurrency / 2), 1))
             .subscribe(request => this.handleResult(request));
 
         // We just pass these operations through as soon as possible
         var normalQueue = this._requestStream
-            .where(z => some(normalCommands, x => x === z.command))
+            .where(isNormalCommand)
             .map(x => Observable.just(x))
-            .merge(this._options.responseConcurrency)
+            .merge(this._options.concurrency)
             .subscribe(request => this.handleResult(request))
 
         // We must wait for these commands
         // And these commands must run in order.
         var priorityQueue = this._requestStream
-            .where(z => some(priorityCommands, x => x === z.command))
+            .where(isPriorityCommand)
             .doOnNext(() => priorityRequests.onNext(priorityRequests.getValue() + 1))
             .controlled();
 
