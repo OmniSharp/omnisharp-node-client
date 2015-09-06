@@ -8,10 +8,9 @@ import {serverLineNumbers, serverLineNumberArrays} from "./response-handling";
 var {isPriorityCommand, isNormalCommand, isDeferredCommand} = (function() {
     var normalCommands = [
         'findimplementations', 'findsymbols', 'findusages',
-        'gotodefinition', 'typelookup',
-        'navigateup', 'navigatedown',
-        'autocomplete', 'getcodeactions', 'highlight', 'runcodeaction',
-        'autocomplete', 'signatureHelp'
+        'gotodefinition', 'typelookup', 'navigateup',
+        'navigatedown', 'getcodeactions',
+        'runcodeaction', 'autocomplete', 'signatureHelp'
     ];
     var priorityCommands = [
         'updatebuffer', 'changebuffer', 'filesChanged', 'formatAfterKeystroke'
@@ -230,7 +229,7 @@ export class ClientBase implements IDriver, OmniSharp.Events, Rx.IDisposable {
             .where(isDeferredCommand)
             .pausableBuffered(pauser)
             .map(x => Observable.just(x))
-            .merge(Math.max(Math.floor(this._options.concurrency / 2), 1))
+            .merge(1)
             .subscribe(request => this.handleResult(request));
 
         // We just pass these operations through as soon as possible
