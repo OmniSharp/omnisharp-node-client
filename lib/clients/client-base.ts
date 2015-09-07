@@ -290,7 +290,7 @@ export class ClientBase implements IDriver, OmniSharp.Events, Rx.IDisposable {
 
     public connect(_options?: OmnisharpClientOptions) {
         // There is no return from error for this client
-        if (this.currentState === DriverState.Error) return;
+        //if (this.currentState === DriverState.Error) return;
         if (this.currentState === DriverState.Connected || this.currentState === DriverState.Connecting) return;
 
         if (_options && _options.omnisharp) {

@@ -13,7 +13,7 @@ export var serverLineNumbers = [
 ];
 
 export var serverLineNumberArrays = [
-    'Lines', 'Changes'
+    'Lines'
 ];
 
 export function requestMutator(data: any) {
