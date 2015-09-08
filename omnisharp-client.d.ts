@@ -618,6 +618,9 @@ export interface IDriver extends Rx.IDisposable {
 export interface OmnisharpClientOptions extends IDriverOptions {
     driver?: Driver;
     oneBasedIndices?: boolean;
+    statusSampleTime?: number;
+    responseSampleTime?: number;
+    concurrency?: number;
     omnisharp?: {
         dnx?: {
             alias?: string;
