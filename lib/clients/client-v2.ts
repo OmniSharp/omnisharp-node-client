@@ -27,8 +27,8 @@ export class ClientV2 extends ClientBase implements OmniSharp.Api.V2, OmniSharp.
         this.v1 = ClientBase.fromClient<ClientV1>(ClientV1, this);
     }
 
-    public observeUpdatebuffer: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request, any>>;
-    public observeChangebuffer: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request, any>>;
+    public observeUpdatebuffer: Rx.Observable<OmniSharp.Context<OmniSharp.Models.UpdateBufferRequest, any>>;
+    public observeChangebuffer: Rx.Observable<OmniSharp.Context<OmniSharp.Models.ChangeBufferRequest, any>>;
     public observeCodecheck: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>;
     public observeFormatAfterKeystroke: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.FormatRangeResponse>>;
     public observeFormatRange: Rx.Observable<OmniSharp.Context<OmniSharp.Models.FormatRangeRequest, OmniSharp.Models.FormatRangeResponse>>;

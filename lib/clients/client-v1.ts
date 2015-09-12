@@ -21,8 +21,8 @@ export class ClientV1 extends ClientBase implements OmniSharp.Api.V1, OmniSharp.
         super(_options);
     }
 
-    public observeUpdatebuffer: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request, any>>;
-    public observeChangebuffer: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request, any>>;
+    public observeUpdatebuffer: Rx.Observable<OmniSharp.Context<OmniSharp.Models.UpdateBufferRequest, any>>;
+    public observeChangebuffer: Rx.Observable<OmniSharp.Context<OmniSharp.Models.ChangeBufferRequest, any>>;
     public observeCodecheck: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>;
     public observeFormatAfterKeystroke: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.FormatRangeResponse>>;
     public observeFormatRange: Rx.Observable<OmniSharp.Context<OmniSharp.Models.FormatRangeRequest, OmniSharp.Models.FormatRangeResponse>>;
@@ -93,14 +93,14 @@ export class ClientV1 extends ClientBase implements OmniSharp.Api.V1, OmniSharp.
         this.observeGettestcontext = this.watchCommand("gettestcontext");
     }
 
-    public updatebuffer(request: OmniSharp.Models.Request, options?: OmniSharp.RequestOptions) {
+    public updatebuffer(request: OmniSharp.Models.UpdateBufferRequest, options?: OmniSharp.RequestOptions) {
         isNotNull(request.FileName, 'request.FileName must not be null');
         isNotNull(request.Buffer, 'request.Buffer must not be null');
 
-        return this.request<OmniSharp.Models.Request, any>("updatebuffer", request, options);
+        return this.request<OmniSharp.Models.UpdateBufferRequest, any>("updatebuffer", request, options);
     }
 
-    public updatebufferPromise(request: OmniSharp.Models.Request, options?: OmniSharp.RequestOptions) {
+    public updatebufferPromise(request: OmniSharp.Models.UpdateBufferRequest, options?: OmniSharp.RequestOptions) {
         return this.updatebuffer(request, options).toPromise();
     }
 
