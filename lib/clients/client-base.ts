@@ -1,5 +1,5 @@
 import {Observable, Subject, AsyncSubject, BehaviorSubject, Scheduler, CompositeDisposable} from "rx";
-import {extend, isObject, some, uniqueId, isArray, each, intersection, keys, filter, isNumber, has, get, set, defaults} from "lodash";
+import {extend, isObject, some, uniqueId, isArray, each, intersection, keys, filter, isNumber, has, get, set, defaults, cloneDeep} from "lodash";
 import {IDriver, IStaticDriver, IDriverOptions, OmnisharpClientStatus, OmnisharpClientOptions} from "../interfaces";
 import {Driver, DriverState} from "../enums";
 import {RequestContext, ResponseContext, CommandContext} from "./contexts";
@@ -167,7 +167,31 @@ export class ClientBase implements IDriver, OmniSharp.Events, Rx.IDisposable {
     public get events(): Rx.Observable<OmniSharp.Stdio.Protocol.EventPacket> { return this._enqueuedEvents; }
     public get commands(): Rx.Observable<OmniSharp.Stdio.Protocol.ResponsePacket> { return this._driver.commands; }
     public get state(): Rx.Observable<DriverState> { return this._driver.state; }
-    public get outstandingRequests() { return this._driver.outstandingRequests; }
+
+    public get outstandingRequests() { return this._currentRequests.size; }
+
+    private _currentRequests = new Set<RequestContext<any>>();
+    public getCurrentRequests() {
+        var response: {
+            command: string;
+            sequence: string;
+            silent: boolean;
+            request: any;
+            duration: number;
+        }[] = [];
+
+        this._currentRequests.forEach(request => {
+            response.push({
+                command: request.command,
+                sequence: cloneDeep(request.sequence),
+                request: request.request,
+                silent: request.silent,
+                duration: Date.now() - request.time.getTime()
+            });
+        });
+
+        return response;
+    }
 
     public get status(): Rx.Observable<OmnisharpClientStatus> { return this._statusStream; }
     public get requests(): Rx.Observable<RequestContext<any>> { return this._requestStream; }
@@ -217,10 +241,12 @@ export class ClientBase implements IDriver, OmniSharp.Events, Rx.IDisposable {
 
         this._lowestIndexValue = _options.oneBasedIndices ? 1 : 0;
 
+        this._disposable.add(this._requestStream.subscribe(x => this._currentRequests.add(x)));
+
         var getStatusValues = () => <OmnisharpClientStatus>({
             state: this._driver.currentState,
-            outgoingRequests: this._driver.outstandingRequests,
-            hasOutgoingRequests: this._driver.outstandingRequests > 0
+            outgoingRequests: this.outstandingRequests,
+            hasOutgoingRequests: this.outstandingRequests > 0
         });
 
         var status = Observable.merge(<Observable<any>>this._requestStream, <Observable<any>>this._responseStream)
@@ -289,35 +315,34 @@ export class ClientBase implements IDriver, OmniSharp.Events, Rx.IDisposable {
             .where(isDeferredCommand)
             .pausableBuffered(pauser)
             .map(request => Observable.defer(() => this.handleResult(request)))
-            .merge(deferredConcurrency)
-            .subscribe();
+            .merge(deferredConcurrency);
 
         // We just pass these operations through as soon as possible
         var normalQueue = this._requestStream
             .where(isNormalCommand)
             .pausableBuffered(pauser)
             .map(request => Observable.defer(() => this.handleResult(request)))
-            .merge(this._options.concurrency)
-            .subscribe();
+            .merge(this._options.concurrency);
 
         // We must wait for these commands
         // And these commands must run in order.
-        var priorityQueue = this._requestStream
+        var priorityQueueController = this._requestStream
             .where(isPriorityCommand)
             .doOnNext(() => priorityRequests.onNext(priorityRequests.getValue() + 1))
             .controlled();
 
-        priorityQueue
+        var priorityQueue = priorityQueueController
             .map(request => Observable.defer(() => this.handleResult(request))
                 .tapOnCompleted(() => {
                     priorityResponses.onNext(priorityResponses.getValue() + 1);
-                    priorityQueue.request(1);
+                    priorityQueueController.request(1);
                 })
             )
-            .merge(this._options.concurrency)
-            .subscribe();
+            .merge(this._options.concurrency);
+
+        this._disposable.add(Observable.merge(deferredQueue, normalQueue, priorityQueue).subscribe());
         // We need to have a pending request to catch the first one coming in.
-        priorityQueue.request(1);
+        priorityQueueController.request(1);
     }
 
     private handleResult(context: RequestContext<any>): Observable<ResponseContext<any, any>> {
@@ -329,6 +354,8 @@ export class ClientBase implements IDriver, OmniSharp.Events, Rx.IDisposable {
             this._responseStream.onNext(new ResponseContext(context, data));
         }, (error) => {
             this._errorStream.onNext(new CommandContext(context.command, error));
+        }, () => {
+            this._currentRequests.delete(context);
         });
 
         return result
@@ -362,6 +389,8 @@ export class ClientBase implements IDriver, OmniSharp.Events, Rx.IDisposable {
         if (_options && _options.omnisharp) {
             _options.additionalArguments = flattenArguments(_options.omnisharp || {});
         }
+
+        this._currentRequests.clear();
 
         var driver = this._options.driver;
         extend(this._options, _options || {});
