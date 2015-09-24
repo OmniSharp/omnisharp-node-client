@@ -5,6 +5,62 @@ import {Driver, DriverState} from "../enums";
 import {RequestContext, ResponseContext, CommandContext} from "./contexts";
 import {serverLineNumbers, serverLineNumberArrays} from "./response-handling";
 
+(function() {
+    // Temp code, remove with 4.0.0
+    var Rx = require('rx');
+    Rx.Observable.prototype.flatMapWithMaxConcurrent = function(limit, selector, resultSelector, thisArg) {
+        return new Rx.FlatMapObservable(this, selector, resultSelector, thisArg).merge(limit);
+    };
+var FlatMapObservable = Rx.FlatMapObservable = (function(__super__) {
+
+    Rx.internals.inherits(FlatMapObservable, __super__);
+
+    function FlatMapObservable(source, selector, resultSelector, thisArg) {
+      this.resultSelector = Rx.helpers.isFunction(resultSelector) ? resultSelector : null;
+      this.selector = Rx.internals.bindCallback(Rx.helpers.isFunction(selector) ? selector : function() { return selector; }, thisArg, 3);
+      this.source = source;
+      __super__.call(this);
+    }
+
+    FlatMapObservable.prototype.subscribeCore = function(o) {
+      return this.source.subscribe(new InnerObserver(o, this.selector, this.resultSelector, this));
+    };
+
+    Rx.internals.inherits(InnerObserver, Rx.internals.AbstractObserver);
+    function InnerObserver(observer, selector, resultSelector, source) {
+      this.i = 0;
+      this.selector = selector;
+      this.resultSelector = resultSelector;
+      this.source = source;
+      this.o = observer;
+      Rx.internals.AbstractObserver.call(this);
+    }
+
+    InnerObserver.prototype._wrapResult = function(result, x, i) {
+      return this.resultSelector ?
+        result.map(function(y, i2) { return this.resultSelector(x, y, i, i2); }, this) :
+        result;
+    };
+
+    InnerObserver.prototype.next = function(x) {
+      var i = this.i++;
+      var result = Rx.internals.tryCatch(this.selector)(x, i, this.source);
+      //if (result === errorObj) { return this.o.onError(result.e); }
+
+      Rx.helpers.isPromise(result) && (result = Rx.Observable.fromPromise(result));
+      (Rx.helpers.isArrayLike(result) || Rx.helpers.isIterable(result)) && (result = Rx.Observable.from(result));
+      this.o.onNext(this._wrapResult(result, x, i));
+    };
+
+    InnerObserver.prototype.error = function(e) { this.o.onError(e); };
+
+    InnerObserver.prototype.onCompleted = function() { this.o.onCompleted(); };
+
+    return FlatMapObservable;
+
+}(Rx.ObservableBase));
+})();
+
 
 var {isPriorityCommand, isNormalCommand, isDeferredCommand} = (function() {
     var normalCommands = [
