@@ -41,6 +41,7 @@ export interface OmnisharpClientOptions extends IDriverOptions {
     statusSampleTime?: number;
     responseSampleTime?: number;
     concurrency?: number;
+    concurrencyTimeout?: number;
     omnisharp?: {
         dnx?: {
             alias?: string;

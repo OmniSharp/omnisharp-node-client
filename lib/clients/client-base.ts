@@ -181,6 +181,15 @@ export class ClientBase implements IDriver, OmniSharp.Events, Rx.IDisposable {
         var statusSampleTime = _options.statusSampleTime || (_options.statusSampleTime = 500);
         var responseSampleTime = _options.responseSampleTime || (_options.responseSampleTime = 100);
         var responseConcurrency = _options.concurrency || (_options.concurrency = 4);
+        var timeout = _options.timeout || (_options.timeout = 60);
+        var responseConcurencyTimeout = _options.concurrencyTimeout || (_options.concurrencyTimeout = Math.ceil(_options.timeout / 6) * 1000);
+
+        // Keep concurrency capped at 2
+        // This lets us get around an issue with a single stuck request (that is taking a while to complete)
+        _options.concurrency = Math.max(_options.concurrency, 2);
+
+        // Kep concurrencyTimeout at a decently high interval.
+        _options.concurrencyTimeout = Math.max(_options.concurrencyTimeout, Math.min(_options.timeout * 1000, 5000));
 
         _options.additionalArguments = flattenArguments(_options.omnisharp || {});
 
@@ -270,6 +279,9 @@ export class ClientBase implements IDriver, OmniSharp.Events, Rx.IDisposable {
             .startWith(true)
             .debounce(120);
 
+        // Keep deferred concurrency at a min of two, this lets us get around long running requests jamming the pipes.
+        var deferredConcurrency = Math.max(Math.floor(this._options.concurrency / 4), 2);
+
         // These are operations that should wait until after
         // we have executed all the current priority commands
         // We also defer silent commands to this queue, as they are generally for "background" work
@@ -277,7 +289,7 @@ export class ClientBase implements IDriver, OmniSharp.Events, Rx.IDisposable {
             .where(isDeferredCommand)
             .pausableBuffered(pauser)
             .map(request => Observable.defer(() => this.handleResult(request)))
-            .merge(1)
+            .merge(deferredConcurrency)
             .subscribe();
 
         // We just pass these operations through as soon as possible
@@ -309,6 +321,8 @@ export class ClientBase implements IDriver, OmniSharp.Events, Rx.IDisposable {
     }
 
     private handleResult(context: RequestContext<any>): Observable<ResponseContext<any, any>> {
+        // TODO: Find a way to not repeat the same commands, if there are outstanding (timed out) requests.
+        // In some cases for example find usages has taken over 30 seconds, so we shouldn't hit the server with multiple of these requests (as we slam the cpU)
         var result = <Observable<ResponseContext<any, any>>>this._driver.request<any, any>(context.command, context.request);
 
         result.subscribe((data) => {
@@ -317,7 +331,11 @@ export class ClientBase implements IDriver, OmniSharp.Events, Rx.IDisposable {
             this._errorStream.onNext(new CommandContext(context.command, error));
         });
 
-        return result.onErrorResumeNext(Observable.empty<ResponseContext<any, any>>());
+        return result
+            // This timeout doesn't prevent the request from completing
+            // It simply unblocks the queue, so we can continue to process items.
+            .timeout(this._options.concurrencyTimeout, Scheduler.timeout)
+            .onErrorResumeNext(Observable.empty<ResponseContext<any, any>>());
     }
 
     public static serverLineNumbers = serverLineNumbers;
