@@ -11,54 +11,54 @@ import {serverLineNumbers, serverLineNumberArrays} from "./response-handling";
     Rx.Observable.prototype.flatMapWithMaxConcurrent = function(limit, selector, resultSelector, thisArg) {
         return new Rx.FlatMapObservable(this, selector, resultSelector, thisArg).merge(limit);
     };
-var FlatMapObservable = Rx.FlatMapObservable = (function(__super__) {
+    var FlatMapObservable = Rx.FlatMapObservable = (function(__super__) {
 
-    Rx.internals.inherits(FlatMapObservable, __super__);
+        Rx.internals.inherits(FlatMapObservable, __super__);
 
-    function FlatMapObservable(source, selector, resultSelector, thisArg) {
-      this.resultSelector = Rx.helpers.isFunction(resultSelector) ? resultSelector : null;
-      this.selector = Rx.internals.bindCallback(Rx.helpers.isFunction(selector) ? selector : function() { return selector; }, thisArg, 3);
-      this.source = source;
-      __super__.call(this);
-    }
+        function FlatMapObservable(source, selector, resultSelector, thisArg) {
+            this.resultSelector = Rx.helpers.isFunction(resultSelector) ? resultSelector : null;
+            this.selector = Rx.internals.bindCallback(Rx.helpers.isFunction(selector) ? selector : function() { return selector; }, thisArg, 3);
+            this.source = source;
+            __super__.call(this);
+        }
 
-    FlatMapObservable.prototype.subscribeCore = function(o) {
-      return this.source.subscribe(new InnerObserver(o, this.selector, this.resultSelector, this));
-    };
+        FlatMapObservable.prototype.subscribeCore = function(o) {
+            return this.source.subscribe(new InnerObserver(o, this.selector, this.resultSelector, this));
+        };
 
-    Rx.internals.inherits(InnerObserver, Rx.internals.AbstractObserver);
-    function InnerObserver(observer, selector, resultSelector, source) {
-      this.i = 0;
-      this.selector = selector;
-      this.resultSelector = resultSelector;
-      this.source = source;
-      this.o = observer;
-      Rx.internals.AbstractObserver.call(this);
-    }
+        Rx.internals.inherits(InnerObserver, Rx.internals.AbstractObserver);
+        function InnerObserver(observer, selector, resultSelector, source) {
+            this.i = 0;
+            this.selector = selector;
+            this.resultSelector = resultSelector;
+            this.source = source;
+            this.o = observer;
+            Rx.internals.AbstractObserver.call(this);
+        }
 
-    InnerObserver.prototype._wrapResult = function(result, x, i) {
-      return this.resultSelector ?
-        result.map(function(y, i2) { return this.resultSelector(x, y, i, i2); }, this) :
-        result;
-    };
+        InnerObserver.prototype._wrapResult = function(result, x, i) {
+            return this.resultSelector ?
+                result.map(function(y, i2) { return this.resultSelector(x, y, i, i2); }, this) :
+                result;
+        };
 
-    InnerObserver.prototype.next = function(x) {
-      var i = this.i++;
-      var result = Rx.internals.tryCatch(this.selector)(x, i, this.source);
-      //if (result === errorObj) { return this.o.onError(result.e); }
+        InnerObserver.prototype.next = function(x) {
+            var i = this.i++;
+            var result = Rx.internals.tryCatch(this.selector)(x, i, this.source);
+            //if (result === errorObj) { return this.o.onError(result.e); }
 
-      Rx.helpers.isPromise(result) && (result = Rx.Observable.fromPromise(result));
-      (Rx.helpers.isArrayLike(result) || Rx.helpers.isIterable(result)) && (result = Rx.Observable.from(result));
-      this.o.onNext(this._wrapResult(result, x, i));
-    };
+            Rx.helpers.isPromise(result) && (result = Rx.Observable.fromPromise(result));
+            (Rx.helpers.isArrayLike(result) || Rx.helpers.isIterable(result)) && (result = Rx.Observable.from(result));
+            this.o.onNext(this._wrapResult(result, x, i));
+        };
 
-    InnerObserver.prototype.error = function(e) { this.o.onError(e); };
+        InnerObserver.prototype.error = function(e) { this.o.onError(e); };
 
-    InnerObserver.prototype.onCompleted = function() { this.o.onCompleted(); };
+        InnerObserver.prototype.onCompleted = function() { this.o.onCompleted(); };
 
-    return FlatMapObservable;
+        return FlatMapObservable;
 
-}(Rx.ObservableBase));
+    } (Rx.ObservableBase));
 })();
 
 
@@ -89,7 +89,7 @@ var {isPriorityCommand, isNormalCommand, isDeferredCommand} = (function() {
     });
 
     var isPriorityCommand = (request: RequestContext<any>) => prioritySet.has(request.command);
-    var isNormalCommand = (request: RequestContext<any>) => normalSet.has(request.command);
+    var isNormalCommand = (request: RequestContext<any>) => !isDeferredCommand(request) && normalSet.has(request.command);
 
     function isDeferredCommand(request: RequestContext<any>) {
         if (request.silent && !isPriorityCommand(request)) {
@@ -276,14 +276,16 @@ export class ClientBase implements IDriver, OmniSharp.Events, Rx.IDisposable {
         var deferredQueue = this._requestStream
             .where(isDeferredCommand)
             .pausableBuffered(pauser)
-            .flatMapWithMaxConcurrent(1, request => this.handleResult(request))
+            .map(request => Observable.defer(() => this.handleResult(request)))
+            .merge(1)
             .subscribe();
 
         // We just pass these operations through as soon as possible
         var normalQueue = this._requestStream
             .where(isNormalCommand)
             .pausableBuffered(pauser)
-            .flatMapWithMaxConcurrent(this._options.concurrency, request => this.handleResult(request))
+            .map(request => Observable.defer(() => this.handleResult(request)))
+            .merge(this._options.concurrency)
             .subscribe();
 
         // We must wait for these commands
@@ -294,21 +296,20 @@ export class ClientBase implements IDriver, OmniSharp.Events, Rx.IDisposable {
             .controlled();
 
         priorityQueue
-            .map(request => this.handleResult(request))
-            .subscribe(response => {
-                response
-                    .subscribeOnCompleted(() => {
-                        priorityResponses.onNext(priorityResponses.getValue() + 1)
-                        priorityQueue.request(1);
-                    });
-            });
-
+            .map(request => Observable.defer(() => this.handleResult(request))
+                .tapOnCompleted(() => {
+                    priorityResponses.onNext(priorityResponses.getValue() + 1);
+                    priorityQueue.request(1);
+                })
+            )
+            .merge(this._options.concurrency)
+            .subscribe();
         // We need to have a pending request to catch the first one coming in.
         priorityQueue.request(1);
     }
 
-    private handleResult(context: RequestContext<any>) {
-        var result = this._driver.request<any, any>(context.command, context.request);
+    private handleResult(context: RequestContext<any>): Observable<ResponseContext<any, any>> {
+        var result = <Observable<ResponseContext<any, any>>>this._driver.request<any, any>(context.command, context.request);
 
         result.subscribe((data) => {
             this._responseStream.onNext(new ResponseContext(context, data));
@@ -316,7 +317,7 @@ export class ClientBase implements IDriver, OmniSharp.Events, Rx.IDisposable {
             this._errorStream.onNext(new CommandContext(context.command, error));
         });
 
-        return result;
+        return result.onErrorResumeNext(Observable.empty<ResponseContext<any, any>>());
     }
 
     public static serverLineNumbers = serverLineNumbers;
