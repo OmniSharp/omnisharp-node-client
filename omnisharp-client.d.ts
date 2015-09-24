@@ -73,8 +73,8 @@ import { ClientBase } from "omnisharp-client/clients/client-base";
 import { OmnisharpClientOptions } from "omnisharp-client/interfaces";
 export class ClientV1 extends ClientBase implements OmniSharp.Api.V1, OmniSharp.Events.V1 {
     constructor(_options?: OmnisharpClientOptions);
-    observeUpdatebuffer: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request, any>>;
-    observeChangebuffer: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request, any>>;
+    observeUpdatebuffer: Rx.Observable<OmniSharp.Context<OmniSharp.Models.UpdateBufferRequest, any>>;
+    observeChangebuffer: Rx.Observable<OmniSharp.Context<OmniSharp.Models.ChangeBufferRequest, any>>;
     observeCodecheck: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>;
     observeFormatAfterKeystroke: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.FormatRangeResponse>>;
     observeFormatRange: Rx.Observable<OmniSharp.Context<OmniSharp.Models.FormatRangeRequest, OmniSharp.Models.FormatRangeResponse>>;
@@ -107,8 +107,8 @@ export class ClientV1 extends ClientBase implements OmniSharp.Api.V1, OmniSharp.
     observeRuncodeaction: Rx.Observable<OmniSharp.Context<OmniSharp.Models.CodeActionRequest, OmniSharp.Models.RunCodeActionResponse>>;
     observeGettestcontext: Rx.Observable<OmniSharp.Context<OmniSharp.Models.TestCommandRequest, OmniSharp.Models.GetTestCommandResponse>>;
     protected setupObservers(): void;
-    updatebuffer(request: OmniSharp.Models.Request, options?: OmniSharp.RequestOptions): Rx.Observable<any>;
-    updatebufferPromise(request: OmniSharp.Models.Request, options?: OmniSharp.RequestOptions): Rx.IPromise<any>;
+    updatebuffer(request: OmniSharp.Models.UpdateBufferRequest, options?: OmniSharp.RequestOptions): Rx.Observable<any>;
+    updatebufferPromise(request: OmniSharp.Models.UpdateBufferRequest, options?: OmniSharp.RequestOptions): Rx.IPromise<any>;
     changebuffer(request: OmniSharp.Models.ChangeBufferRequest, options?: OmniSharp.RequestOptions): Rx.Observable<any>;
     changebufferPromise(request: OmniSharp.Models.ChangeBufferRequest, options?: OmniSharp.RequestOptions): Rx.IPromise<any>;
     codecheck(request: OmniSharp.Models.Request, options?: OmniSharp.RequestOptions): Rx.Observable<OmniSharp.Models.QuickFixResponse>;
@@ -185,8 +185,8 @@ import { OmnisharpClientOptions } from "omnisharp-client/interfaces";
 export class ClientV2 extends ClientBase implements OmniSharp.Api.V2, OmniSharp.Events.V2 {
     v1: ClientV1;
     constructor(_options?: OmnisharpClientOptions);
-    observeUpdatebuffer: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request, any>>;
-    observeChangebuffer: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request, any>>;
+    observeUpdatebuffer: Rx.Observable<OmniSharp.Context<OmniSharp.Models.UpdateBufferRequest, any>>;
+    observeChangebuffer: Rx.Observable<OmniSharp.Context<OmniSharp.Models.ChangeBufferRequest, any>>;
     observeCodecheck: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>;
     observeFormatAfterKeystroke: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.FormatRangeResponse>>;
     observeFormatRange: Rx.Observable<OmniSharp.Context<OmniSharp.Models.FormatRangeRequest, OmniSharp.Models.FormatRangeResponse>>;
@@ -396,8 +396,8 @@ export class ObservationClientV1<T extends ClientV1> extends ObservationClientBa
     constructor(clients?: T[]);
 }
 export class CombinationClientV1<T extends ClientV1> extends CombinationClientBase<T> implements OmniSharp.Events.Aggregate.V1 {
-    observeUpdatebuffer: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.Request, any>>[]>;
-    observeChangebuffer: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.Request, any>>[]>;
+    observeUpdatebuffer: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.UpdateBufferRequest, any>>[]>;
+    observeChangebuffer: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.ChangeBufferRequest, any>>[]>;
     observeCodecheck: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>[]>;
     observeFormatAfterKeystroke: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.FormatRangeResponse>>[]>;
     observeFormatRange: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.FormatRangeRequest, OmniSharp.Models.FormatRangeResponse>>[]>;
@@ -479,8 +479,8 @@ export class ObservationClientV2<T extends ClientV2> extends ObservationClientBa
     constructor(clients?: T[]);
 }
 export class CombinationClientV2<T extends ClientV2> extends CombinationClientBase<T> implements OmniSharp.Events.Aggregate.V2 {
-    observeUpdatebuffer: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.Request, any>>[]>;
-    observeChangebuffer: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.Request, any>>[]>;
+    observeUpdatebuffer: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.UpdateBufferRequest, any>>[]>;
+    observeChangebuffer: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.ChangeBufferRequest, any>>[]>;
     observeCodecheck: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>[]>;
     observeFormatAfterKeystroke: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.FormatRangeResponse>>[]>;
     observeFormatRange: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.FormatRangeRequest, OmniSharp.Models.FormatRangeResponse>>[]>;

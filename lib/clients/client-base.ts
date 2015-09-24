@@ -5,15 +5,16 @@ import {Driver, DriverState} from "../enums";
 import {RequestContext, ResponseContext, CommandContext} from "./contexts";
 import {serverLineNumbers, serverLineNumberArrays} from "./response-handling";
 
+
 var {isPriorityCommand, isNormalCommand, isDeferredCommand} = (function() {
     var normalCommands = [
         'findimplementations', 'findsymbols', 'findusages',
         'gotodefinition', 'typelookup', 'navigateup',
-        'navigatedown', 'getcodeactions',
+        'navigatedown', 'getcodeactions', 'filesChanged',
         'runcodeaction', 'autocomplete', 'signatureHelp'
     ];
     var priorityCommands = [
-        'updatebuffer', 'changebuffer', 'filesChanged', 'formatAfterKeystroke'
+        'updatebuffer', 'changebuffer', 'formatAfterKeystroke'
     ];
 
     var prioritySet = new Set<string>();
@@ -228,16 +229,15 @@ export class ClientBase implements IDriver, OmniSharp.Events, Rx.IDisposable {
         var deferredQueue = this._requestStream
             .where(isDeferredCommand)
             .pausableBuffered(pauser)
-            .map(x => Observable.just(x))
-            .merge(1)
-            .subscribe(request => this.handleResult(request));
+            .flatMapWithMaxConcurrent(1, request => this.handleResult(request))
+            .subscribe();
 
         // We just pass these operations through as soon as possible
         var normalQueue = this._requestStream
             .where(isNormalCommand)
-            .map(x => Observable.just(x))
-            .merge(this._options.concurrency)
-            .subscribe(request => this.handleResult(request))
+            .pausableBuffered(pauser)
+            .flatMapWithMaxConcurrent(this._options.concurrency, request => this.handleResult(request))
+            .subscribe();
 
         // We must wait for these commands
         // And these commands must run in order.
