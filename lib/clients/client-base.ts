@@ -123,7 +123,7 @@ export class ClientBase implements IDriver, OmniSharp.Events, Rx.IDisposable {
     constructor(private _options: OmnisharpClientOptions = {}) {
         var driver = _options.driver || Driver.Stdio;
         var statusSampleTime = _options.statusSampleTime || (_options.statusSampleTime = 500);
-        var responseSampleTime = _options.responseSampleTime || (_options.responseSampleTime = 200);
+        var responseSampleTime = _options.responseSampleTime || (_options.responseSampleTime = 100);
         var responseConcurrency = _options.concurrency || (_options.concurrency = 4);
 
         _options.additionalArguments = flattenArguments(_options.omnisharp || {});
@@ -137,7 +137,7 @@ export class ClientBase implements IDriver, OmniSharp.Events, Rx.IDisposable {
         this._disposable.add(this._errorStream);
         this._disposable.add(this._customEvents);
 
-        var ee = Observable.merge(this._customEvents, this._driver.events)
+        this._enqueuedEvents = Observable.merge(this._customEvents, this._driver.events)
             .map(event => {
                 if (isObject(event.Body)) {
                     Object.freeze(event.Body);
@@ -145,19 +145,10 @@ export class ClientBase implements IDriver, OmniSharp.Events, Rx.IDisposable {
                 return Object.freeze(event);
             });
 
-        this._enqueuedEvents = ee
-            .window(ee.throttle(responseSampleTime), () => Observable.timer(responseSampleTime))
-            .merge(responseConcurrency);
-
-
-        var er = Observable.merge(
+        this._enqueuedResponses = Observable.merge(
             this._responseStream,
             this._driver.commands
                 .map(packet => new ResponseContext(new RequestContext(this._uniqueId, packet.Command, {}, {}, 'command'), packet.Body)));
-
-        this._enqueuedResponses = er
-            .window(er.throttle(responseSampleTime), () => Observable.timer(responseSampleTime))
-            .merge(responseConcurrency);
 
         this._lowestIndexValue = _options.oneBasedIndices ? 1 : 0;
 
