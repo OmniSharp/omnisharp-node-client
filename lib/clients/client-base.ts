@@ -249,13 +249,14 @@ export class ClientBase implements IDriver, OmniSharp.Events, Rx.IDisposable {
             hasOutgoingRequests: this.outstandingRequests > 0
         });
 
-        var status = Observable.merge(<Observable<any>>this._requestStream, <Observable<any>>this._responseStream)
-            .map(() => getStatusValues());
-        var tstatus = status.throttle(statusSampleTime).share();
+        this.setupRequestStreams();
+        this.setupObservers();
 
-        this._statusStream = Observable.merge(status, tstatus)
-            .buffer(tstatus, () => Observable.timer(statusSampleTime))
-            .map(x => x.length > 0 ? (x[x.length - 1]) : getStatusValues())
+        var status = Observable.merge(<Observable<any>>this._requestStream, <Observable<any>>this._responseStream);
+
+        this._statusStream = status
+            .delay(10)
+            .map(getStatusValues)
             .distinctUntilChanged()
             .map(Object.freeze)
             .share();
@@ -274,9 +275,6 @@ export class ClientBase implements IDriver, OmniSharp.Events, Rx.IDisposable {
                 })
             }));
         }
-
-        this.setupRequestStreams();
-        this.setupObservers();
     }
 
     public dispose() {
