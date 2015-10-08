@@ -91,6 +91,7 @@ export class ClientV1 extends ClientBase implements OmniSharp.Api.V1, OmniSharp.
     observeFindimplementations: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>;
     observeFindsymbols: Rx.Observable<OmniSharp.Context<OmniSharp.Models.FindSymbolsRequest, OmniSharp.Models.QuickFixResponse>>;
     observeFindusages: Rx.Observable<OmniSharp.Context<OmniSharp.Models.FindUsagesRequest, OmniSharp.Models.QuickFixResponse>>;
+    observeFixusings: Rx.Observable<OmniSharp.Context<OmniSharp.Models.FixUsingsRequest, OmniSharp.Models.FixUsingsResponse>>;
     observeGotodefinition: Rx.Observable<OmniSharp.Context<OmniSharp.Models.GotoDefinitionRequest, OmniSharp.Models.GotoDefinitionResponse>>;
     observeGotofile: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>;
     observeGotoregion: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>;
@@ -103,6 +104,7 @@ export class ClientV1 extends ClientBase implements OmniSharp.Api.V1, OmniSharp.
     observePackageversion: Rx.Observable<OmniSharp.Context<OmniSharp.Models.PackageVersionRequest, OmniSharp.Models.PackageVersionResponse>>;
     observeRename: Rx.Observable<OmniSharp.Context<OmniSharp.Models.RenameRequest, OmniSharp.Models.RenameResponse>>;
     observeSignatureHelp: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.SignatureHelp>>;
+    observeStopserver: Rx.Observable<OmniSharp.Context<any, boolean>>;
     observeCheckalivestatus: Rx.Observable<OmniSharp.Context<any, boolean>>;
     observeCheckreadystatus: Rx.Observable<OmniSharp.Context<any, boolean>>;
     observeCurrentfilemembersastree: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.FileMemberTree>>;
@@ -134,7 +136,9 @@ export class ClientV1 extends ClientBase implements OmniSharp.Api.V1, OmniSharp.
     findsymbols(request: OmniSharp.Models.FindSymbolsRequest, options?: OmniSharp.RequestOptions): Rx.Observable<OmniSharp.Models.QuickFixResponse>;
     findsymbolsPromise(request: OmniSharp.Models.FindSymbolsRequest, options?: OmniSharp.RequestOptions): Rx.IPromise<OmniSharp.Models.QuickFixResponse>;
     findusages(request: OmniSharp.Models.FindUsagesRequest, options?: OmniSharp.RequestOptions): Rx.Observable<OmniSharp.Models.QuickFixResponse>;
-    findusagesPromise(request: OmniSharp.Models.FindUsagesRequest, options?: OmniSharp.RequestOptions): Rx.IPromise<OmniSharp.Models.QuickFixResponse>;
+    findusagesPromise(request: OmniSharp.Models.FixUsingsRequest, options?: OmniSharp.RequestOptions): Rx.IPromise<OmniSharp.Models.QuickFixResponse>;
+    fixusings(request: OmniSharp.Models.FixUsingsRequest, options?: OmniSharp.RequestOptions): Rx.Observable<OmniSharp.Models.FixUsingsResponse>;
+    fixusingsPromise(request: OmniSharp.Models.FindUsagesRequest, options?: OmniSharp.RequestOptions): Rx.IPromise<OmniSharp.Models.FixUsingsResponse>;
     gotodefinition(request: OmniSharp.Models.GotoDefinitionRequest, options?: OmniSharp.RequestOptions): Rx.Observable<any>;
     gotodefinitionPromise(request: OmniSharp.Models.GotoDefinitionRequest, options?: OmniSharp.RequestOptions): Rx.IPromise<any>;
     navigateup(request: OmniSharp.Models.Request, options?: OmniSharp.RequestOptions): Rx.Observable<OmniSharp.Models.NavigateResponse>;
@@ -159,6 +163,8 @@ export class ClientV1 extends ClientBase implements OmniSharp.Api.V1, OmniSharp.
     renamePromise(request: OmniSharp.Models.RenameRequest, options?: OmniSharp.RequestOptions): Rx.IPromise<OmniSharp.Models.RenameResponse>;
     signatureHelp(request: OmniSharp.Models.Request, options?: OmniSharp.RequestOptions): Rx.Observable<OmniSharp.Models.SignatureHelp>;
     signatureHelpPromise(request: OmniSharp.Models.Request, options?: OmniSharp.RequestOptions): Rx.IPromise<OmniSharp.Models.SignatureHelp>;
+    stopserver(request: any, options?: OmniSharp.RequestOptions): Rx.Observable<boolean>;
+    stopserverPromise(request: any, options?: OmniSharp.RequestOptions): Rx.IPromise<boolean>;
     checkalivestatus(options?: OmniSharp.RequestOptions): Rx.Observable<any>;
     checkalivestatusPromise(options?: OmniSharp.RequestOptions): Rx.IPromise<any>;
     checkreadystatus(options?: OmniSharp.RequestOptions): Rx.Observable<any>;
@@ -203,6 +209,7 @@ export class ClientV2 extends ClientBase implements OmniSharp.Api.V2, OmniSharp.
     observeFindimplementations: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>;
     observeFindsymbols: Rx.Observable<OmniSharp.Context<OmniSharp.Models.FindSymbolsRequest, OmniSharp.Models.QuickFixResponse>>;
     observeFindusages: Rx.Observable<OmniSharp.Context<OmniSharp.Models.FindUsagesRequest, OmniSharp.Models.QuickFixResponse>>;
+    observeFixusings: Rx.Observable<OmniSharp.Context<OmniSharp.Models.FixUsingsRequest, OmniSharp.Models.FixUsingsResponse>>;
     observeGotodefinition: Rx.Observable<OmniSharp.Context<OmniSharp.Models.GotoDefinitionRequest, OmniSharp.Models.GotoDefinitionResponse>>;
     observeGotofile: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>;
     observeGotoregion: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>;
@@ -215,6 +222,7 @@ export class ClientV2 extends ClientBase implements OmniSharp.Api.V2, OmniSharp.
     observePackageversion: Rx.Observable<OmniSharp.Context<OmniSharp.Models.PackageVersionRequest, OmniSharp.Models.PackageVersionResponse>>;
     observeRename: Rx.Observable<OmniSharp.Context<OmniSharp.Models.RenameRequest, OmniSharp.Models.RenameResponse>>;
     observeSignatureHelp: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.SignatureHelp>>;
+    observeStopserver: Rx.Observable<OmniSharp.Context<any, boolean>>;
     observeCheckalivestatus: Rx.Observable<OmniSharp.Context<any, boolean>>;
     observeCheckreadystatus: Rx.Observable<OmniSharp.Context<any, boolean>>;
     observeCurrentfilemembersastree: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.FileMemberTree>>;
@@ -251,6 +259,8 @@ export class ClientV2 extends ClientBase implements OmniSharp.Api.V2, OmniSharp.
     findsymbolsPromise: typeof ClientV1.prototype.findsymbolsPromise;
     findusages: typeof ClientV1.prototype.findusages;
     findusagesPromise: typeof ClientV1.prototype.findusagesPromise;
+    fixusings: typeof ClientV1.prototype.fixusings;
+    fixusingsPromise: typeof ClientV1.prototype.fixusingsPromise;
     gotodefinition: typeof ClientV1.prototype.gotodefinition;
     gotodefinitionPromise: typeof ClientV1.prototype.gotodefinitionPromise;
     gotofile: typeof ClientV1.prototype.gotofile;
@@ -275,6 +285,8 @@ export class ClientV2 extends ClientBase implements OmniSharp.Api.V2, OmniSharp.
     renamePromise: typeof ClientV1.prototype.renamePromise;
     signatureHelp: typeof ClientV1.prototype.signatureHelp;
     signatureHelpPromise: typeof ClientV1.prototype.signatureHelpPromise;
+    stopserver: typeof ClientV1.prototype.stopserver;
+    stopserverPromise: typeof ClientV1.prototype.stopserverPromise;
     checkalivestatus: typeof ClientV1.prototype.checkalivestatus;
     checkalivestatusPromise: typeof ClientV1.prototype.checkalivestatusPromise;
     checkreadystatus: typeof ClientV1.prototype.checkreadystatus;
@@ -667,34 +679,13 @@ export module Omnisharp {
 
 
 declare module "omnisharp-client" {
-import { findCandidates as candidateFinder } from "omnisharp-client/candidate-finder";
-import { ClientV1 } from 'omnisharp-client/clients/client-v1';
-import { ClientV2 } from 'omnisharp-client/clients/client-v2';
-import { ObservationClientV1, CombinationClientV1 } from 'omnisharp-client/clients/composite-client-v1';
-import { ObservationClientV2, CombinationClientV2 } from 'omnisharp-client/clients/composite-client-v2';
-import * as enums from "omnisharp-client/enums";
-import * as interfaces from "omnisharp-client/interfaces";
-export interface IDriver extends interfaces.IDriver {
-}
-export interface OmnisharpClientOptions extends interfaces.OmnisharpClientOptions {
-}
-export interface OmnisharpClientStatus extends interfaces.OmnisharpClientStatus {
-}
-export var Driver: typeof enums.Driver;
-export var DriverState: typeof enums.DriverState;
-export var findCandidates: typeof candidateFinder;
-export class OmnisharpClientV1 extends ClientV1 {
-}
-export class OmnisharpClientV2 extends ClientV2 {
-}
-export class OmnisharpObservationClientV1<T extends OmnisharpClientV1> extends ObservationClientV1<T> {
-}
-export class OmnisharpCombinationClientV1<T extends OmnisharpClientV1> extends CombinationClientV1<T> {
-}
-export class OmnisharpObservationClientV2<T extends OmnisharpClientV2> extends ObservationClientV2<T> {
-}
-export class OmnisharpCombinationClientV2<T extends OmnisharpClientV2> extends CombinationClientV2<T> {
-}
+export { findCandidates as candidateFinder } from "omnisharp-client/candidate-finder";
+export { ClientV1 as OmnisharpClientV1 } from 'omnisharp-client/clients/client-v1';
+export { ClientV2 as OmnisharpClientV2 } from 'omnisharp-client/clients/client-v2';
+export { ObservationClientV1 as OmnisharpObservationClientV1, CombinationClientV1 as OmnisharpCombinationClientV1 } from 'omnisharp-client/clients/composite-client-v1';
+export { ObservationClientV2 as OmnisharpObservationClientV2, CombinationClientV2 as OmnisharpCombinationClientV2 } from 'omnisharp-client/clients/composite-client-v2';
+export { Driver, DriverState } from "omnisharp-client/enums";
+export { IDriver, OmnisharpClientOptions, OmnisharpClientStatus } from "omnisharp-client/interfaces";
 
 }
 

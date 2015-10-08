@@ -37,6 +37,7 @@ export class ClientV2 extends ClientBase implements OmniSharp.Api.V2, OmniSharp.
     public observeFindimplementations: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>;
     public observeFindsymbols: Rx.Observable<OmniSharp.Context<OmniSharp.Models.FindSymbolsRequest, OmniSharp.Models.QuickFixResponse>>;
     public observeFindusages: Rx.Observable<OmniSharp.Context<OmniSharp.Models.FindUsagesRequest, OmniSharp.Models.QuickFixResponse>>;
+    public observeFixusings: Rx.Observable<OmniSharp.Context<OmniSharp.Models.FixUsingsRequest, OmniSharp.Models.FixUsingsResponse>>;
     public observeGotodefinition: Rx.Observable<OmniSharp.Context<OmniSharp.Models.GotoDefinitionRequest, OmniSharp.Models.GotoDefinitionResponse>>;
     public observeGotofile: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>;
     public observeGotoregion: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>;
@@ -49,6 +50,7 @@ export class ClientV2 extends ClientBase implements OmniSharp.Api.V2, OmniSharp.
     public observePackageversion: Rx.Observable<OmniSharp.Context<OmniSharp.Models.PackageVersionRequest, OmniSharp.Models.PackageVersionResponse>>;
     public observeRename: Rx.Observable<OmniSharp.Context<OmniSharp.Models.RenameRequest, OmniSharp.Models.RenameResponse>>;
     public observeSignatureHelp: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.SignatureHelp>>;
+    public observeStopserver: Rx.Observable<OmniSharp.Context<any, boolean>>;
     public observeCheckalivestatus: Rx.Observable<OmniSharp.Context<any, boolean>>;
     public observeCheckreadystatus: Rx.Observable<OmniSharp.Context<any, boolean>>;
     public observeCurrentfilemembersastree: Rx.Observable<OmniSharp.Context<OmniSharp.Models.Request, OmniSharp.Models.FileMemberTree>>;
@@ -74,6 +76,7 @@ export class ClientV2 extends ClientBase implements OmniSharp.Api.V2, OmniSharp.
         this.observeFindimplementations = this.watchCommand("findimplementations");
         this.observeFindsymbols = this.watchCommand("findsymbols");
         this.observeFindusages = this.watchCommand("findusages");
+        this.observeFixusings = this.watchCommand("fixusings");
         this.observeGotodefinition = this.watchCommand("gotodefinition");
         this.observeGotofile = this.watchCommand("gotofile");
         this.observeGotoregion = this.watchCommand("gotoregion");
@@ -86,6 +89,7 @@ export class ClientV2 extends ClientBase implements OmniSharp.Api.V2, OmniSharp.
         this.observePackageversion = this.watchCommand("packageversion");
         this.observeRename = this.watchCommand("rename");
         this.observeSignatureHelp = this.watchCommand("signaturehelp");
+        this.observeStopserver = this.watchCommand("stopserver");
         this.observeCheckalivestatus = this.watchCommand("checkalivestatus");
         this.observeCheckreadystatus = this.watchCommand("checkreadystatus");
         this.observeCurrentfilemembersastree = this.watchCommand("currentfilemembersastree");
@@ -180,6 +184,9 @@ export class ClientV2 extends ClientBase implements OmniSharp.Api.V2, OmniSharp.
     public findusages: typeof ClientV1.prototype.findusages;
     public findusagesPromise: typeof ClientV1.prototype.findusagesPromise;
 
+    public fixusings: typeof ClientV1.prototype.fixusings;
+    public fixusingsPromise: typeof ClientV1.prototype.fixusingsPromise;
+
     public gotodefinition: typeof ClientV1.prototype.gotodefinition;
     public gotodefinitionPromise: typeof ClientV1.prototype.gotodefinitionPromise;
 
@@ -215,6 +222,9 @@ export class ClientV2 extends ClientBase implements OmniSharp.Api.V2, OmniSharp.
 
     public signatureHelp: typeof ClientV1.prototype.signatureHelp;
     public signatureHelpPromise: typeof ClientV1.prototype.signatureHelpPromise;
+
+    public stopserver: typeof ClientV1.prototype.stopserver;
+    public stopserverPromise: typeof ClientV1.prototype.stopserverPromise;
 
     public checkalivestatus: typeof ClientV1.prototype.checkalivestatus;
     public checkalivestatusPromise: typeof ClientV1.prototype.checkalivestatusPromise;
