@@ -1,4 +1,6 @@
-export { findCandidates as candidateFinder} from "./candidate-finder";
+// TODO: Remove in next major bump. This is a back compatability issue :(
+export {findCandidates} from "./candidate-finder";
+exports.candidateFinder = exports.findCandidates;
 export {ClientV1 as OmnisharpClientV1} from './clients/client-v1';
 export {ClientV2 as OmnisharpClientV2} from './clients/client-v2';
 export {ObservationClientV1 as OmnisharpObservationClientV1, CombinationClientV1 as OmnisharpCombinationClientV1} from './clients/composite-client-v1';

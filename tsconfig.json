@@ -1,5 +1,4 @@
 {
-    "version": "1.5.0",
     "compilerOptions": {
         "target": "es5",
         "declaration": false,
@@ -28,9 +27,13 @@
         "./lib/clients/contexts.ts",
         "./lib/clients/response-handling.ts",
         "./lib/drivers/http.ts",
+        "./lib/drivers/stdio.d.ts",
         "./lib/drivers/stdio.ts",
         "./lib/drivers/websocket.ts",
+        "./lib/enums.d.ts",
         "./lib/enums.ts",
+        "./lib/es6.d.ts",
+        "./lib/interfaces.d.ts",
         "./lib/omnisharp-client.ts",
         "./lib/omnisharp-path.ts",
         "./lib/project-finder.ts",
