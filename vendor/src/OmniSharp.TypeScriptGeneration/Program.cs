@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Microsoft.AspNet.Mvc;
+using Microsoft.Framework.Runtime;
 using OmniSharp.Models;
 using OmniSharp.Stdio;
 using OmniSharp.Stdio.Protocol;
@@ -42,8 +42,24 @@ namespace OmniSharp.TypeScriptGeneration
             var result = fluent.Generate();
 
             var generated = string.Join("\n", OmnisharpControllerExtractor.GetInterface());
+            var projectInterfaces = $@"
+declare module {OmnisharpControllerExtractor.InferNamespace(typeof(Request)).TrimEnd('.')} {{
+    interface ProjectInformationResponse {{
+        MsBuildProject: OmniSharp.Models.MSBuildProject;
+        DnxProject: OmniSharp.Models.DnxProject;
+    }}
 
-            result = string.Join("\n", result, generated, OmnisharpEventExtractor.GetInterface());
+    interface WorkspaceInformationResponse {{
+        Dnx: OmniSharp.Models.DnxWorkspaceInformation;
+        MSBuild: OmniSharp.Models.MsBuildWorkspaceInformation;
+        ScriptCs: OmniSharp.ScriptCs.ScriptCsContext;
+    }}
+}}
+            ";
+
+            result = string.Join("\n", result, generated, OmnisharpEventExtractor.GetInterface(), projectInterfaces);
+
+
             if (!string.IsNullOrWhiteSpace(path))
             {
                 File.WriteAllText(Path.Combine(path, "omnisharp-server.d.ts"), result);
@@ -57,12 +73,39 @@ namespace OmniSharp.TypeScriptGeneration
 
         private IEnumerable<Type> GetApplicableTypes()
         {
-            var models = typeof(Request).Assembly.DefinedTypes
-                .Where(z => z.IsPublic && z.FullName.StartsWith(OmnisharpControllerExtractor.InferNamespace(typeof(Request)), StringComparison.Ordinal));
-            var stdioProtocol = typeof(Packet).Assembly.DefinedTypes
-                .Where(z => z.IsPublic && z.FullName.StartsWith(OmnisharpControllerExtractor.InferNamespace(typeof(Packet)), StringComparison.Ordinal));
+            var allTypes = new [] {
+                typeof(OmniSharp.Startup).Assembly,
+                typeof(OmniSharp.Models.Request).Assembly,
+                typeof(OmniSharp.Models.DnxProject).Assembly,
+                typeof(OmniSharp.Models.MSBuildProject).Assembly,
+                typeof(OmniSharp.NuGet.OmniSharpSourceRepositoryProvider).Assembly,
+                typeof(OmniSharp.Roslyn.BufferManager).Assembly,
+                typeof(OmniSharp.Roslyn.CSharp.Services.CodeActions.RoslynCodeActionProvider).Assembly,
+                typeof(OmniSharp.ScriptCs.ScriptCsContext).Assembly,
+                typeof(OmniSharp.Stdio.StdioServerFactory).Assembly,
+            }
+                .SelectMany(x => x.GetTypes())
+                .ToArray();
 
-            return models.Union(stdioProtocol).ToArray();
+            var models = allTypes
+                .Where(z => z.IsPublic && z.FullName.StartsWith(OmnisharpControllerExtractor.InferNamespace(typeof(Request)), StringComparison.Ordinal))
+                .Select(x => {
+                    Console.WriteLine(x.FullName);
+                    return x;
+                })
+                .Where(x => x.Name != nameof(ProjectInformationResponse))
+                .Where(x => x.Name != nameof(WorkspaceInformationResponse));
+
+            var stdioProtocol = allTypes
+                .Where(z => z.IsPublic && z.FullName.StartsWith(OmnisharpControllerExtractor.InferNamespace(typeof(Packet)), StringComparison.Ordinal))
+                .Select(x => {
+                    Console.WriteLine(x.FullName);
+                    return x;
+                });
+
+            var scriptCs = typeof(OmniSharp.ScriptCs.ScriptCsContext);
+
+            return models.Union(stdioProtocol).Union(new[] {typeof(OmniSharp.ScriptCs.ScriptCsContext)}).ToArray();
         }
     }
 }

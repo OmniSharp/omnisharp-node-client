@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc;
+using OmniSharp.Mef;
 using OmniSharp.Models;
 
 namespace OmniSharp.TypeScriptGeneration
@@ -205,67 +205,58 @@ namespace OmniSharp.TypeScriptGeneration
 
         private static IEnumerable<MethodResult> GetControllerMethods()
         {
-            var methods = typeof(OmnisharpController).Assembly.GetTypes()
-                .SelectMany(z => z.GetTypeInfo()
-                    .DeclaredMethods.Where(x =>
-                        x.GetCustomAttributes<HttpPostAttribute>().Any()));
+            var types = typeof(Request).Assembly.GetTypes()
+                .Where(z => z.GetTypeInfo().GetCustomAttributes<OmniSharpEndpointAttribute>().Any());
 
-            foreach (var method in methods.Where(z => z.IsPublic))
+            foreach (var type in types.Where(z => z.IsPublic))
             {
-                var attribute = method.GetCustomAttribute<HttpPostAttribute>();
-                var parameters = method.GetParameters();
-                var param = parameters.Length == 1 ? parameters[0].ParameterType : null;
+                var attribute = type.GetCustomAttribute<OmniSharpEndpointAttribute>();
+                var requestType = attribute.RequestType;
+                var responseType = attribute.ResponseType;
 
-
-                var paramType = param;
-                var paramArray = false;
-                if (paramType != null && paramType.Name.StartsWith(nameof(IEnumerable), StringComparison.Ordinal))
+                var requestArray = false;
+                if (requestType != null && requestType.Name.StartsWith(nameof(IEnumerable), StringComparison.Ordinal))
                 {
-                    paramArray = true;
-                    paramType = paramType.GetGenericArguments().First();
+                    requestArray = true;
+                    requestType = requestType.GetGenericArguments().First();
                 }
 
-                string paramString = "any";
-                if (paramType != null && paramType.FullName.StartsWith(InferNamespace(typeof(Request)), StringComparison.Ordinal))
+                string requestTypeString = "any";
+                if (requestType != null && requestType.FullName.StartsWith(InferNamespace(typeof(Request)), StringComparison.Ordinal))
                 {
-                    paramString = paramType.FullName;
+                    requestTypeString = requestType.FullName;
                 }
 
-                if (paramType == typeof(Boolean))
+                if (requestType == typeof(Boolean))
                 {
-                    paramString = nameof(Boolean).ToLowerInvariant();
+                    requestTypeString = nameof(Boolean).ToLowerInvariant();
                 }
 
-                var returnType = method.ReturnType;
-                var returnsArray = false;
-                if (returnType.Name.StartsWith(nameof(Task), StringComparison.Ordinal))
+                var responseArray = false;
+                if (responseType.Name.StartsWith(nameof(IEnumerable), StringComparison.Ordinal))
                 {
-                    returnType = returnType.GetGenericArguments().First();
-                }
-                if (returnType.Name.StartsWith(nameof(IEnumerable), StringComparison.Ordinal))
-                {
-                    returnsArray = true;
-                    returnType = returnType.GetGenericArguments().First();
+                    responseArray = true;
+                    responseType = responseType.GetGenericArguments().First();
                 }
 
-                string returnString = "any";
-                if (returnType != null && returnType.FullName.StartsWith(InferNamespace(typeof(Request)), StringComparison.Ordinal))
+                string responseTypeString = "any";
+                if (responseType != null && responseType.FullName.StartsWith(InferNamespace(typeof(Request)), StringComparison.Ordinal))
                 {
-                    returnString = returnType.FullName;
+                    responseTypeString = responseType.FullName;
                 }
 
-                if (returnType == typeof(Boolean))
+                if (responseType == typeof(Boolean))
                 {
-                    returnString = nameof(Boolean).ToLowerInvariant();
+                    responseTypeString = nameof(Boolean).ToLowerInvariant();
                 }
 
                 yield return new MethodResult()
                 {
-                    RequestType = paramString,
-                    RequestArray = paramArray,
-                    ReturnType = returnString,
-                    ReturnArray = returnsArray,
-                    Action = attribute.Template.TrimStart('/')
+                    RequestType = requestTypeString,
+                    RequestArray = requestArray,
+                    ReturnType = responseTypeString,
+                    ReturnArray = responseArray,
+                    Action = attribute.EndpointName.TrimStart('/')
                 };
             }
         }

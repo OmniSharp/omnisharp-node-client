@@ -1,3 +1,0 @@
-[submodule "vendor/omnisharp-roslyn"]
-	path = vendor/omnisharp-roslyn
-	url = https://github.com/OmniSharp/omnisharp-roslyn.git

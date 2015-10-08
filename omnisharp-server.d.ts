@@ -61,6 +61,10 @@ declare module OmniSharp.Models {
         SelectionEndColumn?: number;
         SelectionEndLine?: number;
     }
+    interface CodeCheckRequest extends OmniSharp.Models.Request {
+    }
+    interface CodeFormatRequest extends OmniSharp.Models.Request {
+    }
     interface CodeFormatResponse {
         Buffer: string;
     }
@@ -75,26 +79,6 @@ declare module OmniSharp.Models {
         EndColumn: number;
         Text: string;
         Projects: string[];
-    }
-    interface DnxFramework {
-        Name: string;
-        FriendlyName: string;
-        ShortName: string;
-    }
-    interface DnxProject {
-        Path: string;
-        Name: string;
-        Commands: { [key: string]: string };
-        Configurations: string[];
-        ProjectSearchPaths: string[];
-        Frameworks: OmniSharp.Models.DnxFramework[];
-        GlobalJsonPath: string;
-        SourceFiles: string[];
-    }
-    interface DnxWorkspaceInformation {
-        Projects: OmniSharp.Models.DnxProject[];
-        RuntimePath: string;
-        DesignTimeHostPort: number;
     }
     interface ErrorMessage {
         Text: string;
@@ -113,12 +97,27 @@ declare module OmniSharp.Models {
     interface FileMemberTree {
         TopLevelTypeDefinitions: OmniSharp.Models.FileMemberElement[];
     }
+    interface FilesChangedRequest {
+    }
+    interface FilesChangedResponse {
+    }
+    interface FindImplementationsRequest extends OmniSharp.Models.Request {
+    }
     interface FindSymbolsRequest {
+        Language?: string;
         Filter?: string;
     }
     interface FindUsagesRequest extends OmniSharp.Models.Request {
         OnlyThisFile?: boolean;
         ExcludeDefinition?: boolean;
+    }
+    interface FixUsingsRequest extends OmniSharp.Models.Request {
+        WantsTextChanges?: boolean;
+    }
+    interface FixUsingsResponse {
+        Buffer: string;
+        AmbiguousResults: OmniSharp.Models.QuickFix[];
+        Changes: OmniSharp.Models.LinePositionSpanTextChange[];
     }
     interface FormatAfterKeystrokeRequest extends OmniSharp.Models.Request {
         Character?: string;
@@ -130,6 +129,8 @@ declare module OmniSharp.Models {
     }
     interface FormatRangeResponse {
         Changes: OmniSharp.Models.LinePositionSpanTextChange[];
+    }
+    interface GetCodeActionRequest extends OmniSharp.Models.CodeActionRequest {
     }
     interface GetCodeActionsResponse {
         CodeActions: string[];
@@ -153,6 +154,11 @@ declare module OmniSharp.Models {
         TypeName: string;
         ProjectName: string;
         VersionNumber: string;
+        Language: string;
+    }
+    interface GotoFileRequest extends OmniSharp.Models.Request {
+    }
+    interface GotoRegionRequest extends OmniSharp.Models.Request {
     }
     interface HighlightSpan {
         StartLine: number;
@@ -171,6 +177,10 @@ declare module OmniSharp.Models {
     interface HighlightResponse {
         Highlights: OmniSharp.Models.HighlightSpan[];
     }
+    interface MembersFlatRequest extends OmniSharp.Models.Request {
+    }
+    interface MembersTreeRequest extends OmniSharp.Models.Request {
+    }
     interface MetadataRequest extends OmniSharp.Models.MetadataSource {
         Timeout?: number;
     }
@@ -183,35 +193,13 @@ declare module OmniSharp.Models {
         Buffer: string;
         Changes: OmniSharp.Models.LinePositionSpanTextChange[];
     }
-    interface MSBuildDiagnosticsMessage {
-        LogLevel: string;
-        FileName: string;
-        Text: string;
-        StartLine: number;
-        StartColumn: number;
-        EndLine: number;
-        EndColumn: number;
-    }
-    interface MSBuildProject {
-        ProjectGuid: string;
-        Path: string;
-        AssemblyName: string;
-        TargetPath: string;
-        TargetFramework: string;
-        SourceFiles: string[];
-    }
-    interface MSBuildProjectDiagnostics {
-        FileName: string;
-        Warnings: OmniSharp.Models.MSBuildDiagnosticsMessage[];
-        Errors: OmniSharp.Models.MSBuildDiagnosticsMessage[];
-    }
-    interface MsBuildWorkspaceInformation {
-        SolutionPath: string;
-        Projects: OmniSharp.Models.MSBuildProject[];
+    interface NavigateDownRequest extends OmniSharp.Models.Request {
     }
     interface NavigateResponse {
         Line: number;
         Column: number;
+    }
+    interface NavigateUpRequest extends OmniSharp.Models.Request {
     }
     interface PackageDependency {
         Name: string;
@@ -253,10 +241,6 @@ declare module OmniSharp.Models {
     interface PackageVersionResponse {
         Versions: string[];
     }
-    interface ProjectInformationResponse {
-        MsBuildProject: OmniSharp.Models.MSBuildProject;
-        DnxProject: OmniSharp.Models.DnxProject;
-    }
     interface QuickFixResponse {
         QuickFixes: OmniSharp.Models.QuickFix[];
     }
@@ -268,6 +252,8 @@ declare module OmniSharp.Models {
     interface RenameResponse {
         Changes: OmniSharp.Models.ModifiedFileResponse[];
         ErrorMessage: string;
+    }
+    interface RunCodeActionRequest extends OmniSharp.Models.CodeActionRequest {
     }
     interface RunCodeActionResponse {
         Text: string;
@@ -288,6 +274,8 @@ declare module OmniSharp.Models {
         Name: string;
         Label: string;
         Documentation: string;
+    }
+    interface SignatureHelpRequest extends OmniSharp.Models.Request {
     }
     interface SymbolLocation extends OmniSharp.Models.QuickFix {
         Kind: string;
@@ -312,19 +300,51 @@ declare module OmniSharp.Models {
     interface UpdateBufferRequest extends OmniSharp.Models.Request {
         FromDisk?: boolean;
     }
-    interface WorkspaceInformationResponse {
-        Dnx: OmniSharp.Models.DnxWorkspaceInformation;
-        MSBuild: OmniSharp.Models.MsBuildWorkspaceInformation;
-        ScriptCs: OmniSharp.ScriptCs.ScriptCsContext;
+    interface DnxFramework {
+        Name: string;
+        FriendlyName: string;
+        ShortName: string;
     }
-}
-declare module OmniSharp.ScriptCs {
-    interface ScriptCsContext {
-        CsxFiles: string[];
-        References: string[];
-        Usings: string[];
-        ScriptPacks: string[];
+    interface DnxProject {
         Path: string;
+        Name: string;
+        Commands: { [key: string]: string };
+        Configurations: string[];
+        ProjectSearchPaths: string[];
+        Frameworks: OmniSharp.Models.DnxFramework[];
+        GlobalJsonPath: string;
+        SourceFiles: string[];
+    }
+    interface DnxWorkspaceInformation {
+        Projects: OmniSharp.Models.DnxProject[];
+        RuntimePath: string;
+        DesignTimeHostPort: number;
+    }
+    interface MSBuildDiagnosticsMessage {
+        LogLevel: string;
+        FileName: string;
+        Text: string;
+        StartLine: number;
+        StartColumn: number;
+        EndLine: number;
+        EndColumn: number;
+    }
+    interface MSBuildProject {
+        ProjectGuid: string;
+        Path: string;
+        AssemblyName: string;
+        TargetPath: string;
+        TargetFramework: string;
+        SourceFiles: string[];
+    }
+    interface MSBuildProjectDiagnostics {
+        FileName: string;
+        Warnings: OmniSharp.Models.MSBuildDiagnosticsMessage[];
+        Errors: OmniSharp.Models.MSBuildDiagnosticsMessage[];
+    }
+    interface MsBuildWorkspaceInformation {
+        SolutionPath: string;
+        Projects: OmniSharp.Models.MSBuildProject[];
     }
 }
 declare module OmniSharp.Models.V2 {
@@ -363,7 +383,9 @@ declare module OmniSharp.Models.V2 {
     }
 }
 declare module OmniSharp.Models.v1 {
-    interface ProjectInformationRequest {
+    interface ProjectInformationRequest extends OmniSharp.Models.Request {
+    }
+    interface WorkspaceInformationRequest {
         ExcludeSourceFiles?: boolean;
     }
 }
@@ -387,6 +409,15 @@ declare module OmniSharp.Stdio.Protocol {
         Success: boolean;
         Message: string;
         Body: any;
+    }
+}
+declare module OmniSharp.ScriptCs {
+    interface ScriptCsContext {
+        CsxFiles: string[];
+        References: string[];
+        Usings: string[];
+        ScriptPacks: string[];
+        Path: string;
     }
 }
 declare module OmniSharp {
@@ -423,36 +454,33 @@ declare module OmniSharp.Api {
         // 'changebuffer'
         changebuffer(request: OmniSharp.Models.ChangeBufferRequest, options?: RequestOptions): Rx.Observable<any>;
         changebufferPromise(request: OmniSharp.Models.ChangeBufferRequest, options?: RequestOptions): Rx.IPromise<any>;
-        // 'checkalivestatus'
-        checkalivestatus(request: any, options?: RequestOptions): Rx.Observable<boolean>;
-        checkalivestatusPromise(request: any, options?: RequestOptions): Rx.IPromise<boolean>;
-        // 'checkreadystatus'
-        checkreadystatus(request: any, options?: RequestOptions): Rx.Observable<boolean>;
-        checkreadystatusPromise(request: any, options?: RequestOptions): Rx.IPromise<boolean>;
         // 'codecheck'
-        codecheck(request: OmniSharp.Models.Request, options?: RequestOptions): Rx.Observable<OmniSharp.Models.QuickFixResponse>;
-        codecheckPromise(request: OmniSharp.Models.Request, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.QuickFixResponse>;
+        codecheck(request: OmniSharp.Models.CodeCheckRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.QuickFixResponse>;
+        codecheckPromise(request: OmniSharp.Models.CodeCheckRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.QuickFixResponse>;
         // 'codeformat'
-        codeformat(request: OmniSharp.Models.Request, options?: RequestOptions): Rx.Observable<OmniSharp.Models.CodeFormatResponse>;
-        codeformatPromise(request: OmniSharp.Models.Request, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.CodeFormatResponse>;
+        codeformat(request: OmniSharp.Models.CodeFormatRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.CodeFormatResponse>;
+        codeformatPromise(request: OmniSharp.Models.CodeFormatRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.CodeFormatResponse>;
         // 'currentfilemembersasflat'
-        currentfilemembersasflat(request: OmniSharp.Models.Request, options?: RequestOptions): Rx.Observable<OmniSharp.Models.QuickFix[]>;
-        currentfilemembersasflatPromise(request: OmniSharp.Models.Request, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.QuickFix[]>;
+        currentfilemembersasflat(request: OmniSharp.Models.MembersFlatRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.QuickFix[]>;
+        currentfilemembersasflatPromise(request: OmniSharp.Models.MembersFlatRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.QuickFix[]>;
         // 'currentfilemembersastree'
-        currentfilemembersastree(request: OmniSharp.Models.Request, options?: RequestOptions): Rx.Observable<OmniSharp.Models.FileMemberTree>;
-        currentfilemembersastreePromise(request: OmniSharp.Models.Request, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.FileMemberTree>;
+        currentfilemembersastree(request: OmniSharp.Models.MembersTreeRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.FileMemberTree>;
+        currentfilemembersastreePromise(request: OmniSharp.Models.MembersTreeRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.FileMemberTree>;
         // 'filesChanged'
-        filesChanged(request: OmniSharp.Models.Request[], options?: RequestOptions): Rx.Observable<boolean>;
-        filesChangedPromise(request: OmniSharp.Models.Request[], options?: RequestOptions): Rx.IPromise<boolean>;
+        filesChanged(request: OmniSharp.Models.Request[], options?: RequestOptions): Rx.Observable<OmniSharp.Models.FilesChangedResponse>;
+        filesChangedPromise(request: OmniSharp.Models.Request[], options?: RequestOptions): Rx.IPromise<OmniSharp.Models.FilesChangedResponse>;
         // 'findimplementations'
-        findimplementations(request: OmniSharp.Models.Request, options?: RequestOptions): Rx.Observable<OmniSharp.Models.QuickFixResponse>;
-        findimplementationsPromise(request: OmniSharp.Models.Request, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.QuickFixResponse>;
+        findimplementations(request: OmniSharp.Models.FindImplementationsRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.QuickFixResponse>;
+        findimplementationsPromise(request: OmniSharp.Models.FindImplementationsRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.QuickFixResponse>;
         // 'findsymbols'
         findsymbols(request: OmniSharp.Models.FindSymbolsRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.QuickFixResponse>;
         findsymbolsPromise(request: OmniSharp.Models.FindSymbolsRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.QuickFixResponse>;
         // 'findusages'
         findusages(request: OmniSharp.Models.FindUsagesRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.QuickFixResponse>;
         findusagesPromise(request: OmniSharp.Models.FindUsagesRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.QuickFixResponse>;
+        // 'fixusings'
+        fixusings(request: OmniSharp.Models.FixUsingsRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.FixUsingsResponse>;
+        fixusingsPromise(request: OmniSharp.Models.FixUsingsRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.FixUsingsResponse>;
         // 'formatAfterKeystroke'
         formatAfterKeystroke(request: OmniSharp.Models.FormatAfterKeystrokeRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.FormatRangeResponse>;
         formatAfterKeystrokePromise(request: OmniSharp.Models.FormatAfterKeystrokeRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.FormatRangeResponse>;
@@ -460,8 +488,8 @@ declare module OmniSharp.Api {
         formatRange(request: OmniSharp.Models.FormatRangeRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.FormatRangeResponse>;
         formatRangePromise(request: OmniSharp.Models.FormatRangeRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.FormatRangeResponse>;
         // 'getcodeactions'
-        getcodeactions(request: OmniSharp.Models.CodeActionRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.GetCodeActionsResponse>;
-        getcodeactionsPromise(request: OmniSharp.Models.CodeActionRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.GetCodeActionsResponse>;
+        getcodeactions(request: OmniSharp.Models.GetCodeActionRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.GetCodeActionsResponse>;
+        getcodeactionsPromise(request: OmniSharp.Models.GetCodeActionRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.GetCodeActionsResponse>;
         // 'gettestcontext'
         gettestcontext(request: OmniSharp.Models.TestCommandRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.GetTestCommandResponse>;
         gettestcontextPromise(request: OmniSharp.Models.TestCommandRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.GetTestCommandResponse>;
@@ -469,11 +497,11 @@ declare module OmniSharp.Api {
         gotodefinition(request: OmniSharp.Models.GotoDefinitionRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.GotoDefinitionResponse>;
         gotodefinitionPromise(request: OmniSharp.Models.GotoDefinitionRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.GotoDefinitionResponse>;
         // 'gotofile'
-        gotofile(request: OmniSharp.Models.Request, options?: RequestOptions): Rx.Observable<OmniSharp.Models.QuickFixResponse>;
-        gotofilePromise(request: OmniSharp.Models.Request, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.QuickFixResponse>;
+        gotofile(request: OmniSharp.Models.GotoFileRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.QuickFixResponse>;
+        gotofilePromise(request: OmniSharp.Models.GotoFileRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.QuickFixResponse>;
         // 'gotoregion'
-        gotoregion(request: OmniSharp.Models.Request, options?: RequestOptions): Rx.Observable<OmniSharp.Models.QuickFixResponse>;
-        gotoregionPromise(request: OmniSharp.Models.Request, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.QuickFixResponse>;
+        gotoregion(request: OmniSharp.Models.GotoRegionRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.QuickFixResponse>;
+        gotoregionPromise(request: OmniSharp.Models.GotoRegionRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.QuickFixResponse>;
         // 'highlight'
         highlight(request: OmniSharp.Models.HighlightRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.HighlightResponse>;
         highlightPromise(request: OmniSharp.Models.HighlightRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.HighlightResponse>;
@@ -481,11 +509,11 @@ declare module OmniSharp.Api {
         metadata(request: OmniSharp.Models.MetadataRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.MetadataResponse>;
         metadataPromise(request: OmniSharp.Models.MetadataRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.MetadataResponse>;
         // 'navigatedown'
-        navigatedown(request: OmniSharp.Models.Request, options?: RequestOptions): Rx.Observable<OmniSharp.Models.NavigateResponse>;
-        navigatedownPromise(request: OmniSharp.Models.Request, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.NavigateResponse>;
+        navigatedown(request: OmniSharp.Models.NavigateDownRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.NavigateResponse>;
+        navigatedownPromise(request: OmniSharp.Models.NavigateDownRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.NavigateResponse>;
         // 'navigateup'
-        navigateup(request: OmniSharp.Models.Request, options?: RequestOptions): Rx.Observable<OmniSharp.Models.NavigateResponse>;
-        navigateupPromise(request: OmniSharp.Models.Request, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.NavigateResponse>;
+        navigateup(request: OmniSharp.Models.NavigateUpRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.NavigateResponse>;
+        navigateupPromise(request: OmniSharp.Models.NavigateUpRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.NavigateResponse>;
         // 'packagesearch'
         packagesearch(request: OmniSharp.Models.PackageSearchRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.PackageSearchResponse>;
         packagesearchPromise(request: OmniSharp.Models.PackageSearchRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.PackageSearchResponse>;
@@ -496,20 +524,20 @@ declare module OmniSharp.Api {
         packageversion(request: OmniSharp.Models.PackageVersionRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.PackageVersionResponse>;
         packageversionPromise(request: OmniSharp.Models.PackageVersionRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.PackageVersionResponse>;
         // 'project'
-        project(request: OmniSharp.Models.Request, options?: RequestOptions): Rx.Observable<OmniSharp.Models.ProjectInformationResponse>;
-        projectPromise(request: OmniSharp.Models.Request, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.ProjectInformationResponse>;
+        project(request: OmniSharp.Models.v1.ProjectInformationRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.ProjectInformationResponse>;
+        projectPromise(request: OmniSharp.Models.v1.ProjectInformationRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.ProjectInformationResponse>;
         // 'projects'
-        projects(request: OmniSharp.Models.v1.ProjectInformationRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.WorkspaceInformationResponse>;
-        projectsPromise(request: OmniSharp.Models.v1.ProjectInformationRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.WorkspaceInformationResponse>;
+        projects(request: OmniSharp.Models.v1.WorkspaceInformationRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.WorkspaceInformationResponse>;
+        projectsPromise(request: OmniSharp.Models.v1.WorkspaceInformationRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.WorkspaceInformationResponse>;
         // 'rename'
         rename(request: OmniSharp.Models.RenameRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.RenameResponse>;
         renamePromise(request: OmniSharp.Models.RenameRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.RenameResponse>;
         // 'runcodeaction'
-        runcodeaction(request: OmniSharp.Models.CodeActionRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.RunCodeActionResponse>;
-        runcodeactionPromise(request: OmniSharp.Models.CodeActionRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.RunCodeActionResponse>;
+        runcodeaction(request: OmniSharp.Models.RunCodeActionRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.RunCodeActionResponse>;
+        runcodeactionPromise(request: OmniSharp.Models.RunCodeActionRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.RunCodeActionResponse>;
         // 'signatureHelp'
-        signatureHelp(request: OmniSharp.Models.Request, options?: RequestOptions): Rx.Observable<OmniSharp.Models.SignatureHelp>;
-        signatureHelpPromise(request: OmniSharp.Models.Request, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.SignatureHelp>;
+        signatureHelp(request: OmniSharp.Models.SignatureHelpRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.SignatureHelp>;
+        signatureHelpPromise(request: OmniSharp.Models.SignatureHelpRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.SignatureHelp>;
         // 'typelookup'
         typelookup(request: OmniSharp.Models.TypeLookupRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.TypeLookupResponse>;
         typelookupPromise(request: OmniSharp.Models.TypeLookupRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.TypeLookupResponse>;
@@ -525,36 +553,33 @@ declare module OmniSharp.Api {
         // 'changebuffer'
         changebuffer(request: OmniSharp.Models.ChangeBufferRequest, options?: RequestOptions): Rx.Observable<any>;
         changebufferPromise(request: OmniSharp.Models.ChangeBufferRequest, options?: RequestOptions): Rx.IPromise<any>;
-        // 'checkalivestatus'
-        checkalivestatus(request: any, options?: RequestOptions): Rx.Observable<boolean>;
-        checkalivestatusPromise(request: any, options?: RequestOptions): Rx.IPromise<boolean>;
-        // 'checkreadystatus'
-        checkreadystatus(request: any, options?: RequestOptions): Rx.Observable<boolean>;
-        checkreadystatusPromise(request: any, options?: RequestOptions): Rx.IPromise<boolean>;
         // 'codecheck'
-        codecheck(request: OmniSharp.Models.Request, options?: RequestOptions): Rx.Observable<OmniSharp.Models.QuickFixResponse>;
-        codecheckPromise(request: OmniSharp.Models.Request, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.QuickFixResponse>;
+        codecheck(request: OmniSharp.Models.CodeCheckRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.QuickFixResponse>;
+        codecheckPromise(request: OmniSharp.Models.CodeCheckRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.QuickFixResponse>;
         // 'codeformat'
-        codeformat(request: OmniSharp.Models.Request, options?: RequestOptions): Rx.Observable<OmniSharp.Models.CodeFormatResponse>;
-        codeformatPromise(request: OmniSharp.Models.Request, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.CodeFormatResponse>;
+        codeformat(request: OmniSharp.Models.CodeFormatRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.CodeFormatResponse>;
+        codeformatPromise(request: OmniSharp.Models.CodeFormatRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.CodeFormatResponse>;
         // 'currentfilemembersasflat'
-        currentfilemembersasflat(request: OmniSharp.Models.Request, options?: RequestOptions): Rx.Observable<OmniSharp.Models.QuickFix[]>;
-        currentfilemembersasflatPromise(request: OmniSharp.Models.Request, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.QuickFix[]>;
+        currentfilemembersasflat(request: OmniSharp.Models.MembersFlatRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.QuickFix[]>;
+        currentfilemembersasflatPromise(request: OmniSharp.Models.MembersFlatRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.QuickFix[]>;
         // 'currentfilemembersastree'
-        currentfilemembersastree(request: OmniSharp.Models.Request, options?: RequestOptions): Rx.Observable<OmniSharp.Models.FileMemberTree>;
-        currentfilemembersastreePromise(request: OmniSharp.Models.Request, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.FileMemberTree>;
+        currentfilemembersastree(request: OmniSharp.Models.MembersTreeRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.FileMemberTree>;
+        currentfilemembersastreePromise(request: OmniSharp.Models.MembersTreeRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.FileMemberTree>;
         // 'filesChanged'
-        filesChanged(request: OmniSharp.Models.Request[], options?: RequestOptions): Rx.Observable<boolean>;
-        filesChangedPromise(request: OmniSharp.Models.Request[], options?: RequestOptions): Rx.IPromise<boolean>;
+        filesChanged(request: OmniSharp.Models.Request[], options?: RequestOptions): Rx.Observable<OmniSharp.Models.FilesChangedResponse>;
+        filesChangedPromise(request: OmniSharp.Models.Request[], options?: RequestOptions): Rx.IPromise<OmniSharp.Models.FilesChangedResponse>;
         // 'findimplementations'
-        findimplementations(request: OmniSharp.Models.Request, options?: RequestOptions): Rx.Observable<OmniSharp.Models.QuickFixResponse>;
-        findimplementationsPromise(request: OmniSharp.Models.Request, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.QuickFixResponse>;
+        findimplementations(request: OmniSharp.Models.FindImplementationsRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.QuickFixResponse>;
+        findimplementationsPromise(request: OmniSharp.Models.FindImplementationsRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.QuickFixResponse>;
         // 'findsymbols'
         findsymbols(request: OmniSharp.Models.FindSymbolsRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.QuickFixResponse>;
         findsymbolsPromise(request: OmniSharp.Models.FindSymbolsRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.QuickFixResponse>;
         // 'findusages'
         findusages(request: OmniSharp.Models.FindUsagesRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.QuickFixResponse>;
         findusagesPromise(request: OmniSharp.Models.FindUsagesRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.QuickFixResponse>;
+        // 'fixusings'
+        fixusings(request: OmniSharp.Models.FixUsingsRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.FixUsingsResponse>;
+        fixusingsPromise(request: OmniSharp.Models.FixUsingsRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.FixUsingsResponse>;
         // 'formatAfterKeystroke'
         formatAfterKeystroke(request: OmniSharp.Models.FormatAfterKeystrokeRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.FormatRangeResponse>;
         formatAfterKeystrokePromise(request: OmniSharp.Models.FormatAfterKeystrokeRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.FormatRangeResponse>;
@@ -571,11 +596,11 @@ declare module OmniSharp.Api {
         gotodefinition(request: OmniSharp.Models.GotoDefinitionRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.GotoDefinitionResponse>;
         gotodefinitionPromise(request: OmniSharp.Models.GotoDefinitionRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.GotoDefinitionResponse>;
         // 'gotofile'
-        gotofile(request: OmniSharp.Models.Request, options?: RequestOptions): Rx.Observable<OmniSharp.Models.QuickFixResponse>;
-        gotofilePromise(request: OmniSharp.Models.Request, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.QuickFixResponse>;
+        gotofile(request: OmniSharp.Models.GotoFileRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.QuickFixResponse>;
+        gotofilePromise(request: OmniSharp.Models.GotoFileRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.QuickFixResponse>;
         // 'gotoregion'
-        gotoregion(request: OmniSharp.Models.Request, options?: RequestOptions): Rx.Observable<OmniSharp.Models.QuickFixResponse>;
-        gotoregionPromise(request: OmniSharp.Models.Request, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.QuickFixResponse>;
+        gotoregion(request: OmniSharp.Models.GotoRegionRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.QuickFixResponse>;
+        gotoregionPromise(request: OmniSharp.Models.GotoRegionRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.QuickFixResponse>;
         // 'highlight'
         highlight(request: OmniSharp.Models.HighlightRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.HighlightResponse>;
         highlightPromise(request: OmniSharp.Models.HighlightRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.HighlightResponse>;
@@ -583,11 +608,11 @@ declare module OmniSharp.Api {
         metadata(request: OmniSharp.Models.MetadataRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.MetadataResponse>;
         metadataPromise(request: OmniSharp.Models.MetadataRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.MetadataResponse>;
         // 'navigatedown'
-        navigatedown(request: OmniSharp.Models.Request, options?: RequestOptions): Rx.Observable<OmniSharp.Models.NavigateResponse>;
-        navigatedownPromise(request: OmniSharp.Models.Request, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.NavigateResponse>;
+        navigatedown(request: OmniSharp.Models.NavigateDownRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.NavigateResponse>;
+        navigatedownPromise(request: OmniSharp.Models.NavigateDownRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.NavigateResponse>;
         // 'navigateup'
-        navigateup(request: OmniSharp.Models.Request, options?: RequestOptions): Rx.Observable<OmniSharp.Models.NavigateResponse>;
-        navigateupPromise(request: OmniSharp.Models.Request, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.NavigateResponse>;
+        navigateup(request: OmniSharp.Models.NavigateUpRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.NavigateResponse>;
+        navigateupPromise(request: OmniSharp.Models.NavigateUpRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.NavigateResponse>;
         // 'packagesearch'
         packagesearch(request: OmniSharp.Models.PackageSearchRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.PackageSearchResponse>;
         packagesearchPromise(request: OmniSharp.Models.PackageSearchRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.PackageSearchResponse>;
@@ -598,11 +623,11 @@ declare module OmniSharp.Api {
         packageversion(request: OmniSharp.Models.PackageVersionRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.PackageVersionResponse>;
         packageversionPromise(request: OmniSharp.Models.PackageVersionRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.PackageVersionResponse>;
         // 'project'
-        project(request: OmniSharp.Models.Request, options?: RequestOptions): Rx.Observable<OmniSharp.Models.ProjectInformationResponse>;
-        projectPromise(request: OmniSharp.Models.Request, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.ProjectInformationResponse>;
+        project(request: OmniSharp.Models.v1.ProjectInformationRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.ProjectInformationResponse>;
+        projectPromise(request: OmniSharp.Models.v1.ProjectInformationRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.ProjectInformationResponse>;
         // 'projects'
-        projects(request: OmniSharp.Models.v1.ProjectInformationRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.WorkspaceInformationResponse>;
-        projectsPromise(request: OmniSharp.Models.v1.ProjectInformationRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.WorkspaceInformationResponse>;
+        projects(request: OmniSharp.Models.v1.WorkspaceInformationRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.WorkspaceInformationResponse>;
+        projectsPromise(request: OmniSharp.Models.v1.WorkspaceInformationRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.WorkspaceInformationResponse>;
         // 'rename'
         rename(request: OmniSharp.Models.RenameRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.RenameResponse>;
         renamePromise(request: OmniSharp.Models.RenameRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.RenameResponse>;
@@ -610,8 +635,8 @@ declare module OmniSharp.Api {
         runcodeaction(request: OmniSharp.Models.V2.RunCodeActionRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.V2.RunCodeActionResponse>;
         runcodeactionPromise(request: OmniSharp.Models.V2.RunCodeActionRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.V2.RunCodeActionResponse>;
         // 'signatureHelp'
-        signatureHelp(request: OmniSharp.Models.Request, options?: RequestOptions): Rx.Observable<OmniSharp.Models.SignatureHelp>;
-        signatureHelpPromise(request: OmniSharp.Models.Request, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.SignatureHelp>;
+        signatureHelp(request: OmniSharp.Models.SignatureHelpRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.SignatureHelp>;
+        signatureHelpPromise(request: OmniSharp.Models.SignatureHelpRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.SignatureHelp>;
         // 'typelookup'
         typelookup(request: OmniSharp.Models.TypeLookupRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.TypeLookupResponse>;
         typelookupPromise(request: OmniSharp.Models.TypeLookupRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.TypeLookupResponse>;
@@ -628,48 +653,46 @@ declare module OmniSharp.Events {
         observeAutocomplete: Rx.Observable<Context<OmniSharp.Models.AutoCompleteRequest, OmniSharp.Models.AutoCompleteResponse[]>>;
         // 'changebuffer'
         observeChangebuffer: Rx.Observable<Context<OmniSharp.Models.ChangeBufferRequest, any>>;
-        // 'checkalivestatus'
-        observeCheckalivestatus: Rx.Observable<Context<any, boolean>>;
-        // 'checkreadystatus'
-        observeCheckreadystatus: Rx.Observable<Context<any, boolean>>;
         // 'codecheck'
-        observeCodecheck: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>;
+        observeCodecheck: Rx.Observable<Context<OmniSharp.Models.CodeCheckRequest, OmniSharp.Models.QuickFixResponse>>;
         // 'codeformat'
-        observeCodeformat: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.CodeFormatResponse>>;
+        observeCodeformat: Rx.Observable<Context<OmniSharp.Models.CodeFormatRequest, OmniSharp.Models.CodeFormatResponse>>;
         // 'currentfilemembersasflat'
-        observeCurrentfilemembersasflat: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFix[]>>;
+        observeCurrentfilemembersasflat: Rx.Observable<Context<OmniSharp.Models.MembersFlatRequest, OmniSharp.Models.QuickFix[]>>;
         // 'currentfilemembersastree'
-        observeCurrentfilemembersastree: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.FileMemberTree>>;
+        observeCurrentfilemembersastree: Rx.Observable<Context<OmniSharp.Models.MembersTreeRequest, OmniSharp.Models.FileMemberTree>>;
         // 'filesChanged'
-        observeFilesChanged: Rx.Observable<Context<OmniSharp.Models.Request[], boolean>>;
+        observeFilesChanged: Rx.Observable<Context<OmniSharp.Models.Request[], OmniSharp.Models.FilesChangedResponse>>;
         // 'findimplementations'
-        observeFindimplementations: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>;
+        observeFindimplementations: Rx.Observable<Context<OmniSharp.Models.FindImplementationsRequest, OmniSharp.Models.QuickFixResponse>>;
         // 'findsymbols'
         observeFindsymbols: Rx.Observable<Context<OmniSharp.Models.FindSymbolsRequest, OmniSharp.Models.QuickFixResponse>>;
         // 'findusages'
         observeFindusages: Rx.Observable<Context<OmniSharp.Models.FindUsagesRequest, OmniSharp.Models.QuickFixResponse>>;
+        // 'fixusings'
+        observeFixusings: Rx.Observable<Context<OmniSharp.Models.FixUsingsRequest, OmniSharp.Models.FixUsingsResponse>>;
         // 'formatAfterKeystroke'
         observeFormatAfterKeystroke: Rx.Observable<Context<OmniSharp.Models.FormatAfterKeystrokeRequest, OmniSharp.Models.FormatRangeResponse>>;
         // 'formatRange'
         observeFormatRange: Rx.Observable<Context<OmniSharp.Models.FormatRangeRequest, OmniSharp.Models.FormatRangeResponse>>;
         // 'getcodeactions'
-        observeGetcodeactions: Rx.Observable<Context<OmniSharp.Models.CodeActionRequest, OmniSharp.Models.GetCodeActionsResponse>>;
+        observeGetcodeactions: Rx.Observable<Context<OmniSharp.Models.GetCodeActionRequest, OmniSharp.Models.GetCodeActionsResponse>>;
         // 'gettestcontext'
         observeGettestcontext: Rx.Observable<Context<OmniSharp.Models.TestCommandRequest, OmniSharp.Models.GetTestCommandResponse>>;
         // 'gotodefinition'
         observeGotodefinition: Rx.Observable<Context<OmniSharp.Models.GotoDefinitionRequest, OmniSharp.Models.GotoDefinitionResponse>>;
         // 'gotofile'
-        observeGotofile: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>;
+        observeGotofile: Rx.Observable<Context<OmniSharp.Models.GotoFileRequest, OmniSharp.Models.QuickFixResponse>>;
         // 'gotoregion'
-        observeGotoregion: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>;
+        observeGotoregion: Rx.Observable<Context<OmniSharp.Models.GotoRegionRequest, OmniSharp.Models.QuickFixResponse>>;
         // 'highlight'
         observeHighlight: Rx.Observable<Context<OmniSharp.Models.HighlightRequest, OmniSharp.Models.HighlightResponse>>;
         // 'metadata'
         observeMetadata: Rx.Observable<Context<OmniSharp.Models.MetadataRequest, OmniSharp.Models.MetadataResponse>>;
         // 'navigatedown'
-        observeNavigatedown: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>>;
+        observeNavigatedown: Rx.Observable<Context<OmniSharp.Models.NavigateDownRequest, OmniSharp.Models.NavigateResponse>>;
         // 'navigateup'
-        observeNavigateup: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>>;
+        observeNavigateup: Rx.Observable<Context<OmniSharp.Models.NavigateUpRequest, OmniSharp.Models.NavigateResponse>>;
         // 'packagesearch'
         observePackagesearch: Rx.Observable<Context<OmniSharp.Models.PackageSearchRequest, OmniSharp.Models.PackageSearchResponse>>;
         // 'packagesource'
@@ -677,15 +700,15 @@ declare module OmniSharp.Events {
         // 'packageversion'
         observePackageversion: Rx.Observable<Context<OmniSharp.Models.PackageVersionRequest, OmniSharp.Models.PackageVersionResponse>>;
         // 'project'
-        observeProject: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.ProjectInformationResponse>>;
+        observeProject: Rx.Observable<Context<OmniSharp.Models.v1.ProjectInformationRequest, OmniSharp.Models.ProjectInformationResponse>>;
         // 'projects'
-        observeProjects: Rx.Observable<Context<OmniSharp.Models.v1.ProjectInformationRequest, OmniSharp.Models.WorkspaceInformationResponse>>;
+        observeProjects: Rx.Observable<Context<OmniSharp.Models.v1.WorkspaceInformationRequest, OmniSharp.Models.WorkspaceInformationResponse>>;
         // 'rename'
         observeRename: Rx.Observable<Context<OmniSharp.Models.RenameRequest, OmniSharp.Models.RenameResponse>>;
         // 'runcodeaction'
-        observeRuncodeaction: Rx.Observable<Context<OmniSharp.Models.CodeActionRequest, OmniSharp.Models.RunCodeActionResponse>>;
+        observeRuncodeaction: Rx.Observable<Context<OmniSharp.Models.RunCodeActionRequest, OmniSharp.Models.RunCodeActionResponse>>;
         // 'signatureHelp'
-        observeSignatureHelp: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.SignatureHelp>>;
+        observeSignatureHelp: Rx.Observable<Context<OmniSharp.Models.SignatureHelpRequest, OmniSharp.Models.SignatureHelp>>;
         // 'typelookup'
         observeTypelookup: Rx.Observable<Context<OmniSharp.Models.TypeLookupRequest, OmniSharp.Models.TypeLookupResponse>>;
         // 'updatebuffer'
@@ -697,26 +720,24 @@ declare module OmniSharp.Events {
         observeAutocomplete: Rx.Observable<Context<OmniSharp.Models.AutoCompleteRequest, OmniSharp.Models.AutoCompleteResponse[]>>;
         // 'changebuffer'
         observeChangebuffer: Rx.Observable<Context<OmniSharp.Models.ChangeBufferRequest, any>>;
-        // 'checkalivestatus'
-        observeCheckalivestatus: Rx.Observable<Context<any, boolean>>;
-        // 'checkreadystatus'
-        observeCheckreadystatus: Rx.Observable<Context<any, boolean>>;
         // 'codecheck'
-        observeCodecheck: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>;
+        observeCodecheck: Rx.Observable<Context<OmniSharp.Models.CodeCheckRequest, OmniSharp.Models.QuickFixResponse>>;
         // 'codeformat'
-        observeCodeformat: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.CodeFormatResponse>>;
+        observeCodeformat: Rx.Observable<Context<OmniSharp.Models.CodeFormatRequest, OmniSharp.Models.CodeFormatResponse>>;
         // 'currentfilemembersasflat'
-        observeCurrentfilemembersasflat: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFix[]>>;
+        observeCurrentfilemembersasflat: Rx.Observable<Context<OmniSharp.Models.MembersFlatRequest, OmniSharp.Models.QuickFix[]>>;
         // 'currentfilemembersastree'
-        observeCurrentfilemembersastree: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.FileMemberTree>>;
+        observeCurrentfilemembersastree: Rx.Observable<Context<OmniSharp.Models.MembersTreeRequest, OmniSharp.Models.FileMemberTree>>;
         // 'filesChanged'
-        observeFilesChanged: Rx.Observable<Context<OmniSharp.Models.Request[], boolean>>;
+        observeFilesChanged: Rx.Observable<Context<OmniSharp.Models.Request[], OmniSharp.Models.FilesChangedResponse>>;
         // 'findimplementations'
-        observeFindimplementations: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>;
+        observeFindimplementations: Rx.Observable<Context<OmniSharp.Models.FindImplementationsRequest, OmniSharp.Models.QuickFixResponse>>;
         // 'findsymbols'
         observeFindsymbols: Rx.Observable<Context<OmniSharp.Models.FindSymbolsRequest, OmniSharp.Models.QuickFixResponse>>;
         // 'findusages'
         observeFindusages: Rx.Observable<Context<OmniSharp.Models.FindUsagesRequest, OmniSharp.Models.QuickFixResponse>>;
+        // 'fixusings'
+        observeFixusings: Rx.Observable<Context<OmniSharp.Models.FixUsingsRequest, OmniSharp.Models.FixUsingsResponse>>;
         // 'formatAfterKeystroke'
         observeFormatAfterKeystroke: Rx.Observable<Context<OmniSharp.Models.FormatAfterKeystrokeRequest, OmniSharp.Models.FormatRangeResponse>>;
         // 'formatRange'
@@ -728,17 +749,17 @@ declare module OmniSharp.Events {
         // 'gotodefinition'
         observeGotodefinition: Rx.Observable<Context<OmniSharp.Models.GotoDefinitionRequest, OmniSharp.Models.GotoDefinitionResponse>>;
         // 'gotofile'
-        observeGotofile: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>;
+        observeGotofile: Rx.Observable<Context<OmniSharp.Models.GotoFileRequest, OmniSharp.Models.QuickFixResponse>>;
         // 'gotoregion'
-        observeGotoregion: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>;
+        observeGotoregion: Rx.Observable<Context<OmniSharp.Models.GotoRegionRequest, OmniSharp.Models.QuickFixResponse>>;
         // 'highlight'
         observeHighlight: Rx.Observable<Context<OmniSharp.Models.HighlightRequest, OmniSharp.Models.HighlightResponse>>;
         // 'metadata'
         observeMetadata: Rx.Observable<Context<OmniSharp.Models.MetadataRequest, OmniSharp.Models.MetadataResponse>>;
         // 'navigatedown'
-        observeNavigatedown: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>>;
+        observeNavigatedown: Rx.Observable<Context<OmniSharp.Models.NavigateDownRequest, OmniSharp.Models.NavigateResponse>>;
         // 'navigateup'
-        observeNavigateup: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>>;
+        observeNavigateup: Rx.Observable<Context<OmniSharp.Models.NavigateUpRequest, OmniSharp.Models.NavigateResponse>>;
         // 'packagesearch'
         observePackagesearch: Rx.Observable<Context<OmniSharp.Models.PackageSearchRequest, OmniSharp.Models.PackageSearchResponse>>;
         // 'packagesource'
@@ -746,15 +767,15 @@ declare module OmniSharp.Events {
         // 'packageversion'
         observePackageversion: Rx.Observable<Context<OmniSharp.Models.PackageVersionRequest, OmniSharp.Models.PackageVersionResponse>>;
         // 'project'
-        observeProject: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.ProjectInformationResponse>>;
+        observeProject: Rx.Observable<Context<OmniSharp.Models.v1.ProjectInformationRequest, OmniSharp.Models.ProjectInformationResponse>>;
         // 'projects'
-        observeProjects: Rx.Observable<Context<OmniSharp.Models.v1.ProjectInformationRequest, OmniSharp.Models.WorkspaceInformationResponse>>;
+        observeProjects: Rx.Observable<Context<OmniSharp.Models.v1.WorkspaceInformationRequest, OmniSharp.Models.WorkspaceInformationResponse>>;
         // 'rename'
         observeRename: Rx.Observable<Context<OmniSharp.Models.RenameRequest, OmniSharp.Models.RenameResponse>>;
         // 'runcodeaction'
         observeRuncodeaction: Rx.Observable<Context<OmniSharp.Models.V2.RunCodeActionRequest, OmniSharp.Models.V2.RunCodeActionResponse>>;
         // 'signatureHelp'
-        observeSignatureHelp: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.SignatureHelp>>;
+        observeSignatureHelp: Rx.Observable<Context<OmniSharp.Models.SignatureHelpRequest, OmniSharp.Models.SignatureHelp>>;
         // 'typelookup'
         observeTypelookup: Rx.Observable<Context<OmniSharp.Models.TypeLookupRequest, OmniSharp.Models.TypeLookupResponse>>;
         // 'updatebuffer'
@@ -769,48 +790,46 @@ declare module OmniSharp.Events.Aggregate {
         observeAutocomplete: Rx.Observable<CombinationKey<Context<OmniSharp.Models.AutoCompleteRequest, OmniSharp.Models.AutoCompleteResponse[]>>[]>;
         // 'changebuffer'
         observeChangebuffer: Rx.Observable<CombinationKey<Context<OmniSharp.Models.ChangeBufferRequest, any>>[]>;
-        // 'checkalivestatus'
-        observeCheckalivestatus: Rx.Observable<CombinationKey<Context<any, boolean>>[]>;
-        // 'checkreadystatus'
-        observeCheckreadystatus: Rx.Observable<CombinationKey<Context<any, boolean>>[]>;
         // 'codecheck'
-        observeCodecheck: Rx.Observable<CombinationKey<Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>[]>;
+        observeCodecheck: Rx.Observable<CombinationKey<Context<OmniSharp.Models.CodeCheckRequest, OmniSharp.Models.QuickFixResponse>>[]>;
         // 'codeformat'
-        observeCodeformat: Rx.Observable<CombinationKey<Context<OmniSharp.Models.Request, OmniSharp.Models.CodeFormatResponse>>[]>;
+        observeCodeformat: Rx.Observable<CombinationKey<Context<OmniSharp.Models.CodeFormatRequest, OmniSharp.Models.CodeFormatResponse>>[]>;
         // 'currentfilemembersasflat'
-        observeCurrentfilemembersasflat: Rx.Observable<CombinationKey<Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFix[]>>[]>;
+        observeCurrentfilemembersasflat: Rx.Observable<CombinationKey<Context<OmniSharp.Models.MembersFlatRequest, OmniSharp.Models.QuickFix[]>>[]>;
         // 'currentfilemembersastree'
-        observeCurrentfilemembersastree: Rx.Observable<CombinationKey<Context<OmniSharp.Models.Request, OmniSharp.Models.FileMemberTree>>[]>;
+        observeCurrentfilemembersastree: Rx.Observable<CombinationKey<Context<OmniSharp.Models.MembersTreeRequest, OmniSharp.Models.FileMemberTree>>[]>;
         // 'filesChanged'
-        observeFilesChanged: Rx.Observable<CombinationKey<Context<OmniSharp.Models.Request[], boolean>>[]>;
+        observeFilesChanged: Rx.Observable<CombinationKey<Context<OmniSharp.Models.Request[], OmniSharp.Models.FilesChangedResponse>>[]>;
         // 'findimplementations'
-        observeFindimplementations: Rx.Observable<CombinationKey<Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>[]>;
+        observeFindimplementations: Rx.Observable<CombinationKey<Context<OmniSharp.Models.FindImplementationsRequest, OmniSharp.Models.QuickFixResponse>>[]>;
         // 'findsymbols'
         observeFindsymbols: Rx.Observable<CombinationKey<Context<OmniSharp.Models.FindSymbolsRequest, OmniSharp.Models.QuickFixResponse>>[]>;
         // 'findusages'
         observeFindusages: Rx.Observable<CombinationKey<Context<OmniSharp.Models.FindUsagesRequest, OmniSharp.Models.QuickFixResponse>>[]>;
+        // 'fixusings'
+        observeFixusings: Rx.Observable<CombinationKey<Context<OmniSharp.Models.FixUsingsRequest, OmniSharp.Models.FixUsingsResponse>>[]>;
         // 'formatAfterKeystroke'
         observeFormatAfterKeystroke: Rx.Observable<CombinationKey<Context<OmniSharp.Models.FormatAfterKeystrokeRequest, OmniSharp.Models.FormatRangeResponse>>[]>;
         // 'formatRange'
         observeFormatRange: Rx.Observable<CombinationKey<Context<OmniSharp.Models.FormatRangeRequest, OmniSharp.Models.FormatRangeResponse>>[]>;
         // 'getcodeactions'
-        observeGetcodeactions: Rx.Observable<CombinationKey<Context<OmniSharp.Models.CodeActionRequest, OmniSharp.Models.GetCodeActionsResponse>>[]>;
+        observeGetcodeactions: Rx.Observable<CombinationKey<Context<OmniSharp.Models.GetCodeActionRequest, OmniSharp.Models.GetCodeActionsResponse>>[]>;
         // 'gettestcontext'
         observeGettestcontext: Rx.Observable<CombinationKey<Context<OmniSharp.Models.TestCommandRequest, OmniSharp.Models.GetTestCommandResponse>>[]>;
         // 'gotodefinition'
         observeGotodefinition: Rx.Observable<CombinationKey<Context<OmniSharp.Models.GotoDefinitionRequest, OmniSharp.Models.GotoDefinitionResponse>>[]>;
         // 'gotofile'
-        observeGotofile: Rx.Observable<CombinationKey<Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>[]>;
+        observeGotofile: Rx.Observable<CombinationKey<Context<OmniSharp.Models.GotoFileRequest, OmniSharp.Models.QuickFixResponse>>[]>;
         // 'gotoregion'
-        observeGotoregion: Rx.Observable<CombinationKey<Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>[]>;
+        observeGotoregion: Rx.Observable<CombinationKey<Context<OmniSharp.Models.GotoRegionRequest, OmniSharp.Models.QuickFixResponse>>[]>;
         // 'highlight'
         observeHighlight: Rx.Observable<CombinationKey<Context<OmniSharp.Models.HighlightRequest, OmniSharp.Models.HighlightResponse>>[]>;
         // 'metadata'
         observeMetadata: Rx.Observable<CombinationKey<Context<OmniSharp.Models.MetadataRequest, OmniSharp.Models.MetadataResponse>>[]>;
         // 'navigatedown'
-        observeNavigatedown: Rx.Observable<CombinationKey<Context<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>>[]>;
+        observeNavigatedown: Rx.Observable<CombinationKey<Context<OmniSharp.Models.NavigateDownRequest, OmniSharp.Models.NavigateResponse>>[]>;
         // 'navigateup'
-        observeNavigateup: Rx.Observable<CombinationKey<Context<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>>[]>;
+        observeNavigateup: Rx.Observable<CombinationKey<Context<OmniSharp.Models.NavigateUpRequest, OmniSharp.Models.NavigateResponse>>[]>;
         // 'packagesearch'
         observePackagesearch: Rx.Observable<CombinationKey<Context<OmniSharp.Models.PackageSearchRequest, OmniSharp.Models.PackageSearchResponse>>[]>;
         // 'packagesource'
@@ -818,15 +837,15 @@ declare module OmniSharp.Events.Aggregate {
         // 'packageversion'
         observePackageversion: Rx.Observable<CombinationKey<Context<OmniSharp.Models.PackageVersionRequest, OmniSharp.Models.PackageVersionResponse>>[]>;
         // 'project'
-        observeProject: Rx.Observable<CombinationKey<Context<OmniSharp.Models.Request, OmniSharp.Models.ProjectInformationResponse>>[]>;
+        observeProject: Rx.Observable<CombinationKey<Context<OmniSharp.Models.v1.ProjectInformationRequest, OmniSharp.Models.ProjectInformationResponse>>[]>;
         // 'projects'
-        observeProjects: Rx.Observable<CombinationKey<Context<OmniSharp.Models.v1.ProjectInformationRequest, OmniSharp.Models.WorkspaceInformationResponse>>[]>;
+        observeProjects: Rx.Observable<CombinationKey<Context<OmniSharp.Models.v1.WorkspaceInformationRequest, OmniSharp.Models.WorkspaceInformationResponse>>[]>;
         // 'rename'
         observeRename: Rx.Observable<CombinationKey<Context<OmniSharp.Models.RenameRequest, OmniSharp.Models.RenameResponse>>[]>;
         // 'runcodeaction'
-        observeRuncodeaction: Rx.Observable<CombinationKey<Context<OmniSharp.Models.CodeActionRequest, OmniSharp.Models.RunCodeActionResponse>>[]>;
+        observeRuncodeaction: Rx.Observable<CombinationKey<Context<OmniSharp.Models.RunCodeActionRequest, OmniSharp.Models.RunCodeActionResponse>>[]>;
         // 'signatureHelp'
-        observeSignatureHelp: Rx.Observable<CombinationKey<Context<OmniSharp.Models.Request, OmniSharp.Models.SignatureHelp>>[]>;
+        observeSignatureHelp: Rx.Observable<CombinationKey<Context<OmniSharp.Models.SignatureHelpRequest, OmniSharp.Models.SignatureHelp>>[]>;
         // 'typelookup'
         observeTypelookup: Rx.Observable<CombinationKey<Context<OmniSharp.Models.TypeLookupRequest, OmniSharp.Models.TypeLookupResponse>>[]>;
         // 'updatebuffer'
@@ -838,26 +857,24 @@ declare module OmniSharp.Events.Aggregate {
         observeAutocomplete: Rx.Observable<CombinationKey<Context<OmniSharp.Models.AutoCompleteRequest, OmniSharp.Models.AutoCompleteResponse[]>>[]>;
         // 'changebuffer'
         observeChangebuffer: Rx.Observable<CombinationKey<Context<OmniSharp.Models.ChangeBufferRequest, any>>[]>;
-        // 'checkalivestatus'
-        observeCheckalivestatus: Rx.Observable<CombinationKey<Context<any, boolean>>[]>;
-        // 'checkreadystatus'
-        observeCheckreadystatus: Rx.Observable<CombinationKey<Context<any, boolean>>[]>;
         // 'codecheck'
-        observeCodecheck: Rx.Observable<CombinationKey<Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>[]>;
+        observeCodecheck: Rx.Observable<CombinationKey<Context<OmniSharp.Models.CodeCheckRequest, OmniSharp.Models.QuickFixResponse>>[]>;
         // 'codeformat'
-        observeCodeformat: Rx.Observable<CombinationKey<Context<OmniSharp.Models.Request, OmniSharp.Models.CodeFormatResponse>>[]>;
+        observeCodeformat: Rx.Observable<CombinationKey<Context<OmniSharp.Models.CodeFormatRequest, OmniSharp.Models.CodeFormatResponse>>[]>;
         // 'currentfilemembersasflat'
-        observeCurrentfilemembersasflat: Rx.Observable<CombinationKey<Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFix[]>>[]>;
+        observeCurrentfilemembersasflat: Rx.Observable<CombinationKey<Context<OmniSharp.Models.MembersFlatRequest, OmniSharp.Models.QuickFix[]>>[]>;
         // 'currentfilemembersastree'
-        observeCurrentfilemembersastree: Rx.Observable<CombinationKey<Context<OmniSharp.Models.Request, OmniSharp.Models.FileMemberTree>>[]>;
+        observeCurrentfilemembersastree: Rx.Observable<CombinationKey<Context<OmniSharp.Models.MembersTreeRequest, OmniSharp.Models.FileMemberTree>>[]>;
         // 'filesChanged'
-        observeFilesChanged: Rx.Observable<CombinationKey<Context<OmniSharp.Models.Request[], boolean>>[]>;
+        observeFilesChanged: Rx.Observable<CombinationKey<Context<OmniSharp.Models.Request[], OmniSharp.Models.FilesChangedResponse>>[]>;
         // 'findimplementations'
-        observeFindimplementations: Rx.Observable<CombinationKey<Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>[]>;
+        observeFindimplementations: Rx.Observable<CombinationKey<Context<OmniSharp.Models.FindImplementationsRequest, OmniSharp.Models.QuickFixResponse>>[]>;
         // 'findsymbols'
         observeFindsymbols: Rx.Observable<CombinationKey<Context<OmniSharp.Models.FindSymbolsRequest, OmniSharp.Models.QuickFixResponse>>[]>;
         // 'findusages'
         observeFindusages: Rx.Observable<CombinationKey<Context<OmniSharp.Models.FindUsagesRequest, OmniSharp.Models.QuickFixResponse>>[]>;
+        // 'fixusings'
+        observeFixusings: Rx.Observable<CombinationKey<Context<OmniSharp.Models.FixUsingsRequest, OmniSharp.Models.FixUsingsResponse>>[]>;
         // 'formatAfterKeystroke'
         observeFormatAfterKeystroke: Rx.Observable<CombinationKey<Context<OmniSharp.Models.FormatAfterKeystrokeRequest, OmniSharp.Models.FormatRangeResponse>>[]>;
         // 'formatRange'
@@ -869,17 +886,17 @@ declare module OmniSharp.Events.Aggregate {
         // 'gotodefinition'
         observeGotodefinition: Rx.Observable<CombinationKey<Context<OmniSharp.Models.GotoDefinitionRequest, OmniSharp.Models.GotoDefinitionResponse>>[]>;
         // 'gotofile'
-        observeGotofile: Rx.Observable<CombinationKey<Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>[]>;
+        observeGotofile: Rx.Observable<CombinationKey<Context<OmniSharp.Models.GotoFileRequest, OmniSharp.Models.QuickFixResponse>>[]>;
         // 'gotoregion'
-        observeGotoregion: Rx.Observable<CombinationKey<Context<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>>[]>;
+        observeGotoregion: Rx.Observable<CombinationKey<Context<OmniSharp.Models.GotoRegionRequest, OmniSharp.Models.QuickFixResponse>>[]>;
         // 'highlight'
         observeHighlight: Rx.Observable<CombinationKey<Context<OmniSharp.Models.HighlightRequest, OmniSharp.Models.HighlightResponse>>[]>;
         // 'metadata'
         observeMetadata: Rx.Observable<CombinationKey<Context<OmniSharp.Models.MetadataRequest, OmniSharp.Models.MetadataResponse>>[]>;
         // 'navigatedown'
-        observeNavigatedown: Rx.Observable<CombinationKey<Context<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>>[]>;
+        observeNavigatedown: Rx.Observable<CombinationKey<Context<OmniSharp.Models.NavigateDownRequest, OmniSharp.Models.NavigateResponse>>[]>;
         // 'navigateup'
-        observeNavigateup: Rx.Observable<CombinationKey<Context<OmniSharp.Models.Request, OmniSharp.Models.NavigateResponse>>[]>;
+        observeNavigateup: Rx.Observable<CombinationKey<Context<OmniSharp.Models.NavigateUpRequest, OmniSharp.Models.NavigateResponse>>[]>;
         // 'packagesearch'
         observePackagesearch: Rx.Observable<CombinationKey<Context<OmniSharp.Models.PackageSearchRequest, OmniSharp.Models.PackageSearchResponse>>[]>;
         // 'packagesource'
@@ -887,15 +904,15 @@ declare module OmniSharp.Events.Aggregate {
         // 'packageversion'
         observePackageversion: Rx.Observable<CombinationKey<Context<OmniSharp.Models.PackageVersionRequest, OmniSharp.Models.PackageVersionResponse>>[]>;
         // 'project'
-        observeProject: Rx.Observable<CombinationKey<Context<OmniSharp.Models.Request, OmniSharp.Models.ProjectInformationResponse>>[]>;
+        observeProject: Rx.Observable<CombinationKey<Context<OmniSharp.Models.v1.ProjectInformationRequest, OmniSharp.Models.ProjectInformationResponse>>[]>;
         // 'projects'
-        observeProjects: Rx.Observable<CombinationKey<Context<OmniSharp.Models.v1.ProjectInformationRequest, OmniSharp.Models.WorkspaceInformationResponse>>[]>;
+        observeProjects: Rx.Observable<CombinationKey<Context<OmniSharp.Models.v1.WorkspaceInformationRequest, OmniSharp.Models.WorkspaceInformationResponse>>[]>;
         // 'rename'
         observeRename: Rx.Observable<CombinationKey<Context<OmniSharp.Models.RenameRequest, OmniSharp.Models.RenameResponse>>[]>;
         // 'runcodeaction'
         observeRuncodeaction: Rx.Observable<CombinationKey<Context<OmniSharp.Models.V2.RunCodeActionRequest, OmniSharp.Models.V2.RunCodeActionResponse>>[]>;
         // 'signatureHelp'
-        observeSignatureHelp: Rx.Observable<CombinationKey<Context<OmniSharp.Models.Request, OmniSharp.Models.SignatureHelp>>[]>;
+        observeSignatureHelp: Rx.Observable<CombinationKey<Context<OmniSharp.Models.SignatureHelpRequest, OmniSharp.Models.SignatureHelp>>[]>;
         // 'typelookup'
         observeTypelookup: Rx.Observable<CombinationKey<Context<OmniSharp.Models.TypeLookupRequest, OmniSharp.Models.TypeLookupResponse>>[]>;
         // 'updatebuffer'
@@ -927,3 +944,17 @@ declare module OmniSharp.Aggregate {
         unresolvedDependencies: Rx.Observable<CombinationKey<OmniSharp.Models.UnresolvedDependenciesMessage>[]>;
     }
 }
+
+declare module OmniSharp.Models {
+    interface ProjectInformationResponse {
+        MsBuildProject: OmniSharp.Models.MSBuildProject;
+        DnxProject: OmniSharp.Models.DnxProject;
+    }
+
+    interface WorkspaceInformationResponse {
+        Dnx: OmniSharp.Models.DnxWorkspaceInformation;
+        MSBuild: OmniSharp.Models.MsBuildWorkspaceInformation;
+        ScriptCs: OmniSharp.ScriptCs.ScriptCsContext;
+    }
+}
+            
