@@ -120,6 +120,14 @@ declare module OmniSharp.Models {
         OnlyThisFile?: boolean;
         ExcludeDefinition?: boolean;
     }
+    interface FixUsingsRequest extends OmniSharp.Models.Request {
+        WantsTextChanges?: boolean;
+    }
+    interface FixUsingsResponse {
+        Buffer: string;
+        AmbiguousResults: OmniSharp.Models.QuickFix[];
+        Changes: OmniSharp.Models.LinePositionSpanTextChange[];
+    }
     interface FormatAfterKeystrokeRequest extends OmniSharp.Models.Request {
         Character?: string;
         Char?: string;
@@ -453,6 +461,9 @@ declare module OmniSharp.Api {
         // 'findusages'
         findusages(request: OmniSharp.Models.FindUsagesRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.QuickFixResponse>;
         findusagesPromise(request: OmniSharp.Models.FindUsagesRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.QuickFixResponse>;
+        // 'fixusings'
+        fixusings(request: OmniSharp.Models.FixUsingsRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.FixUsingsResponse>;
+        fixusingsPromise(request: OmniSharp.Models.FixUsingsRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.FixUsingsResponse>;
         // 'formatAfterKeystroke'
         formatAfterKeystroke(request: OmniSharp.Models.FormatAfterKeystrokeRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.FormatRangeResponse>;
         formatAfterKeystrokePromise(request: OmniSharp.Models.FormatAfterKeystrokeRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.FormatRangeResponse>;
@@ -510,6 +521,9 @@ declare module OmniSharp.Api {
         // 'signatureHelp'
         signatureHelp(request: OmniSharp.Models.Request, options?: RequestOptions): Rx.Observable<OmniSharp.Models.SignatureHelp>;
         signatureHelpPromise(request: OmniSharp.Models.Request, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.SignatureHelp>;
+        // 'stopserver'
+        stopserver(request: any, options?: RequestOptions): Rx.Observable<boolean>;
+        stopserverPromise(request: any, options?: RequestOptions): Rx.IPromise<boolean>;
         // 'typelookup'
         typelookup(request: OmniSharp.Models.TypeLookupRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.TypeLookupResponse>;
         typelookupPromise(request: OmniSharp.Models.TypeLookupRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.TypeLookupResponse>;
@@ -555,6 +569,9 @@ declare module OmniSharp.Api {
         // 'findusages'
         findusages(request: OmniSharp.Models.FindUsagesRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.QuickFixResponse>;
         findusagesPromise(request: OmniSharp.Models.FindUsagesRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.QuickFixResponse>;
+        // 'fixusings'
+        fixusings(request: OmniSharp.Models.FixUsingsRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.FixUsingsResponse>;
+        fixusingsPromise(request: OmniSharp.Models.FixUsingsRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.FixUsingsResponse>;
         // 'formatAfterKeystroke'
         formatAfterKeystroke(request: OmniSharp.Models.FormatAfterKeystrokeRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.FormatRangeResponse>;
         formatAfterKeystrokePromise(request: OmniSharp.Models.FormatAfterKeystrokeRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.FormatRangeResponse>;
@@ -612,6 +629,9 @@ declare module OmniSharp.Api {
         // 'signatureHelp'
         signatureHelp(request: OmniSharp.Models.Request, options?: RequestOptions): Rx.Observable<OmniSharp.Models.SignatureHelp>;
         signatureHelpPromise(request: OmniSharp.Models.Request, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.SignatureHelp>;
+        // 'stopserver'
+        stopserver(request: any, options?: RequestOptions): Rx.Observable<boolean>;
+        stopserverPromise(request: any, options?: RequestOptions): Rx.IPromise<boolean>;
         // 'typelookup'
         typelookup(request: OmniSharp.Models.TypeLookupRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.TypeLookupResponse>;
         typelookupPromise(request: OmniSharp.Models.TypeLookupRequest, options?: RequestOptions): Rx.IPromise<OmniSharp.Models.TypeLookupResponse>;
@@ -648,6 +668,8 @@ declare module OmniSharp.Events {
         observeFindsymbols: Rx.Observable<Context<OmniSharp.Models.FindSymbolsRequest, OmniSharp.Models.QuickFixResponse>>;
         // 'findusages'
         observeFindusages: Rx.Observable<Context<OmniSharp.Models.FindUsagesRequest, OmniSharp.Models.QuickFixResponse>>;
+        // 'fixusings'
+        observeFixusings: Rx.Observable<Context<OmniSharp.Models.FixUsingsRequest, OmniSharp.Models.FixUsingsResponse>>;
         // 'formatAfterKeystroke'
         observeFormatAfterKeystroke: Rx.Observable<Context<OmniSharp.Models.FormatAfterKeystrokeRequest, OmniSharp.Models.FormatRangeResponse>>;
         // 'formatRange'
@@ -686,6 +708,8 @@ declare module OmniSharp.Events {
         observeRuncodeaction: Rx.Observable<Context<OmniSharp.Models.CodeActionRequest, OmniSharp.Models.RunCodeActionResponse>>;
         // 'signatureHelp'
         observeSignatureHelp: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.SignatureHelp>>;
+        // 'stopserver'
+        observeStopserver: Rx.Observable<Context<any, boolean>>;
         // 'typelookup'
         observeTypelookup: Rx.Observable<Context<OmniSharp.Models.TypeLookupRequest, OmniSharp.Models.TypeLookupResponse>>;
         // 'updatebuffer'
@@ -717,6 +741,8 @@ declare module OmniSharp.Events {
         observeFindsymbols: Rx.Observable<Context<OmniSharp.Models.FindSymbolsRequest, OmniSharp.Models.QuickFixResponse>>;
         // 'findusages'
         observeFindusages: Rx.Observable<Context<OmniSharp.Models.FindUsagesRequest, OmniSharp.Models.QuickFixResponse>>;
+        // 'fixusings'
+        observeFixusings: Rx.Observable<Context<OmniSharp.Models.FixUsingsRequest, OmniSharp.Models.FixUsingsResponse>>;
         // 'formatAfterKeystroke'
         observeFormatAfterKeystroke: Rx.Observable<Context<OmniSharp.Models.FormatAfterKeystrokeRequest, OmniSharp.Models.FormatRangeResponse>>;
         // 'formatRange'
@@ -755,6 +781,8 @@ declare module OmniSharp.Events {
         observeRuncodeaction: Rx.Observable<Context<OmniSharp.Models.V2.RunCodeActionRequest, OmniSharp.Models.V2.RunCodeActionResponse>>;
         // 'signatureHelp'
         observeSignatureHelp: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.SignatureHelp>>;
+        // 'stopserver'
+        observeStopserver: Rx.Observable<Context<any, boolean>>;
         // 'typelookup'
         observeTypelookup: Rx.Observable<Context<OmniSharp.Models.TypeLookupRequest, OmniSharp.Models.TypeLookupResponse>>;
         // 'updatebuffer'
@@ -789,6 +817,8 @@ declare module OmniSharp.Events.Aggregate {
         observeFindsymbols: Rx.Observable<CombinationKey<Context<OmniSharp.Models.FindSymbolsRequest, OmniSharp.Models.QuickFixResponse>>[]>;
         // 'findusages'
         observeFindusages: Rx.Observable<CombinationKey<Context<OmniSharp.Models.FindUsagesRequest, OmniSharp.Models.QuickFixResponse>>[]>;
+        // 'fixusings'
+        observeFixusings: Rx.Observable<CombinationKey<Context<OmniSharp.Models.FixUsingsRequest, OmniSharp.Models.FixUsingsResponse>>[]>;
         // 'formatAfterKeystroke'
         observeFormatAfterKeystroke: Rx.Observable<CombinationKey<Context<OmniSharp.Models.FormatAfterKeystrokeRequest, OmniSharp.Models.FormatRangeResponse>>[]>;
         // 'formatRange'
@@ -827,6 +857,8 @@ declare module OmniSharp.Events.Aggregate {
         observeRuncodeaction: Rx.Observable<CombinationKey<Context<OmniSharp.Models.CodeActionRequest, OmniSharp.Models.RunCodeActionResponse>>[]>;
         // 'signatureHelp'
         observeSignatureHelp: Rx.Observable<CombinationKey<Context<OmniSharp.Models.Request, OmniSharp.Models.SignatureHelp>>[]>;
+        // 'stopserver'
+        observeStopserver: Rx.Observable<CombinationKey<Context<any, boolean>>[]>;
         // 'typelookup'
         observeTypelookup: Rx.Observable<CombinationKey<Context<OmniSharp.Models.TypeLookupRequest, OmniSharp.Models.TypeLookupResponse>>[]>;
         // 'updatebuffer'
@@ -858,6 +890,8 @@ declare module OmniSharp.Events.Aggregate {
         observeFindsymbols: Rx.Observable<CombinationKey<Context<OmniSharp.Models.FindSymbolsRequest, OmniSharp.Models.QuickFixResponse>>[]>;
         // 'findusages'
         observeFindusages: Rx.Observable<CombinationKey<Context<OmniSharp.Models.FindUsagesRequest, OmniSharp.Models.QuickFixResponse>>[]>;
+        // 'fixusings'
+        observeFixusings: Rx.Observable<CombinationKey<Context<OmniSharp.Models.FixUsingsRequest, OmniSharp.Models.FixUsingsResponse>>[]>;
         // 'formatAfterKeystroke'
         observeFormatAfterKeystroke: Rx.Observable<CombinationKey<Context<OmniSharp.Models.FormatAfterKeystrokeRequest, OmniSharp.Models.FormatRangeResponse>>[]>;
         // 'formatRange'
@@ -896,6 +930,8 @@ declare module OmniSharp.Events.Aggregate {
         observeRuncodeaction: Rx.Observable<CombinationKey<Context<OmniSharp.Models.V2.RunCodeActionRequest, OmniSharp.Models.V2.RunCodeActionResponse>>[]>;
         // 'signatureHelp'
         observeSignatureHelp: Rx.Observable<CombinationKey<Context<OmniSharp.Models.Request, OmniSharp.Models.SignatureHelp>>[]>;
+        // 'stopserver'
+        observeStopserver: Rx.Observable<CombinationKey<Context<any, boolean>>[]>;
         // 'typelookup'
         observeTypelookup: Rx.Observable<CombinationKey<Context<OmniSharp.Models.TypeLookupRequest, OmniSharp.Models.TypeLookupResponse>>[]>;
         // 'updatebuffer'
