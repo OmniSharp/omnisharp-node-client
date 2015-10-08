@@ -2,24 +2,33 @@ import _ = require('lodash');
 import {ILogger} from './interfaces';
 import {join, dirname, sep, normalize} from 'path';
 import {Observable, AsyncSubject, Scheduler} from "rx";
+import {readFileSync} from "fs";
 var sepRegex = /[\\|\/]/g;
-var glob: (file: string[]) => Observable<string[]> = <any> Observable.fromNodeCallback(require('globby'));
-var solutionFilesToSearch = ['global.json', '*.sln'];
-var projectFilesToSearch = ['project.json', '*.csproj'];
-var scriptCsFilesToSearch = ['*.csx'];
-var csharpFilesToSearch = ['*.cs'];
+var glob: (file: string[]) => Observable<string[]> = <any>Observable.fromNodeCallback(require('globby'));
 
-export function findCandidates(location: string, logger: ILogger) {
+interface Options {
+    solutionFilesToSearch?: string[];
+    projectFilesToSearch?: string[];
+    sourceFilesToSearch?: string[];
+    solutionIndependentSourceFilesToSearch?: string[];
+}
+
+export function findCandidates(location: string, logger: ILogger, options: Options = {}) {
     location = _.trimRight(location, sep);
 
-    var projects = searchForCandidates(location, solutionFilesToSearch, logger)
+    var solutionFilesToSearch = options.solutionFilesToSearch || (options.solutionFilesToSearch = ['global.json', '*.sln']);
+    var projectFilesToSearch = options.projectFilesToSearch || (options.projectFilesToSearch = ['project.json', '*.csproj']);
+    var sourceFilesToSearch = options.sourceFilesToSearch || (options.sourceFilesToSearch = ['*.cs']);
+    var solutionIndependentSourceFilesToSearch = options.solutionIndependentSourceFilesToSearch || (options.solutionIndependentSourceFilesToSearch = ['*.csx']);
+
+    var projects = searchForCandidates(location, solutionFilesToSearch, projectFilesToSearch, logger)
         .toArray()
-        .flatMap(result => result.length ? Observable.from(result) : searchForCandidates(location, projectFilesToSearch, logger))
+        .flatMap(result => result.length ? Observable.from(result) : searchForCandidates(location, projectFilesToSearch, [], logger))
         .map(z => z.split(sepRegex).join(sep))
         .toArray()
         .map(squashCandidates);
 
-    var scriptCs = searchForCandidates(location, scriptCsFilesToSearch, logger)
+    var scriptCs = searchForCandidates(location, solutionIndependentSourceFilesToSearch, [], logger)
         .map(z => z.split(sepRegex).join(sep))
         .toArray();
 
@@ -31,7 +40,7 @@ export function findCandidates(location: string, logger: ILogger) {
         .flatMap(isEmpty => {
             if (isEmpty) {
                 // Load csharp files as a fallback
-                return searchForCandidates(location, csharpFilesToSearch, logger)
+                return searchForCandidates(location, sourceFilesToSearch, [], logger)
                     .map(z => z.split(sepRegex).join(sep));
             } else {
                 return baseFiles;
@@ -56,7 +65,7 @@ function getMinCandidate(candidates: string[]) {
     }).split(sepRegex).length;
 }
 
-function searchForCandidates(location: string, filesToSearch: string[], logger: ILogger) {
+function searchForCandidates(location: string, filesToSearch: string[], projectFilesToSearch: string[], logger: ILogger) {
     var locations = location.split(sep);
     locations = locations.map((loc, index) => {
         return _.take(locations, locations.length - index).join(sep);
@@ -91,6 +100,13 @@ function searchForCandidates(location: string, filesToSearch: string[], logger: 
                             }
                         }
                     }
+
+                    if (_.any(x, file => _.endsWith(file, ".sln"))) {
+                        return x.filter(file => {
+                            var content = readFileSync(file).toString();
+                            return _.any(projectFilesToSearch, path => content.indexOf(_.trimLeft(path, '*')) > -1);
+                        });
+                    }
                     return x;
                 });
         })
@@ -98,8 +114,7 @@ function searchForCandidates(location: string, filesToSearch: string[], logger: 
         .defaultIfEmpty([])
         .first()
         .flatMap(z => Observable.from(z))
-        .map(file => _.endsWith(file, ".sln") ? file : dirname(file))
-        .tapOnNext(x => console.log('hell!!!!', x));
+        .map(file => _.endsWith(file, ".sln") ? file : dirname(file));
 
     return rootObservable;
 }
