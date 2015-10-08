@@ -37,6 +37,14 @@ export class ClientBase implements IDriver, OmniSharp.Events, Rx.IDisposable {
     commands: Rx.Observable<OmniSharp.Stdio.Protocol.ResponsePacket>;
     state: Rx.Observable<DriverState>;
     outstandingRequests: number;
+    private _currentRequests;
+    getCurrentRequests(): {
+        command: string;
+        sequence: string;
+        silent: boolean;
+        request: any;
+        duration: number;
+    }[];
     status: Rx.Observable<OmnisharpClientStatus>;
     requests: Rx.Observable<RequestContext<any>>;
     private _enqueuedResponses;
@@ -621,6 +629,7 @@ export interface OmnisharpClientOptions extends IDriverOptions {
     statusSampleTime?: number;
     responseSampleTime?: number;
     concurrency?: number;
+    concurrencyTimeout?: number;
     omnisharp?: {
         dnx?: {
             alias?: string;
