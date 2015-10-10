@@ -679,7 +679,9 @@ export module Omnisharp {
 
 
 declare module "omnisharp-client" {
-export { findCandidates as candidateFinder } from "omnisharp-client/candidate-finder";
+export { findCandidates } from "omnisharp-client/candidate-finder";
+import { findCandidates } from "omnisharp-client/candidate-finder";
+export var candidateFinder: typeof findCandidates;
 export { ClientV1 as OmnisharpClientV1 } from 'omnisharp-client/clients/client-v1';
 export { ClientV2 as OmnisharpClientV2 } from 'omnisharp-client/clients/client-v2';
 export { ObservationClientV1 as OmnisharpObservationClientV1, CombinationClientV1 as OmnisharpCombinationClientV1 } from 'omnisharp-client/clients/composite-client-v1';

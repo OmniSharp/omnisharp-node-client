@@ -349,9 +349,9 @@ export class ClientBase implements IDriver, OmniSharp.Events, Rx.IDisposable {
         var result = <Observable<ResponseContext<any, any>>>this._driver.request<any, any>(context.command, context.request);
 
         result.subscribe((data) => {
-            this._responseStream.onNext(new ResponseContext(context, data));
+            !this._responseStream.isDisposed && this._responseStream.onNext(new ResponseContext(context, data));
         }, (error) => {
-            this._errorStream.onNext(new CommandContext(context.command, error));
+            !this._errorStream.isDisposed && this._errorStream.onNext(new CommandContext(context.command, error));
         }, () => {
             this._currentRequests.delete(context);
         });

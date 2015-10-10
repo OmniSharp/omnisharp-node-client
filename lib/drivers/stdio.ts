@@ -55,6 +55,12 @@ class StdioDriver implements IDriver {
         this._disposable.add(this._connectionStream);
 
         this._disposable.add(Disposable.create(() => {
+            if (this._process) {
+                this._process.removeAllListeners();
+            }
+        }));
+
+        this._disposable.add(Disposable.create(() => {
             var iterator = this._outstandingRequests.entries();
             var iteratee = iterator.next();
 
@@ -67,12 +73,6 @@ class StdioDriver implements IDriver {
                 iteratee = iterator.next();
             }
         }));
-
-        this._disposable.add(Disposable.create(() => {
-            if (this._process) {
-                this._process.removeAllListeners();
-            }
-        }))
     }
 
     public dispose() {
@@ -113,7 +113,7 @@ class StdioDriver implements IDriver {
             return;
         }
 
-        this._connectionStream.onNext(DriverState.Connecting);
+        !this._connectionStream.isDisposed && this._connectionStream.onNext(DriverState.Connecting);
 
         this._logger.log(`Connecting to child @ ${process.execPath}`);
         this._logger.log(`Path to server: ${this._serverPath}`);
@@ -155,10 +155,10 @@ class StdioDriver implements IDriver {
 
     private serverErr(data) {
         var friendlyMessage = this.parseError(data);
-        this._connectionStream.onNext(DriverState.Error);
+        !this._connectionStream.isDisposed && this._connectionStream.onNext(DriverState.Error);
         this._process = null;
 
-        this._eventStream.onNext({
+        !this._eventStream.isDisposed && this._eventStream.onNext({
             Type: "error",
             Event: "error",
             Seq: -1,
@@ -227,6 +227,7 @@ class StdioDriver implements IDriver {
 
             var observer = this._outstandingRequests.get(response.Request_seq);
             this._outstandingRequests.delete(response.Request_seq);
+            if (observer.isDisposed) return;
             if (response.Success) {
                 observer.onNext(response.Body);
             } else {
@@ -235,7 +236,7 @@ class StdioDriver implements IDriver {
             observer.onCompleted();
 
         } else {
-            if (response.Success) {
+            if (!this._commandStream.isDisposed && response.Success) {
                 this._commandStream.onNext(response);
             } else {
                 // TODO: make notification?
@@ -244,15 +245,15 @@ class StdioDriver implements IDriver {
     }
 
     private handlePacketEvent(event: OmniSharp.Stdio.Protocol.EventPacket) {
-        this._eventStream.onNext(event);
-        if (event.Event === "started") {
+        !this._eventStream.isDisposed && this._eventStream.onNext(event);
+        if (!this._connectionStream.isDisposed && event.Event === "started") {
             this._connectionStream.onNext(DriverState.Connected);
         }
     }
 
     private handleNonPacket(data: any) {
         var s = data.toString();
-        this._eventStream.onNext({
+        !this._eventStream.isDisposed && this._eventStream.onNext({
             Type: "unknown",
             Event: "unknown",
             Seq: -1,
