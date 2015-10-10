@@ -189,6 +189,7 @@ class StdioDriver implements IDriver {
         if (!this._process) {
             return Observable.throw<any>(new Error("Server is not connected, erroring out"));
         }
+        
         var sequence = this._seq++;
         var packet: OmniSharp.Stdio.Protocol.RequestPacket = {
             Command: command,
@@ -199,7 +200,7 @@ class StdioDriver implements IDriver {
         var subject = new AsyncSubject<TResponse>();
         this._outstandingRequests.set(sequence, subject);
         this._process.stdin.write(JSON.stringify(packet) + '\n', 'utf8');
-        return subject.timeout(this._timeout, Observable.just(<any>'Request timed out'));
+        return subject.timeout(this._timeout, Observable.throw<any>('Request timed out'));
     }
 
     private handleData(data: string) {
@@ -230,10 +231,10 @@ class StdioDriver implements IDriver {
             if (observer.isDisposed) return;
             if (response.Success) {
                 observer.onNext(response.Body);
+                observer.onCompleted();
             } else {
                 observer.onError(response.Message);
             }
-            observer.onCompleted();
 
         } else {
             if (!this._commandStream.isDisposed && response.Success) {
