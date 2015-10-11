@@ -2,8 +2,10 @@ import {Observable, Subject, AsyncSubject, BehaviorSubject, Scheduler, Composite
 import {extend, isObject, some, uniqueId, isArray, each, intersection, keys, filter, isNumber, has, get, set, defaults, cloneDeep} from "lodash";
 import {IDriver, IStaticDriver, IDriverOptions, OmnisharpClientStatus, OmnisharpClientOptions} from "../interfaces";
 import {Driver, DriverState} from "../enums";
-import {RequestContext, ResponseContext, CommandContext} from "./contexts";
-import {serverLineNumbers, serverLineNumberArrays} from "./response-handling";
+import {RequestContext, ResponseContext, CommandContext} from "../contexts";
+import {serverLineNumbers, serverLineNumberArrays} from "../response-handling";
+import {ensureClientOptions, flattenArguments} from "../options";
+import {watchEvent} from "../decorators";
 
 (function() {
     // Temp code, remove with 4.0.0
@@ -111,21 +113,6 @@ var {isPriorityCommand, isNormalCommand, isDeferredCommand} = (function() {
     return { isPriorityCommand, isNormalCommand, isDeferredCommand };
 })()
 
-
-function flattenArguments(obj, prefix = '') {
-    var result: any[] = [];
-    each(obj, (value, key) => {
-        if (isObject(value)) {
-            result.push(...flattenArguments(value, `${prefix ? prefix + ':' : ''}${key[0].toUpperCase() + key.substr(1) }`));
-            return
-        }
-
-        result.push(`--${prefix ? prefix + ':' : ''}${key[0].toUpperCase() + key.substr(1) }=${value}`);
-    });
-
-    return result;
-}
-
 export class ClientBase implements IDriver, OmniSharp.Events, Rx.IDisposable {
     private _driver: IDriver;
     private _requestStream = new Subject<RequestContext<any>>();
@@ -138,23 +125,6 @@ export class ClientBase implements IDriver, OmniSharp.Events, Rx.IDisposable {
     private _eventWatchers = new Map<string, Subject<CommandContext<any>>>();
     private _commandWatchers = new Map<string, Subject<ResponseContext<any, any>>>();
     private _disposable = new CompositeDisposable();
-
-    public static fromClient<T extends ClientBase>(ctor: any, client: ClientBase) {
-        var v1: ClientBase = <any>new ctor(client._options);
-
-        v1._driver = client._driver;
-        v1._requestStream = client._requestStream;
-        v1._responseStream = client._responseStream;
-        v1._statusStream = client._statusStream;
-        v1._errorStream = client._errorStream;
-        v1._customEvents = client._customEvents;
-        v1._uniqueId = client._uniqueId;
-        v1._disposable = client._disposable;
-
-        v1.setupObservers();
-
-        return <T>v1;
-    }
 
     public get uniqueId() { return this._uniqueId; }
 
@@ -200,22 +170,19 @@ export class ClientBase implements IDriver, OmniSharp.Events, Rx.IDisposable {
     public get responses(): Rx.Observable<ResponseContext<any, any>> { return this._enqueuedResponses; }
     public get errors(): Rx.Observable<CommandContext<any>> { return this._errorStream; }
 
+    @watchEvent public get projectAdded(): Rx.Observable<OmniSharp.Models.ProjectInformationResponse> { throw new Error('Implemented by decorator'); }
+    @watchEvent public get projectChanged(): Rx.Observable<OmniSharp.Models.ProjectInformationResponse> { throw new Error('Implemented by decorator'); }
+    @watchEvent public get projectRemoved(): Rx.Observable<OmniSharp.Models.ProjectInformationResponse> { throw new Error('Implemented by decorator'); }
+    @watchEvent public get error(): Rx.Observable<OmniSharp.Models.ErrorMessage> { throw new Error('Implemented by decorator'); }
+    @watchEvent public get msBuildProjectDiagnostics(): Rx.Observable<OmniSharp.Models.MSBuildProjectDiagnostics> { throw new Error('Implemented by decorator'); }
+    @watchEvent public get packageRestoreStarted(): Rx.Observable<OmniSharp.Models.PackageRestoreMessage> { throw new Error('Implemented by decorator'); }
+    @watchEvent public get packageRestoreFinished(): Rx.Observable<OmniSharp.Models.PackageRestoreMessage> { throw new Error('Implemented by decorator'); }
+    @watchEvent public get unresolvedDependencies(): Rx.Observable<OmniSharp.Models.UnresolvedDependenciesMessage> { throw new Error('Implemented by decorator'); }
+
     constructor(private _options: OmnisharpClientOptions = {}) {
-        var driver = _options.driver || Driver.Stdio;
-        var statusSampleTime = _options.statusSampleTime || (_options.statusSampleTime = 500);
-        var responseSampleTime = _options.responseSampleTime || (_options.responseSampleTime = 100);
-        var responseConcurrency = _options.concurrency || (_options.concurrency = 4);
-        var timeout = _options.timeout || (_options.timeout = 60);
-        var responseConcurencyTimeout = _options.concurrencyTimeout || (_options.concurrencyTimeout = Math.ceil(_options.timeout / 6) * 1000);
-
-        // Keep concurrency capped at 2
-        // This lets us get around an issue with a single stuck request (that is taking a while to complete)
-        _options.concurrency = Math.max(_options.concurrency, 2);
-
-        // Kep concurrencyTimeout at a decently high interval.
-        _options.concurrencyTimeout = Math.max(_options.concurrencyTimeout, Math.min(_options.timeout * 1000, 5000));
-
-        _options.additionalArguments = flattenArguments(_options.omnisharp || {});
+        _options.driver = _options.driver || Driver.Stdio;
+        ensureClientOptions(_options);
+        var {driver, statusSampleTime,responseSampleTime, concurrency, timeout, concurrencyTimeout} = _options;
 
         var driverFactory: IStaticDriver = require('../drivers/' + Driver[driver].toLowerCase());
         this._driver = new driverFactory(_options);
@@ -423,7 +390,7 @@ export class ClientBase implements IDriver, OmniSharp.Events, Rx.IDisposable {
         return Context.getResponse<TResponse>(this._responseStream);
     }
 
-    protected setupObservers() {
+    private setupObservers() {
         this._driver.events.subscribe(x => {
             if (this._eventWatchers.has(x.Event))
                 this._eventWatchers.get(x.Event).onNext(x.Body);
@@ -433,15 +400,6 @@ export class ClientBase implements IDriver, OmniSharp.Events, Rx.IDisposable {
             if (!x.silent && this._commandWatchers.has(x.command))
                 this._commandWatchers.get(x.command).onNext(x);
         });
-
-        this.projectAdded = this.watchEvent<OmniSharp.Models.ProjectInformationResponse>("ProjectAdded");
-        this.projectChanged = this.watchEvent<OmniSharp.Models.ProjectInformationResponse>("ProjectChanged");
-        this.projectRemoved = this.watchEvent<OmniSharp.Models.ProjectInformationResponse>("ProjectRemoved");
-        this.error = this.watchEvent<OmniSharp.Models.ErrorMessage>("ProjectRemoved");
-        this.msBuildProjectDiagnostics = this.watchEvent<OmniSharp.Models.MSBuildProjectDiagnostics>("MsBuildProjectDiagnostics");
-        this.packageRestoreStarted = this.watchEvent<OmniSharp.Models.PackageRestoreMessage>("PackageRestoreStarted");
-        this.packageRestoreFinished = this.watchEvent<OmniSharp.Models.PackageRestoreMessage>("PackageRestoreFinished");
-        this.unresolvedDependencies = this.watchEvent<OmniSharp.Models.UnresolvedDependenciesMessage>("UnresolvedDependencies");
     }
 
     protected watchEvent<TBody>(event: string): Observable<TBody> {
@@ -457,14 +415,4 @@ export class ClientBase implements IDriver, OmniSharp.Events, Rx.IDisposable {
         this._disposable.add(subject);
         return subject.asObservable().share();
     }
-
-    public projectAdded: Rx.Observable<OmniSharp.Models.ProjectInformationResponse>;
-    public projectChanged: Rx.Observable<OmniSharp.Models.ProjectInformationResponse>;
-    public projectRemoved: Rx.Observable<OmniSharp.Models.ProjectInformationResponse>;
-    public error: Rx.Observable<OmniSharp.Models.ErrorMessage>;
-    public msBuildProjectDiagnostics: Rx.Observable<OmniSharp.Models.MSBuildProjectDiagnostics>;
-    public packageRestoreStarted: Rx.Observable<OmniSharp.Models.PackageRestoreMessage>;
-    public packageRestoreFinished: Rx.Observable<OmniSharp.Models.PackageRestoreMessage>;
-    public unresolvedDependencies: Rx.Observable<OmniSharp.Models.UnresolvedDependenciesMessage>;
-
 }

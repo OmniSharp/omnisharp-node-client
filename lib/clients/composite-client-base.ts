@@ -3,7 +3,7 @@ import * as _ from 'lodash';
 import {ClientBase} from "./client-base";
 import {DriverState} from "../enums";
 import {OmnisharpClientStatus} from "../interfaces";
-import {RequestContext, ResponseContext, CommandContext} from "./contexts";
+import {RequestContext, ResponseContext, CommandContext} from "../contexts";
 
 export class ObservationClientBase<C extends ClientBase> implements OmniSharp.Events, Rx.IDisposable {
     protected _disposable = new CompositeDisposable();

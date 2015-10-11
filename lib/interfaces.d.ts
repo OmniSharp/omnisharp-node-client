@@ -1,5 +1,5 @@
 import {DriverState, Driver} from "./enums";
-import {RequestContext, ResponseContext, CommandContext} from "./clients/contexts";
+import {RequestContext, ResponseContext, CommandContext} from "./contexts";
 
 export interface IStaticDriver {
     new (options: IDriverOptions): IDriver;
@@ -28,7 +28,6 @@ export interface IDriver extends Rx.IDisposable {
     events: Rx.Observable<OmniSharp.Stdio.Protocol.EventPacket>;
     commands: Rx.Observable<OmniSharp.Stdio.Protocol.ResponsePacket>;
     state: Rx.Observable<DriverState>;
-    outstandingRequests: number;
     disconnect();
     serverPath: string;
     projectPath: string;

@@ -12,7 +12,7 @@ declare module "omnisharp-client/clients/client-base" {
 import { Observable } from "rx";
 import { IDriver, OmnisharpClientStatus, OmnisharpClientOptions } from "omnisharp-client/interfaces";
 import { DriverState } from "omnisharp-client/enums";
-import { RequestContext, ResponseContext, CommandContext } from "omnisharp-client/clients/contexts";
+import { RequestContext, ResponseContext, CommandContext } from "omnisharp-client/contexts";
 export class ClientBase implements IDriver, OmniSharp.Events, Rx.IDisposable {
     private _options;
     private _driver;
@@ -26,7 +26,6 @@ export class ClientBase implements IDriver, OmniSharp.Events, Rx.IDisposable {
     private _eventWatchers;
     private _commandWatchers;
     private _disposable;
-    static fromClient<T extends ClientBase>(ctor: any, client: ClientBase): T;
     uniqueId: string;
     id: string;
     serverPath: string;
@@ -60,7 +59,7 @@ export class ClientBase implements IDriver, OmniSharp.Events, Rx.IDisposable {
     connect(_options?: OmnisharpClientOptions): void;
     disconnect(): void;
     request<TRequest, TResponse>(action: string, request: TRequest, options?: OmniSharp.RequestOptions): Rx.Observable<TResponse>;
-    protected setupObservers(): void;
+    private setupObservers();
     protected watchEvent<TBody>(event: string): Observable<TBody>;
     protected watchCommand(command: string): Observable<OmniSharp.Context<any, any>>;
     projectAdded: Rx.Observable<OmniSharp.Models.ProjectInformationResponse>;
@@ -116,7 +115,6 @@ export class ClientV1 extends ClientBase implements OmniSharp.Api.V1, OmniSharp.
     observeGetcodeactions: Rx.Observable<OmniSharp.Context<OmniSharp.Models.CodeActionRequest, OmniSharp.Models.GetCodeActionsResponse>>;
     observeRuncodeaction: Rx.Observable<OmniSharp.Context<OmniSharp.Models.CodeActionRequest, OmniSharp.Models.RunCodeActionResponse>>;
     observeGettestcontext: Rx.Observable<OmniSharp.Context<OmniSharp.Models.TestCommandRequest, OmniSharp.Models.GetTestCommandResponse>>;
-    protected setupObservers(): void;
     updatebuffer(request: OmniSharp.Models.UpdateBufferRequest, options?: OmniSharp.RequestOptions): Rx.Observable<any>;
     updatebufferPromise(request: OmniSharp.Models.UpdateBufferRequest, options?: OmniSharp.RequestOptions): Rx.IPromise<any>;
     changebuffer(request: OmniSharp.Models.ChangeBufferRequest, options?: OmniSharp.RequestOptions): Rx.Observable<any>;
@@ -197,7 +195,6 @@ import { ClientBase } from "omnisharp-client/clients/client-base";
 import { ClientV1 } from "omnisharp-client/clients/client-v1";
 import { OmnisharpClientOptions } from "omnisharp-client/interfaces";
 export class ClientV2 extends ClientBase implements OmniSharp.Api.V2, OmniSharp.Events.V2 {
-    v1: ClientV1;
     constructor(_options?: OmnisharpClientOptions);
     observeUpdatebuffer: Rx.Observable<OmniSharp.Context<OmniSharp.Models.UpdateBufferRequest, any>>;
     observeChangebuffer: Rx.Observable<OmniSharp.Context<OmniSharp.Models.ChangeBufferRequest, any>>;
@@ -234,7 +231,6 @@ export class ClientV2 extends ClientBase implements OmniSharp.Api.V2, OmniSharp.
     observeGetcodeactions: Rx.Observable<OmniSharp.Context<OmniSharp.Models.V2.GetCodeActionsRequest, OmniSharp.Models.V2.GetCodeActionsResponse>>;
     observeRuncodeaction: Rx.Observable<OmniSharp.Context<OmniSharp.Models.V2.RunCodeActionRequest, OmniSharp.Models.V2.RunCodeActionResponse>>;
     observeGettestcontext: Rx.Observable<OmniSharp.Context<OmniSharp.Models.TestCommandRequest, OmniSharp.Models.GetTestCommandResponse>>;
-    protected setupObservers(): void;
     getcodeactions(request: OmniSharp.Models.V2.GetCodeActionsRequest, options?: OmniSharp.RequestOptions): Rx.Observable<OmniSharp.Models.V2.GetCodeActionsResponse>;
     getcodeactionsPromise(request: OmniSharp.Models.V2.GetCodeActionsRequest, options?: OmniSharp.RequestOptions): Rx.IPromise<OmniSharp.Models.V2.GetCodeActionsResponse>;
     runcodeaction(request: OmniSharp.Models.V2.RunCodeActionRequest, options?: OmniSharp.RequestOptions): Rx.Observable<OmniSharp.Models.V2.RunCodeActionResponse>;
@@ -315,7 +311,7 @@ import { ReplaySubject, Observable, CompositeDisposable, Disposable } from "rx";
 import { ClientBase } from "omnisharp-client/clients/client-base";
 import { DriverState } from "omnisharp-client/enums";
 import { OmnisharpClientStatus } from "omnisharp-client/interfaces";
-import { RequestContext, ResponseContext, CommandContext } from "omnisharp-client/clients/contexts";
+import { RequestContext, ResponseContext, CommandContext } from "omnisharp-client/contexts";
 export class ObservationClientBase<C extends ClientBase> implements OmniSharp.Events, Rx.IDisposable {
     private clients;
     protected _disposable: CompositeDisposable;
@@ -573,11 +569,62 @@ export class ResponseContext<TRequest, TResponse> {
 }
 
 
+declare module "omnisharp-client/clients/process-client-base" {
+
+}
+
+
 declare module "omnisharp-client/clients/response-handling" {
 export var serverLineNumbers: string[];
 export var serverLineNumberArrays: string[];
 export function requestMutator(data: any): any;
 export function responseMutator(data: any): any;
+
+}
+
+
+declare module "omnisharp-client/contexts" {
+import { Observable } from "rx";
+export class CommandContext<T> {
+    command: string;
+    value: T;
+    constructor(command: string, value: T);
+}
+export class RequestContext<T> {
+    clientId: any;
+    command: string;
+    request: T;
+    sequence: string;
+    time: Date;
+    silent: boolean;
+    oneBasedIndices: boolean;
+    isCommand(command: string): boolean;
+    constructor(clientId: any, command: string, request: T, {silent, oneBasedIndices}: OmniSharp.RequestOptions, sequence?: string);
+    getResponse<TResponse>(stream: Observable<ResponseContext<T, TResponse>>): Observable<TResponse>;
+}
+export class ResponseContext<TRequest, TResponse> {
+    clientId: string;
+    request: TRequest;
+    response: TResponse;
+    command: string;
+    sequence: string;
+    time: Date;
+    responseTime: number;
+    silent: boolean;
+    isCommand(command: string): boolean;
+    constructor({clientId, request, command, sequence, time, silent, oneBasedIndices}: RequestContext<any>, response: TResponse);
+}
+
+}
+
+
+declare module "omnisharp-client/decorators" {
+export function isNotNull(method: Function): (target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) => void;
+export function isAboveZero(method: Function): (target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) => void;
+export function precondition(method: Function, ...decorators: MethodDecorator[]): (target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) => void;
+export function endpoint(version?: number): (target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) => void;
+export function watchCommand(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>): void;
+export function inheritProperties(source: any, dest: any): void;
 
 }
 
@@ -599,7 +646,7 @@ export enum DriverState {
 
 declare module "omnisharp-client/interfaces" {
 import {DriverState, Driver} from "omnisharp-client/enums";
-import {RequestContext, ResponseContext, CommandContext} from "omnisharp-client/clients/contexts";
+import {RequestContext, ResponseContext, CommandContext} from "omnisharp-client/contexts";
 
 export interface IStaticDriver {
     new (options: IDriverOptions): IDriver;
@@ -628,7 +675,6 @@ export interface IDriver extends Rx.IDisposable {
     events: Rx.Observable<OmniSharp.Stdio.Protocol.EventPacket>;
     commands: Rx.Observable<OmniSharp.Stdio.Protocol.ResponsePacket>;
     state: Rx.Observable<DriverState>;
-    outstandingRequests: number;
     disconnect();
     serverPath: string;
     projectPath: string;
@@ -698,6 +744,14 @@ export var omnisharpLocation: any;
 }
 
 
+declare module "omnisharp-client/options" {
+import { OmnisharpClientOptions } from "omnisharp-client/interfaces";
+export function ensureClientOptions(options: OmnisharpClientOptions): void;
+export function flattenArguments(obj: any, prefix?: string): any[];
+
+}
+
+
 declare module "omnisharp-client/project-finder" {
 import { ILogger } from 'omnisharp-client/interfaces';
 export function findProject(location: string, logger: ILogger): string;
@@ -705,8 +759,304 @@ export function findProject(location: string, logger: ILogger): string;
 }
 
 
+declare module "omnisharp-client/proxy/decorators" {
+import { Observable } from "rx";
+export function observe<T>(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<Rx.Observable<T>>): void;
+export function sync<T>(syncWith: () => Observable<T>): (target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) => void;
+export function proxy(returnResult?: boolean): (target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) => void;
+
+}
+
+
+declare module "omnisharp-client/proxy/proxy-client-base" {
+import { IDriver, OmnisharpClientStatus, OmnisharpClientOptions } from "omnisharp-client/interfaces";
+import { Observable } from "rx";
+import { DriverState } from "omnisharp-client/enums";
+import { RequestContext, ResponseContext, CommandContext } from "omnisharp-client/contexts";
+export class ProxyClientBase implements IDriver, OmniSharp.Events, Rx.IDisposable {
+    protected _options: OmnisharpClientOptions;
+    private _process;
+    private _uniqueId;
+    private _disposable;
+    uniqueId: string;
+    id: string;
+    serverPath: string;
+    projectPath: string;
+    events: Rx.Observable<OmniSharp.Stdio.Protocol.EventPacket>;
+    commands: Rx.Observable<OmniSharp.Stdio.Protocol.ResponsePacket>;
+    state: Rx.Observable<DriverState>;
+    currentState: DriverState;
+    getCurrentRequests(): Observable<{
+        command: string;
+        sequence: string;
+        silent: boolean;
+        request: any;
+        duration: number;
+    }>;
+    status: Rx.Observable<OmnisharpClientStatus>;
+    requests: Rx.Observable<RequestContext<any>>;
+    responses: Rx.Observable<ResponseContext<any, any>>;
+    errors: Rx.Observable<CommandContext<any>>;
+    constructor(_options?: OmnisharpClientOptions);
+    dispose(): void;
+    static serverLineNumbers: string[];
+    static serverLineNumberArrays: string[];
+    log(message: string, logLevel?: string): void;
+    connect(_options?: OmnisharpClientOptions): void;
+    disconnect(): void;
+    request<TRequest, TResponse>(action: string, request: TRequest, options?: OmniSharp.RequestOptions): Rx.Observable<TResponse>;
+    projectAdded: Rx.Observable<OmniSharp.Models.ProjectInformationResponse>;
+    projectChanged: Rx.Observable<OmniSharp.Models.ProjectInformationResponse>;
+    projectRemoved: Rx.Observable<OmniSharp.Models.ProjectInformationResponse>;
+    error: Rx.Observable<OmniSharp.Models.ErrorMessage>;
+    msBuildProjectDiagnostics: Rx.Observable<OmniSharp.Models.MSBuildProjectDiagnostics>;
+    packageRestoreStarted: Rx.Observable<OmniSharp.Models.PackageRestoreMessage>;
+    packageRestoreFinished: Rx.Observable<OmniSharp.Models.PackageRestoreMessage>;
+    unresolvedDependencies: Rx.Observable<OmniSharp.Models.UnresolvedDependenciesMessage>;
+}
+
+}
+
+
+declare module "omnisharp-client/proxy/proxy-client-v1" {
+import { ProxyClientBase } from "omnisharp-client/proxy/proxy-client-base";
+import { ClientV1 } from "omnisharp-client/clients/client-v1";
+export class ProxyClientV1 extends ProxyClientBase implements OmniSharp.Api.V1, OmniSharp.Events.V1 {
+    observeUpdatebuffer: typeof ClientV1.prototype.observeUpdatebuffer;
+    observeChangebuffer: typeof ClientV1.prototype.observeChangebuffer;
+    observeCodecheck: typeof ClientV1.prototype.observeCodecheck;
+    observeFormatAfterKeystroke: typeof ClientV1.prototype.observeFormatAfterKeystroke;
+    observeFormatRange: typeof ClientV1.prototype.observeFormatRange;
+    observeCodeformat: typeof ClientV1.prototype.observeCodeformat;
+    observeAutocomplete: typeof ClientV1.prototype.observeAutocomplete;
+    observeFindimplementations: typeof ClientV1.prototype.observeFindimplementations;
+    observeFindsymbols: typeof ClientV1.prototype.observeFindsymbols;
+    observeFindusages: typeof ClientV1.prototype.observeFindusages;
+    observeFixusings: typeof ClientV1.prototype.observeFixusings;
+    observeGotodefinition: typeof ClientV1.prototype.observeGotodefinition;
+    observeGotofile: typeof ClientV1.prototype.observeGotofile;
+    observeGotoregion: typeof ClientV1.prototype.observeGotoregion;
+    observeHighlight: typeof ClientV1.prototype.observeHighlight;
+    observeMetadata: typeof ClientV1.prototype.observeMetadata;
+    observeNavigateup: typeof ClientV1.prototype.observeNavigateup;
+    observeNavigatedown: typeof ClientV1.prototype.observeNavigatedown;
+    observePackagesearch: typeof ClientV1.prototype.observePackagesearch;
+    observePackagesource: typeof ClientV1.prototype.observePackagesource;
+    observePackageversion: typeof ClientV1.prototype.observePackageversion;
+    observeRename: typeof ClientV1.prototype.observeRename;
+    observeSignatureHelp: typeof ClientV1.prototype.observeSignatureHelp;
+    observeStopserver: typeof ClientV1.prototype.observeStopserver;
+    observeCheckalivestatus: typeof ClientV1.prototype.observeCheckalivestatus;
+    observeCheckreadystatus: typeof ClientV1.prototype.observeCheckreadystatus;
+    observeCurrentfilemembersastree: typeof ClientV1.prototype.observeCurrentfilemembersastree;
+    observeCurrentfilemembersasflat: typeof ClientV1.prototype.observeCurrentfilemembersasflat;
+    observeTypelookup: typeof ClientV1.prototype.observeTypelookup;
+    observeFilesChanged: typeof ClientV1.prototype.observeFilesChanged;
+    observeProjects: typeof ClientV1.prototype.observeProjects;
+    observeProject: typeof ClientV1.prototype.observeProject;
+    observeGetcodeactions: typeof ClientV1.prototype.observeGetcodeactions;
+    observeRuncodeaction: typeof ClientV1.prototype.observeRuncodeaction;
+    observeGettestcontext: typeof ClientV1.prototype.observeGettestcontext;
+    updatebuffer: typeof ClientV1.prototype.updatebuffer;
+    updatebufferPromise: typeof ClientV1.prototype.updatebufferPromise;
+    changebuffer: typeof ClientV1.prototype.changebuffer;
+    changebufferPromise: typeof ClientV1.prototype.changebufferPromise;
+    codecheck: typeof ClientV1.prototype.codecheck;
+    codecheckPromise: typeof ClientV1.prototype.codecheckPromise;
+    formatAfterKeystroke: typeof ClientV1.prototype.formatAfterKeystroke;
+    formatAfterKeystrokePromise: typeof ClientV1.prototype.formatAfterKeystrokePromise;
+    formatRange: typeof ClientV1.prototype.formatRange;
+    formatRangePromise: typeof ClientV1.prototype.formatRangePromise;
+    codeformat: typeof ClientV1.prototype.codeformat;
+    codeformatPromise: typeof ClientV1.prototype.codeformatPromise;
+    autocomplete: typeof ClientV1.prototype.autocomplete;
+    autocompletePromise: typeof ClientV1.prototype.autocompletePromise;
+    findimplementations: typeof ClientV1.prototype.findimplementations;
+    findimplementationsPromise: typeof ClientV1.prototype.findimplementationsPromise;
+    findsymbols: typeof ClientV1.prototype.findsymbols;
+    findsymbolsPromise: typeof ClientV1.prototype.findsymbolsPromise;
+    findusages: typeof ClientV1.prototype.findusages;
+    findusagesPromise: typeof ClientV1.prototype.findusagesPromise;
+    fixusings: typeof ClientV1.prototype.fixusings;
+    fixusingsPromise: typeof ClientV1.prototype.fixusingsPromise;
+    gotodefinition: typeof ClientV1.prototype.gotodefinition;
+    gotodefinitionPromise: typeof ClientV1.prototype.gotodefinitionPromise;
+    navigateup: typeof ClientV1.prototype.navigateup;
+    navigateupPromise: typeof ClientV1.prototype.navigateupPromise;
+    gotofile: typeof ClientV1.prototype.gotofile;
+    gotofilePromise: typeof ClientV1.prototype.gotofilePromise;
+    gotoregion: typeof ClientV1.prototype.gotoregion;
+    gotoregionPromise: typeof ClientV1.prototype.gotoregionPromise;
+    highlight: typeof ClientV1.prototype.highlight;
+    highlightPromise: typeof ClientV1.prototype.highlightPromise;
+    metadata: typeof ClientV1.prototype.metadata;
+    metadataPromise: typeof ClientV1.prototype.metadataPromise;
+    navigatedown: typeof ClientV1.prototype.navigatedown;
+    navigatedownPromise: typeof ClientV1.prototype.navigatedownPromise;
+    packagesearch: typeof ClientV1.prototype.packagesearch;
+    packagesearchPromise: typeof ClientV1.prototype.packagesearchPromise;
+    packagesource: typeof ClientV1.prototype.packagesource;
+    packagesourcePromise: typeof ClientV1.prototype.packagesourcePromise;
+    packageversion: typeof ClientV1.prototype.packageversion;
+    packageversionPromise: typeof ClientV1.prototype.packageversionPromise;
+    rename: typeof ClientV1.prototype.rename;
+    renamePromise: typeof ClientV1.prototype.renamePromise;
+    signatureHelp: typeof ClientV1.prototype.signatureHelp;
+    signatureHelpPromise: typeof ClientV1.prototype.signatureHelpPromise;
+    stopserver: typeof ClientV1.prototype.stopserver;
+    stopserverPromise: typeof ClientV1.prototype.stopserverPromise;
+    checkalivestatus: typeof ClientV1.prototype.checkalivestatus;
+    checkalivestatusPromise: typeof ClientV1.prototype.checkalivestatusPromise;
+    checkreadystatus: typeof ClientV1.prototype.checkreadystatus;
+    checkreadystatusPromise: typeof ClientV1.prototype.checkreadystatusPromise;
+    currentfilemembersastree: typeof ClientV1.prototype.currentfilemembersastree;
+    currentfilemembersastreePromise: typeof ClientV1.prototype.currentfilemembersastreePromise;
+    currentfilemembersasflat: typeof ClientV1.prototype.currentfilemembersasflat;
+    currentfilemembersasflatPromise: typeof ClientV1.prototype.currentfilemembersasflatPromise;
+    typelookup: typeof ClientV1.prototype.typelookup;
+    typelookupPromise: typeof ClientV1.prototype.typelookupPromise;
+    filesChanged: typeof ClientV1.prototype.filesChanged;
+    filesChangedPromise: typeof ClientV1.prototype.filesChangedPromise;
+    projects: typeof ClientV1.prototype.projects;
+    projectsPromise: typeof ClientV1.prototype.projectsPromise;
+    project: typeof ClientV1.prototype.project;
+    projectPromise: typeof ClientV1.prototype.projectPromise;
+    getcodeactions: typeof ClientV1.prototype.getcodeactions;
+    getcodeactionsPromise: typeof ClientV1.prototype.getcodeactionsPromise;
+    runcodeaction: typeof ClientV1.prototype.runcodeaction;
+    runcodeactionPromise: typeof ClientV1.prototype.runcodeactionPromise;
+    gettestcontext: typeof ClientV1.prototype.gettestcontext;
+    gettestcontextPromise: typeof ClientV1.prototype.gettestcontextPromise;
+}
+
+}
+
+
+declare module "omnisharp-client/proxy/proxy-client-v2" {
+import { ProxyClientBase } from "omnisharp-client/proxy/proxy-client-base";
+import { ClientV2 } from "omnisharp-client/clients/client-v2";
+export class ProxyClientV2 extends ProxyClientBase implements OmniSharp.Api.V2, OmniSharp.Events.V2 {
+    observeUpdatebuffer: typeof ClientV2.prototype.observeUpdatebuffer;
+    observeChangebuffer: typeof ClientV2.prototype.observeChangebuffer;
+    observeCodecheck: typeof ClientV2.prototype.observeCodecheck;
+    observeFormatAfterKeystroke: typeof ClientV2.prototype.observeFormatAfterKeystroke;
+    observeFormatRange: typeof ClientV2.prototype.observeFormatRange;
+    observeCodeformat: typeof ClientV2.prototype.observeCodeformat;
+    observeAutocomplete: typeof ClientV2.prototype.observeAutocomplete;
+    observeFindimplementations: typeof ClientV2.prototype.observeFindimplementations;
+    observeFindsymbols: typeof ClientV2.prototype.observeFindsymbols;
+    observeFindusages: typeof ClientV2.prototype.observeFindusages;
+    observeFixusings: typeof ClientV2.prototype.observeFixusings;
+    observeGotodefinition: typeof ClientV2.prototype.observeGotodefinition;
+    observeGotofile: typeof ClientV2.prototype.observeGotofile;
+    observeGotoregion: typeof ClientV2.prototype.observeGotoregion;
+    observeHighlight: typeof ClientV2.prototype.observeHighlight;
+    observeMetadata: typeof ClientV2.prototype.observeMetadata;
+    observeNavigateup: typeof ClientV2.prototype.observeNavigateup;
+    observeNavigatedown: typeof ClientV2.prototype.observeNavigatedown;
+    observePackagesearch: typeof ClientV2.prototype.observePackagesearch;
+    observePackagesource: typeof ClientV2.prototype.observePackagesource;
+    observePackageversion: typeof ClientV2.prototype.observePackageversion;
+    observeRename: typeof ClientV2.prototype.observeRename;
+    observeSignatureHelp: typeof ClientV2.prototype.observeSignatureHelp;
+    observeStopserver: typeof ClientV2.prototype.observeStopserver;
+    observeCheckalivestatus: typeof ClientV2.prototype.observeCheckalivestatus;
+    observeCheckreadystatus: typeof ClientV2.prototype.observeCheckreadystatus;
+    observeCurrentfilemembersastree: typeof ClientV2.prototype.observeCurrentfilemembersastree;
+    observeCurrentfilemembersasflat: typeof ClientV2.prototype.observeCurrentfilemembersasflat;
+    observeTypelookup: typeof ClientV2.prototype.observeTypelookup;
+    observeFilesChanged: typeof ClientV2.prototype.observeFilesChanged;
+    observeProjects: typeof ClientV2.prototype.observeProjects;
+    observeProject: typeof ClientV2.prototype.observeProject;
+    observeGetcodeactions: typeof ClientV2.prototype.observeGetcodeactions;
+    observeRuncodeaction: typeof ClientV2.prototype.observeRuncodeaction;
+    observeGettestcontext: typeof ClientV2.prototype.observeGettestcontext;
+    getcodeactions: typeof ClientV2.prototype.getcodeactions;
+    getcodeactionsPromise: typeof ClientV2.prototype.getcodeactionsPromise;
+    runcodeaction: typeof ClientV2.prototype.runcodeaction;
+    runcodeactionPromise: typeof ClientV2.prototype.runcodeactionPromise;
+    updatebuffer: typeof ClientV2.prototype.updatebuffer;
+    updatebufferPromise: typeof ClientV2.prototype.updatebufferPromise;
+    changebuffer: typeof ClientV2.prototype.changebuffer;
+    changebufferPromise: typeof ClientV2.prototype.changebufferPromise;
+    codecheck: typeof ClientV2.prototype.codecheck;
+    codecheckPromise: typeof ClientV2.prototype.codecheckPromise;
+    formatAfterKeystroke: typeof ClientV2.prototype.formatAfterKeystroke;
+    formatAfterKeystrokePromise: typeof ClientV2.prototype.formatAfterKeystrokePromise;
+    formatRange: typeof ClientV2.prototype.formatRange;
+    formatRangePromise: typeof ClientV2.prototype.formatRangePromise;
+    codeformat: typeof ClientV2.prototype.codeformat;
+    codeformatPromise: typeof ClientV2.prototype.codeformatPromise;
+    autocomplete: typeof ClientV2.prototype.autocomplete;
+    autocompletePromise: typeof ClientV2.prototype.autocompletePromise;
+    findimplementations: typeof ClientV2.prototype.findimplementations;
+    findimplementationsPromise: typeof ClientV2.prototype.findimplementationsPromise;
+    findsymbols: typeof ClientV2.prototype.findsymbols;
+    findsymbolsPromise: typeof ClientV2.prototype.findsymbolsPromise;
+    findusages: typeof ClientV2.prototype.findusages;
+    findusagesPromise: typeof ClientV2.prototype.findusagesPromise;
+    fixusings: typeof ClientV2.prototype.fixusings;
+    fixusingsPromise: typeof ClientV2.prototype.fixusingsPromise;
+    gotodefinition: typeof ClientV2.prototype.gotodefinition;
+    gotodefinitionPromise: typeof ClientV2.prototype.gotodefinitionPromise;
+    gotofile: typeof ClientV2.prototype.gotofile;
+    gotofilePromise: typeof ClientV2.prototype.gotofilePromise;
+    gotoregion: typeof ClientV2.prototype.gotoregion;
+    gotoregionPromise: typeof ClientV2.prototype.gotoregionPromise;
+    highlight: typeof ClientV2.prototype.highlight;
+    highlightPromise: typeof ClientV2.prototype.highlightPromise;
+    metadata: typeof ClientV2.prototype.metadata;
+    metadataPromise: typeof ClientV2.prototype.metadataPromise;
+    navigateup: typeof ClientV2.prototype.navigateup;
+    navigateupPromise: typeof ClientV2.prototype.navigateupPromise;
+    navigatedown: typeof ClientV2.prototype.navigatedown;
+    navigatedownPromise: typeof ClientV2.prototype.navigatedownPromise;
+    packagesearch: typeof ClientV2.prototype.packagesearch;
+    packagesearchPromise: typeof ClientV2.prototype.packagesearchPromise;
+    packagesource: typeof ClientV2.prototype.packagesource;
+    packagesourcePromise: typeof ClientV2.prototype.packagesourcePromise;
+    packageversion: typeof ClientV2.prototype.packageversion;
+    packageversionPromise: typeof ClientV2.prototype.packageversionPromise;
+    rename: typeof ClientV2.prototype.rename;
+    renamePromise: typeof ClientV2.prototype.renamePromise;
+    signatureHelp: typeof ClientV2.prototype.signatureHelp;
+    signatureHelpPromise: typeof ClientV2.prototype.signatureHelpPromise;
+    stopserver: typeof ClientV2.prototype.stopserver;
+    stopserverPromise: typeof ClientV2.prototype.stopserverPromise;
+    checkalivestatus: typeof ClientV2.prototype.checkalivestatus;
+    checkalivestatusPromise: typeof ClientV2.prototype.checkalivestatusPromise;
+    checkreadystatus: typeof ClientV2.prototype.checkreadystatus;
+    checkreadystatusPromise: typeof ClientV2.prototype.checkreadystatusPromise;
+    currentfilemembersastree: typeof ClientV2.prototype.currentfilemembersastree;
+    currentfilemembersastreePromise: typeof ClientV2.prototype.currentfilemembersastreePromise;
+    currentfilemembersasflat: typeof ClientV2.prototype.currentfilemembersasflat;
+    currentfilemembersasflatPromise: typeof ClientV2.prototype.currentfilemembersasflatPromise;
+    typelookup: typeof ClientV2.prototype.typelookup;
+    typelookupPromise: typeof ClientV2.prototype.typelookupPromise;
+    filesChanged: typeof ClientV2.prototype.filesChanged;
+    filesChangedPromise: typeof ClientV2.prototype.filesChangedPromise;
+    projects: typeof ClientV2.prototype.projects;
+    projectsPromise: typeof ClientV2.prototype.projectsPromise;
+    project: typeof ClientV2.prototype.project;
+    projectPromise: typeof ClientV2.prototype.projectPromise;
+    gettestcontext: typeof ClientV2.prototype.gettestcontext;
+    gettestcontextPromise: typeof ClientV2.prototype.gettestcontextPromise;
+}
+
+}
+
+
 declare module "omnisharp-client/queue" {
 export var enqueue: (cb: Function) => void;
+
+}
+
+
+declare module "omnisharp-client/response-handling" {
+export var serverLineNumbers: string[];
+export var serverLineNumberArrays: string[];
+export function requestMutator(data: any): any;
+export function responseMutator(data: any): any;
 
 }
 
