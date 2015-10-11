@@ -53,7 +53,7 @@ describe("ProxyManager", function() {
 
         it("must respond to all requests", function(done) {
             var count = 4;
-            server.observeCheckalivestatus.subscribe((data) => {
+            server.observe.checkalivestatus.subscribe((data) => {
                 count--;
                 if (!count)
                     done();

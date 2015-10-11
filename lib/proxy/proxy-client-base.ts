@@ -3,18 +3,23 @@ import * as _ from "lodash";
 import {Observable, AsyncSubject, CompositeDisposable, Disposable} from "rx";
 import {DriverState} from "../enums";
 import {RequestContext, ResponseContext, CommandContext} from "../contexts";
+import {ClientEventsBase} from "../clients/client-base";
 import {observe, sync, proxy} from "./decorators";
 import {ensureClientOptions} from "../options";
 import {ClientProxyWrapper} from "./client-proxy-wrapper";
 
 // A client that uses events to communicate cross process, and allows you to load Rx workers into the separate process.
-export class ProxyClientBase implements IDriver, OmniSharp.Events, Rx.IDisposable {
+export class ProxyClientBase<TEvents extends ClientEventsBase> implements IDriver, Rx.IDisposable {
     private _uniqueId = _.uniqueId("client");
     private _disposable = new CompositeDisposable();
 
-    constructor(protected _options: OmnisharpClientOptions, private _proxy: ClientProxyWrapper) {
+    constructor(protected _options: OmnisharpClientOptions, observableFactory: (client: ProxyClientBase<TEvents>) => TEvents, private _proxy: ClientProxyWrapper) {
         ensureClientOptions(_options);
+        this._observe = observableFactory(this);
     }
+
+    private _observe: TEvents;
+    public get observe(): TEvents { return this._observe; }
 
     public get uniqueId() { return this._uniqueId; }
     public get id() { return this._uniqueId; }

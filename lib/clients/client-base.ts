@@ -113,7 +113,7 @@ var {isPriorityCommand, isNormalCommand, isDeferredCommand} = (function() {
     return { isPriorityCommand, isNormalCommand, isDeferredCommand };
 })()
 
-export class ClientBase implements IDriver, OmniSharp.Events, Rx.IDisposable {
+export class ClientBase<TEvents extends ClientEventsBase> implements IDriver, Rx.IDisposable {
     private _driver: IDriver;
     private _requestStream = new Subject<RequestContext<any>>();
     private _responseStream = new Subject<ResponseContext<any, any>>();
@@ -170,19 +170,13 @@ export class ClientBase implements IDriver, OmniSharp.Events, Rx.IDisposable {
     public get responses(): Rx.Observable<ResponseContext<any, any>> { return this._enqueuedResponses; }
     public get errors(): Rx.Observable<CommandContext<any>> { return this._errorStream; }
 
-    @watchEvent public get projectAdded(): Rx.Observable<OmniSharp.Models.ProjectInformationResponse> { throw new Error('Implemented by decorator'); }
-    @watchEvent public get projectChanged(): Rx.Observable<OmniSharp.Models.ProjectInformationResponse> { throw new Error('Implemented by decorator'); }
-    @watchEvent public get projectRemoved(): Rx.Observable<OmniSharp.Models.ProjectInformationResponse> { throw new Error('Implemented by decorator'); }
-    @watchEvent public get error(): Rx.Observable<OmniSharp.Models.ErrorMessage> { throw new Error('Implemented by decorator'); }
-    @watchEvent public get msBuildProjectDiagnostics(): Rx.Observable<OmniSharp.Models.MSBuildProjectDiagnostics> { throw new Error('Implemented by decorator'); }
-    @watchEvent public get packageRestoreStarted(): Rx.Observable<OmniSharp.Models.PackageRestoreMessage> { throw new Error('Implemented by decorator'); }
-    @watchEvent public get packageRestoreFinished(): Rx.Observable<OmniSharp.Models.PackageRestoreMessage> { throw new Error('Implemented by decorator'); }
-    @watchEvent public get unresolvedDependencies(): Rx.Observable<OmniSharp.Models.UnresolvedDependenciesMessage> { throw new Error('Implemented by decorator'); }
+    private _observe: TEvents;
+    public get observe(): TEvents { return this._observe; }
 
-    constructor(private _options: OmnisharpClientOptions) {
+    constructor(private _options: OmnisharpClientOptions, observableFactory: (client: ClientBase<TEvents>) => TEvents) {
         _options.driver = _options.driver || Driver.Stdio;
         ensureClientOptions(_options);
-        var {driver, statusSampleTime,responseSampleTime, concurrency, timeout, concurrencyTimeout} = _options;
+        var {driver, statusSampleTime, responseSampleTime, concurrency, timeout, concurrencyTimeout} = _options;
 
         var driverFactory: IStaticDriver = require('../drivers/' + Driver[driver].toLowerCase());
         this._driver = new driverFactory(_options);
@@ -227,6 +221,8 @@ export class ClientBase implements IDriver, OmniSharp.Events, Rx.IDisposable {
             .distinctUntilChanged()
             .map(Object.freeze)
             .share();
+
+        this._observe = observableFactory(this);
 
         if (this._options.debug) {
             this._disposable.add(this._responseStream.subscribe(Context => {
@@ -404,5 +400,28 @@ export class ClientBase implements IDriver, OmniSharp.Events, Rx.IDisposable {
         this._commandWatchers.set(command, subject);
         this._disposable.add(subject);
         return subject.asObservable().share();
+    }
+}
+
+export class ClientEventsBase implements OmniSharp.Events {
+    constructor(private _client: any) { }
+
+    public get uniqueId() { return this._client.uniqueId }
+
+    @watchEvent public get projectAdded(): Rx.Observable<OmniSharp.Models.ProjectInformationResponse> { throw new Error('Implemented by decorator'); }
+    @watchEvent public get projectChanged(): Rx.Observable<OmniSharp.Models.ProjectInformationResponse> { throw new Error('Implemented by decorator'); }
+    @watchEvent public get projectRemoved(): Rx.Observable<OmniSharp.Models.ProjectInformationResponse> { throw new Error('Implemented by decorator'); }
+    @watchEvent public get error(): Rx.Observable<OmniSharp.Models.ErrorMessage> { throw new Error('Implemented by decorator'); }
+    @watchEvent public get msBuildProjectDiagnostics(): Rx.Observable<OmniSharp.Models.MSBuildProjectDiagnostics> { throw new Error('Implemented by decorator'); }
+    @watchEvent public get packageRestoreStarted(): Rx.Observable<OmniSharp.Models.PackageRestoreMessage> { throw new Error('Implemented by decorator'); }
+    @watchEvent public get packageRestoreFinished(): Rx.Observable<OmniSharp.Models.PackageRestoreMessage> { throw new Error('Implemented by decorator'); }
+    @watchEvent public get unresolvedDependencies(): Rx.Observable<OmniSharp.Models.UnresolvedDependenciesMessage> { throw new Error('Implemented by decorator'); }
+
+    private watchEvent(event: string): Observable<any> {
+        return (<any>this._client).watchEvent(event);
+    }
+
+    private watchCommand(command: string): Observable<any> {
+        return (<any>this._client).watchCommand(command);
     }
 }

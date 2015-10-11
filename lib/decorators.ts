@@ -76,6 +76,14 @@ export function watchEvent(target: Object, propertyKey: string, descriptor: Type
     descriptor.get = function() { return (this[propertyKey] = this.watchEvent(eventKey)); }
 }
 
+export function merge(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
+    descriptor.get = function() { return (this[propertyKey] = this.makeMergeObserable(c => c[propertyKey])); }
+}
+
+export function aggregate(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
+    descriptor.get = function() { return (this[propertyKey] = this.makeAggregateObserable(c => c[propertyKey])); }
+}
+
 export function inheritProperties(source: any, dest: any) {
     _.each(_.keys(source.prototype), key => {
         var descriptor = Object.getOwnPropertyDescriptor(source.prototype, key);

@@ -6,7 +6,7 @@ import {readFileSync} from "fs";
 var sepRegex = /[\\|\/]/g;
 var glob: (file: string[]) => Observable<string[]> = <any>Observable.fromNodeCallback(require('globby'));
 
-interface Options {
+export interface Options {
     solutionFilesToSearch?: string[];
     projectFilesToSearch?: string[];
     sourceFilesToSearch?: string[];
