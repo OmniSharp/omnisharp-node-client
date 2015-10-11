@@ -45,7 +45,6 @@ describe("Omnisharp Server", function() {
         it("must respond to all requests", function(done) {
             var count = 4;
             server.observeCheckalivestatus.subscribe((data) => {
-                console.log(data);
                 count--;
                 if (!count)
                     done();
@@ -87,7 +86,7 @@ describe("Omnisharp Server", function() {
                 }
             });
 
-            server.connect({});
+            server.connect();
         });
 
         it('should call with given omnisharp parameters', function(done) {
@@ -110,7 +109,7 @@ describe("Omnisharp Server", function() {
                 }
             });
 
-            server.connect({});
+            server.connect();
         });
     });
 });

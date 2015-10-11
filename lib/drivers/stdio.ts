@@ -95,24 +95,9 @@ class StdioDriver implements IDriver {
 
     public get outstandingRequests() { return this._outstandingRequests.size; }
 
-    public connect({projectPath, findProject, additionalArguments}: IDriverOptions) {
+    public connect() {
         this._seq = 1;
         this._outstandingRequests.clear();
-
-        projectPath = projectPath || this._projectPath;
-        additionalArguments = additionalArguments || this._additionalArguments;
-        if (findProject || this._findProject) {
-            projectPath = projectFinder(projectPath, this._logger);
-        }
-
-        if (!projectPath) {
-            var error = "Failed to determine project path for omnisharp, aborting connect()";
-            this._logger.error(error);
-            this.serverErr(error);
-            this.disconnect();
-            return;
-        }
-
         !this._connectionStream.isDisposed && this._connectionStream.onNext(DriverState.Connecting);
 
         this._logger.log(`Connecting to child @ ${process.execPath}`);
@@ -121,11 +106,11 @@ class StdioDriver implements IDriver {
 
         if (win32) {
             // Spawn a special windows only node client... so that we can shutdown nicely.
-            var serverArguments: any[] = [join(__dirname, "../stdio/child.js"), "--serverPath", this._serverPath, "--projectPath", projectPath].concat(additionalArguments);
+            var serverArguments: any[] = [join(__dirname, "../stdio/child.js"), "--serverPath", this._serverPath, "--projectPath", this._projectPath].concat(this._additionalArguments);
             this._logger.log(`Arguments: ${serverArguments}`);
             this._process = spawn(process.execPath, serverArguments, { env });
         } else {
-            var serverArguments: any[] = ["--stdio", "-s", this._projectPath, "--hostPID", process.pid].concat(additionalArguments);
+            var serverArguments: any[] = ["--stdio", "-s", this._projectPath, "--hostPID", process.pid].concat(this._additionalArguments);
             this._logger.log(`Arguments: ${serverArguments}`);
             this._process = spawn(this._serverPath, serverArguments, { env });
         }
@@ -189,7 +174,7 @@ class StdioDriver implements IDriver {
         if (!this._process) {
             return Observable.throw<any>(new Error("Server is not connected, erroring out"));
         }
-        
+
         var sequence = this._seq++;
         var packet: OmniSharp.Stdio.Protocol.RequestPacket = {
             Command: command,

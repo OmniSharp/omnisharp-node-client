@@ -11,7 +11,7 @@ export interface ILogger {
 }
 
 export interface IDriverOptions {
-    projectPath?: string;
+    projectPath: string;
     remote?: boolean;
     debug?: boolean; // Start the debug server? (Run from source, to attach with a debug host like VS)
     serverPath?: string; // Start a given server, perhaps in a different directory.
@@ -23,7 +23,7 @@ export interface IDriverOptions {
 
 export interface IDriver extends Rx.IDisposable {
     id: string;
-    connect({projectPath}: IDriverOptions);
+    connect();
     currentState: DriverState;
     events: Rx.Observable<OmniSharp.Stdio.Protocol.EventPacket>;
     commands: Rx.Observable<OmniSharp.Stdio.Protocol.ResponsePacket>;

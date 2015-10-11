@@ -1,7 +1,7 @@
 import * as _ from "lodash";
 import {ProxyClientBase} from "./proxy-client-base";
 import {ClientV2} from "../clients/client-v2";
-import {inheritProperties} from "../decorators";
+import {proxyProperties} from "./decorators";
 
 export class ProxyClientV2 extends ProxyClientBase implements OmniSharp.Api.V2, OmniSharp.Events.V2 {
     public observeUpdatebuffer: typeof ClientV2.prototype.observeUpdatebuffer;
@@ -111,4 +111,4 @@ export class ProxyClientV2 extends ProxyClientBase implements OmniSharp.Api.V2, 
     public gettestcontextPromise: typeof ClientV2.prototype.gettestcontextPromise;
 }
 
-inheritProperties(ClientV2, ProxyClientV2);
+proxyProperties(ClientV2, ProxyClientV2);

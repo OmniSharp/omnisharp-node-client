@@ -44,7 +44,6 @@ export function precondition(method: Function, ...decorators: MethodDecorator[])
         });
 
         descriptor.value = function(request) {
-            console.log(request, method.toString(), method(request))
             if (method(request)) {
                 methods.forEach(method => method.call(this, request));
             }

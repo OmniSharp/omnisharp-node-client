@@ -179,7 +179,7 @@ export class ClientBase implements IDriver, OmniSharp.Events, Rx.IDisposable {
     @watchEvent public get packageRestoreFinished(): Rx.Observable<OmniSharp.Models.PackageRestoreMessage> { throw new Error('Implemented by decorator'); }
     @watchEvent public get unresolvedDependencies(): Rx.Observable<OmniSharp.Models.UnresolvedDependenciesMessage> { throw new Error('Implemented by decorator'); }
 
-    constructor(private _options: OmnisharpClientOptions = {}) {
+    constructor(private _options: OmnisharpClientOptions) {
         _options.driver = _options.driver || Driver.Stdio;
         ensureClientOptions(_options);
         var {driver, statusSampleTime,responseSampleTime, concurrency, timeout, concurrencyTimeout} = _options;
@@ -347,21 +347,11 @@ export class ClientBase implements IDriver, OmniSharp.Events, Rx.IDisposable {
         });
     }
 
-    public connect(_options?: OmnisharpClientOptions) {
-        // There is no return from error for this client
-        //if (this.currentState === DriverState.Error) return;
+    public connect() {
         if (this.currentState === DriverState.Connected || this.currentState === DriverState.Connecting) return;
 
-        if (_options && _options.omnisharp) {
-            _options.additionalArguments = flattenArguments(_options.omnisharp || {});
-        }
-
         this._currentRequests.clear();
-
-        var driver = this._options.driver;
-        extend(this._options, _options || {});
-        this._options.driver = driver;
-        this._driver.connect(this._options);
+        this._driver.connect();
     }
 
     public disconnect() {

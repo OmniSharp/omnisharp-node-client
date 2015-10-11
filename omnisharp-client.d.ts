@@ -49,19 +49,6 @@ export class ClientBase implements IDriver, OmniSharp.Events, Rx.IDisposable {
     private _enqueuedResponses;
     responses: Rx.Observable<ResponseContext<any, any>>;
     errors: Rx.Observable<CommandContext<any>>;
-    constructor(_options?: OmnisharpClientOptions);
-    dispose(): void;
-    private setupRequestStreams();
-    private handleResult(context);
-    static serverLineNumbers: string[];
-    static serverLineNumberArrays: string[];
-    log(message: string, logLevel?: string): void;
-    connect(_options?: OmnisharpClientOptions): void;
-    disconnect(): void;
-    request<TRequest, TResponse>(action: string, request: TRequest, options?: OmniSharp.RequestOptions): Rx.Observable<TResponse>;
-    private setupObservers();
-    protected watchEvent<TBody>(event: string): Observable<TBody>;
-    protected watchCommand(command: string): Observable<OmniSharp.Context<any, any>>;
     projectAdded: Rx.Observable<OmniSharp.Models.ProjectInformationResponse>;
     projectChanged: Rx.Observable<OmniSharp.Models.ProjectInformationResponse>;
     projectRemoved: Rx.Observable<OmniSharp.Models.ProjectInformationResponse>;
@@ -70,6 +57,19 @@ export class ClientBase implements IDriver, OmniSharp.Events, Rx.IDisposable {
     packageRestoreStarted: Rx.Observable<OmniSharp.Models.PackageRestoreMessage>;
     packageRestoreFinished: Rx.Observable<OmniSharp.Models.PackageRestoreMessage>;
     unresolvedDependencies: Rx.Observable<OmniSharp.Models.UnresolvedDependenciesMessage>;
+    constructor(_options: OmnisharpClientOptions);
+    dispose(): void;
+    private setupRequestStreams();
+    private handleResult(context);
+    static serverLineNumbers: string[];
+    static serverLineNumberArrays: string[];
+    log(message: string, logLevel?: string): void;
+    connect(): void;
+    disconnect(): void;
+    request<TRequest, TResponse>(action: string, request: TRequest, options?: OmniSharp.RequestOptions): Rx.Observable<TResponse>;
+    private setupObservers();
+    protected watchEvent<TBody>(event: string): Observable<TBody>;
+    protected watchCommand(command: string): Observable<OmniSharp.Context<any, any>>;
 }
 
 }
@@ -624,6 +624,7 @@ export function isAboveZero(method: Function): (target: Object, propertyKey: str
 export function precondition(method: Function, ...decorators: MethodDecorator[]): (target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) => void;
 export function endpoint(version?: number): (target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) => void;
 export function watchCommand(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>): void;
+export function watchEvent(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>): void;
 export function inheritProperties(source: any, dest: any): void;
 
 }
@@ -658,7 +659,7 @@ export interface ILogger {
 }
 
 export interface IDriverOptions {
-    projectPath?: string;
+    projectPath: string;
     remote?: boolean;
     debug?: boolean; // Start the debug server? (Run from source, to attach with a debug host like VS)
     serverPath?: string; // Start a given server, perhaps in a different directory.
@@ -670,7 +671,7 @@ export interface IDriverOptions {
 
 export interface IDriver extends Rx.IDisposable {
     id: string;
-    connect({projectPath}: IDriverOptions);
+    connect();
     currentState: DriverState;
     events: Rx.Observable<OmniSharp.Stdio.Protocol.EventPacket>;
     commands: Rx.Observable<OmniSharp.Stdio.Protocol.ResponsePacket>;
@@ -759,11 +760,76 @@ export function findProject(location: string, logger: ILogger): string;
 }
 
 
+declare module "omnisharp-client/proxy/client-proxy-wrapper" {
+import { ChildProcess } from "child_process";
+import { Observable, Disposable, AsyncSubject } from "rx";
+export class MessageHandlers implements Rx.IDisposable {
+    private _process;
+    private _disposable;
+    private _requestHandlers;
+    private _observeHandlers;
+    constructor(_process: ChildProcess);
+    dispose(): void;
+    request(clientId: string, methodName: string, handler: (result: any) => void, ...args: any[]): void;
+    addObserveHandler(clientId: string, eventName: string, handler: (result: any) => void): Disposable;
+    private _handle(m);
+    private _handleRequest(m);
+    private _handleObserve(m);
+}
+export class ClientProxyWrapper implements Rx.IDisposable {
+    private _handlers;
+    private _key;
+    private _disposable;
+    constructor(_handlers: MessageHandlers, _key: string, disposer: Rx.IDisposable);
+    key: string;
+    dispose(): void;
+    request(methodName: string, returnResult: boolean, ...args: any[]): AsyncSubject<any>;
+    observe(eventName: string): Observable<{}>;
+}
+
+}
+
+
+declare module "omnisharp-client/proxy/constants" {
+import { OmnisharpClientOptions } from "omnisharp-client/interfaces";
+export const requestKey: string;
+export const clientKey: string;
+export const observeKey: string;
+export interface Message {
+    type: string;
+    client: string;
+}
+export interface ExecuteMethodRequestMessage extends Message {
+    method: string;
+    args?: any[];
+}
+export interface ExecuteMethodResponseMessage extends Message {
+    method: string;
+    result: any;
+}
+export interface ObservationMessage extends Message {
+    event: string;
+    result: any;
+}
+export interface ObservationRequest extends Message {
+    event: string;
+    dispose?: boolean;
+}
+export interface ClientRequest extends Message {
+    version: number;
+    options: OmnisharpClientOptions;
+    dispose?: boolean;
+}
+
+}
+
+
 declare module "omnisharp-client/proxy/decorators" {
 import { Observable } from "rx";
 export function observe<T>(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<Rx.Observable<T>>): void;
 export function sync<T>(syncWith: () => Observable<T>): (target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) => void;
 export function proxy(returnResult?: boolean): (target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) => void;
+export function proxyProperties(source: any, dest: any): void;
 
 }
 
@@ -773,11 +839,13 @@ import { IDriver, OmnisharpClientStatus, OmnisharpClientOptions } from "omnishar
 import { Observable } from "rx";
 import { DriverState } from "omnisharp-client/enums";
 import { RequestContext, ResponseContext, CommandContext } from "omnisharp-client/contexts";
+import { ClientProxyWrapper } from "omnisharp-client/proxy/client-proxy-wrapper";
 export class ProxyClientBase implements IDriver, OmniSharp.Events, Rx.IDisposable {
     protected _options: OmnisharpClientOptions;
-    private _process;
+    private _proxy;
     private _uniqueId;
     private _disposable;
+    constructor(_options: OmnisharpClientOptions, _proxy: ClientProxyWrapper);
     uniqueId: string;
     id: string;
     serverPath: string;
@@ -797,10 +865,6 @@ export class ProxyClientBase implements IDriver, OmniSharp.Events, Rx.IDisposabl
     requests: Rx.Observable<RequestContext<any>>;
     responses: Rx.Observable<ResponseContext<any, any>>;
     errors: Rx.Observable<CommandContext<any>>;
-    constructor(_options?: OmnisharpClientOptions);
-    dispose(): void;
-    static serverLineNumbers: string[];
-    static serverLineNumberArrays: string[];
     log(message: string, logLevel?: string): void;
     connect(_options?: OmnisharpClientOptions): void;
     disconnect(): void;
@@ -813,6 +877,7 @@ export class ProxyClientBase implements IDriver, OmniSharp.Events, Rx.IDisposabl
     packageRestoreStarted: Rx.Observable<OmniSharp.Models.PackageRestoreMessage>;
     packageRestoreFinished: Rx.Observable<OmniSharp.Models.PackageRestoreMessage>;
     unresolvedDependencies: Rx.Observable<OmniSharp.Models.UnresolvedDependenciesMessage>;
+    dispose(): void;
 }
 
 }
@@ -1041,6 +1106,40 @@ export class ProxyClientV2 extends ProxyClientBase implements OmniSharp.Api.V2, 
     projectPromise: typeof ClientV2.prototype.projectPromise;
     gettestcontext: typeof ClientV2.prototype.gettestcontext;
     gettestcontextPromise: typeof ClientV2.prototype.gettestcontextPromise;
+}
+
+}
+
+
+declare module "omnisharp-client/proxy/proxy-manager" {
+import { ProxyClientV1 } from "omnisharp-client/proxy/proxy-client-v1";
+import { ProxyClientV2 } from "omnisharp-client/proxy/proxy-client-v2";
+import { OmnisharpClientOptions } from "omnisharp-client/interfaces";
+export class ProxyManager implements Rx.IDisposable {
+    private _disposable;
+    private _proxies;
+    private _proxyDisposables;
+    private _process;
+    private _handlers;
+    constructor();
+    dispose(): void;
+    getClientV1(options: OmnisharpClientOptions): ProxyClientV1;
+    getClientV2(options: OmnisharpClientOptions): ProxyClientV2;
+    private _getClient(type, version, options);
+}
+
+}
+
+
+declare module "omnisharp-client/proxy/proxy-server" {
+import { ClientRequest, ObservationRequest, ExecuteMethodRequestMessage } from "omnisharp-client/proxy/constants";
+export class ProxyServer {
+    private _disposable;
+    private _clients;
+    private _observers;
+    handleClientRequest({client, version, dispose, options}: ClientRequest): void;
+    handleMethodRequest({method, args, type, client}: ExecuteMethodRequestMessage): void;
+    handleObserveRequest({event, type, client, dispose}: ObservationRequest): void;
 }
 
 }
