@@ -32,14 +32,14 @@ describe("Omnisharp Server", function() {
                 projectPath: process.cwd()
             });
 
-            server.connect();
-
-            var sub = server.state.subscribe(state => {
+            var sub = server.state.startWith(server.currentState).subscribe(state => {
                 if (state === DriverState.Connected) {
                     sub.dispose();
                     done();
                 }
             });
+
+            server.connect();
         })
 
         it("must respond to all requests", function(done) {
