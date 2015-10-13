@@ -474,6 +474,115 @@ export class ClientV2 extends ClientBase<ClientEventsV2> implements OmniSharp.Ap
 }
 
 
+declare module "omnisharp-client/clients/composite-client-base" {
+import { ReplaySubject, Observable, CompositeDisposable, Disposable } from "rx";
+import { ClientBase } from "omnisharp-client/clients/client-base";
+import { DriverState } from "omnisharp-client/enums";
+import { OmnisharpClientStatus } from "omnisharp-client/interfaces";
+import { RequestContext, ResponseContext, CommandContext } from "omnisharp-client/contexts";
+export class ObservationClientBase<C extends ClientBase> implements OmniSharp.Events, Rx.IDisposable {
+    private clients;
+    protected _disposable: CompositeDisposable;
+    private _clientDisposable;
+    protected _clientsSubject: ReplaySubject<C[]>;
+    projectAdded: Observable<OmniSharp.Models.ProjectInformationResponse>;
+    projectChanged: Observable<OmniSharp.Models.ProjectInformationResponse>;
+    projectRemoved: Observable<OmniSharp.Models.ProjectInformationResponse>;
+    error: Observable<OmniSharp.Models.ErrorMessage>;
+    msBuildProjectDiagnostics: Observable<OmniSharp.Models.MSBuildProjectDiagnostics>;
+    packageRestoreStarted: Observable<OmniSharp.Models.PackageRestoreMessage>;
+    packageRestoreFinished: Observable<OmniSharp.Models.PackageRestoreMessage>;
+    unresolvedDependencies: Observable<OmniSharp.Models.UnresolvedDependenciesMessage>;
+    events: Rx.Observable<OmniSharp.Stdio.Protocol.EventPacket>;
+    commands: Rx.Observable<OmniSharp.Stdio.Protocol.ResponsePacket>;
+    state: Rx.Observable<DriverState>;
+    status: Rx.Observable<OmnisharpClientStatus>;
+    requests: Rx.Observable<RequestContext<any>>;
+    responses: Rx.Observable<ResponseContext<any, any>>;
+    errors: Rx.Observable<CommandContext<any>>;
+    constructor(clients?: C[]);
+    dispose(): void;
+    protected makeMergeObserable<T>(selector: (client: C) => Observable<T>): Observable<T>;
+    observe<T>(selector: (client: C) => Observable<T>): Observable<T>;
+    private onNext;
+    add(client: C): Disposable;
+}
+export class CombinationClientBase<C extends ClientBase> implements OmniSharp.Aggregate.Events, Rx.IDisposable {
+    private clients;
+    protected _disposable: CompositeDisposable;
+    private _clientDisposable;
+    _clientsSubject: ReplaySubject<C[]>;
+    projectAdded: Observable<OmniSharp.CombinationKey<OmniSharp.Models.ProjectInformationResponse>[]>;
+    projectChanged: Observable<OmniSharp.CombinationKey<OmniSharp.Models.ProjectInformationResponse>[]>;
+    projectRemoved: Observable<OmniSharp.CombinationKey<OmniSharp.Models.ProjectInformationResponse>[]>;
+    error: Observable<OmniSharp.CombinationKey<OmniSharp.Models.ErrorMessage>[]>;
+    msBuildProjectDiagnostics: Observable<OmniSharp.CombinationKey<OmniSharp.Models.MSBuildProjectDiagnostics>[]>;
+    packageRestoreStarted: Observable<OmniSharp.CombinationKey<OmniSharp.Models.PackageRestoreMessage>[]>;
+    packageRestoreFinished: Observable<OmniSharp.CombinationKey<OmniSharp.Models.PackageRestoreMessage>[]>;
+    unresolvedDependencies: Observable<OmniSharp.CombinationKey<OmniSharp.Models.UnresolvedDependenciesMessage>[]>;
+    state: Rx.Observable<OmniSharp.CombinationKey<DriverState>[]>;
+    status: Rx.Observable<OmniSharp.CombinationKey<OmnisharpClientStatus>[]>;
+    constructor(clients?: C[]);
+    dispose(): void;
+    protected makeCombineObserable<T>(selector: (client: C) => Observable<T>): Observable<{
+        key: string;
+        value: T;
+    }[]>;
+    observe<T>(selector: (client: C) => Observable<T>): Observable<{
+        key: string;
+        value: T;
+    }[]>;
+    private onNext;
+    add(client: C): Disposable;
+}
+
+}
+
+
+declare module "omnisharp-client/clients/contexts" {
+import { Observable } from "rx";
+export class CommandContext<T> {
+    command: string;
+    value: T;
+    constructor(command: string, value: T);
+}
+export class RequestContext<T> {
+    clientId: any;
+    command: string;
+    request: T;
+    sequence: string;
+    time: Date;
+    silent: boolean;
+    oneBasedIndices: boolean;
+    isCommand(command: string): boolean;
+    constructor(clientId: any, command: string, request: T, {silent, oneBasedIndices}: OmniSharp.RequestOptions, sequence?: string);
+    getResponse<TResponse>(stream: Observable<ResponseContext<T, TResponse>>): Observable<TResponse>;
+}
+export class ResponseContext<TRequest, TResponse> {
+    clientId: string;
+    request: TRequest;
+    response: TResponse;
+    command: string;
+    sequence: string;
+    time: Date;
+    responseTime: number;
+    silent: boolean;
+    isCommand(command: string): boolean;
+    constructor({clientId, request, command, sequence, time, silent, oneBasedIndices}: RequestContext<any>, response: TResponse);
+}
+
+}
+
+
+declare module "omnisharp-client/clients/response-handling" {
+export var serverLineNumbers: string[];
+export var serverLineNumberArrays: string[];
+export function requestMutator(data: any): any;
+export function responseMutator(data: any): any;
+
+}
+
+
 declare module "omnisharp-client/contexts" {
 import { Observable } from "rx";
 export class CommandContext<T> {
@@ -633,13 +742,10 @@ export var aggregates: {
     ObservationClientV2: typeof ObservationClientV2;
     AggregateClientV2: typeof AggregateClientV2;
 };
-import { ProxyManager } from "omnisharp-client/proxy/proxy-manager";
-import { ProxyClientV1 } from "omnisharp-client/proxy/proxy-client-v1";
-import { ProxyClientV2 } from "omnisharp-client/proxy/proxy-client-v2";
 export var proxies: {
-    ProxyManager: typeof ProxyManager;
-    ProxyClientV1: typeof ProxyClientV1;
-    ProxyClientV2: typeof ProxyClientV2;
+    ProxyManager: any;
+    ProxyClientV1: any;
+    ProxyClientV2: any;
 };
 export { findCandidates } from "omnisharp-client/candidate-finder";
 export { Driver, DriverState } from "omnisharp-client/enums";
@@ -665,260 +771,6 @@ export function flattenArguments(obj: any, prefix?: string): any[];
 declare module "omnisharp-client/project-finder" {
 import { ILogger } from 'omnisharp-client/interfaces';
 export function findProject(location: string, logger: ILogger): string;
-
-}
-
-
-declare module "omnisharp-client/proxy/client-proxy-wrapper" {
-import { ChildProcess } from "child_process";
-import { Observable, Disposable, AsyncSubject } from "rx";
-export class MessageHandlers implements Rx.IDisposable {
-    private _process;
-    private _disposable;
-    private _requestHandlers;
-    private _observeHandlers;
-    constructor(_process: ChildProcess);
-    dispose(): void;
-    request(clientId: string, methodName: string, handler: (result: any) => void, ...args: any[]): void;
-    addObserveHandler(clientId: string, eventName: string, handler: (result: any) => void): Disposable;
-    private _handle(m);
-    private _handleRequest(m);
-    private _handleObserve(m);
-}
-export class ClientProxyWrapper implements Rx.IDisposable {
-    private _handlers;
-    private _key;
-    private _disposable;
-    constructor(_handlers: MessageHandlers, _key: string, disposer: Rx.IDisposable);
-    key: string;
-    dispose(): void;
-    request(methodName: string, returnResult: boolean, ...args: any[]): AsyncSubject<any>;
-    observe(eventName: string): Observable<{}>;
-}
-
-}
-
-
-declare module "omnisharp-client/proxy/constants" {
-import { OmnisharpClientOptions } from "omnisharp-client/interfaces";
-export const requestKey: string;
-export const clientKey: string;
-export const observeKey: string;
-export interface Message {
-    type: string;
-    client: string;
-}
-export interface ExecuteMethodRequestMessage extends Message {
-    method: string;
-    args?: any[];
-}
-export interface ExecuteMethodResponseMessage extends Message {
-    method: string;
-    result: any;
-}
-export interface ObservationMessage extends Message {
-    event: string;
-    result: any;
-}
-export interface ObservationRequest extends Message {
-    event: string;
-    dispose?: boolean;
-}
-export interface ClientRequest extends Message {
-    version: number;
-    options: OmnisharpClientOptions;
-    dispose?: boolean;
-}
-
-}
-
-
-declare module "omnisharp-client/proxy/decorators" {
-import { Observable } from "rx";
-export function observe<T>(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<Rx.Observable<T>>): void;
-export function sync<T>(syncWith: () => Observable<T>): (target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) => void;
-export function proxy(returnResult?: boolean): (target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) => void;
-export function proxyProperties(source: any, dest: any): void;
-
-}
-
-
-declare module "omnisharp-client/proxy/proxy-client-base" {
-import { IDriver, OmnisharpClientStatus, OmnisharpClientOptions } from "omnisharp-client/interfaces";
-import { Observable } from "rx";
-import { DriverState } from "omnisharp-client/enums";
-import { RequestContext, ResponseContext, CommandContext } from "omnisharp-client/contexts";
-import { ClientEventsBase } from "omnisharp-client/clients/client-base";
-import { ClientProxyWrapper } from "omnisharp-client/proxy/client-proxy-wrapper";
-export class ProxyClientBase<TEvents extends ClientEventsBase> implements IDriver, Rx.IDisposable {
-    protected _options: OmnisharpClientOptions;
-    private _proxy;
-    private _uniqueId;
-    private _disposable;
-    constructor(_options: OmnisharpClientOptions, observableFactory: (client: ProxyClientBase<TEvents>) => TEvents, _proxy: ClientProxyWrapper);
-    private _observe;
-    observe: TEvents;
-    uniqueId: string;
-    id: string;
-    serverPath: string;
-    projectPath: string;
-    events: Rx.Observable<OmniSharp.Stdio.Protocol.EventPacket>;
-    commands: Rx.Observable<OmniSharp.Stdio.Protocol.ResponsePacket>;
-    state: Rx.Observable<DriverState>;
-    currentState: DriverState;
-    getCurrentRequests(): Observable<{
-        command: string;
-        sequence: string;
-        silent: boolean;
-        request: any;
-        duration: number;
-    }>;
-    status: Rx.Observable<OmnisharpClientStatus>;
-    requests: Rx.Observable<RequestContext<any>>;
-    responses: Rx.Observable<ResponseContext<any, any>>;
-    errors: Rx.Observable<CommandContext<any>>;
-    log(message: string, logLevel?: string): void;
-    connect(_options?: OmnisharpClientOptions): void;
-    disconnect(): void;
-    request<TRequest, TResponse>(action: string, request: TRequest, options?: OmniSharp.RequestOptions): Rx.Observable<TResponse>;
-    projectAdded: Rx.Observable<OmniSharp.Models.ProjectInformationResponse>;
-    projectChanged: Rx.Observable<OmniSharp.Models.ProjectInformationResponse>;
-    projectRemoved: Rx.Observable<OmniSharp.Models.ProjectInformationResponse>;
-    error: Rx.Observable<OmniSharp.Models.ErrorMessage>;
-    msBuildProjectDiagnostics: Rx.Observable<OmniSharp.Models.MSBuildProjectDiagnostics>;
-    packageRestoreStarted: Rx.Observable<OmniSharp.Models.PackageRestoreMessage>;
-    packageRestoreFinished: Rx.Observable<OmniSharp.Models.PackageRestoreMessage>;
-    unresolvedDependencies: Rx.Observable<OmniSharp.Models.UnresolvedDependenciesMessage>;
-    dispose(): void;
-}
-
-}
-
-
-declare module "omnisharp-client/proxy/proxy-client-v1" {
-import { OmnisharpClientOptions } from "omnisharp-client/interfaces.d";
-import { ProxyClientBase } from "omnisharp-client/proxy/proxy-client-base";
-import { ClientV1, ClientEventsV1 } from "omnisharp-client/clients/client-v1";
-import { ClientProxyWrapper } from "omnisharp-client/proxy/client-proxy-wrapper";
-export class ProxyClientV1 extends ProxyClientBase<ClientEventsV1> implements OmniSharp.Api.V1 {
-    constructor(_options: OmnisharpClientOptions, _proxy: ClientProxyWrapper);
-    autocomplete: typeof ClientV1.prototype.autocomplete;
-    changebuffer: typeof ClientV1.prototype.changebuffer;
-    checkalivestatus: typeof ClientV1.prototype.checkalivestatus;
-    checkreadystatus: typeof ClientV1.prototype.checkreadystatus;
-    codecheck: typeof ClientV1.prototype.codecheck;
-    codeformat: typeof ClientV1.prototype.codeformat;
-    currentfilemembersasflat: typeof ClientV1.prototype.currentfilemembersasflat;
-    currentfilemembersastree: typeof ClientV1.prototype.currentfilemembersastree;
-    filesChanged: typeof ClientV1.prototype.filesChanged;
-    findimplementations: typeof ClientV1.prototype.findimplementations;
-    findsymbols: typeof ClientV1.prototype.findsymbols;
-    findusages: typeof ClientV1.prototype.findusages;
-    fixusings: typeof ClientV1.prototype.fixusings;
-    formatAfterKeystroke: typeof ClientV1.prototype.formatAfterKeystroke;
-    formatRange: typeof ClientV1.prototype.formatRange;
-    getcodeactions: typeof ClientV1.prototype.getcodeactions;
-    gettestcontext: typeof ClientV1.prototype.gettestcontext;
-    gotodefinition: typeof ClientV1.prototype.gotodefinition;
-    gotofile: typeof ClientV1.prototype.gotofile;
-    gotoregion: typeof ClientV1.prototype.gotoregion;
-    highlight: typeof ClientV1.prototype.highlight;
-    metadata: typeof ClientV1.prototype.metadata;
-    navigatedown: typeof ClientV1.prototype.navigatedown;
-    navigateup: typeof ClientV1.prototype.navigateup;
-    packagesearch: typeof ClientV1.prototype.packagesearch;
-    packagesource: typeof ClientV1.prototype.packagesource;
-    packageversion: typeof ClientV1.prototype.packageversion;
-    project: typeof ClientV1.prototype.project;
-    projects: typeof ClientV1.prototype.projects;
-    rename: typeof ClientV1.prototype.rename;
-    runcodeaction: typeof ClientV1.prototype.runcodeaction;
-    signatureHelp: typeof ClientV1.prototype.signatureHelp;
-    stopserver: typeof ClientV1.prototype.stopserver;
-    typelookup: typeof ClientV1.prototype.typelookup;
-    updatebuffer: typeof ClientV1.prototype.updatebuffer;
-}
-
-}
-
-
-declare module "omnisharp-client/proxy/proxy-client-v2" {
-import { OmnisharpClientOptions } from "omnisharp-client/interfaces.d";
-import { ProxyClientBase } from "omnisharp-client/proxy/proxy-client-base";
-import { ClientV2, ClientEventsV2 } from "omnisharp-client/clients/client-v2";
-import { ClientProxyWrapper } from "omnisharp-client/proxy/client-proxy-wrapper";
-export class ProxyClientV2 extends ProxyClientBase<ClientEventsV2> implements OmniSharp.Api.V2 {
-    constructor(_options: OmnisharpClientOptions, _proxy: ClientProxyWrapper);
-    autocomplete: typeof ClientV2.prototype.autocomplete;
-    changebuffer: typeof ClientV2.prototype.changebuffer;
-    checkalivestatus: typeof ClientV2.prototype.checkalivestatus;
-    checkreadystatus: typeof ClientV2.prototype.checkreadystatus;
-    codecheck: typeof ClientV2.prototype.codecheck;
-    codeformat: typeof ClientV2.prototype.codeformat;
-    currentfilemembersasflat: typeof ClientV2.prototype.currentfilemembersasflat;
-    currentfilemembersastree: typeof ClientV2.prototype.currentfilemembersastree;
-    filesChanged: typeof ClientV2.prototype.filesChanged;
-    findimplementations: typeof ClientV2.prototype.findimplementations;
-    findsymbols: typeof ClientV2.prototype.findsymbols;
-    findusages: typeof ClientV2.prototype.findusages;
-    fixusings: typeof ClientV2.prototype.fixusings;
-    formatAfterKeystroke: typeof ClientV2.prototype.formatAfterKeystroke;
-    formatRange: typeof ClientV2.prototype.formatRange;
-    getcodeactions: typeof ClientV2.prototype.getcodeactions;
-    gettestcontext: typeof ClientV2.prototype.gettestcontext;
-    gotodefinition: typeof ClientV2.prototype.gotodefinition;
-    gotofile: typeof ClientV2.prototype.gotofile;
-    gotoregion: typeof ClientV2.prototype.gotoregion;
-    highlight: typeof ClientV2.prototype.highlight;
-    metadata: typeof ClientV2.prototype.metadata;
-    navigatedown: typeof ClientV2.prototype.navigatedown;
-    navigateup: typeof ClientV2.prototype.navigateup;
-    packagesearch: typeof ClientV2.prototype.packagesearch;
-    packagesource: typeof ClientV2.prototype.packagesource;
-    packageversion: typeof ClientV2.prototype.packageversion;
-    project: typeof ClientV2.prototype.project;
-    projects: typeof ClientV2.prototype.projects;
-    rename: typeof ClientV2.prototype.rename;
-    runcodeaction: typeof ClientV2.prototype.runcodeaction;
-    signatureHelp: typeof ClientV2.prototype.signatureHelp;
-    stopserver: typeof ClientV2.prototype.stopserver;
-    typelookup: typeof ClientV2.prototype.typelookup;
-    updatebuffer: typeof ClientV2.prototype.updatebuffer;
-}
-
-}
-
-
-declare module "omnisharp-client/proxy/proxy-manager" {
-import { ProxyClientV1 } from "omnisharp-client/proxy/proxy-client-v1";
-import { ProxyClientV2 } from "omnisharp-client/proxy/proxy-client-v2";
-import { OmnisharpClientOptions } from "omnisharp-client/interfaces";
-export class ProxyManager implements Rx.IDisposable {
-    private _disposable;
-    private _proxies;
-    private _proxyDisposables;
-    private _process;
-    private _handlers;
-    constructor();
-    dispose(): void;
-    getClientV1(options: OmnisharpClientOptions): ProxyClientV1;
-    getClientV2(options: OmnisharpClientOptions): ProxyClientV2;
-    private _getClient(type, version, options);
-}
-
-}
-
-
-declare module "omnisharp-client/proxy/proxy-server" {
-import { ClientRequest, ObservationRequest, ExecuteMethodRequestMessage } from "omnisharp-client/proxy/constants";
-export class ProxyServer {
-    private _disposable;
-    private _clients;
-    private _observers;
-    handleClientRequest({client, version, dispose, options}: ClientRequest): void;
-    handleMethodRequest({method, args, type, client}: ExecuteMethodRequestMessage): void;
-    handleObserveRequest({event, type, client, dispose}: ObservationRequest): void;
-}
 
 }
 
