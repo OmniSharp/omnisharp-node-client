@@ -11,8 +11,8 @@ var spawn = require('child_process').spawn;
 var glob = require('glob');
 var gulpPath = path.join(__dirname, 'node_modules/.bin/gulp' + (win32 && '.cmd' || ''));
 var metadata = {
-    lib: ['lib/**/*.ts', '!lib/**/*.d.ts'],
-    spec: ['spec/**/*.ts'],
+    lib: ['lib/**/*.d.ts', 'lib/**/*.js', '!lib/es6.d.ts', '!lib/interfaces.d.ts'],
+    spec: ['spec/**/*.d.ts', 'spec/**/*.js', '!spec/tsd.d.ts'],
 };
 
 gulp.task('typescript', ['sync-clients','clean'], function() {
@@ -61,7 +61,7 @@ gulp.task('omnisharp-client-declaration', ['typescript'], function() {
 gulp.task('clean', ['clean:lib', 'clean:spec']);
 
 gulp.task('clean:lib', function(done) {
-    del(metadata.lib.map(function(z) { return gutil.replaceExtension(z, '.js'); }), function(err, paths) {
+    del(metadata.lib, function(err, paths) {
         _.each(paths, function(path) {
             gutil.log(gutil.colors.red('Deleted ') + gutil.colors.magenta(path.replace(__dirname, '').substring(1)));
         });
@@ -70,7 +70,7 @@ gulp.task('clean:lib', function(done) {
 });
 
 gulp.task('clean:spec', function(done) {
-    del(metadata.spec.map(function(z) { return gutil.replaceExtension(z, '.js'); }), function(err, paths) {
+    del(metadata.spec, function(err, paths) {
         _.each(paths, function(path) {
             gutil.log(gutil.colors.red('Deleted ') + gutil.colors.magenta(path.replace(__dirname, '').substring(1)));
         });
