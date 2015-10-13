@@ -1,4 +1,5 @@
 import * as _ from "lodash";
+(<any>_.memoize).Cache = Map;
 
 export function isNotNull(method: Function) {
     return function isNotNull(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
@@ -74,20 +75,38 @@ export function fixup(target: Object, propertyKey: string, descriptor: TypedProp
 }
 
 export function watchCommand(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
-    descriptor.get = function() { return (this[propertyKey] = this.watchCommand(propertyKey)); }
+    descriptor.get = function() {
+        var value = this.watchCommand(propertyKey);
+        this[propertyKey] = value;
+        return value;
+    }
 }
 
 export function watchEvent(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
     var eventKey = propertyKey[0].toUpperCase() + propertyKey.substr(1);
-    descriptor.get = function() { return (this[propertyKey] = this.watchEvent(eventKey)); }
+    descriptor.get = function() {
+        var value = this.watchEvent(eventKey);
+        this[propertyKey] = value;
+        return value;
+    }
 }
 
 export function merge(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
-    descriptor.get = function() { return (this[propertyKey] = this.makeMergeObserable(c => c.observe[propertyKey] || c[propertyKey])); }
+    var method = c => c.observe[propertyKey] || c[propertyKey];
+    descriptor.get = function() {
+        var value = this.makeMergeObserable(method);
+        this[propertyKey] = value;
+        return value;
+    }
 }
 
 export function aggregate(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
-    descriptor.get = function() { return (this[propertyKey] = this.makeAggregateObserable(c => c.observe[propertyKey] || c[propertyKey])); }
+    var method = c => c.observe[propertyKey] || c[propertyKey];
+    descriptor.get = function() {
+        var value = this.makeAggregateObserable(method);
+        this[propertyKey] = value;
+        return value;
+    }
 }
 
 export function reference(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {

@@ -1,5 +1,5 @@
 import {Observable, Subject, AsyncSubject, BehaviorSubject, Scheduler, CompositeDisposable} from "rx";
-import {extend, isObject, some, uniqueId, isArray, each, intersection, keys, filter, isNumber, has, get, set, defaults, cloneDeep} from "lodash";
+import {extend, isObject, some, uniqueId, isArray, each, intersection, keys, filter, isNumber, has, get, set, defaults, cloneDeep, memoize} from "lodash";
 import {IDriver, IStaticDriver, IDriverOptions, OmnisharpClientStatus, OmnisharpClientOptions} from "../interfaces";
 import {Driver, DriverState} from "../enums";
 import {RequestContext, ResponseContext, CommandContext} from "../contexts";
@@ -388,19 +388,19 @@ export class ClientBase<TEvents extends ClientEventsBase> implements IDriver, Rx
         });
     }
 
-    protected watchEvent<TBody>(event: string): Observable<TBody> {
+    protected watchEvent = memoize(<TBody>(event: string): Observable<TBody> => {
         var subject = new Subject<CommandContext<any>>();
         this._eventWatchers.set(event, subject);
         this._disposable.add(subject);
-        return <any>subject.asObservable().share();
-    }
+        return <any>subject.share();
+    });
 
-    protected watchCommand(command: string): Observable<OmniSharp.Context<any, any>> {
+    protected watchCommand = memoize((command: string): Observable<OmniSharp.Context<any, any>> => {
         var subject = new Subject<ResponseContext<any, any>>();
         this._commandWatchers.set(command, subject);
         this._disposable.add(subject);
-        return subject.asObservable().share();
-    }
+        return subject.share();
+    });
 
     private _fixups: Array<(action: string, request: any, options?: OmniSharp.RequestOptions) => void> = [];
     public registerFixup(func: (action: string, request: any, options?: OmniSharp.RequestOptions) => void) {

@@ -44,6 +44,7 @@
         "spec/omnisharp-client-spec.ts",
         "spec/project-find-spec.ts",
         "spec/stdio-spec.ts",
+        "spec/validate-proxies-spec.ts",
         "tsd.d.ts"
     ],
     "exclude": []
