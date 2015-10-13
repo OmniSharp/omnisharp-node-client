@@ -27,7 +27,7 @@ export class ObservationClientBase<Client> implements OmniSharp.Events, Rx.IDisp
     errors: Rx.Observable<CommandContext<any>>;
     constructor(clients?: Client[]);
     dispose(): void;
-    protected makeMergeObserable<T>(selector: (client: Client) => Observable<T>): Observable<T>;
+    protected makeMergeObserable: <T>(selector: (client: Client) => Observable<T>) => Observable<T>;
     observe<T>(selector: (client: Client) => Observable<T>): Observable<T>;
     private onNext;
     add(client: Client): Disposable;
@@ -49,7 +49,7 @@ export class CombinationClientBase<Client> implements OmniSharp.Aggregate.Events
     status: Rx.Observable<OmniSharp.CombinationKey<OmnisharpClientStatus>[]>;
     constructor(clients?: Client[]);
     dispose(): void;
-    protected makeAggregateObserable<T>(selector: (client: Client) => Observable<T>): Observable<{
+    protected makeAggregateObserable: <T>(selector: (client: Client) => Observable<T>) => Observable<{
         key: any;
         value: T;
     }[]>;
@@ -294,8 +294,8 @@ export class ClientBase<TEvents extends ClientEventsBase> implements IDriver, Rx
     disconnect(): void;
     request<TRequest, TResponse>(action: string, request: TRequest, options?: OmniSharp.RequestOptions): Rx.Observable<TResponse>;
     private setupObservers();
-    protected watchEvent<TBody>(event: string): Observable<TBody>;
-    protected watchCommand(command: string): Observable<OmniSharp.Context<any, any>>;
+    protected watchEvent: <TBody>(event: string) => Observable<TBody>;
+    protected watchCommand: (command: string) => Observable<OmniSharp.Context<any, any>>;
     private _fixups;
     registerFixup(func: (action: string, request: any, options?: OmniSharp.RequestOptions) => void): void;
     private _fixup<TRequest>(action, request, options?);

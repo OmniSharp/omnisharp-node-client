@@ -1,4 +1,4 @@
-import {Observable} from "rx";
+import {Observable, CompositeDisposable} from "rx";
 import {uniqueId, isObject, cloneDeep} from "lodash";
 import {requestMutator, responseMutator} from "./response-handling";
 var stripBom = require('strip-bom');
@@ -44,7 +44,15 @@ export class RequestContext<T> {
     }
 
     public getResponse<TResponse>(stream: Observable<ResponseContext<T, TResponse>>) {
-        return stream.first(res => res.sequence === this.sequence).map(z => z.response);
+        return Observable.create<TResponse>(observer =>
+            stream.first(res => res.sequence === this.sequence).subscribe(res => {
+                if (!res.failed) {
+                    observer.onNext(res.response);
+                    observer.onCompleted();
+                } else {
+                    observer.onCompleted();
+                }
+            }));
     }
 }
 
@@ -57,6 +65,7 @@ export class ResponseContext<TRequest, TResponse> {
     public time: Date;
     public responseTime: number;
     public silent: boolean;
+    public failed: boolean;
     public isCommand(command: string) {
         if (command && this.command) {
             return command.toLowerCase() === this.command;
@@ -64,7 +73,7 @@ export class ResponseContext<TRequest, TResponse> {
         return null;
     }
 
-    constructor({clientId, request, command, sequence, time, silent, oneBasedIndices}: RequestContext<any>, response: TResponse) {
+    constructor({clientId, request, command, sequence, time, silent, oneBasedIndices}: RequestContext<any>, response: TResponse = <any>{}, failed = false) {
         if (command) this.command = command.toLowerCase();
 
         if (isObject(response)) {
@@ -82,6 +91,7 @@ export class ResponseContext<TRequest, TResponse> {
         this.sequence = sequence;
         this.time = new Date();
         this.silent = !!silent;
+        this.failed = !!failed;
         this.responseTime = this.time.getTime() - time.getTime();
         Object.freeze(this);
     }

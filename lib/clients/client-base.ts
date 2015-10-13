@@ -315,6 +315,7 @@ export class ClientBase<TEvents extends ClientEventsBase> implements IDriver, Rx
             !this._responseStream.isDisposed && this._responseStream.onNext(new ResponseContext(context, data));
         }, (error) => {
             !this._errorStream.isDisposed && this._errorStream.onNext(new CommandContext(context.command, error));
+            !this._responseStream.isDisposed && this._responseStream.onNext(new ResponseContext(context, null, true));
             this._currentRequests.delete(context);
         }, () => {
             this._currentRequests.delete(context);
@@ -397,7 +398,7 @@ export class ClientBase<TEvents extends ClientEventsBase> implements IDriver, Rx
 
     protected watchCommand = memoize((command: string): Observable<OmniSharp.Context<any, any>> => {
         var subject = new Subject<ResponseContext<any, any>>();
-        this._commandWatchers.set(command, subject);
+        this._commandWatchers.set(command.toLowerCase(), subject);
         this._disposable.add(subject);
         return subject.share();
     });

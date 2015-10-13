@@ -57,6 +57,7 @@ describe("Decorator Methods", function() {
         expect(client.codecheck).to.equal(client.codecheck);
         expect(client.formatAfterKeystroke).to.equal(client.formatAfterKeystroke);
         expect(client.codeformat).to.equal(client.codeformat);
+        expect(client.signatureHelp).to.equal(client.signatureHelp);
     });
 
     it('AggregateClientV1', function() {
