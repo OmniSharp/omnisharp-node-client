@@ -4,6 +4,7 @@ declare module "omnisharp-client/aggregate/composite-client-base" {
 import { ReplaySubject, Observable, CompositeDisposable, Disposable } from "rx";
 import { DriverState } from "omnisharp-client/enums";
 import { OmnisharpClientStatus } from "omnisharp-client/interfaces";
+import { RequestContext, ResponseContext, CommandContext } from "omnisharp-client/contexts";
 export class ObservationClientBase<Client> implements OmniSharp.Events, Rx.IDisposable {
     private clients;
     protected _disposable: CompositeDisposable;
@@ -17,6 +18,13 @@ export class ObservationClientBase<Client> implements OmniSharp.Events, Rx.IDisp
     packageRestoreStarted: Observable<OmniSharp.Models.PackageRestoreMessage>;
     packageRestoreFinished: Observable<OmniSharp.Models.PackageRestoreMessage>;
     unresolvedDependencies: Observable<OmniSharp.Models.UnresolvedDependenciesMessage>;
+    events: Rx.Observable<OmniSharp.Stdio.Protocol.EventPacket>;
+    commands: Rx.Observable<OmniSharp.Stdio.Protocol.ResponsePacket>;
+    state: Rx.Observable<DriverState>;
+    status: Rx.Observable<OmnisharpClientStatus>;
+    requests: Rx.Observable<RequestContext<any>>;
+    responses: Rx.Observable<ResponseContext<any, any>>;
+    errors: Rx.Observable<CommandContext<any>>;
     constructor(clients?: Client[]);
     dispose(): void;
     protected makeMergeObserable<T>(selector: (client: Client) => Observable<T>): Observable<T>;
@@ -57,9 +65,9 @@ export class CombinationClientBase<Client> implements OmniSharp.Aggregate.Events
 
 
 declare module "omnisharp-client/aggregate/composite-client-v1" {
-import { ClientEventsV1 } from "omnisharp-client/clients/client-v1";
+import { ClientV1 } from "omnisharp-client/clients/client-v1";
 import { ObservationClientBase, CombinationClientBase } from "omnisharp-client/aggregate/composite-client-base";
-export class ObservationClientV1<T extends ClientEventsV1> extends ObservationClientBase<T> implements OmniSharp.Events.V1 {
+export class ObservationClientV1<T extends ClientV1> extends ObservationClientBase<T> implements OmniSharp.Events.V1 {
     autocomplete: Rx.Observable<OmniSharp.Context<OmniSharp.Models.AutoCompleteRequest, OmniSharp.Models.AutoCompleteResponse[]>>;
     changebuffer: Rx.Observable<OmniSharp.Context<OmniSharp.Models.ChangeBufferRequest, any>>;
     checkalivestatus: Rx.Observable<OmniSharp.Context<any, boolean>>;
@@ -96,7 +104,7 @@ export class ObservationClientV1<T extends ClientEventsV1> extends ObservationCl
     typelookup: Rx.Observable<OmniSharp.Context<OmniSharp.Models.TypeLookupRequest, OmniSharp.Models.TypeLookupResponse>>;
     updatebuffer: Rx.Observable<OmniSharp.Context<OmniSharp.Models.UpdateBufferRequest, any>>;
 }
-export class AggregateClientV1<T extends ClientEventsV1> extends CombinationClientBase<T> implements OmniSharp.Events.Aggregate.V1 {
+export class AggregateClientV1<T extends ClientV1> extends CombinationClientBase<T> implements OmniSharp.Events.Aggregate.V1 {
     autocomplete: Rx.Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.AutoCompleteRequest, OmniSharp.Models.AutoCompleteResponse[]>>[]>;
     changebuffer: Rx.Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.ChangeBufferRequest, any>>[]>;
     checkalivestatus: Rx.Observable<OmniSharp.CombinationKey<OmniSharp.Context<any, boolean>>[]>;
@@ -138,9 +146,9 @@ export class AggregateClientV1<T extends ClientEventsV1> extends CombinationClie
 
 
 declare module "omnisharp-client/aggregate/composite-client-v2" {
-import { ClientEventsV2 } from "omnisharp-client/clients/client-v2";
+import { ClientV2 } from "omnisharp-client/clients/client-v2";
 import { ObservationClientBase, CombinationClientBase } from "omnisharp-client/aggregate/composite-client-base";
-export class ObservationClientV2<T extends ClientEventsV2> extends ObservationClientBase<T> implements OmniSharp.Events.V2 {
+export class ObservationClientV2<T extends ClientV2> extends ObservationClientBase<T> implements OmniSharp.Events.V2 {
     autocomplete: Rx.Observable<OmniSharp.Context<OmniSharp.Models.AutoCompleteRequest, OmniSharp.Models.AutoCompleteResponse[]>>;
     changebuffer: Rx.Observable<OmniSharp.Context<OmniSharp.Models.ChangeBufferRequest, any>>;
     checkalivestatus: Rx.Observable<OmniSharp.Context<any, boolean>>;
@@ -177,7 +185,7 @@ export class ObservationClientV2<T extends ClientEventsV2> extends ObservationCl
     typelookup: Rx.Observable<OmniSharp.Context<OmniSharp.Models.TypeLookupRequest, OmniSharp.Models.TypeLookupResponse>>;
     updatebuffer: Rx.Observable<OmniSharp.Context<OmniSharp.Models.UpdateBufferRequest, any>>;
 }
-export class AggregateClientV2<T extends ClientEventsV2> extends CombinationClientBase<T> implements OmniSharp.Events.Aggregate.V2 {
+export class AggregateClientV2<T extends ClientV2> extends CombinationClientBase<T> implements OmniSharp.Events.Aggregate.V2 {
     autocomplete: Rx.Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.AutoCompleteRequest, OmniSharp.Models.AutoCompleteResponse[]>>[]>;
     changebuffer: Rx.Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.ChangeBufferRequest, any>>[]>;
     checkalivestatus: Rx.Observable<OmniSharp.CombinationKey<OmniSharp.Context<any, boolean>>[]>;
@@ -301,6 +309,13 @@ export class ClientEventsBase implements OmniSharp.Events {
     packageRestoreStarted: Rx.Observable<OmniSharp.Models.PackageRestoreMessage>;
     packageRestoreFinished: Rx.Observable<OmniSharp.Models.PackageRestoreMessage>;
     unresolvedDependencies: Rx.Observable<OmniSharp.Models.UnresolvedDependenciesMessage>;
+    events: Rx.Observable<OmniSharp.Stdio.Protocol.EventPacket>;
+    commands: Rx.Observable<OmniSharp.Stdio.Protocol.ResponsePacket>;
+    state: Rx.Observable<DriverState>;
+    status: Rx.Observable<OmnisharpClientStatus>;
+    requests: Rx.Observable<RequestContext<any>>;
+    responses: Rx.Observable<ResponseContext<any, any>>;
+    errors: Rx.Observable<CommandContext<any>>;
     private watchEvent(event);
     private watchCommand(command);
 }
@@ -517,6 +532,7 @@ export function watchCommand(target: Object, propertyKey: string, descriptor: Ty
 export function watchEvent(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>): void;
 export function merge(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>): void;
 export function aggregate(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>): void;
+export function reference(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>): void;
 export function inheritProperties(source: any, dest: any): void;
 
 }

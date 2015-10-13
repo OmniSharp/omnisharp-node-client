@@ -5,7 +5,7 @@ import {Driver, DriverState} from "../enums";
 import {RequestContext, ResponseContext, CommandContext} from "../contexts";
 import {serverLineNumbers, serverLineNumberArrays} from "../response-handling";
 import {ensureClientOptions, flattenArguments} from "../options";
-import {watchEvent} from "../decorators";
+import {watchEvent, reference} from "../decorators";
 
 (function() {
     // Temp code, remove with 4.0.0
@@ -416,6 +416,14 @@ export class ClientEventsBase implements OmniSharp.Events {
     @watchEvent public get packageRestoreStarted(): Rx.Observable<OmniSharp.Models.PackageRestoreMessage> { throw new Error('Implemented by decorator'); }
     @watchEvent public get packageRestoreFinished(): Rx.Observable<OmniSharp.Models.PackageRestoreMessage> { throw new Error('Implemented by decorator'); }
     @watchEvent public get unresolvedDependencies(): Rx.Observable<OmniSharp.Models.UnresolvedDependenciesMessage> { throw new Error('Implemented by decorator'); }
+
+    @reference public get events(): Rx.Observable<OmniSharp.Stdio.Protocol.EventPacket> { throw new Error("Implemented by decorator"); }
+    @reference public get commands(): Rx.Observable<OmniSharp.Stdio.Protocol.ResponsePacket> { throw new Error("Implemented by decorator"); }
+    @reference public get state(): Rx.Observable<DriverState> { throw new Error("Implemented by decorator"); }
+    @reference public get status(): Rx.Observable<OmnisharpClientStatus> { throw new Error("Implemented by decorator"); }
+    @reference public get requests(): Rx.Observable<RequestContext<any>> { throw new Error("Implemented by decorator"); }
+    @reference public get responses(): Rx.Observable<ResponseContext<any, any>> { throw new Error("Implemented by decorator"); }
+    @reference public get errors(): Rx.Observable<CommandContext<any>> { throw new Error("Implemented by decorator"); }
 
     private watchEvent(event: string): Observable<any> {
         return (<any>this._client).watchEvent(event);

@@ -66,9 +66,7 @@ export function endpoint(version: number = 1) {
 }
 
 export function watchCommand(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
-    var commandKey = propertyKey.substr('observe'.length);
-    commandKey = commandKey[0].toLowerCase() + commandKey.substr(1);
-    descriptor.get = function() { return (this[propertyKey] = this.watchCommand(commandKey)); }
+    descriptor.get = function() { return (this[propertyKey] = this.watchCommand(propertyKey)); }
 }
 
 export function watchEvent(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
@@ -82,6 +80,10 @@ export function merge(target: Object, propertyKey: string, descriptor: TypedProp
 
 export function aggregate(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
     descriptor.get = function() { return (this[propertyKey] = this.makeAggregateObserable(c => c.observe[propertyKey] || c[propertyKey])); }
+}
+
+export function reference(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
+    descriptor.get = function() { return this._client[propertyKey]; }
 }
 
 export function inheritProperties(source: any, dest: any) {

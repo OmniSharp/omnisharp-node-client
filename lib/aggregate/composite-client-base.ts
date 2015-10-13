@@ -20,6 +20,14 @@ export class ObservationClientBase<Client> implements OmniSharp.Events, Rx.IDisp
     @merge public get packageRestoreFinished(): Observable<OmniSharp.Models.PackageRestoreMessage> { throw new Error("Implemented by decorator"); }
     @merge public get unresolvedDependencies(): Observable<OmniSharp.Models.UnresolvedDependenciesMessage> { throw new Error("Implemented by decorator"); }
 
+    @merge public get events(): Rx.Observable<OmniSharp.Stdio.Protocol.EventPacket> { throw new Error("Implemented by decorator"); }
+    @merge public get commands(): Rx.Observable<OmniSharp.Stdio.Protocol.ResponsePacket> { throw new Error("Implemented by decorator"); }
+    @merge public get state(): Rx.Observable<DriverState> { throw new Error("Implemented by decorator"); }
+    @merge public get status(): Rx.Observable<OmnisharpClientStatus> { throw new Error("Implemented by decorator"); }
+    @merge public get requests(): Rx.Observable<RequestContext<any>> { throw new Error("Implemented by decorator"); }
+    @merge public get responses(): Rx.Observable<ResponseContext<any, any>> { throw new Error("Implemented by decorator"); }
+    @merge public get errors(): Rx.Observable<CommandContext<any>> { throw new Error("Implemented by decorator"); }
+
     constructor(private clients: Client[] = []) {
         this.onNext();
 
@@ -105,7 +113,7 @@ export class CombinationClientBase<Client> implements OmniSharp.Aggregate.Events
                             value: value
                         };
                     })
-                )
+            )
         }).share();
     }
 
