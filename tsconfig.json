@@ -43,7 +43,6 @@
         "spec/omnisharp-client-commands.ts",
         "spec/omnisharp-client-spec.ts",
         "spec/project-find-spec.ts",
-        "spec/proxy-client-spec.ts",
         "spec/stdio-spec.ts",
         "tsd.d.ts"
     ],

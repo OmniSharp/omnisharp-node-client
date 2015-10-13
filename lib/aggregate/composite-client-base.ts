@@ -1,15 +1,15 @@
 import {ReplaySubject, Observable, CompositeDisposable, Disposable} from "rx";
 import * as _ from 'lodash';
-import {ClientEventsBase} from "../clients/client-base";
+import {ClientEventsBase, ClientBase} from "../clients/client-base";
 import {DriverState} from "../enums";
 import {OmnisharpClientStatus} from "../interfaces";
 import {RequestContext, ResponseContext, CommandContext} from "../contexts";
 import {merge, aggregate} from "../decorators";
 
-export class ObservationClientBase<C extends ClientEventsBase> implements OmniSharp.Events, Rx.IDisposable {
+export class ObservationClientBase<Client> implements OmniSharp.Events, Rx.IDisposable {
     protected _disposable = new CompositeDisposable();
     private _clientDisposable = new CompositeDisposable();
-    protected _clientsSubject = new ReplaySubject<C[]>(1);
+    protected _clientsSubject = new ReplaySubject<Client[]>(1);
 
     @merge public get projectAdded(): Observable<OmniSharp.Models.ProjectInformationResponse> { throw new Error("Implemented by decorator"); }
     @merge public get projectChanged(): Observable<OmniSharp.Models.ProjectInformationResponse> { throw new Error("Implemented by decorator"); }
@@ -20,7 +20,7 @@ export class ObservationClientBase<C extends ClientEventsBase> implements OmniSh
     @merge public get packageRestoreFinished(): Observable<OmniSharp.Models.PackageRestoreMessage> { throw new Error("Implemented by decorator"); }
     @merge public get unresolvedDependencies(): Observable<OmniSharp.Models.UnresolvedDependenciesMessage> { throw new Error("Implemented by decorator"); }
 
-    constructor(private clients: C[] = []) {
+    constructor(private clients: Client[] = []) {
         this.onNext();
 
         this._disposable.add(this._clientsSubject);
@@ -32,17 +32,17 @@ export class ObservationClientBase<C extends ClientEventsBase> implements OmniSh
         this._disposable.dispose();
     }
 
-    protected makeMergeObserable<T>(selector: (client: C) => Observable<T>) {
+    protected makeMergeObserable<T>(selector: (client: Client) => Observable<T>) {
         return this._clientsSubject.flatMapLatest(clients => Observable.merge<T>(...clients.map(selector))).share();
     }
 
-    public observe<T>(selector: (client: C) => Observable<T>) {
+    public observe<T>(selector: (client: Client) => Observable<T>) {
         return this.makeMergeObserable(selector);
     }
 
     private onNext = () => this._clientsSubject.onNext(this.clients.slice());
 
-    public add(client: C) {
+    public add(client: Client) {
         this.clients.push(client);
         this.onNext();
         var d = Disposable.create(() => {
@@ -54,10 +54,10 @@ export class ObservationClientBase<C extends ClientEventsBase> implements OmniSh
     }
 }
 
-export class CombinationClientBase<C extends ClientEventsBase> implements OmniSharp.Aggregate.Events, Rx.IDisposable {
+export class CombinationClientBase<Client> implements OmniSharp.Aggregate.Events, Rx.IDisposable {
     protected _disposable = new CompositeDisposable();
     private _clientDisposable = new CompositeDisposable();
-    public _clientsSubject = new ReplaySubject<C[]>(1);
+    public _clientsSubject = new ReplaySubject<Client[]>(1);
 
     @aggregate public get projectAdded(): Observable<OmniSharp.CombinationKey<OmniSharp.Models.ProjectInformationResponse>[]> { throw new Error("Implemented by decorator"); }
     @aggregate public get projectChanged(): Observable<OmniSharp.CombinationKey<OmniSharp.Models.ProjectInformationResponse>[]> { throw new Error("Implemented by decorator"); }
@@ -71,7 +71,7 @@ export class CombinationClientBase<C extends ClientEventsBase> implements OmniSh
     @aggregate public get state(): Rx.Observable<OmniSharp.CombinationKey<DriverState>[]> { throw new Error("Implemented by decorator"); }
     @aggregate public get status(): Rx.Observable<OmniSharp.CombinationKey<OmnisharpClientStatus>[]> { throw new Error("Implemented by decorator"); }
 
-    constructor(private clients: C[] = []) {
+    constructor(private clients: Client[] = []) {
         this.onNext();
 
         this._disposable.add(this._clientsSubject);
@@ -83,7 +83,7 @@ export class CombinationClientBase<C extends ClientEventsBase> implements OmniSh
         this._disposable.dispose();
     }
 
-    protected makeAggregateObserable<T>(selector: (client: C) => Observable<T>) {
+    protected makeAggregateObserable<T>(selector: (client: Client) => Observable<T>) {
 
         // Caches the value, so that when the underlying clients change
         // we can start with the old value of the remaining clients
@@ -91,17 +91,17 @@ export class CombinationClientBase<C extends ClientEventsBase> implements OmniSh
 
         return this._clientsSubject.flatMapLatest(clients => {
             // clean up after ourselves.
-            var removal = _.difference(_.keys(cache), clients.map(z => z.uniqueId));
+            var removal = _.difference(_.keys(cache), clients.map(z => z['uniqueId']));
             _.each(removal, z => delete cache[z]);
 
             return Observable.combineLatest(
-                clients.map(z => selector(z).startWith(cache[z.uniqueId])),
+                clients.map(z => selector(z).startWith(cache[z['uniqueId']])),
                 (...values: T[]) =>
                     values.map((value, index) => {
-                        cache[clients[index].uniqueId] = value;
+                        cache[clients[index]['uniqueId']] = value;
 
                         return {
-                            key: clients[index].uniqueId,
+                            key: clients[index]['uniqueId'],
                             value: value
                         };
                     })
@@ -109,13 +109,13 @@ export class CombinationClientBase<C extends ClientEventsBase> implements OmniSh
         }).share();
     }
 
-    public observe<T>(selector: (client: C) => Observable<T>) {
+    public observe<T>(selector: (client: Client) => Observable<T>) {
         return this.makeAggregateObserable(selector);
     }
 
     private onNext = () => this._clientsSubject.onNext(this.clients.slice());
 
-    public add(client: C) {
+    public add(client: Client) {
         this.clients.push(client);
         this.onNext();
         var d = Disposable.create(() => {

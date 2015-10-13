@@ -2,14 +2,13 @@
 
 declare module "omnisharp-client/aggregate/composite-client-base" {
 import { ReplaySubject, Observable, CompositeDisposable, Disposable } from "rx";
-import { ClientEventsBase } from "omnisharp-client/clients/client-base";
 import { DriverState } from "omnisharp-client/enums";
 import { OmnisharpClientStatus } from "omnisharp-client/interfaces";
-export class ObservationClientBase<C extends ClientEventsBase> implements OmniSharp.Events, Rx.IDisposable {
+export class ObservationClientBase<Client> implements OmniSharp.Events, Rx.IDisposable {
     private clients;
     protected _disposable: CompositeDisposable;
     private _clientDisposable;
-    protected _clientsSubject: ReplaySubject<C[]>;
+    protected _clientsSubject: ReplaySubject<Client[]>;
     projectAdded: Observable<OmniSharp.Models.ProjectInformationResponse>;
     projectChanged: Observable<OmniSharp.Models.ProjectInformationResponse>;
     projectRemoved: Observable<OmniSharp.Models.ProjectInformationResponse>;
@@ -18,18 +17,18 @@ export class ObservationClientBase<C extends ClientEventsBase> implements OmniSh
     packageRestoreStarted: Observable<OmniSharp.Models.PackageRestoreMessage>;
     packageRestoreFinished: Observable<OmniSharp.Models.PackageRestoreMessage>;
     unresolvedDependencies: Observable<OmniSharp.Models.UnresolvedDependenciesMessage>;
-    constructor(clients?: C[]);
+    constructor(clients?: Client[]);
     dispose(): void;
-    protected makeMergeObserable<T>(selector: (client: C) => Observable<T>): Observable<T>;
-    observe<T>(selector: (client: C) => Observable<T>): Observable<T>;
+    protected makeMergeObserable<T>(selector: (client: Client) => Observable<T>): Observable<T>;
+    observe<T>(selector: (client: Client) => Observable<T>): Observable<T>;
     private onNext;
-    add(client: C): Disposable;
+    add(client: Client): Disposable;
 }
-export class CombinationClientBase<C extends ClientEventsBase> implements OmniSharp.Aggregate.Events, Rx.IDisposable {
+export class CombinationClientBase<Client> implements OmniSharp.Aggregate.Events, Rx.IDisposable {
     private clients;
     protected _disposable: CompositeDisposable;
     private _clientDisposable;
-    _clientsSubject: ReplaySubject<C[]>;
+    _clientsSubject: ReplaySubject<Client[]>;
     projectAdded: Observable<OmniSharp.CombinationKey<OmniSharp.Models.ProjectInformationResponse>[]>;
     projectChanged: Observable<OmniSharp.CombinationKey<OmniSharp.Models.ProjectInformationResponse>[]>;
     projectRemoved: Observable<OmniSharp.CombinationKey<OmniSharp.Models.ProjectInformationResponse>[]>;
@@ -40,18 +39,18 @@ export class CombinationClientBase<C extends ClientEventsBase> implements OmniSh
     unresolvedDependencies: Observable<OmniSharp.CombinationKey<OmniSharp.Models.UnresolvedDependenciesMessage>[]>;
     state: Rx.Observable<OmniSharp.CombinationKey<DriverState>[]>;
     status: Rx.Observable<OmniSharp.CombinationKey<OmnisharpClientStatus>[]>;
-    constructor(clients?: C[]);
+    constructor(clients?: Client[]);
     dispose(): void;
-    protected makeAggregateObserable<T>(selector: (client: C) => Observable<T>): Observable<{
+    protected makeAggregateObserable<T>(selector: (client: Client) => Observable<T>): Observable<{
         key: any;
         value: T;
     }[]>;
-    observe<T>(selector: (client: C) => Observable<T>): Observable<{
+    observe<T>(selector: (client: Client) => Observable<T>): Observable<{
         key: any;
         value: T;
     }[]>;
     private onNext;
-    add(client: C): Disposable;
+    add(client: Client): Disposable;
 }
 
 }

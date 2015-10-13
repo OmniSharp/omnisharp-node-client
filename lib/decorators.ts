@@ -77,11 +77,11 @@ export function watchEvent(target: Object, propertyKey: string, descriptor: Type
 }
 
 export function merge(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
-    descriptor.get = function() { return (this[propertyKey] = this.makeMergeObserable(c => c[propertyKey])); }
+    descriptor.get = function() { return (this[propertyKey] = this.makeMergeObserable(c => c.observe[propertyKey] || c[propertyKey])); }
 }
 
 export function aggregate(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
-    descriptor.get = function() { return (this[propertyKey] = this.makeAggregateObserable(c => c[propertyKey])); }
+    descriptor.get = function() { return (this[propertyKey] = this.makeAggregateObserable(c => c.observe[propertyKey] || c[propertyKey])); }
 }
 
 export function inheritProperties(source: any, dest: any) {
