@@ -619,25 +619,10 @@ export module Omnisharp {
 
 
 declare module "omnisharp-client" {
-import { ClientV1 } from 'omnisharp-client/clients/client-v1';
-import { ClientV2 } from 'omnisharp-client/clients/client-v2';
-export var clients: {
-    ClientV1: typeof ClientV1;
-    ClientV2: typeof ClientV2;
-};
-import { ObservationClientV1, AggregateClientV1 } from 'omnisharp-client/aggregate/composite-client-v1';
-import { ObservationClientV2, AggregateClientV2 } from 'omnisharp-client/aggregate/composite-client-v2';
-export var aggregates: {
-    ObservationClientV1: typeof ObservationClientV1;
-    AggregateClientV1: typeof AggregateClientV1;
-    ObservationClientV2: typeof ObservationClientV2;
-    AggregateClientV2: typeof AggregateClientV2;
-};
-export var proxies: {
-    ProxyManager: any;
-    ProxyClientV1: any;
-    ProxyClientV2: any;
-};
+export { ClientV1 } from 'omnisharp-client/clients/client-v1';
+export { ClientV2 } from 'omnisharp-client/clients/client-v2';
+export { ObservationClientV1, AggregateClientV1 } from 'omnisharp-client/aggregate/composite-client-v1';
+export { ObservationClientV2, AggregateClientV2 } from 'omnisharp-client/aggregate/composite-client-v2';
 export { findCandidates } from "omnisharp-client/candidate-finder";
 export { Driver, DriverState } from "omnisharp-client/enums";
 export { IDriver, OmnisharpClientOptions, OmnisharpClientStatus } from "omnisharp-client/interfaces";
