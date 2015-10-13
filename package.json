@@ -29,12 +29,14 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "glob": "^5.0.14",
-    "globby": "^2.1.0",
+    "glob": "^5.0.15",
+    "globby": "^3.0.1",
     "lodash": "^3.10.1",
-    "ntypescript": "^1.201510110008.1",
-    "rx": "^3.1.2",
+    "mocha": "^2.3.3",
+    "ntypescript": "^1.201510130006.1",
+    "rx": "^4.0.4",
     "strip-bom": "^2.0.0",
+    "tsd": "^0.6.5",
     "yargs": "^3.21.0"
   },
   "devDependencies": {

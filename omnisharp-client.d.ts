@@ -519,8 +519,9 @@ export class ResponseContext<TRequest, TResponse> {
     time: Date;
     responseTime: number;
     silent: boolean;
+    failed: boolean;
     isCommand(command: string): boolean;
-    constructor({clientId, request, command, sequence, time, silent, oneBasedIndices}: RequestContext<any>, response: TResponse);
+    constructor({clientId, request, command, sequence, time, silent, oneBasedIndices}: RequestContext<any>, response?: TResponse, failed?: boolean);
 }
 
 }

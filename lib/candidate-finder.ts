@@ -74,7 +74,7 @@ function searchForCandidates(location: string, filesToSearch: string[], projectF
     locations = locations.slice(0, Math.min(5, locations.length));
 
     var rootObservable = Observable.from(locations)
-        .subscribeOn(Scheduler.timeout)
+        .subscribeOn(Scheduler.async)
         .map(loc => ({
             loc,
             files: filesToSearch.map(fileName => join(loc, fileName))
