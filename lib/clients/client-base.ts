@@ -401,6 +401,15 @@ export class ClientBase<TEvents extends ClientEventsBase> implements IDriver, Rx
         this._disposable.add(subject);
         return subject.asObservable().share();
     }
+
+    private _fixups: Array<(action: string, request: any, options?: OmniSharp.RequestOptions) => void> = [];
+    public registerFixup(func: (action: string, request: any, options?: OmniSharp.RequestOptions) => void) {
+        this._fixups.push(func);
+    }
+
+    private _fixup<TRequest>(action: string, request: TRequest, options?: OmniSharp.RequestOptions) {
+        each(this._fixups, f => f(action, request, options));
+    }
 }
 
 export class ClientEventsBase implements OmniSharp.Events {

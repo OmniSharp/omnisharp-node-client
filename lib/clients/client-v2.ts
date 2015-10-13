@@ -2,7 +2,7 @@ import {ClientBase, ClientEventsBase} from "./client-base";
 import {ClientV1} from "./client-v1";
 import {OmnisharpClientOptions} from "../interfaces";
 import * as _ from "lodash";
-import {isNotNull, isAboveZero, watchCommand, precondition, endpoint, inheritProperties} from "../decorators";
+import {isNotNull, isAboveZero, watchCommand, precondition, endpoint, inheritProperties, fixup} from "../decorators";
 
 export class ClientEventsV2 extends ClientEventsBase implements OmniSharp.Events.V2 {
     @watchCommand public get updatebuffer(): Rx.Observable<OmniSharp.Context<OmniSharp.Models.UpdateBufferRequest, any>> { throw new Error('Implemented by decorator'); }
@@ -47,6 +47,7 @@ export class ClientV2 extends ClientBase<ClientEventsV2> implements OmniSharp.Ap
         super(_options, c => new ClientEventsV2(c));
     }
 
+    @fixup
     @isNotNull(request => request.FileName)
     @precondition(request => !request.Selection,
         isNotNull(request => request.Line),
@@ -65,6 +66,7 @@ export class ClientV2 extends ClientBase<ClientEventsV2> implements OmniSharp.Ap
     @endpoint(2)
     public getcodeactions(request: OmniSharp.Models.V2.GetCodeActionsRequest, options?: OmniSharp.RequestOptions): Rx.Observable<OmniSharp.Models.V2.GetCodeActionsResponse> { throw new Error('Implemented by decorator'); }
 
+    @fixup
     @isNotNull(request => request.FileName)
     @isNotNull(request => request.Identifier)
     @precondition(request => !request.Selection,

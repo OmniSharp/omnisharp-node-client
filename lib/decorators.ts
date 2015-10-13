@@ -65,6 +65,14 @@ export function endpoint(version: number = 1) {
     }
 }
 
+export function fixup(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
+    var value = descriptor.value;
+    descriptor.value = function(request, options) {
+        this._fixup(propertyKey, request, options);
+        return value.apply(this, arguments);
+    }
+}
+
 export function watchCommand(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
     descriptor.get = function() { return (this[propertyKey] = this.watchCommand(propertyKey)); }
 }

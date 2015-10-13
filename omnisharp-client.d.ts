@@ -296,6 +296,9 @@ export class ClientBase<TEvents extends ClientEventsBase> implements IDriver, Rx
     private setupObservers();
     protected watchEvent<TBody>(event: string): Observable<TBody>;
     protected watchCommand(command: string): Observable<OmniSharp.Context<any, any>>;
+    private _fixups;
+    registerFixup(func: (action: string, request: any, options?: OmniSharp.RequestOptions) => void): void;
+    private _fixup<TRequest>(action, request, options?);
 }
 export class ClientEventsBase implements OmniSharp.Events {
     private _client;
@@ -528,6 +531,7 @@ export function isNotNull(method: Function): (target: Object, propertyKey: strin
 export function isAboveZero(method: Function): (target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) => void;
 export function precondition(method: Function, ...decorators: MethodDecorator[]): (target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) => void;
 export function endpoint(version?: number): (target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) => void;
+export function fixup(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>): void;
 export function watchCommand(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>): void;
 export function watchEvent(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>): void;
 export function merge(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>): void;

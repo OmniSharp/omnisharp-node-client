@@ -1,6 +1,6 @@
 import {ClientBase, ClientEventsBase} from "./client-base";
 import {OmnisharpClientOptions} from "../interfaces";
-import {isNotNull, isAboveZero, watchCommand, endpoint} from "../decorators";
+import {isNotNull, isAboveZero, watchCommand, endpoint, fixup} from "../decorators";
 
 export class ClientEventsV1 extends ClientEventsBase implements OmniSharp.Events.V1 {
     @watchCommand public get updatebuffer(): Rx.Observable<OmniSharp.Context<OmniSharp.Models.UpdateBufferRequest, any>> { throw new Error('Implemented by decorator'); }
@@ -45,11 +45,13 @@ export class ClientV1 extends ClientBase<ClientEventsV1> implements OmniSharp.Ap
         super(_options, c => new ClientEventsV1(c));
     }
 
+    @fixup
     @isNotNull(request => request.FileName)
     @isNotNull(request => request.Buffer)
     @endpoint()
     public updatebuffer(request: OmniSharp.Models.UpdateBufferRequest, options?: OmniSharp.RequestOptions): Rx.Observable<any> { throw new Error('Implemented by decorator'); }
 
+    @fixup
     @isNotNull(request => request.FileName)
     @isNotNull(request => request.NewText)
     @isNotNull(request => request.StartLine)
@@ -63,9 +65,11 @@ export class ClientV1 extends ClientBase<ClientEventsV1> implements OmniSharp.Ap
     @endpoint()
     public changebuffer(request: OmniSharp.Models.ChangeBufferRequest, options?: OmniSharp.RequestOptions): Rx.Observable<any> { throw new Error('Implemented by decorator'); }
 
+    @fixup
     @endpoint()
     public codecheck(request: OmniSharp.Models.Request, options?: OmniSharp.RequestOptions): Rx.Observable<OmniSharp.Models.QuickFixResponse> { throw new Error('Implemented by decorator'); }
 
+    @fixup
     @isNotNull(request => request.FileName)
     @isNotNull(request => request.Line)
     @isAboveZero(request => request.Line)
@@ -75,6 +79,7 @@ export class ClientV1 extends ClientBase<ClientEventsV1> implements OmniSharp.Ap
     @endpoint()
     public formatAfterKeystroke(request: OmniSharp.Models.FormatAfterKeystrokeRequest, options?: OmniSharp.RequestOptions): Rx.Observable<OmniSharp.Models.FormatRangeResponse> { throw new Error('Implemented by decorator'); }
 
+    @fixup
     @isNotNull(request => request.FileName)
     @isNotNull(request => request.Line)
     @isAboveZero(request => request.Line)
@@ -87,10 +92,12 @@ export class ClientV1 extends ClientBase<ClientEventsV1> implements OmniSharp.Ap
     @endpoint()
     public formatRange(request: OmniSharp.Models.FormatRangeRequest, options?: OmniSharp.RequestOptions): Rx.Observable<OmniSharp.Models.FormatRangeResponse> { throw new Error('Implemented by decorator'); }
 
+    @fixup
     @isNotNull(request => request.FileName)
     @endpoint()
     public codeformat(request: OmniSharp.Models.Request, options?: OmniSharp.RequestOptions): Rx.Observable<OmniSharp.Models.CodeFormatResponse> { throw new Error('Implemented by decorator'); }
 
+    @fixup
     @isNotNull(request => request.FileName)
     @isNotNull(request => request.Line)
     @isAboveZero(request => request.Line)
@@ -100,6 +107,7 @@ export class ClientV1 extends ClientBase<ClientEventsV1> implements OmniSharp.Ap
     @endpoint()
     public autocomplete(request: OmniSharp.Models.AutoCompleteRequest, options?: OmniSharp.RequestOptions): Rx.Observable<OmniSharp.Models.AutoCompleteResponse[]> { throw new Error('Implemented by decorator'); }
 
+    @fixup
     @isNotNull(request => request.FileName)
     @isNotNull(request => request.Line)
     @isAboveZero(request => request.Line)
@@ -108,10 +116,12 @@ export class ClientV1 extends ClientBase<ClientEventsV1> implements OmniSharp.Ap
     @endpoint()
     public findimplementations(request: OmniSharp.Models.Request, options?: OmniSharp.RequestOptions): Rx.Observable<OmniSharp.Models.QuickFixResponse> { throw new Error('Implemented by decorator'); }
 
+    @fixup
     @isNotNull(request => request.Filter)
     @endpoint()
     public findsymbols(request: OmniSharp.Models.FindSymbolsRequest, options?: OmniSharp.RequestOptions): Rx.Observable<OmniSharp.Models.QuickFixResponse> { throw new Error('Implemented by decorator'); }
 
+    @fixup
     @isNotNull(request => request.FileName)
     @isNotNull(request => request.Line)
     @isAboveZero(request => request.Line)
@@ -120,12 +130,14 @@ export class ClientV1 extends ClientBase<ClientEventsV1> implements OmniSharp.Ap
     @endpoint()
     public findusages(request: OmniSharp.Models.FindUsagesRequest, options?: OmniSharp.RequestOptions): Rx.Observable<OmniSharp.Models.QuickFixResponse> { throw new Error('Implemented by decorator'); }
 
+    @fixup
     @isNotNull(request => request.FileName)
     public fixusings(request: OmniSharp.Models.FixUsingsRequest, options?: OmniSharp.RequestOptions) {
 
         return this.request<OmniSharp.Models.FixUsingsRequest, OmniSharp.Models.FixUsingsResponse>("fixusings", request, options);
     }
 
+    @fixup
     @isNotNull(request => request.FileName)
     @isNotNull(request => request.Line)
     @isAboveZero(request => request.Line)
@@ -134,6 +146,7 @@ export class ClientV1 extends ClientBase<ClientEventsV1> implements OmniSharp.Ap
     @endpoint()
     public gotodefinition(request: OmniSharp.Models.GotoDefinitionRequest, options?: OmniSharp.RequestOptions): Rx.Observable<any> { throw new Error('Implemented by decorator'); }
 
+    @fixup
     @isNotNull(request => request.FileName)
     @isNotNull(request => request.Line)
     @isAboveZero(request => request.Line)
@@ -146,19 +159,23 @@ export class ClientV1 extends ClientBase<ClientEventsV1> implements OmniSharp.Ap
         return this.request<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>("gotofile", request, options);
     }
 
+    @fixup
     @isNotNull(request => request.FileName)
     @endpoint()
     public gotoregion(request: OmniSharp.Models.Request, options?: OmniSharp.RequestOptions): Rx.Observable<OmniSharp.Models.QuickFixResponse> { throw new Error('Implemented by decorator'); }
 
+    @fixup
     @isNotNull(request => request.FileName)
     @endpoint()
     public highlight(request: OmniSharp.Models.HighlightRequest, options?: OmniSharp.RequestOptions): Rx.Observable<OmniSharp.Models.HighlightResponse> { throw new Error('Implemented by decorator'); }
 
+    @fixup
     @isNotNull(request => request.AssemblyName)
     @isNotNull(request => request.TypeName)
     @endpoint()
     public metadata(request: OmniSharp.Models.MetadataRequest, options?: OmniSharp.RequestOptions): Rx.Observable<OmniSharp.Models.MetadataResponse> { throw new Error('Implemented by decorator'); }
 
+    @fixup
     @isNotNull(request => request.FileName)
     @isNotNull(request => request.Line)
     @isAboveZero(request => request.Line)
@@ -167,20 +184,24 @@ export class ClientV1 extends ClientBase<ClientEventsV1> implements OmniSharp.Ap
     @endpoint()
     public navigatedown(request: OmniSharp.Models.Request, options?: OmniSharp.RequestOptions): Rx.Observable<OmniSharp.Models.NavigateResponse> { throw new Error('Implemented by decorator'); }
 
+    @fixup
     @isNotNull(request => request.ProjectPath)
     @isNotNull(request => request.Search)
     @endpoint()
     public packagesearch(request: OmniSharp.Models.PackageSearchRequest, options?: OmniSharp.RequestOptions): Rx.Observable<OmniSharp.Models.PackageSearchResponse> { throw new Error('Implemented by decorator'); }
 
+    @fixup
     @isNotNull(request => request.ProjectPath)
     @endpoint()
     public packagesource(request: OmniSharp.Models.PackageSourceRequest, options?: OmniSharp.RequestOptions): Rx.Observable<OmniSharp.Models.PackageSourceResponse> { throw new Error('Implemented by decorator'); }
 
+    @fixup
     @isNotNull(request => request.ProjectPath)
     @isNotNull(request => request.Id)
     @endpoint()
     public packageversion(request: OmniSharp.Models.PackageVersionRequest, options?: OmniSharp.RequestOptions): Rx.Observable<OmniSharp.Models.PackageVersionResponse> { throw new Error('Implemented by decorator'); }
 
+    @fixup
     @isNotNull(request => request.FileName)
     @isNotNull(request => request.Line)
     @isAboveZero(request => request.Line)
@@ -190,6 +211,7 @@ export class ClientV1 extends ClientBase<ClientEventsV1> implements OmniSharp.Ap
     @endpoint()
     public rename(request: OmniSharp.Models.RenameRequest, options?: OmniSharp.RequestOptions): Rx.Observable<OmniSharp.Models.RenameResponse> { throw new Error('Implemented by decorator'); }
 
+    @fixup
     @isNotNull(request => request.FileName)
     @isNotNull(request => request.Line)
     @isAboveZero(request => request.Line)
@@ -210,14 +232,17 @@ export class ClientV1 extends ClientBase<ClientEventsV1> implements OmniSharp.Ap
         return this.request<any, any>("checkreadystatus", {}, options);
     }
 
+    @fixup
     @isNotNull(request => request.FileName)
     @endpoint()
     public currentfilemembersastree(request: OmniSharp.Models.Request, options?: OmniSharp.RequestOptions): Rx.Observable<any> { throw new Error('Implemented by decorator'); }
 
+    @fixup
     @isNotNull(request => request.FileName)
     @endpoint()
     public currentfilemembersasflat(request: OmniSharp.Models.Request, options?: OmniSharp.RequestOptions): Rx.Observable<any> { throw new Error('Implemented by decorator'); }
 
+    @fixup
     @isNotNull(request => request.FileName)
     @isNotNull(request => request.Line)
     @isAboveZero(request => request.Line)
@@ -226,17 +251,21 @@ export class ClientV1 extends ClientBase<ClientEventsV1> implements OmniSharp.Ap
     @endpoint()
     public typelookup(request: OmniSharp.Models.TypeLookupRequest, options?: OmniSharp.RequestOptions): Rx.Observable<OmniSharp.Models.TypeLookupResponse> { throw new Error('Implemented by decorator'); }
 
+    @fixup
     @isNotNull(request => request)
     @endpoint()
     public filesChanged(request: OmniSharp.Models.Request[], options?: OmniSharp.RequestOptions): Rx.Observable<boolean> { throw new Error('Implemented by decorator'); }
 
+    @fixup
     @endpoint()
     public projects(request: OmniSharp.Models.v1.ProjectInformationRequest, options?: OmniSharp.RequestOptions): Rx.Observable<OmniSharp.Models.WorkspaceInformationResponse> { throw new Error('Implemented by decorator'); }
 
+    @fixup
     @isNotNull(request => request.FileName)
     @endpoint()
     public project(request: OmniSharp.Models.Request, options?: OmniSharp.RequestOptions): Rx.Observable<OmniSharp.Models.ProjectInformationResponse> { throw new Error('Implemented by decorator'); }
 
+    @fixup
     @isNotNull(request => request.FileName)
     @isNotNull(request => request.Line)
     @isAboveZero(request => request.Line)
@@ -245,6 +274,7 @@ export class ClientV1 extends ClientBase<ClientEventsV1> implements OmniSharp.Ap
     @endpoint()
     public getcodeactions(request: OmniSharp.Models.CodeActionRequest, options?: OmniSharp.RequestOptions): Rx.Observable<OmniSharp.Models.GetCodeActionsResponse> { throw new Error('Implemented by decorator'); }
 
+    @fixup
     @isNotNull(request => request.FileName)
     @isNotNull(request => request.Line)
     @isAboveZero(request => request.Line)
@@ -255,6 +285,7 @@ export class ClientV1 extends ClientBase<ClientEventsV1> implements OmniSharp.Ap
     @endpoint()
     public runcodeaction(request: OmniSharp.Models.CodeActionRequest, options?: OmniSharp.RequestOptions): Rx.Observable<OmniSharp.Models.RunCodeActionResponse> { throw new Error('Implemented by decorator'); }
 
+    @fixup
     @isNotNull(request => request.FileName)
     @isNotNull(request => request.Line)
     @isAboveZero(request => request.Line)
