@@ -1,16 +1,42 @@
 import _ = require('lodash');
 import {ILogger} from './interfaces';
 import {join, dirname, sep, normalize} from 'path';
-import {Observable, AsyncSubject, Scheduler} from "rx";
+import {Observable, AsyncSubject, Scheduler, CompositeDisposable} from "rx";
 import {readFileSync} from "fs";
 var sepRegex = /[\\|\/]/g;
-var glob: (file: string[]) => Observable<string[]> = <any>Observable.fromNodeCallback(require('globby'));
+var glob: (file: string[]) => Rx.IPromise<string[]> = require('globby');
 
 export interface Options {
     solutionFilesToSearch?: string[];
     projectFilesToSearch?: string[];
     sourceFilesToSearch?: string[];
     solutionIndependentSourceFilesToSearch?: string[];
+}
+
+export function ifEmpty<T>(observable: Observable<T>, other: Observable<T>) {
+    return Observable.create<T>(observer => {
+        var hasValue = false;
+        var cd = new CompositeDisposable();
+        cd.add(observable.subscribe(
+            value => {
+                hasValue = true;
+                observer.onNext(value);
+            },
+            e => observer.onError(e),
+            () => {
+                if (!hasValue) {
+                    cd.add(other.subscribe(
+                        value => observer.onNext(value),
+                        e => observer.onError(e),
+                        () => observer.onCompleted()
+                    ));
+                } else {
+                    observer.onCompleted();
+                }
+            }
+        ));
+        return cd;
+    });
 }
 
 export function findCandidates(location: string, logger: ILogger, options: Options = {}) {
@@ -21,48 +47,36 @@ export function findCandidates(location: string, logger: ILogger, options: Optio
     var sourceFilesToSearch = options.sourceFilesToSearch || (options.sourceFilesToSearch = ['*.cs']);
     var solutionIndependentSourceFilesToSearch = options.solutionIndependentSourceFilesToSearch || (options.solutionIndependentSourceFilesToSearch = ['*.csx']);
 
-    var projects = searchForCandidates(location, solutionFilesToSearch, projectFilesToSearch, logger)
+    var solutionsOrProjects = searchForCandidates(location, solutionFilesToSearch, projectFilesToSearch, logger)
         .toArray()
         .flatMap(result => result.length ? Observable.from(result) : searchForCandidates(location, projectFilesToSearch, [], logger))
-        .map(z => z.split(sepRegex).join(sep))
         .toArray()
         .map(squashCandidates);
 
-    var scriptCs = searchForCandidates(location, solutionIndependentSourceFilesToSearch, [], logger)
-        .map(z => z.split(sepRegex).join(sep))
+    var independentSourceFiles = searchForCandidates(location, solutionIndependentSourceFilesToSearch, [], logger)
         .toArray();
 
-    var baseFiles = Observable.concat(projects, scriptCs)
-        .flatMap(x => Observable.from(x))
-        .shareReplay();
+    var baseFiles = Observable.concat(solutionsOrProjects, independentSourceFiles)
+        .flatMap(x => Observable.from(x));
 
-    return baseFiles.isEmpty()
-        .flatMap(isEmpty => {
-            if (isEmpty) {
-                // Load csharp files as a fallback
-                return searchForCandidates(location, sourceFilesToSearch, [], logger)
-                    .map(z => z.split(sepRegex).join(sep));
-            } else {
-                return baseFiles;
-            }
-        })
+    var sourceFiles = searchForCandidates(location, sourceFilesToSearch, [], logger);
+
+    return ifEmpty(baseFiles, sourceFiles)
         .distinct()
+        .map(normalize)
         .toArray()
         .tapOnNext(candidates => logger.log(`Omni Project Candidates: Found ${candidates}`));
 }
 
 function squashCandidates(candidates: string[]) {
     var rootCandidateCount = getMinCandidate(candidates);
-    var r = _.unique(candidates.filter(z => z.split(sepRegex).length === rootCandidateCount))
-    return r;
+    return _.unique(_.filter(_.map(candidates, normalize), z => z.split(sep).length === rootCandidateCount));
 }
 
 function getMinCandidate(candidates: string[]) {
     if (!candidates.length) return -1;
 
-    return _.min(candidates, z => {
-        return z.split(sepRegex).length;
-    }).split(sepRegex).length;
+    return _.min(_.map(candidates, normalize), z => z.split(sep).length).split(sep).length;
 }
 
 function searchForCandidates(location: string, filesToSearch: string[], projectFilesToSearch: string[], logger: ILogger) {
@@ -83,7 +97,7 @@ function searchForCandidates(location: string, filesToSearch: string[], projectF
             logger.log(`Omni Project Candidates: Searching ${loc} for ${filesToSearch}`);
 
             return Observable.from(files)
-                .flatMap(file => glob([file]))
+                .flatMap(file =>  glob([file]))
                 .map(x => {
                     if (x.length > 1) {
                         // Handle the unity project case

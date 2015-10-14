@@ -15,9 +15,7 @@ export function ensureClientOptions(options: OmnisharpClientOptions) {
     // Keep concurrencyTimeout at a decently high interval.
     options.concurrencyTimeout = Math.max(options.concurrencyTimeout, Math.min(options.timeout * 1000, 5000));
 
-    if (options && options.omnisharp) {
-        options.additionalArguments = flattenArguments(options.omnisharp || {});
-    }
+    options.additionalArguments = flattenArguments(options.omnisharp || {});
 }
 
 export function flattenArguments(obj, prefix = '') {
