@@ -40,7 +40,7 @@ describe("Omnisharp Local - Stdio", function() {
         })
     })
 
-    describe("properties", function() {
+    /*describe("properties", function() {
         this.timeout(20000);
         it('should disconnect if no an invalid project path is given', function(done) {
             var server = new Stdio({
@@ -58,5 +58,5 @@ describe("Omnisharp Local - Stdio", function() {
             });
             server.connect();
         })
-    });
+    });*/
 });
