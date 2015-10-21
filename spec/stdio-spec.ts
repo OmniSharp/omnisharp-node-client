@@ -48,7 +48,7 @@ describe("Omnisharp Local - Stdio", function() {
             });
 
             var sub = server.state.subscribe(state => {
-                var sub2 = server.state.subscribe(state => {
+                var sub2 = server.state.where(z => z === DriverState.Error).subscribe(state => {
                     expect(state).to.be.eql(DriverState.Error);
                     done();
                     sub2.dispose();
