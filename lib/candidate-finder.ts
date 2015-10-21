@@ -1,62 +1,85 @@
 import _ = require('lodash');
 import {ILogger} from './interfaces';
 import {join, dirname, sep, normalize} from 'path';
-import {Observable, AsyncSubject, Scheduler} from "rx";
+import {Observable, AsyncSubject, Scheduler, CompositeDisposable} from "rx";
+import {readFileSync} from "fs";
 var sepRegex = /[\\|\/]/g;
-var glob: (file: string[]) => Observable<string[]> = <any> Observable.fromNodeCallback(require('globby'));
-var solutionFilesToSearch = ['global.json', '*.sln'];
-var projectFilesToSearch = ['project.json', '*.csproj'];
-var scriptCsFilesToSearch = ['*.csx'];
-var csharpFilesToSearch = ['*.cs'];
+var glob: (file: string[]) => Rx.IPromise<string[]> = require('globby');
 
-export function findCandidates(location: string, logger: ILogger) {
+export interface Options {
+    solutionFilesToSearch?: string[];
+    projectFilesToSearch?: string[];
+    sourceFilesToSearch?: string[];
+    solutionIndependentSourceFilesToSearch?: string[];
+}
+
+export function ifEmpty<T>(observable: Observable<T>, other: Observable<T>) {
+    return Observable.create<T>(observer => {
+        var hasValue = false;
+        var cd = new CompositeDisposable();
+        cd.add(observable.subscribe(
+            value => {
+                hasValue = true;
+                observer.onNext(value);
+            },
+            e => observer.onError(e),
+            () => {
+                if (!hasValue) {
+                    cd.add(other.subscribe(
+                        value => observer.onNext(value),
+                        e => observer.onError(e),
+                        () => observer.onCompleted()
+                    ));
+                } else {
+                    observer.onCompleted();
+                }
+            }
+        ));
+        return cd;
+    });
+}
+
+export function findCandidates(location: string, logger: ILogger, options: Options = {}) {
     location = _.trimRight(location, sep);
 
-    var projects = searchForCandidates(location, solutionFilesToSearch, logger)
+    var solutionFilesToSearch = options.solutionFilesToSearch || (options.solutionFilesToSearch = ['global.json', '*.sln']);
+    var projectFilesToSearch = options.projectFilesToSearch || (options.projectFilesToSearch = ['project.json', '*.csproj']);
+    var sourceFilesToSearch = options.sourceFilesToSearch || (options.sourceFilesToSearch = ['*.cs']);
+    var solutionIndependentSourceFilesToSearch = options.solutionIndependentSourceFilesToSearch || (options.solutionIndependentSourceFilesToSearch = ['*.csx']);
+
+    var solutionsOrProjects = searchForCandidates(location, solutionFilesToSearch, projectFilesToSearch, logger)
         .toArray()
-        .flatMap(result => result.length ? Observable.from(result) : searchForCandidates(location, projectFilesToSearch, logger))
-        .map(z => z.split(sepRegex).join(sep))
+        .flatMap(result => result.length ? Observable.from(result) : searchForCandidates(location, projectFilesToSearch, [], logger))
         .toArray()
         .map(squashCandidates);
 
-    var scriptCs = searchForCandidates(location, scriptCsFilesToSearch, logger)
-        .map(z => z.split(sepRegex).join(sep))
+    var independentSourceFiles = searchForCandidates(location, solutionIndependentSourceFilesToSearch, [], logger)
         .toArray();
 
-    var baseFiles = Observable.concat(projects, scriptCs)
-        .flatMap(x => Observable.from(x))
-        .shareReplay();
+    var baseFiles = Observable.concat(solutionsOrProjects, independentSourceFiles)
+        .flatMap(x => Observable.from(x));
 
-    return baseFiles.isEmpty()
-        .flatMap(isEmpty => {
-            if (isEmpty) {
-                // Load csharp files as a fallback
-                return searchForCandidates(location, csharpFilesToSearch, logger)
-                    .map(z => z.split(sepRegex).join(sep));
-            } else {
-                return baseFiles;
-            }
-        })
+    var sourceFiles = searchForCandidates(location, sourceFilesToSearch, [], logger);
+
+    return ifEmpty(baseFiles, sourceFiles)
         .distinct()
+        .map(normalize)
         .toArray()
         .tapOnNext(candidates => logger.log(`Omni Project Candidates: Found ${candidates}`));
 }
 
 function squashCandidates(candidates: string[]) {
     var rootCandidateCount = getMinCandidate(candidates);
-    var r = _.unique(candidates.filter(z => z.split(sepRegex).length === rootCandidateCount))
-    return r;
+    return _.unique(_.filter(_.map(candidates, normalize), z => z.split(sep).length === rootCandidateCount));
 }
 
 function getMinCandidate(candidates: string[]) {
     if (!candidates.length) return -1;
 
-    return _.min(candidates, z => {
-        return z.split(sepRegex).length;
-    }).split(sepRegex).length;
+    return _.min(_.map(candidates, normalize), z => z.split(sep).length).split(sep).length;
 }
 
-function searchForCandidates(location: string, filesToSearch: string[], logger: ILogger) {
+function searchForCandidates(location: string, filesToSearch: string[], projectFilesToSearch: string[], logger: ILogger) {
     var locations = location.split(sep);
     locations = locations.map((loc, index) => {
         return _.take(locations, locations.length - index).join(sep);
@@ -65,7 +88,7 @@ function searchForCandidates(location: string, filesToSearch: string[], logger: 
     locations = locations.slice(0, Math.min(5, locations.length));
 
     var rootObservable = Observable.from(locations)
-        .subscribeOn(Scheduler.timeout)
+        .subscribeOn(Scheduler.async)
         .map(loc => ({
             loc,
             files: filesToSearch.map(fileName => join(loc, fileName))
@@ -74,7 +97,7 @@ function searchForCandidates(location: string, filesToSearch: string[], logger: 
             logger.log(`Omni Project Candidates: Searching ${loc} for ${filesToSearch}`);
 
             return Observable.from(files)
-                .flatMap(file => glob([file]))
+                .flatMap(file =>  glob([file]))
                 .map(x => {
                     if (x.length > 1) {
                         // Handle the unity project case
@@ -91,6 +114,13 @@ function searchForCandidates(location: string, filesToSearch: string[], logger: 
                             }
                         }
                     }
+
+                    if (_.any(x, file => _.endsWith(file, ".sln"))) {
+                        return x.filter(file => {
+                            var content = readFileSync(file).toString();
+                            return _.any(projectFilesToSearch, path => content.indexOf(_.trimLeft(path, '*')) > -1);
+                        });
+                    }
                     return x;
                 });
         })
@@ -98,8 +128,7 @@ function searchForCandidates(location: string, filesToSearch: string[], logger: 
         .defaultIfEmpty([])
         .first()
         .flatMap(z => Observable.from(z))
-        .map(file => _.endsWith(file, ".sln") ? file : dirname(file))
-        .tapOnNext(x => console.log('hell!!!!', x));
+        .map(file => _.endsWith(file, ".sln") ? file : dirname(file));
 
     return rootObservable;
 }

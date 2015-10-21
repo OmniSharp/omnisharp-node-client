@@ -10,3 +10,4 @@ spec/**/*.d.ts
 !spec/tsd.d.ts
 roslyn
 NuGet.exe
+vendor/omnisharp-roslyn/

@@ -32,19 +32,19 @@ describe("Omnisharp Server", function() {
                 projectPath: process.cwd()
             });
 
-            server.connect();
-
-            var sub = server.state.subscribe(state => {
+            var sub = server.state.startWith(server.currentState).subscribe(state => {
                 if (state === DriverState.Connected) {
                     sub.dispose();
                     done();
                 }
             });
+
+            server.connect();
         })
 
         it("must respond to all requests", function(done) {
             var count = 4;
-            server.observeCheckalivestatus.subscribe((data) => {
+            server.observe.checkalivestatus.subscribe((data) => {
                 count--;
                 if (!count)
                     done();
@@ -57,7 +57,6 @@ describe("Omnisharp Server", function() {
         });
 
         it("must give status", function(done) {
-
             var sub = server.status.delay(1).subscribe(status => {
                 sub.dispose();
                 done();
@@ -65,7 +64,6 @@ describe("Omnisharp Server", function() {
 
             server.checkalivestatus();
             server.checkalivestatus();
-
         });
     });
 
@@ -88,7 +86,7 @@ describe("Omnisharp Server", function() {
                 }
             });
 
-            server.connect({});
+            server.connect();
         });
 
         it('should call with given omnisharp parameters', function(done) {
@@ -111,7 +109,7 @@ describe("Omnisharp Server", function() {
                 }
             });
 
-            server.connect({});
+            server.connect();
         });
     });
 });

@@ -115,12 +115,10 @@ namespace OmniSharp.TypeScriptGeneration
                 if (method.RequestType != null)
                 {
                     yield return new ItemVersion(version, actionName, $"{actionName}(request: {requestType}, options?: RequestOptions): Rx.Observable<{returnType}>;");
-                    yield return new ItemVersion(version, actionName, $"{actionName}Promise(request: {requestType}, options?: RequestOptions): Rx.IPromise<{returnType}>;");
                 }
                 else
                 {
                     yield return new ItemVersion(version, actionName, $"{actionName}(): Rx.Observable<{returnType}, options?: RequestOptions>;");
-                    yield return new ItemVersion(version, actionName, $"{actionName}Promise(): Rx.IPromise<{returnType}, options?: RequestOptions>;");
                 }
             }
         }
@@ -132,7 +130,7 @@ namespace OmniSharp.TypeScriptGeneration
             {
                 var actionName = method.Action;
                 var version = GetVersion(ref actionName);
-                var observeName = $"observe{actionName[0].ToString().ToUpper()}{actionName.Substring(1)}";
+                var observeName = actionName;
 
                 var requestType = method.RequestType;
                 if (method.RequestArray)
@@ -161,7 +159,7 @@ namespace OmniSharp.TypeScriptGeneration
             {
                 var actionName = method.Action;
                 var version = GetVersion(ref actionName);
-                var observeName = $"observe{actionName[0].ToString().ToUpper()}{actionName.Substring(1)}";
+                var observeName = actionName;
 
                 var requestType = method.RequestType;
                 if (method.RequestArray)

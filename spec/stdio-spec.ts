@@ -36,23 +36,12 @@ describe("Omnisharp Local - Stdio", function() {
                 sub.dispose();
                 done();
             });
-            server.connect({});
+            server.connect();
         })
     })
 
     describe("properties", function() {
         this.timeout(20000);
-        it('should disconnect if no project path is given', function(done) {
-            var server = new Stdio({});
-
-            var sub = server.state.subscribe(state => {
-                expect(state).to.be.eql(DriverState.Error);
-                done();
-                sub.dispose();
-            });
-            server.connect({});
-        })
-
         it('should disconnect if no an invalid project path is given', function(done) {
             var server = new Stdio({
                 projectPath: '/invalid/path/to/things/'
@@ -67,7 +56,7 @@ describe("Omnisharp Local - Stdio", function() {
                 expect(state).to.be.eql(DriverState.Connecting);
                 sub.dispose();
             });
-            server.connect({});
+            server.connect();
         })
     });
 });
