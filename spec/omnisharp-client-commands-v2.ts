@@ -464,6 +464,7 @@ describe("Commands", function() {
         it("should throw if AssemblyName is null", function() {
             expect(() => {
                 server.metadata({
+                    Language: 'C#',
                     AssemblyName: null,
                     TypeName: '',
                     Timeout: 0,
@@ -475,6 +476,7 @@ describe("Commands", function() {
         it("should throw if TypeName is null", function() {
             expect(() => {
                 server.metadata({
+                    Language: 'C#',
                     AssemblyName: '',
                     TypeName: null,
                     Timeout: 0,
