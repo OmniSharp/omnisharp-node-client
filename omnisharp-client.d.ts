@@ -224,7 +224,17 @@ export interface Options {
     solutionIndependentSourceFilesToSearch?: string[];
 }
 export function ifEmpty<T>(observable: Observable<T>, other: Observable<T>): Observable<T>;
-export function findCandidates(location: string, logger: ILogger, options?: Options): Observable<string[]>;
+export class Candidate {
+    path: string;
+    originalFile: string;
+    isProject: boolean;
+    constructor(originalFile: string, predicate: (path: string) => boolean);
+    toString(): string;
+}
+export var findCandidates: {
+    (location: string, logger: ILogger, options?: Options): Observable<string[]>;
+    withCandidates: (location: string, logger: ILogger, options?: Options) => Observable<Candidate[]>;
+};
 
 }
 
