@@ -11,7 +11,8 @@ declare var xit: Function;
 describe("Candidate Finder", function() {
     it('z1 candidate should return root most files', function(done) {
         findCandidates(join(__dirname, 'fixture/candidate-finder/same-folder/cs'), console).subscribe(cs => {
-            expect(cs).to.be.deep.equal([join(__dirname, 'fixture/candidate-finder/same-folder/cs')]);
+            expect(cs.map(z => '' + z)).to.be.deep.equal([join(__dirname, 'fixture/candidate-finder/same-folder/cs')]);
+            expect(cs[0].isProject).to.be.false;
             done();
         });
     });
@@ -19,14 +20,16 @@ describe("Candidate Finder", function() {
     it('z2 candidate should return root most files', function(done) {
         findCandidates(join(__dirname, 'fixture/candidate-finder/same-folder/cs/'), console).subscribe(cs => {
             expect(cs).to.not.be.null;
-            expect(cs).to.be.deep.equal([join(__dirname, 'fixture/candidate-finder/same-folder/cs')]);
+            expect(cs.map(z => '' + z)).to.be.deep.equal([join(__dirname, 'fixture/candidate-finder/same-folder/cs')]);
+            expect(cs[0].isProject).to.be.false;
             done();
         });
     });
 
     it('z1 candidate should return root most files', function(done) {
         findCandidates(join(__dirname, 'fixture/candidate-finder/same-folder/csproj'), console).subscribe(csproj => {
-            expect(csproj).to.be.deep.equal([join(__dirname, 'fixture/candidate-finder/same-folder/csproj')]);
+            expect(csproj.map(z => '' + z)).to.be.deep.equal([join(__dirname, 'fixture/candidate-finder/same-folder/csproj')]);
+            expect(csproj[0].isProject).to.be.true;
             done();
         });
     });
@@ -34,7 +37,8 @@ describe("Candidate Finder", function() {
     it('z2 candidate should return root most files', function(done) {
         findCandidates(join(__dirname, 'fixture/candidate-finder/same-folder/csproj/'), console).subscribe(csproj => {
             expect(csproj).to.not.be.null;
-            expect(csproj).to.be.deep.equal([join(__dirname, 'fixture/candidate-finder/same-folder/csproj')]);
+            expect(csproj.map(z => '' + z)).to.be.deep.equal([join(__dirname, 'fixture/candidate-finder/same-folder/csproj')]);
+            expect(csproj[0].isProject).to.be.true;
             done();
         });
     });
@@ -42,7 +46,8 @@ describe("Candidate Finder", function() {
     it('z3 candidate should return root most files', function(done) {
         findCandidates(join(__dirname, 'fixture/candidate-finder/same-folder/csx'), console).subscribe(csx => {
             expect(csx).to.not.be.null;
-            expect(csx).to.be.deep.equal([join(__dirname, 'fixture/candidate-finder/same-folder/csx')]);
+            expect(csx.map(z => '' + z)).to.be.deep.equal([join(__dirname, 'fixture/candidate-finder/same-folder/csx')]);
+            expect(csx[0].isProject).to.be.false;
             done();
         });
     });
@@ -50,7 +55,8 @@ describe("Candidate Finder", function() {
     it('z4 candidate should return root most files', function(done) {
         findCandidates(join(__dirname, 'fixture/candidate-finder/same-folder/csx/'), console).subscribe(csx => {
             expect(csx).to.not.be.null;
-            expect(csx).to.be.deep.equal([join(__dirname, 'fixture/candidate-finder/same-folder/csx')]);
+            expect(csx.map(z => '' + z)).to.be.deep.equal([join(__dirname, 'fixture/candidate-finder/same-folder/csx')]);
+            expect(csx[0].isProject).to.be.false;
             done();
         });
     });
@@ -58,7 +64,8 @@ describe("Candidate Finder", function() {
     it('z5 candidate should return root most files', function(done) {
         findCandidates(join(__dirname, 'fixture/candidate-finder/same-folder/global'), console).subscribe(global => {
             expect(global).to.not.be.null;
-            expect(global).to.be.deep.equal([join(__dirname, 'fixture/candidate-finder/same-folder/global')]);
+            expect(global.map(z => '' + z)).to.be.deep.equal([join(__dirname, 'fixture/candidate-finder/same-folder/global')]);
+            expect(global[0].isProject).to.be.true;
             done();
         });
     });
@@ -66,7 +73,8 @@ describe("Candidate Finder", function() {
     it('z6 candidate should return root most files', function(done) {
         findCandidates(join(__dirname, 'fixture/candidate-finder/same-folder/global/'), console).subscribe(global => {
             expect(global).to.not.be.null;
-            expect(global).to.be.deep.equal([join(__dirname, 'fixture/candidate-finder/same-folder/global')]);
+            expect(global.map(z => '' + z)).to.be.deep.equal([join(__dirname, 'fixture/candidate-finder/same-folder/global')]);
+            expect(global[0].isProject).to.be.true;
             done();
         });
     });
@@ -74,7 +82,8 @@ describe("Candidate Finder", function() {
     it('z7 candidate should return root most files', function(done) {
         findCandidates(join(__dirname, 'fixture/candidate-finder/same-folder/project'), console).subscribe(project => {
             expect(project).to.not.be.null;
-            expect(project).to.be.deep.equal([join(__dirname, 'fixture/candidate-finder/same-folder/project')]);
+            expect(project.map(z => '' + z)).to.be.deep.equal([join(__dirname, 'fixture/candidate-finder/same-folder/project')]);
+            expect(project[0].isProject).to.be.true;
             done();
         });
     });
@@ -82,7 +91,8 @@ describe("Candidate Finder", function() {
     it('z8 candidate should return root most files', function(done) {
         findCandidates(join(__dirname, 'fixture/candidate-finder/same-folder/project/'), console).subscribe(project => {
             expect(project).to.not.be.null;
-            expect(project).to.be.deep.equal([join(__dirname, 'fixture/candidate-finder/same-folder/project')]);
+            expect(project.map(z => '' + z)).to.be.deep.equal([join(__dirname, 'fixture/candidate-finder/same-folder/project')]);
+            expect(project[0].isProject).to.be.true;
             done();
         });
     });
@@ -90,7 +100,8 @@ describe("Candidate Finder", function() {
     it('z9 candidate should return root most files', function(done) {
         findCandidates(join(__dirname, 'fixture/candidate-finder/same-folder/solution'), console).subscribe(solution => {
             expect(solution).to.not.be.null;
-            expect(solution).to.be.deep.equal([join(__dirname, 'fixture/candidate-finder/same-folder/solution/something.sln')]);
+            expect(solution.map(z => '' + z)).to.be.deep.equal([join(__dirname, 'fixture/candidate-finder/same-folder/solution/something.sln')]);
+            expect(solution[0].isProject).to.be.true;
             done();
         });
     });
@@ -98,7 +109,8 @@ describe("Candidate Finder", function() {
     it('z10 candidate should return root most files', function(done) {
         findCandidates(join(__dirname, 'fixture/candidate-finder/same-folder/solution/'), console).subscribe(solution => {
             expect(solution).to.not.be.null;
-            expect(solution).to.be.deep.equal([join(__dirname, 'fixture/candidate-finder/same-folder/solution/something.sln')]);
+            expect(solution.map(z => '' + z)).to.be.deep.equal([join(__dirname, 'fixture/candidate-finder/same-folder/solution/something.sln')]);
+            expect(solution[0].isProject).to.be.true;
             done();
         });
     });
@@ -106,7 +118,8 @@ describe("Candidate Finder", function() {
     it('z11 candidate find projects up the folder heirarchy if not found', function(done) {
         findCandidates(join(__dirname, 'fixture/candidate-finder/global-root-folder'), console).subscribe(csproj => {
             expect(csproj).to.not.be.null;
-            expect(csproj).to.be.deep.equal([join(__dirname, 'fixture/candidate-finder/global-root-folder')]);
+            expect(csproj.map(z => '' + z)).to.be.deep.equal([join(__dirname, 'fixture/candidate-finder/global-root-folder')]);
+            expect(csproj[0].isProject).to.be.true;
             done();
         });
     });
@@ -114,10 +127,12 @@ describe("Candidate Finder", function() {
     it('z12 candidate find projects up the folder heirarchy if not found', function(done) {
         findCandidates(join(__dirname, 'fixture/candidate-finder/global-root-folder/csx'), console).subscribe(csx => {
             expect(csx).to.not.be.null;
-            expect(csx).to.be.deep.equal([
+            expect(csx.map(z => '' + z)).to.be.deep.equal([
                 join(__dirname, 'fixture/candidate-finder/global-root-folder'),
                 join(__dirname, 'fixture/candidate-finder/global-root-folder/csx')
             ]);
+            expect(csx[0].isProject).to.be.true;
+            expect(csx[1].isProject).to.be.false;
             done();
         });
     });
@@ -125,7 +140,8 @@ describe("Candidate Finder", function() {
     it('z13 candidate find projects up the folder heirarchy if not found', function(done) {
         findCandidates(join(__dirname, 'fixture/candidate-finder/global-root-folder/global'), console).subscribe(global => {
             expect(global).to.not.be.null;
-            expect(global).to.be.deep.equal([join(__dirname, 'fixture/candidate-finder/global-root-folder/global')]);
+            expect(global.map(z => '' + z)).to.be.deep.equal([join(__dirname, 'fixture/candidate-finder/global-root-folder/global')]);
+            expect(global[0].isProject).to.be.true;
             done();
         });
     });
@@ -133,7 +149,8 @@ describe("Candidate Finder", function() {
     it('z14 candidate find projects up the folder heirarchy if not found', function(done) {
         findCandidates(join(__dirname, 'fixture/candidate-finder/global-root-folder'), console).subscribe(project => {
             expect(project).to.not.be.null;
-            expect(project).to.be.deep.equal([join(__dirname, 'fixture/candidate-finder/global-root-folder')]);
+            expect(project.map(z => '' + z)).to.be.deep.equal([join(__dirname, 'fixture/candidate-finder/global-root-folder')]);
+            expect(project[0].isProject).to.be.true;
             done();
         });
     });
@@ -141,7 +158,8 @@ describe("Candidate Finder", function() {
     it('z15 candidate find projects up the folder heirarchy if not found', function(done) {
         findCandidates(join(__dirname, 'fixture/candidate-finder/global-root-folder/solution'), console).subscribe(solution => {
             expect(solution).to.not.be.null;
-            expect(solution).to.be.deep.equal([join(__dirname, 'fixture/candidate-finder/global-root-folder/solution/something.sln')]);
+            expect(solution.map(z => '' + z)).to.be.deep.equal([join(__dirname, 'fixture/candidate-finder/global-root-folder/solution/something.sln')]);
+            expect(solution[0].isProject).to.be.true;
             done();
         });
     });
@@ -149,7 +167,8 @@ describe("Candidate Finder", function() {
     it('z16 candidate find projects up the folder heirarchy if not found', function(done) {
         findCandidates(join(__dirname, 'fixture/candidate-finder/csx-root-folder/csx'), console).subscribe(csx => {
             expect(csx).to.not.be.null;
-            expect(csx).to.be.deep.equal([join(__dirname, 'fixture/candidate-finder/csx-root-folder/csx')]);
+            expect(csx.map(z => '' + z)).to.be.deep.equal([join(__dirname, 'fixture/candidate-finder/csx-root-folder/csx')]);
+            expect(csx[0].isProject).to.be.false;
             done();
         });
     });
@@ -157,10 +176,12 @@ describe("Candidate Finder", function() {
     it('z17 candidate find projects up the folder heirarchy if not found', function(done) {
         findCandidates(join(__dirname, 'fixture/candidate-finder/csx-root-folder/global'), console).subscribe(global => {
             expect(global).to.not.be.null;
-            expect(global).to.be.deep.equal([
+            expect(global.map(z => '' + z)).to.be.deep.equal([
                 join(__dirname, 'fixture/candidate-finder/csx-root-folder/global'),
                 join(__dirname, 'fixture/candidate-finder/csx-root-folder'),
             ]);
+            expect(global[0].isProject).to.be.true;
+            expect(global[1].isProject).to.be.false;
             done();
         });
     });
@@ -168,10 +189,12 @@ describe("Candidate Finder", function() {
     it('z18 candidate find projects up the folder heirarchy if not found', function(done) {
         findCandidates(join(__dirname, 'fixture/candidate-finder/csx-root-folder/solution'), console).subscribe(solution => {
             expect(solution).to.not.be.null;
-            expect(solution).to.be.deep.equal([
+            expect(solution.map(z => '' + z)).to.be.deep.equal([
                 join(__dirname, 'fixture/candidate-finder/csx-root-folder/solution/something.sln'),
                 join(__dirname, 'fixture/candidate-finder/csx-root-folder'),
             ]);
+            expect(solution[0].isProject).to.be.true;
+            expect(solution[1].isProject).to.be.false;
             done();
         });
     });
@@ -179,7 +202,8 @@ describe("Candidate Finder", function() {
     it('z19 candidate find projects up the folder heirarchy if not found', function(done) {
         findCandidates(join(__dirname, 'fixture/candidate-finder/solution-root-folder'), console).subscribe(csproj => {
             expect(csproj).to.not.be.null;
-            expect(csproj).to.be.deep.equal([join(__dirname, 'fixture/candidate-finder/solution-root-folder/something.sln')]);
+            expect(csproj.map(z => '' + z)).to.be.deep.equal([join(__dirname, 'fixture/candidate-finder/solution-root-folder/something.sln')]);
+            expect(csproj[0].isProject).to.be.true;
             done();
         });
     });
@@ -187,7 +211,12 @@ describe("Candidate Finder", function() {
     it('z20 candidate find projects up the folder heirarchy if not found', function(done) {
         findCandidates(join(__dirname, 'fixture/candidate-finder/solution-root-folder/csx'), console).subscribe(csx => {
             expect(csx).to.not.be.null;
-            expect(csx).to.be.deep.equal([join(__dirname, 'fixture/candidate-finder/solution-root-folder/something.sln'), join(__dirname, 'fixture/candidate-finder/solution-root-folder/csx')]);
+            expect(csx.map(z => '' + z)).to.be.deep.equal([
+                join(__dirname, 'fixture/candidate-finder/solution-root-folder/something.sln'),
+                join(__dirname, 'fixture/candidate-finder/solution-root-folder/csx')
+            ]);
+            expect(csx[0].isProject).to.be.true;
+            expect(csx[1].isProject).to.be.false;
             done();
         });
     });
@@ -195,7 +224,8 @@ describe("Candidate Finder", function() {
     it('z21 candidate find projects up the folder heirarchy if not found', function(done) {
         findCandidates(join(__dirname, 'fixture/candidate-finder/solution-root-folder/global'), console).subscribe(global => {
             expect(global).to.not.be.null;
-            expect(global).to.be.deep.equal([join(__dirname, 'fixture/candidate-finder/solution-root-folder/global')]);
+            expect(global.map(z => '' + z)).to.be.deep.equal([join(__dirname, 'fixture/candidate-finder/solution-root-folder/global')]);
+            expect(global[0].isProject).to.be.true;
             done();
         });
     });
@@ -203,7 +233,8 @@ describe("Candidate Finder", function() {
     it('z22 candidate find projects up the folder heirarchy if not found', function(done) {
         findCandidates(join(__dirname, 'fixture/candidate-finder/solution-root-folder'), console).subscribe(project => {
             expect(project).to.not.be.null;
-            expect(project).to.be.deep.equal([join(__dirname, 'fixture/candidate-finder/solution-root-folder/something.sln')]);
+            expect(project.map(z => '' + z)).to.be.deep.equal([join(__dirname, 'fixture/candidate-finder/solution-root-folder/something.sln')]);
+            expect(project[0].isProject).to.be.true;
             done();
         });
     });
@@ -211,18 +242,21 @@ describe("Candidate Finder", function() {
     it('z23 candidate find projects up the folder heirarchy if not found', function(done) {
         findCandidates(join(__dirname, 'fixture/candidate-finder/solution-root-folder/solution'), console).subscribe(solution => {
             expect(solution).to.not.be.null;
-            expect(solution).to.be.deep.equal([join(__dirname, 'fixture/candidate-finder/solution-root-folder/solution/something.sln')]);
+            expect(solution.map(z => '' + z)).to.be.deep.equal([join(__dirname, 'fixture/candidate-finder/solution-root-folder/solution/something.sln')]);
+            expect(solution[0].isProject).to.be.true;
             done();
         });
     });
 
     it('z23b candidate find projects up the folder heirarchy if not found', function(done) {
-        findCandidates(join(__dirname, 'fixture/candidate-finder/solution-root-folder/two-solution'), { log: () => {}, error: () => {} }).subscribe(solution => {
+        findCandidates(join(__dirname, 'fixture/candidate-finder/solution-root-folder/two-solution'), { log: () => { }, error: () => { } }).subscribe(solution => {
             expect(solution).to.not.be.null;
-            expect(solution).to.be.deep.equal([
+            expect(solution.map(z => '' + z)).to.be.deep.equal([
                 join(__dirname, 'fixture/candidate-finder/solution-root-folder/two-solution/something.sln'),
                 join(__dirname, 'fixture/candidate-finder/solution-root-folder/two-solution/somethingelse.sln'),
             ]);
+            expect(solution[0].isProject).to.be.true;
+            expect(solution[1].isProject).to.be.true;
             done();
         });
     });
@@ -230,7 +264,8 @@ describe("Candidate Finder", function() {
     it('z24 candidate find projects up the folder heirarchy if not found', function(done) {
         findCandidates(join(__dirname, 'fixture/candidate-finder/no-solution'), console).subscribe(csproj => {
             expect(csproj).to.not.be.null;
-            expect(csproj).to.be.deep.equal([join(__dirname, 'fixture/candidate-finder/no-solution')]);
+            expect(csproj.map(z => '' + z)).to.be.deep.equal([join(__dirname, 'fixture/candidate-finder/no-solution')]);
+            expect(csproj[0].isProject).to.be.false;
             done();
         });
     });
@@ -238,7 +273,8 @@ describe("Candidate Finder", function() {
     it('z25 should return one solution for unity based projects', function(done) {
         findCandidates(join(__dirname, 'fixture/candidate-finder/two-solution-unity'), console).subscribe(csproj => {
             expect(csproj).to.not.be.null;
-            expect(csproj).to.be.deep.equal([join(__dirname, 'fixture/candidate-finder/two-solution-unity/something-csharp.sln')]);
+            expect(csproj.map(z => '' + z)).to.be.deep.equal([join(__dirname, 'fixture/candidate-finder/two-solution-unity/something-csharp.sln')]);
+            expect(csproj[0].isProject).to.be.true;
             done();
         });
     });
@@ -246,10 +282,12 @@ describe("Candidate Finder", function() {
     it('z26 should return two solutions for unity based projects with extra solutions', function(done) {
         findCandidates(join(__dirname, 'fixture/candidate-finder/three-solution-unity'), console).subscribe(csproj => {
             expect(csproj).to.not.be.null;
-            expect(csproj).to.be.deep.equal([
+            expect(csproj.map(z => '' + z)).to.be.deep.equal([
                 join(__dirname, 'fixture/candidate-finder/three-solution-unity/something-csharp.sln'),
                 join(__dirname, 'fixture/candidate-finder/three-solution-unity/somethingelse.sln'),
             ]);
+            expect(csproj[0].isProject).to.be.true;
+            expect(csproj[1].isProject).to.be.true;
             done();
         });
     });
@@ -257,10 +295,12 @@ describe("Candidate Finder", function() {
     it('z27 should return two solutions projects with extra solutions', function(done) {
         findCandidates(join(__dirname, 'fixture/candidate-finder/two-solution'), console).subscribe(csproj => {
             expect(csproj).to.not.be.null;
-            expect(csproj).to.be.deep.equal([
+            expect(csproj.map(z => '' + z)).to.be.deep.equal([
                 join(__dirname, 'fixture/candidate-finder/two-solution/something.sln'),
                 join(__dirname, 'fixture/candidate-finder/two-solution/somethingelse.sln'),
             ]);
+            expect(csproj[0].isProject).to.be.true;
+            expect(csproj[1].isProject).to.be.true;
             done();
         });
     });
@@ -268,7 +308,8 @@ describe("Candidate Finder", function() {
     it('z28 should return one solution for unity based projects when targeting a folder with a csproj', function(done) {
         findCandidates(join(__dirname, 'fixture/candidate-finder/two-solution-unity/csproj'), console).subscribe(csproj => {
             expect(csproj).to.not.be.null;
-            expect(csproj).to.be.deep.equal([join(__dirname, 'fixture/candidate-finder/two-solution-unity/something-csharp.sln')]);
+            expect(csproj.map(z => '' + z)).to.be.deep.equal([join(__dirname, 'fixture/candidate-finder/two-solution-unity/something-csharp.sln')]);
+            expect(csproj[0].isProject).to.be.true;
             done();
         });
     });
@@ -276,7 +317,8 @@ describe("Candidate Finder", function() {
     it('z28b should return one solution for unity based projects when targeting a folder with a project.json', function(done) {
         findCandidates(join(__dirname, 'fixture/candidate-finder/two-solution-unity/project'), console).subscribe(csproj => {
             expect(csproj).to.not.be.null;
-            expect(csproj).to.be.deep.equal([join(__dirname, 'fixture/candidate-finder/two-solution-unity/something-csharp.sln')]);
+            expect(csproj.map(z => '' + z)).to.be.deep.equal([join(__dirname, 'fixture/candidate-finder/two-solution-unity/something-csharp.sln')]);
+            expect(csproj[0].isProject).to.be.true;
             done();
         });
     });
@@ -284,10 +326,12 @@ describe("Candidate Finder", function() {
     it('z29 should return two solutions for unity based projects with extra solutions when targeting a folder with a csproj', function(done) {
         findCandidates(join(__dirname, 'fixture/candidate-finder/three-solution-unity/csproj'), console).subscribe(csproj => {
             expect(csproj).to.not.be.null;
-            expect(csproj).to.be.deep.equal([
+            expect(csproj.map(z => '' + z)).to.be.deep.equal([
                 join(__dirname, 'fixture/candidate-finder/three-solution-unity/something-csharp.sln'),
                 join(__dirname, 'fixture/candidate-finder/three-solution-unity/somethingelse.sln'),
             ]);
+            expect(csproj[0].isProject).to.be.true;
+            expect(csproj[1].isProject).to.be.true;
             done();
         });
     });
@@ -295,10 +339,12 @@ describe("Candidate Finder", function() {
     it('z29b should return two solutions for unity based projects with extra solutions when targeting a folder with a project.json', function(done) {
         findCandidates(join(__dirname, 'fixture/candidate-finder/three-solution-unity/project'), console).subscribe(csproj => {
             expect(csproj).to.not.be.null;
-            expect(csproj).to.be.deep.equal([
+            expect(csproj.map(z => '' + z)).to.be.deep.equal([
                 join(__dirname, 'fixture/candidate-finder/three-solution-unity/something-csharp.sln'),
                 join(__dirname, 'fixture/candidate-finder/three-solution-unity/somethingelse.sln'),
             ]);
+            expect(csproj[0].isProject).to.be.true;
+            expect(csproj[1].isProject).to.be.true;
             done();
         });
     });
@@ -306,10 +352,12 @@ describe("Candidate Finder", function() {
     it('z30 should return two solutions projects with extra solutions when targeting a folder with a csproj', function(done) {
         findCandidates(join(__dirname, 'fixture/candidate-finder/two-solution/csproj/project'), console).subscribe(csproj => {
             expect(csproj).to.not.be.null;
-            expect(csproj).to.be.deep.equal([
+            expect(csproj.map(z => '' + z)).to.be.deep.equal([
                 join(__dirname, 'fixture/candidate-finder/two-solution/something.sln'),
                 join(__dirname, 'fixture/candidate-finder/two-solution/somethingelse.sln'),
             ]);
+            expect(csproj[0].isProject).to.be.true;
+            expect(csproj[1].isProject).to.be.true;
             done();
         });
     });
@@ -317,10 +365,12 @@ describe("Candidate Finder", function() {
     it('z30b should return two solutions projects with extra solutions when targeting a folder with a project.json', function(done) {
         findCandidates(join(__dirname, 'fixture/candidate-finder/two-solution'), console).subscribe(csproj => {
             expect(csproj).to.not.be.null;
-            expect(csproj).to.be.deep.equal([
+            expect(csproj.map(z => '' + z)).to.be.deep.equal([
                 join(__dirname, 'fixture/candidate-finder/two-solution/something.sln'),
                 join(__dirname, 'fixture/candidate-finder/two-solution/somethingelse.sln'),
             ]);
+            expect(csproj[0].isProject).to.be.true;
+            expect(csproj[1].isProject).to.be.true;
             done();
         });
     });

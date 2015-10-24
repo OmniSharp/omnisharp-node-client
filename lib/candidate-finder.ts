@@ -39,6 +39,24 @@ export function ifEmpty<T>(observable: Observable<T>, other: Observable<T>) {
     });
 }
 
+export class Candidate {
+    public path: string;
+    public originalFile: string;
+    public isProject: boolean;
+
+    constructor(originalFile: string, predicate: (path: string) => boolean) {
+        this.originalFile = originalFile = normalize(originalFile);
+        this.path = _.endsWith(originalFile, ".sln") ? originalFile : dirname(originalFile);
+        this.isProject = predicate(originalFile);
+
+        Object.freeze(this);
+    }
+
+    public toString() {
+        return this.path;
+    }
+}
+
 export function findCandidates(location: string, logger: ILogger, options: Options = {}) {
     location = _.trimRight(location, sep);
 
@@ -61,9 +79,11 @@ export function findCandidates(location: string, logger: ILogger, options: Optio
 
     var sourceFiles = searchForCandidates(location, sourceFilesToSearch, [], logger);
 
+    var predicate = (path: string) => _.any(solutionFilesToSearch.concat(projectFilesToSearch), pattern => _.endsWith(path, _.trimLeft(pattern, '*')));
+
     return ifEmpty(baseFiles, sourceFiles)
-        .distinct()
-        .map(normalize)
+        .map(file => new Candidate(file, predicate))
+        .distinct(x => x.path)
         .toArray()
         .tapOnNext(candidates => logger.log(`Omni Project Candidates: Found ${candidates}`));
 }
@@ -97,7 +117,7 @@ function searchForCandidates(location: string, filesToSearch: string[], projectF
             logger.log(`Omni Project Candidates: Searching ${loc} for ${filesToSearch}`);
 
             return Observable.from(files)
-                .flatMap(file =>  glob([file]))
+                .flatMap(file => glob([file]))
                 .map(x => {
                     if (x.length > 1) {
                         // Handle the unity project case
@@ -120,6 +140,9 @@ function searchForCandidates(location: string, filesToSearch: string[], projectF
                             var content = readFileSync(file).toString();
                             return _.any(projectFilesToSearch, path => content.indexOf(_.trimLeft(path, '*')) > -1);
                         });
+                        /*} else if (x.length) {
+                            // We only need to return one file
+                            return [x[0]];*/
                     }
                     return x;
                 });
@@ -128,7 +151,6 @@ function searchForCandidates(location: string, filesToSearch: string[], projectF
         .defaultIfEmpty([])
         .first()
         .flatMap(z => Observable.from(z))
-        .map(file => _.endsWith(file, ".sln") ? file : dirname(file));
 
     return rootObservable;
 }
