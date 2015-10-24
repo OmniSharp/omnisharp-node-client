@@ -57,36 +57,47 @@ export class Candidate {
     }
 }
 
-export function findCandidates(location: string, logger: ILogger, options: Options = {}) {
-    location = _.trimRight(location, sep);
+export var findCandidates = (function() {
+    function realFindCandidates(location: string, logger: ILogger, options: Options = {}) {
+        location = _.trimRight(location, sep);
 
-    var solutionFilesToSearch = options.solutionFilesToSearch || (options.solutionFilesToSearch = ['global.json', '*.sln']);
-    var projectFilesToSearch = options.projectFilesToSearch || (options.projectFilesToSearch = ['project.json', '*.csproj']);
-    var sourceFilesToSearch = options.sourceFilesToSearch || (options.sourceFilesToSearch = ['*.cs']);
-    var solutionIndependentSourceFilesToSearch = options.solutionIndependentSourceFilesToSearch || (options.solutionIndependentSourceFilesToSearch = ['*.csx']);
+        var solutionFilesToSearch = options.solutionFilesToSearch || (options.solutionFilesToSearch = ['global.json', '*.sln']);
+        var projectFilesToSearch = options.projectFilesToSearch || (options.projectFilesToSearch = ['project.json', '*.csproj']);
+        var sourceFilesToSearch = options.sourceFilesToSearch || (options.sourceFilesToSearch = ['*.cs']);
+        var solutionIndependentSourceFilesToSearch = options.solutionIndependentSourceFilesToSearch || (options.solutionIndependentSourceFilesToSearch = ['*.csx']);
 
-    var solutionsOrProjects = searchForCandidates(location, solutionFilesToSearch, projectFilesToSearch, logger)
-        .toArray()
-        .flatMap(result => result.length ? Observable.from(result) : searchForCandidates(location, projectFilesToSearch, [], logger))
-        .toArray()
-        .map(squashCandidates);
+        var solutionsOrProjects = searchForCandidates(location, solutionFilesToSearch, projectFilesToSearch, logger)
+            .toArray()
+            .flatMap(result => result.length ? Observable.from(result) : searchForCandidates(location, projectFilesToSearch, [], logger))
+            .toArray()
+            .map(squashCandidates);
 
-    var independentSourceFiles = searchForCandidates(location, solutionIndependentSourceFilesToSearch, [], logger)
-        .toArray();
+        var independentSourceFiles = searchForCandidates(location, solutionIndependentSourceFilesToSearch, [], logger)
+            .toArray();
 
-    var baseFiles = Observable.concat(solutionsOrProjects, independentSourceFiles)
-        .flatMap(x => Observable.from(x));
+        var baseFiles = Observable.concat(solutionsOrProjects, independentSourceFiles)
+            .flatMap(x => Observable.from(x));
 
-    var sourceFiles = searchForCandidates(location, sourceFilesToSearch, [], logger);
+        var sourceFiles = searchForCandidates(location, sourceFilesToSearch, [], logger);
 
-    var predicate = (path: string) => _.any(solutionFilesToSearch.concat(projectFilesToSearch), pattern => _.endsWith(path, _.trimLeft(pattern, '*')));
+        var predicate = (path: string) => _.any(solutionFilesToSearch.concat(projectFilesToSearch), pattern => _.endsWith(path, _.trimLeft(pattern, '*')));
 
-    return ifEmpty(baseFiles, sourceFiles)
-        .map(file => new Candidate(file, predicate))
-        .distinct(x => x.path)
-        .toArray()
-        .tapOnNext(candidates => logger.log(`Omni Project Candidates: Found ${candidates}`));
-}
+        return ifEmpty(baseFiles, sourceFiles)
+            .map(file => new Candidate(file, predicate))
+            .distinct(x => x.path)
+            .toArray()
+            .tapOnNext(candidates => logger.log(`Omni Project Candidates: Found ${candidates}`));
+    }
+
+    function findCandidates(location: string, logger: ILogger, options: Options = {}) {
+        return realFindCandidates(location, logger, options)
+            .map(z => z.map(x => x.toString()));
+    }
+
+    (<any>findCandidates).withCandidates = realFindCandidates;
+
+    return <{ (location: string, logger: ILogger, options: Options = {}): Rx.Observable<string[]>; withCandidates: typeof realFindCandidates }>findCandidates;
+})();
 
 function squashCandidates(candidates: string[]) {
     var rootCandidateCount = getMinCandidate(candidates);
