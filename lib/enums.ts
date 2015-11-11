@@ -11,4 +11,6 @@ export enum DriverState {
     Connecting,
     Connected,
     Error,
+    Bootstrapping,
+    Bootstrapped
 }

@@ -16,6 +16,11 @@ export function ensureClientOptions(options: OmnisharpClientOptions) {
     options.concurrencyTimeout = Math.max(options.concurrencyTimeout, Math.min(options.timeout * 1000, 5000));
 
     options.additionalArguments = flattenArguments(options.omnisharp || {});
+
+    if (!options.plugins) {
+        // By default we indicate support no plugins
+        options.plugins = [];
+    }
 }
 
 export function flattenArguments(obj, prefix = '') {

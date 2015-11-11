@@ -6,7 +6,8 @@
         "noImplicitAny": false,
         "removeComments": true,
         "noLib": false,
-        "experimentalDecorators": true
+        "experimentalDecorators": true,
+        "experimentalAsyncFunctions": true
     },
     "compileOnSave": true,
     "filesGlob": [
@@ -31,6 +32,8 @@
         "./lib/drivers/stdio.ts",
         "./lib/drivers/websocket.ts",
         "./lib/enums.ts",
+        "./lib/helpers/plugin-manager.ts",
+        "./lib/helpers/prioritization.ts",
         "./lib/omnisharp-client.ts",
         "./lib/omnisharp-path.ts",
         "./lib/options.ts",

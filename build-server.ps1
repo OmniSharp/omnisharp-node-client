@@ -1,13 +1,20 @@
+<#
 $client = New-Object System.NET.Webclient
 $client.Headers.Add("user-agent", "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.2;)")
 $json = $client.DownloadString("https://api.github.com/repos/omnisharp/omnisharp-roslyn/releases/latest") | convertfrom-json
+#>
 
 Remove-Item roslyn -Recurse -Force
 mkdir roslyn
 pushd roslyn
+<#
 Invoke-WebRequest ($json.assets[0].browser_download_url) -OutFile '.\omnisharp.tar.gz'
-tar zxvf omnisharp.tar.gz
-Remove-Item omnisharp.tar.gz
+#>
+
+copy-item D:\Development\Omnisharp\omnisharp-roslyn\omnisharp.bootstrap.tar.gz .\omnisharp.bootstrap.tar.gz
+
+tar zxvf omnisharp.bootstrap.tar.gz
+Remove-Item omnisharp.bootstrap.tar.gz
 Copy-Item approot/* . -Recurse
 Remove-Item approot -Recurse
 popd
@@ -25,12 +32,16 @@ popd
 Remove-Item vendor/omnisharp-roslyn -Recurse -Force
 mkdir vendor/omnisharp-roslyn
 pushd vendor/omnisharp-roslyn
+<#
 Invoke-WebRequest ($json.tarball_url) -OutFile '.\source.tar.gz'
 tar zxvf source.tar.gz
 Remove-Item source.tar.gz
 $dir = (gci . -Directory)[0].FullName;
 Copy-Item $dir\* . -Recurse
 Remove-Item $dir -Recurse
+#>
+$dir = "D:\Development\Omnisharp\omnisharp-roslyn"
+Copy-Item -Path $dir\src -Destination src -Recurse
 dnu restore
 popd
 

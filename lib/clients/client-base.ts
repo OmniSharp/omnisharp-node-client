@@ -6,55 +6,8 @@ import {RequestContext, ResponseContext, CommandContext} from "../contexts";
 import {serverLineNumbers, serverLineNumberArrays} from "../response-handling";
 import {ensureClientOptions, flattenArguments} from "../options";
 import {watchEvent, reference} from "../decorators";
-
-var {isPriorityCommand, isNormalCommand, isDeferredCommand} = (function() {
-    var normalCommands = [
-        'findimplementations', 'findsymbols', 'findusages',
-        'gotodefinition', 'typelookup', 'navigateup',
-        'navigatedown', 'getcodeactions', 'filesChanged',
-        'runcodeaction', 'autocomplete', 'signatureHelp'
-    ];
-    var priorityCommands = [
-        'updatebuffer', 'changebuffer', 'formatAfterKeystroke'
-    ];
-
-    var prioritySet = new Set<string>();
-    var normalSet = new Set<string>();
-    var deferredSet = new Set<string>();
-    var undeferredSet = new Set<string>();
-
-    each(normalCommands, x => {
-        normalSet.add(x);
-        undeferredSet.add(x);
-    });
-
-    each(priorityCommands, x => {
-        prioritySet.add(x);
-        undeferredSet.add(x);
-    });
-
-    var isPriorityCommand = (request: RequestContext<any>) => prioritySet.has(request.command);
-    var isNormalCommand = (request: RequestContext<any>) => !isDeferredCommand(request) && normalSet.has(request.command);
-
-    function isDeferredCommand(request: RequestContext<any>) {
-        if (request.silent && !isPriorityCommand(request)) {
-            return true;
-        }
-
-        if (deferredSet.has(request.command)) {
-            return true;
-        }
-
-        if (undeferredSet.has(request.command)) {
-            return false;
-        }
-
-        deferredSet.add(request.command);
-        return true;
-    }
-
-    return { isPriorityCommand, isNormalCommand, isDeferredCommand };
-})()
+import {isPriorityCommand, isNormalCommand, isDeferredCommand} from "../helpers/prioritization";
+import {PluginManager} from "../helpers/plugin-manager";
 
 export class ClientBase<TEvents extends ClientEventsBase> implements IDriver, Rx.IDisposable {
     private _driver: IDriver;
@@ -68,6 +21,7 @@ export class ClientBase<TEvents extends ClientEventsBase> implements IDriver, Rx
     private _eventWatchers = new Map<string, Subject<CommandContext<any>>>();
     private _commandWatchers = new Map<string, Subject<ResponseContext<any, any>>>();
     private _disposable = new CompositeDisposable();
+    private _plugins: PluginManager;
 
     public get uniqueId() { return this._uniqueId; }
 
@@ -123,6 +77,8 @@ export class ClientBase<TEvents extends ClientEventsBase> implements IDriver, Rx
 
         var driverFactory: IStaticDriver = require('../drivers/' + Driver[driver].toLowerCase());
         this._driver = new driverFactory(_options);
+
+        this._plugins = new PluginManager(_options.projectPath, _options.plugins);
 
         this._disposable.add(this._driver);
         this._disposable.add(this._requestStream);
@@ -289,6 +245,7 @@ export class ClientBase<TEvents extends ClientEventsBase> implements IDriver, Rx
 
     public connect() {
         if (this.currentState === DriverState.Connected || this.currentState === DriverState.Connecting) return;
+        // Bootstrap plugins here
 
         this._currentRequests.clear();
         this._driver.connect();

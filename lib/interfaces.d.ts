@@ -53,7 +53,14 @@ export interface OmnisharpClientOptions extends IDriverOptions {
             useTabs?: boolean;
             tabSize?: number;
         }
-    }
+    };
+    plugins: IOmnisharpPlugin[];
+}
+
+export interface IOmnisharpPlugin {
+    name?: string;
+    version?: string;
+    location?: string;
 }
 
 export interface OmnisharpClientStatus {
