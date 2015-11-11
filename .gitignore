@@ -11,3 +11,4 @@ spec/**/*.d.ts
 roslyn
 NuGet.exe
 vendor/omnisharp-roslyn/
+project.lock.json
