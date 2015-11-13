@@ -51,7 +51,7 @@ export class PluginManager {
                         return;
                     }
 
-                    var command = [bootstrapLocation, '-s', this._solutionLocation].concat(
+                    var command = [bootstrapLocation, '-    s', this._solutionLocation].concat(
                         plugins.map(x => {
                             if (x.location) {
                                 return `--plugins ${x.location}`;

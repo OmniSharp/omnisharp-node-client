@@ -29,11 +29,11 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "@reactivex/rxjs": "^5.0.0-alpha.10",
     "glob": "^5.0.15",
     "globby": "^3.0.1",
     "lodash": "^3.10.1",
     "md5": "^2.0.0",
-    "rx": "^4.0.6",
     "strip-bom": "^2.0.0",
     "yargs": "^3.21.0"
   },
