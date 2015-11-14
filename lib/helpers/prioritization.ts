@@ -1,20 +1,21 @@
-import {RequestContext} from "../contexts";
-import {each} from "lodash";
+import {RequestContext} from '../contexts';
+import {each} from 'lodash';
 
-var normalCommands = [
+const normalCommands = [
     'findimplementations', 'findsymbols', 'findusages',
     'gotodefinition', 'typelookup', 'navigateup',
     'navigatedown', 'getcodeactions', 'filesChanged',
     'runcodeaction', 'autocomplete', 'signatureHelp'
 ];
-var priorityCommands = [
+
+const priorityCommands = [
     'updatebuffer', 'changebuffer', 'formatAfterKeystroke'
 ];
 
-var prioritySet = new Set<string>();
-var normalSet = new Set<string>();
-var deferredSet = new Set<string>();
-var undeferredSet = new Set<string>();
+const prioritySet = new Set<string>();
+const normalSet = new Set<string>();
+const deferredSet = new Set<string>();
+const undeferredSet = new Set<string>();
 
 each(normalCommands, x => {
     normalSet.add(x);
@@ -27,7 +28,7 @@ each(priorityCommands, x => {
 });
 
 export function isPriorityCommand(request: RequestContext<any>) {
-    return prioritySet.has(request.command)
+    return prioritySet.has(request.command);
 };
 
 export function isNormalCommand(request: RequestContext<any>) {

@@ -35,6 +35,8 @@
         "./lib/drivers/stdio.ts",
         "./lib/drivers/websocket.ts",
         "./lib/enums.ts",
+        "./lib/helpers/Disposable.ts",
+        "./lib/helpers/pausableBuffered.ts",
         "./lib/helpers/plugin-manager.ts",
         "./lib/helpers/prioritization.ts",
         "./lib/omnisharp-client.ts",

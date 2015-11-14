@@ -1,13 +1,15 @@
-import {DriverState, Driver} from "./enums";
-import {RequestContext, ResponseContext, CommandContext} from "./contexts";
+import {IDisposable} from './helpers/Disposable';
+import {Observable} from '@reactivex/rxjs';
+import {DriverState, Driver} from './enums';
+import {RequestContext, ResponseContext, CommandContext} from './contexts';
 
 export interface IStaticDriver {
     new (options: IDriverOptions): IDriver;
 }
 
 export interface ILogger {
-    log(...values: any[]);
-    error(...values: any[]);
+    log(...values: any[]): void;
+    error(...values: any[]): void;
 }
 
 export interface IDriverOptions {
@@ -21,17 +23,17 @@ export interface IDriverOptions {
     additionalArguments?: string[];
 }
 
-export interface IDriver extends Rx.IDisposable {
+export interface IDriver extends IDisposable {
     id: string;
-    connect();
+    connect(): void;
     currentState: DriverState;
-    events: Rx.Observable<OmniSharp.Stdio.Protocol.EventPacket>;
-    commands: Rx.Observable<OmniSharp.Stdio.Protocol.ResponsePacket>;
-    state: Rx.Observable<DriverState>;
-    disconnect();
+    events: Observable<OmniSharp.Stdio.Protocol.EventPacket>;
+    commands: Observable<OmniSharp.Stdio.Protocol.ResponsePacket>;
+    state: Observable<DriverState>;
+    disconnect(): void;
     serverPath: string;
     projectPath: string;
-    request<TRequest, TResponse>(command: string, request?: TRequest): Rx.Observable<TResponse>;
+    request<TRequest, TResponse>(command: string, request?: TRequest): Observable<TResponse>;
 }
 
 export interface OmnisharpClientOptions extends IDriverOptions {
@@ -71,12 +73,12 @@ export interface OmnisharpClientStatus {
 
 declare module Omnisharp {
     interface Events {
-        events: Rx.Observable<OmniSharp.Stdio.Protocol.EventPacket>;
-        commands: Rx.Observable<OmniSharp.Stdio.Protocol.ResponsePacket>;
-        state: Rx.Observable<DriverState>;
-        status: Rx.Observable<OmnisharpClientStatus>;
-        requests: Rx.Observable<RequestContext<any>>;
-        responses: Rx.Observable<ResponseContext<any, any>>;
-        errors: Rx.Observable<CommandContext<any>>;
+        events: Observable<OmniSharp.Stdio.Protocol.EventPacket>;
+        commands: Observable<OmniSharp.Stdio.Protocol.ResponsePacket>;
+        state: Observable<DriverState>;
+        status: Observable<OmnisharpClientStatus>;
+        requests: Observable<RequestContext<any>>;
+        responses: Observable<ResponseContext<any, any>>;
+        errors: Observable<CommandContext<any>>;
     }
 }

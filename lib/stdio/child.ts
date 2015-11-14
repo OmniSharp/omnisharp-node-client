@@ -1,16 +1,16 @@
-import {spawn, exec, ChildProcess} from "child_process";
-var argv = require('yargs').argv;
+import {spawn} from 'child_process';
+const argv = require('yargs').argv;
 
-var serverPath = argv.serverPath;
-var projectPath = argv.projectPath;
+const serverPath = argv.serverPath;
+const projectPath = argv.projectPath;
 
-var args = ["--stdio", "-s", projectPath, "--hostPID", process.pid];
+const args = ['--stdio', '-s', projectPath, '--hostPID', process.pid];
 
 Object.keys(argv)
     .filter(z => z !== '_' && z !== '$0' && z !== 'serverPath' && z !== 'projectPath')
-    .forEach(z => args.push('--' + z + "=" + argv[z]));
+    .forEach(z => args.push('--' + z + '=' + argv[z]));
 
-var childProcess = spawn(serverPath, args);
+const childProcess = spawn(serverPath, args);
 
 process.stdin.pipe(childProcess.stdin);
 childProcess.stdout.pipe(process.stdout);
