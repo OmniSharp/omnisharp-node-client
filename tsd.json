@@ -3,7 +3,7 @@
   "repo": "borisyankov/DefinitelyTyped",
   "ref": "master",
   "path": "typings",
-  "bundle": "tsd.d.ts",
+  "bundle": "lib/tsd.d.ts",
   "installed": {
     "node/node.d.ts": {
       "commit": "ac3a1f059f655059484d6aa5ba1f0f85908ae06c"

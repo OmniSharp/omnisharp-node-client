@@ -188,23 +188,13 @@ export class ClientBase<TEvents extends ClientEventsBase> implements IDriver, ID
 
         // We must wait for these commands
         // And these commands must run in order.
-        const priorityQueueController = this._requestStream
+        const priorityQueue = this._requestStream
             .filter(isPriorityCommand)
             .do(() => priorityRequests.next((<any>priorityRequests).value + 1))
-            .controlled();
-
-        const priorityQueue = priorityQueueController
-            .map(request => Observable.defer(() => this.handleResult(request))
-                .do(null, null, () => {
-                    priorityResponses.next((<any>priorityResponses).value + 1);
-                    priorityQueueController.request(1);
-                })
-            )
-            .merge(this._options.concurrency);
+            .mergeMap(request => this.handleResult(request), null, this._options.concurrency)
+            .do(() => priorityResponses.next((<any>priorityResponses).value + 1));
 
         this._disposable.add(Observable.merge(deferredQueue, normalQueue, priorityQueue).subscribe());
-        // We need to have a pending request to catch the first one coming in.
-        priorityQueueController.request(1);
     }
 
     private handleResult(context: RequestContext<any>): Observable<ResponseContext<any, any>> {

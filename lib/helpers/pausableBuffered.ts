@@ -1,7 +1,7 @@
 import {Subscriber, Observable} from '@reactivex/rxjs';
 
 export function pausableBuffered<T>(observable: Observable<T>, pauser: Observable<boolean>): Observable<T> {
-    return this.lift(new PausableBufferedOperator(observable, pauser));
+    return (<any>observable).lift(new PausableBufferedOperator(observable, pauser));
 }
 
 class PausableBufferedOperator<T> /*implements Operator<T, R>*/ {

@@ -1,0 +1,59 @@
+{
+    "externalTranspiler": {
+        "name": "babel",
+        "options": {
+            "presets": [
+                [
+                    "es2015",
+                    "stage-3"
+                ]
+            ],
+            "plugins": [
+                "transform-es2015-modules-commonjs"
+            ]
+        }
+    },
+    "compilerOptions": {
+        "target": "es6",
+        "module": "es6",
+        "moduleResolution": "node",
+        "declaration": true,
+        "noImplicitAny": true,
+        "removeComments": true,
+        "noLib": false,
+        "preserveConstEnums": true,
+        "experimentalDecorators": true
+    },
+    "compileOnSave": true,
+    "filesGlob": [
+        "./**/*.ts",
+        "!./**/*.d.ts",
+		"./tsd.d.ts"
+    ],
+    "files": [
+        "./aggregate/composite-client-base.ts",
+        "./aggregate/composite-client-v1.ts",
+        "./aggregate/composite-client-v2.ts",
+        "./candidate-finder.ts",
+        "./clients/client-base.ts",
+        "./clients/client-v1.ts",
+        "./clients/client-v2.ts",
+        "./contexts.ts",
+        "./decorators.ts",
+        "./drivers/http.ts",
+        "./drivers/stdio.ts",
+        "./drivers/websocket.ts",
+        "./enums.ts",
+        "./helpers/Disposable.ts",
+        "./helpers/fromCallback.ts",
+        "./helpers/pausableBuffered.ts",
+        "./helpers/plugin-manager.ts",
+        "./helpers/prioritization.ts",
+        "./omnisharp-client.ts",
+        "./omnisharp-path.ts",
+        "./options.ts",
+        "./queue.ts",
+        "./response-handling.ts",
+        "./stdio/child.ts"
+    ]
+}
