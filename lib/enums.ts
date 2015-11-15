@@ -1,5 +1,3 @@
-
-
 export enum Driver {
     Http,
     Stdio,

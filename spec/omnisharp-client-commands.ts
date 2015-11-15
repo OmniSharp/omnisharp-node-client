@@ -1,47 +1,47 @@
-/// <reference path="./tsd.d.ts" />
+/// <reference path='./tsd.d.ts' />
 import {expect} from 'chai';
-import {Driver, DriverState} from "../lib/enums";
-import {ClientV1 as OmnisharpClient} from "../lib/clients/client-v1";
+import {ClientV1 as OmnisharpClient} from '../lib/clients/client-v1';
 
-declare var xdescribe: Function;
+declare const xdescribe: Function;
 
-describe("Commands", function() {
-    var server: OmnisharpClient;
+/* tslint:disable:semicolon */
+describe('Commands', function() {
+    let server: OmnisharpClient;
     beforeEach(function() {
         server = new OmnisharpClient({
             projectPath: process.cwd()
         });
     });
 
-    describe("updatebuffer", function() {
-        it("should throw if FileName is null", function() {
+    describe('updatebuffer', function() {
+        it('should throw if FileName is null', function() {
             expect(() => {
                 server.updatebuffer({
                     FileName: null,
-                    Buffer: ""
+                    Buffer: ''
                 })
             }).to.throw(/must not be null/);
         });
-        it("should throw if Buffer is null", function() {
+        it('should throw if Buffer is null', function() {
             expect(() => {
                 server.updatebuffer({
-                    FileName: "",
+                    FileName: '',
                     Buffer: null
                 })
             }).to.throw(/must not be null/);
         });
-        it("should not throw of required fields are set", function() {
+        it('should not throw of required fields are set', function() {
             expect(() => {
                 server.updatebuffer({
-                    FileName: "",
-                    Buffer: ""
+                    FileName: '',
+                    Buffer: ''
                 })
             }).to.not.throw(/must not be null/);
         });
     });
 
-    describe("updatebuffer", function() {
-        it("should throw if FileName is null", function() {
+    describe('updatebuffer', function() {
+        it('should throw if FileName is null', function() {
             expect(() => {
                 server.changebuffer({
                     FileName: null,
@@ -53,7 +53,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must not be null/);
         });
-        it("should throw if NewText is null", function() {
+        it('should throw if NewText is null', function() {
             expect(() => {
                 server.changebuffer({
                     FileName: '',
@@ -65,7 +65,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must not be null/);
         });
-        it("should throw if StartLine is null", function() {
+        it('should throw if StartLine is null', function() {
             expect(() => {
                 server.changebuffer({
                     FileName: '',
@@ -77,7 +77,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must not be null/);
         });
-        it("should throw if StartLine is less than 0", function() {
+        it('should throw if StartLine is less than 0', function() {
             expect(() => {
                 server.changebuffer({
                     FileName: '',
@@ -89,7 +89,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must be greater than or equal to 0/);
         });
-        it("should throw if StartColumn is null", function() {
+        it('should throw if StartColumn is null', function() {
             expect(() => {
                 server.changebuffer({
                     FileName: '',
@@ -101,7 +101,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must not be null/);
         });
-        it("should throw if StartColumn is less than 0", function() {
+        it('should throw if StartColumn is less than 0', function() {
             expect(() => {
                 server.changebuffer({
                     FileName: '',
@@ -113,7 +113,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must be greater than or equal to 0/);
         });
-        it("should throw if EndLine is null", function() {
+        it('should throw if EndLine is null', function() {
             expect(() => {
                 server.changebuffer({
                     FileName: '',
@@ -125,7 +125,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must not be null/);
         });
-        it("should throw if EndLine is less than 0", function() {
+        it('should throw if EndLine is less than 0', function() {
             expect(() => {
                 server.changebuffer({
                     FileName: '',
@@ -137,7 +137,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must be greater than or equal to 0/);
         });
-        it("should throw if EndColumn is null", function() {
+        it('should throw if EndColumn is null', function() {
             expect(() => {
                 server.changebuffer({
                     FileName: '',
@@ -149,7 +149,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must not be null/);
         });
-        it("should throw if EndColumn is less than 0", function() {
+        it('should throw if EndColumn is less than 0', function() {
             expect(() => {
                 server.changebuffer({
                     FileName: '',
@@ -161,7 +161,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must be greater than or equal to 0/);
         });
-        it("should not throw of required fields are set", function() {
+        it('should not throw of required fields are set', function() {
             expect(() => {
                 server.changebuffer({
                     FileName: '',
@@ -175,16 +175,16 @@ describe("Commands", function() {
         });
     });
 
-    describe("codecheck", function() {
-        it("should not throw of required fields are set", function() {
+    describe('codecheck', function() {
+        it('should not throw of required fields are set', function() {
             expect(() => {
                 server.codecheck({})
             }).to.not.throw;
         });
     });
 
-    describe("formatAfterKeystroke", function() {
-        it("should throw if FileName is null", function() {
+    describe('formatAfterKeystroke', function() {
+        it('should throw if FileName is null', function() {
             expect(() => {
                 server.formatAfterKeystroke({
                     FileName: null,
@@ -194,7 +194,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must not be null/);
         });
-        it("should throw if Line is null", function() {
+        it('should throw if Line is null', function() {
             expect(() => {
                 server.formatAfterKeystroke({
                     FileName: '',
@@ -204,7 +204,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must not be null/);
         });
-        it("should throw if Line is less than 0", function() {
+        it('should throw if Line is less than 0', function() {
             expect(() => {
                 server.formatAfterKeystroke({
                     FileName: '',
@@ -214,7 +214,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must be greater than or equal to 0/);
         });
-        it("should throw if Column is null", function() {
+        it('should throw if Column is null', function() {
             expect(() => {
                 server.formatAfterKeystroke({
                     FileName: '',
@@ -224,7 +224,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must not be null/);
         });
-        it("should throw if Column is less than 0", function() {
+        it('should throw if Column is less than 0', function() {
             expect(() => {
                 server.formatAfterKeystroke({
                     FileName: '',
@@ -235,7 +235,7 @@ describe("Commands", function() {
             }).to.throw(/must be greater than or equal to 0/);
         });
 
-        it("should throw if Character && Char is null", function() {
+        it('should throw if Character && Char is null', function() {
             expect(() => {
                 server.formatAfterKeystroke({
                     FileName: null,
@@ -246,7 +246,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must not be null/);
         });
-        it("should not throw of required fields are set", function() {
+        it('should not throw of required fields are set', function() {
             expect(() => {
                 server.formatAfterKeystroke({
                     FileName: null,
@@ -260,8 +260,8 @@ describe("Commands", function() {
     });
 
 
-    describe("formatRange", function() {
-        it("should throw if FileName is null", function() {
+    describe('formatRange', function() {
+        it('should throw if FileName is null', function() {
             expect(() => {
                 server.formatRange({
                     FileName: null,
@@ -272,7 +272,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must not be null/);
         });
-        it("should throw if Line is null", function() {
+        it('should throw if Line is null', function() {
             expect(() => {
                 server.formatRange({
                     FileName: '',
@@ -283,7 +283,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must not be null/);
         });
-        it("should throw if Line is less than 0", function() {
+        it('should throw if Line is less than 0', function() {
             expect(() => {
                 server.formatRange({
                     FileName: '',
@@ -294,7 +294,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must be greater than or equal to 0/);
         });
-        it("should throw if Column is null", function() {
+        it('should throw if Column is null', function() {
             expect(() => {
                 server.formatRange({
                     FileName: '',
@@ -305,7 +305,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must not be null/);
         });
-        it("should throw if Column is less than 0", function() {
+        it('should throw if Column is less than 0', function() {
             expect(() => {
                 server.formatRange({
                     FileName: '',
@@ -316,7 +316,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must be greater than or equal to 0/);
         });
-        it("should throw if EndLine is null", function() {
+        it('should throw if EndLine is null', function() {
             expect(() => {
                 server.formatRange({
                     FileName: '',
@@ -327,7 +327,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must not be null/);
         });
-        it("should throw if EndLine is less than 0", function() {
+        it('should throw if EndLine is less than 0', function() {
             expect(() => {
                 server.formatRange({
                     FileName: '',
@@ -338,7 +338,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must be greater than or equal to 0/);
         });
-        it("should throw if EndColumn is null", function() {
+        it('should throw if EndColumn is null', function() {
             expect(() => {
                 server.formatRange({
                     FileName: '',
@@ -349,7 +349,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must not be null/);
         });
-        it("should throw if EndColumn is less than 0", function() {
+        it('should throw if EndColumn is less than 0', function() {
             expect(() => {
                 server.formatRange({
                     FileName: '',
@@ -360,7 +360,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must be greater than or equal to 0/);
         });
-        it("should not throw of required fields are set", function() {
+        it('should not throw of required fields are set', function() {
             expect(() => {
                 server.formatRange({
                     FileName: '',
@@ -373,15 +373,15 @@ describe("Commands", function() {
         });
     });
 
-    describe("codeformat", function() {
-        it("should throw if FileName is null", function() {
+    describe('codeformat', function() {
+        it('should throw if FileName is null', function() {
             expect(() => {
                 server.codeformat({
                     FileName: null
                 })
             }).to.throw(/must not be null/);
         });
-        it("should not throw of required fields are set", function() {
+        it('should not throw of required fields are set', function() {
             expect(() => {
                 server.codeformat({
                     FileName: null
@@ -390,8 +390,8 @@ describe("Commands", function() {
         });
     });
 
-    describe("autocomplete", function() {
-        it("should throw if FileName is null", function() {
+    describe('autocomplete', function() {
+        it('should throw if FileName is null', function() {
             expect(() => {
                 server.autocomplete({
                     FileName: null,
@@ -401,7 +401,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must not be null/);
         });
-        it("should throw if Line is null", function() {
+        it('should throw if Line is null', function() {
             expect(() => {
                 server.autocomplete({
                     FileName: '',
@@ -411,7 +411,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must not be null/);
         });
-        it("should throw if Line is less than 0", function() {
+        it('should throw if Line is less than 0', function() {
             expect(() => {
                 server.autocomplete({
                     FileName: '',
@@ -421,7 +421,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must be greater than or equal to 0/);
         });
-        it("should throw if Column is null", function() {
+        it('should throw if Column is null', function() {
             expect(() => {
                 server.autocomplete({
                     FileName: '',
@@ -431,7 +431,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must not be null/);
         });
-        it("should throw if Column is less than 0", function() {
+        it('should throw if Column is less than 0', function() {
             expect(() => {
                 server.autocomplete({
                     FileName: '',
@@ -441,7 +441,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must be greater than or equal to 0/);
         });
-        it("should throw if WordToComplete is null", function() {
+        it('should throw if WordToComplete is null', function() {
             expect(() => {
                 server.autocomplete({
                     FileName: '',
@@ -451,7 +451,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must not be null/);
         });
-        it("should not throw of required fields are set", function() {
+        it('should not throw of required fields are set', function() {
             expect(() => {
                 server.autocomplete({
                     FileName: null
@@ -460,8 +460,8 @@ describe("Commands", function() {
         });
     });
 
-    describe("metadata", function() {
-        it("should throw if AssemblyName is null", function() {
+    describe('metadata', function() {
+        it('should throw if AssemblyName is null', function() {
             expect(() => {
                 server.metadata({
                     Language: 'C#',
@@ -473,7 +473,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must not be null/);
         });
-        it("should throw if TypeName is null", function() {
+        it('should throw if TypeName is null', function() {
             expect(() => {
                 server.metadata({
                     Language: 'C#',
@@ -487,8 +487,8 @@ describe("Commands", function() {
         });
     });
 
-    describe("findimplementations", function() {
-        it("should throw if FileName is null", function() {
+    describe('findimplementations', function() {
+        it('should throw if FileName is null', function() {
             expect(() => {
                 server.findimplementations({
                     FileName: null,
@@ -497,7 +497,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must not be null/);
         });
-        it("should throw if Line is null", function() {
+        it('should throw if Line is null', function() {
             expect(() => {
                 server.findimplementations({
                     FileName: '',
@@ -506,7 +506,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must not be null/);
         });
-        it("should throw if Line is less than 0", function() {
+        it('should throw if Line is less than 0', function() {
             expect(() => {
                 server.findimplementations({
                     FileName: '',
@@ -515,7 +515,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must be greater than or equal to 0/);
         });
-        it("should throw if Column is null", function() {
+        it('should throw if Column is null', function() {
             expect(() => {
                 server.findimplementations({
                     FileName: '',
@@ -524,7 +524,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must not be null/);
         });
-        it("should throw if Column is less than 0", function() {
+        it('should throw if Column is less than 0', function() {
             expect(() => {
                 server.findimplementations({
                     FileName: '',
@@ -533,7 +533,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must be greater than or equal to 0/);
         });
-        it("should not throw of required fields are set", function() {
+        it('should not throw of required fields are set', function() {
             expect(() => {
                 server.findimplementations({
                     FileName: '',
@@ -544,15 +544,15 @@ describe("Commands", function() {
         });
     });
 
-    describe("findsymbols", function() {
-        it("should throw if FileName is null", function() {
+    describe('findsymbols', function() {
+        it('should throw if FileName is null', function() {
             expect(() => {
                 server.findsymbols({
                     Filter: null
                 })
             }).to.throw(/must not be null/);
         });
-        it("should not throw of required fields are set", function() {
+        it('should not throw of required fields are set', function() {
             expect(() => {
                 server.findsymbols({
                     Filter: ''
@@ -561,8 +561,8 @@ describe("Commands", function() {
         });
     });
 
-    describe("findusages", function() {
-        it("should throw if FileName is null", function() {
+    describe('findusages', function() {
+        it('should throw if FileName is null', function() {
             expect(() => {
                 server.findusages({
                     FileName: null,
@@ -571,7 +571,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must not be null/);
         });
-        it("should throw if Line is null", function() {
+        it('should throw if Line is null', function() {
             expect(() => {
                 server.findusages({
                     FileName: '',
@@ -580,7 +580,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must not be null/);
         });
-        it("should throw if Line is less than 0", function() {
+        it('should throw if Line is less than 0', function() {
             expect(() => {
                 server.findusages({
                     FileName: '',
@@ -589,7 +589,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must be greater than or equal to 0/);
         });
-        it("should throw if Column is null", function() {
+        it('should throw if Column is null', function() {
             expect(() => {
                 server.findusages({
                     FileName: '',
@@ -598,7 +598,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must not be null/);
         });
-        it("should throw if Column is less than 0", function() {
+        it('should throw if Column is less than 0', function() {
             expect(() => {
                 server.findusages({
                     FileName: '',
@@ -607,7 +607,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must be greater than or equal to 0/);
         });
-        it("should not throw of required fields are set", function() {
+        it('should not throw of required fields are set', function() {
             expect(() => {
                 server.findusages({
                     FileName: '',
@@ -618,8 +618,8 @@ describe("Commands", function() {
         });
     });
 
-    describe("gotodefinition", function() {
-        it("should throw if FileName is null", function() {
+    describe('gotodefinition', function() {
+        it('should throw if FileName is null', function() {
             expect(() => {
                 server.gotodefinition({
                     FileName: null,
@@ -628,7 +628,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must not be null/);
         });
-        it("should throw if Line is null", function() {
+        it('should throw if Line is null', function() {
             expect(() => {
                 server.gotodefinition({
                     FileName: '',
@@ -637,7 +637,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must not be null/);
         });
-        it("should throw if Line is less than 0", function() {
+        it('should throw if Line is less than 0', function() {
             expect(() => {
                 server.gotodefinition({
                     FileName: '',
@@ -646,7 +646,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must be greater than or equal to 0/);
         });
-        it("should throw if Column is null", function() {
+        it('should throw if Column is null', function() {
             expect(() => {
                 server.gotodefinition({
                     FileName: '',
@@ -655,7 +655,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must not be null/);
         });
-        it("should throw if Column is less than 0", function() {
+        it('should throw if Column is less than 0', function() {
             expect(() => {
                 server.gotodefinition({
                     FileName: '',
@@ -664,7 +664,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must be greater than or equal to 0/);
         });
-        it("should not throw of required fields are set", function() {
+        it('should not throw of required fields are set', function() {
             expect(() => {
                 server.gotodefinition({
                     FileName: '',
@@ -675,8 +675,8 @@ describe("Commands", function() {
         });
     });
 
-    describe("navigateup", function() {
-        it("should throw if FileName is null", function() {
+    describe('navigateup', function() {
+        it('should throw if FileName is null', function() {
             expect(() => {
                 server.navigateup({
                     FileName: null,
@@ -685,7 +685,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must not be null/);
         });
-        it("should throw if Line is null", function() {
+        it('should throw if Line is null', function() {
             expect(() => {
                 server.navigateup({
                     FileName: '',
@@ -694,7 +694,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must not be null/);
         });
-        it("should throw if Line is less than 0", function() {
+        it('should throw if Line is less than 0', function() {
             expect(() => {
                 server.navigateup({
                     FileName: '',
@@ -703,7 +703,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must be greater than or equal to 0/);
         });
-        it("should throw if Column is null", function() {
+        it('should throw if Column is null', function() {
             expect(() => {
                 server.navigateup({
                     FileName: '',
@@ -712,7 +712,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must not be null/);
         });
-        it("should throw if Column is less than 0", function() {
+        it('should throw if Column is less than 0', function() {
             expect(() => {
                 server.navigateup({
                     FileName: '',
@@ -721,7 +721,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must be greater than or equal to 0/);
         });
-        it("should not throw of required fields are set", function() {
+        it('should not throw of required fields are set', function() {
             expect(() => {
                 server.navigateup({
                     FileName: '',
@@ -732,8 +732,8 @@ describe("Commands", function() {
         });
     });
 
-    describe("navigatedown", function() {
-        it("should throw if FileName is null", function() {
+    describe('navigatedown', function() {
+        it('should throw if FileName is null', function() {
             expect(() => {
                 server.navigatedown({
                     FileName: null,
@@ -742,7 +742,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must not be null/);
         });
-        it("should throw if Line is null", function() {
+        it('should throw if Line is null', function() {
             expect(() => {
                 server.navigatedown({
                     FileName: '',
@@ -751,7 +751,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must not be null/);
         });
-        it("should throw if Line is less than 0", function() {
+        it('should throw if Line is less than 0', function() {
             expect(() => {
                 server.navigatedown({
                     FileName: '',
@@ -760,7 +760,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must be greater than or equal to 0/);
         });
-        it("should throw if Column is null", function() {
+        it('should throw if Column is null', function() {
             expect(() => {
                 server.navigatedown({
                     FileName: '',
@@ -769,7 +769,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must not be null/);
         });
-        it("should throw if Column is less than 0", function() {
+        it('should throw if Column is less than 0', function() {
             expect(() => {
                 server.navigatedown({
                     FileName: '',
@@ -778,7 +778,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must be greater than or equal to 0/);
         });
-        it("should not throw of required fields are set", function() {
+        it('should not throw of required fields are set', function() {
             expect(() => {
                 server.navigatedown({
                     FileName: '',
@@ -789,8 +789,8 @@ describe("Commands", function() {
         });
     });
 
-    describe("rename", function() {
-        it("should throw if FileName is null", function() {
+    describe('rename', function() {
+        it('should throw if FileName is null', function() {
             expect(() => {
                 server.rename({
                     FileName: null,
@@ -800,7 +800,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must not be null/);
         });
-        it("should throw if Line is null", function() {
+        it('should throw if Line is null', function() {
             expect(() => {
                 server.rename({
                     FileName: '',
@@ -810,7 +810,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must not be null/);
         });
-        it("should throw if Line is less than 0", function() {
+        it('should throw if Line is less than 0', function() {
             expect(() => {
                 server.rename({
                     FileName: '',
@@ -820,7 +820,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must be greater than or equal to 0/);
         });
-        it("should throw if Column is null", function() {
+        it('should throw if Column is null', function() {
             expect(() => {
                 server.rename({
                     FileName: '',
@@ -830,7 +830,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must not be null/);
         });
-        it("should throw if Column is less than 0", function() {
+        it('should throw if Column is less than 0', function() {
             expect(() => {
                 server.rename({
                     FileName: '',
@@ -840,7 +840,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must be greater than or equal to 0/);
         });
-        it("should throw if RenameTo is null", function() {
+        it('should throw if RenameTo is null', function() {
             expect(() => {
                 server.rename({
                     FileName: '',
@@ -850,7 +850,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must not be null/);
         });
-        it("should not throw of required fields are set", function() {
+        it('should not throw of required fields are set', function() {
             expect(() => {
                 server.rename({
                     FileName: '',
@@ -862,8 +862,8 @@ describe("Commands", function() {
         });
     });
 
-    describe("signatureHelp", function() {
-        it("should throw if FileName is null", function() {
+    describe('signatureHelp', function() {
+        it('should throw if FileName is null', function() {
             expect(() => {
                 server.signatureHelp({
                     FileName: null,
@@ -872,7 +872,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must not be null/);
         });
-        it("should throw if Line is null", function() {
+        it('should throw if Line is null', function() {
             expect(() => {
                 server.signatureHelp({
                     FileName: '',
@@ -881,7 +881,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must not be null/);
         });
-        it("should throw if Line is less than 0", function() {
+        it('should throw if Line is less than 0', function() {
             expect(() => {
                 server.signatureHelp({
                     FileName: '',
@@ -890,7 +890,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must be greater than or equal to 0/);
         });
-        it("should throw if Column is null", function() {
+        it('should throw if Column is null', function() {
             expect(() => {
                 server.signatureHelp({
                     FileName: '',
@@ -899,7 +899,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must not be null/);
         });
-        it("should throw if Column is less than 0", function() {
+        it('should throw if Column is less than 0', function() {
             expect(() => {
                 server.signatureHelp({
                     FileName: '',
@@ -908,7 +908,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must be greater than or equal to 0/);
         });
-        it("should not throw of required fields are set", function() {
+        it('should not throw of required fields are set', function() {
             expect(() => {
                 server.signatureHelp({
                     FileName: '',
@@ -919,8 +919,8 @@ describe("Commands", function() {
         });
     });
 
-    describe("typelookup", function() {
-        it("should throw if FileName is null", function() {
+    describe('typelookup', function() {
+        it('should throw if FileName is null', function() {
             expect(() => {
                 server.typelookup({
                     FileName: null,
@@ -929,7 +929,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must not be null/);
         });
-        it("should throw if Line is null", function() {
+        it('should throw if Line is null', function() {
             expect(() => {
                 server.typelookup({
                     FileName: '',
@@ -938,7 +938,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must not be null/);
         });
-        it("should throw if Line is less than 0", function() {
+        it('should throw if Line is less than 0', function() {
             expect(() => {
                 server.typelookup({
                     FileName: '',
@@ -947,7 +947,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must be greater than or equal to 0/);
         });
-        it("should throw if Column is null", function() {
+        it('should throw if Column is null', function() {
             expect(() => {
                 server.typelookup({
                     FileName: '',
@@ -956,7 +956,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must not be null/);
         });
-        it("should throw if Column is less than 0", function() {
+        it('should throw if Column is less than 0', function() {
             expect(() => {
                 server.typelookup({
                     FileName: '',
@@ -965,7 +965,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must be greater than or equal to 0/);
         });
-        it("should not throw of required fields are set", function() {
+        it('should not throw of required fields are set', function() {
             expect(() => {
                 server.typelookup({
                     FileName: '',
@@ -976,8 +976,8 @@ describe("Commands", function() {
         });
     });
 
-    describe("getcodeactions", function() {
-        it("should throw if FileName is null", function() {
+    describe('getcodeactions', function() {
+        it('should throw if FileName is null', function() {
             expect(() => {
                 server.getcodeactions({
                     FileName: null,
@@ -986,7 +986,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must not be null/);
         });
-        it("should throw if Line is null", function() {
+        it('should throw if Line is null', function() {
             expect(() => {
                 server.getcodeactions({
                     FileName: '',
@@ -995,7 +995,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must not be null/);
         });
-        it("should throw if Line is less than 0", function() {
+        it('should throw if Line is less than 0', function() {
             expect(() => {
                 server.getcodeactions({
                     FileName: '',
@@ -1004,7 +1004,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must be greater than or equal to 0/);
         });
-        it("should throw if Column is null", function() {
+        it('should throw if Column is null', function() {
             expect(() => {
                 server.getcodeactions({
                     FileName: '',
@@ -1013,7 +1013,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must not be null/);
         });
-        it("should throw if Column is less than 0", function() {
+        it('should throw if Column is less than 0', function() {
             expect(() => {
                 server.getcodeactions({
                     FileName: '',
@@ -1022,7 +1022,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must be greater than or equal to 0/);
         });
-        it("should not throw of required fields are set", function() {
+        it('should not throw of required fields are set', function() {
             expect(() => {
                 server.getcodeactions({
                     FileName: '',
@@ -1033,31 +1033,31 @@ describe("Commands", function() {
         });
     });
 
-    describe("checkalivestatus", function() {
-        it("should not throw of required fields are set", function() {
+    describe('checkalivestatus', function() {
+        it('should not throw of required fields are set', function() {
             expect(() => {
                 server.checkalivestatus()
             }).to.not.throw;
         });
     });
 
-    describe("checkreadystatus", function() {
-        it("should not throw of required fields are set", function() {
+    describe('checkreadystatus', function() {
+        it('should not throw of required fields are set', function() {
             expect(() => {
                 server.checkreadystatus()
             }).to.not.throw;
         });
     });
 
-    describe("currentfilemembersastree", function() {
-        it("should throw if FileName is null", function() {
+    describe('currentfilemembersastree', function() {
+        it('should throw if FileName is null', function() {
             expect(() => {
                 server.currentfilemembersastree({
                     FileName: null
                 })
             }).to.throw(/must not be null/);
         });
-        it("should not throw of required fields are set", function() {
+        it('should not throw of required fields are set', function() {
             expect(() => {
                 server.currentfilemembersastree({
                     FileName: ''
@@ -1066,15 +1066,15 @@ describe("Commands", function() {
         });
     });
 
-    describe("currentfilemembersasflat", function() {
-        it("should throw if FileName is null", function() {
+    describe('currentfilemembersasflat', function() {
+        it('should throw if FileName is null', function() {
             expect(() => {
                 server.currentfilemembersasflat({
                     FileName: null
                 })
             }).to.throw(/must not be null/);
         });
-        it("should not throw of required fields are set", function() {
+        it('should not throw of required fields are set', function() {
             expect(() => {
                 server.currentfilemembersasflat({
                     FileName: ''
@@ -1083,36 +1083,36 @@ describe("Commands", function() {
         });
     });
 
-    describe("filesChanged", function() {
-        it("should throw if request is null", function() {
+    describe('filesChanged', function() {
+        it('should throw if request is null', function() {
             expect(() => {
                 server.filesChanged(null)
             }).to.throw(/must not be null/);
         });
-        it("should not throw of required fields are set", function() {
+        it('should not throw of required fields are set', function() {
             expect(() => {
                 server.filesChanged([])
             }).to.not.throw;
         });
     });
 
-    describe("projects", function() {
-        it("should not throw of required fields are set", function() {
+    describe('projects', function() {
+        it('should not throw of required fields are set', function() {
             expect(() => {
                 server.projects({})
             }).to.not.throw;
         });
     });
 
-    describe("project", function() {
-        it("should throw if FileName is null", function() {
+    describe('project', function() {
+        it('should throw if FileName is null', function() {
             expect(() => {
                 server.project({
                     FileName: null
                 })
             }).to.throw(/must not be null/);
         });
-        it("should not throw of required fields are set", function() {
+        it('should not throw of required fields are set', function() {
             expect(() => {
                 server.project({
                     FileName: ''
@@ -1121,8 +1121,8 @@ describe("Commands", function() {
         });
     });
 
-    describe("runcodeaction", function() {
-        it("should throw if FileName is null", function() {
+    describe('runcodeaction', function() {
+        it('should throw if FileName is null', function() {
             expect(() => {
                 server.runcodeaction({
                     FileName: null,
@@ -1132,7 +1132,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must not be null/);
         });
-        it("should throw if Line is null", function() {
+        it('should throw if Line is null', function() {
             expect(() => {
                 server.runcodeaction({
                     FileName: '',
@@ -1142,7 +1142,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must not be null/);
         });
-        it("should throw if Line is less than 0", function() {
+        it('should throw if Line is less than 0', function() {
             expect(() => {
                 server.runcodeaction({
                     FileName: '',
@@ -1152,7 +1152,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must be greater than or equal to 0/);
         });
-        it("should throw if Column is null", function() {
+        it('should throw if Column is null', function() {
             expect(() => {
                 server.runcodeaction({
                     FileName: '',
@@ -1162,7 +1162,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must not be null/);
         });
-        it("should throw if Column is less than 0", function() {
+        it('should throw if Column is less than 0', function() {
             expect(() => {
                 server.runcodeaction({
                     FileName: '',
@@ -1172,7 +1172,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must be greater than or equal to 0/);
         });
-        it("should throw if CodeAction is null", function() {
+        it('should throw if CodeAction is null', function() {
             expect(() => {
                 server.runcodeaction({
                     FileName: '',
@@ -1182,7 +1182,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must not be null/);
         });
-        it("should throw if CodeAction is less than 0", function() {
+        it('should throw if CodeAction is less than 0', function() {
             expect(() => {
                 server.runcodeaction({
                     FileName: '',
@@ -1192,7 +1192,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must be greater than or equal to 0/);
         });
-        it("should not throw of required fields are set", function() {
+        it('should not throw of required fields are set', function() {
             expect(() => {
                 server.runcodeaction({
                     FileName: '',
@@ -1204,8 +1204,8 @@ describe("Commands", function() {
         });
     });
 
-    describe("gettestcontext", function() {
-        it("should throw if FileName is null", function() {
+    describe('gettestcontext', function() {
+        it('should throw if FileName is null', function() {
             expect(() => {
                 server.gettestcontext({
                     FileName: null,
@@ -1215,7 +1215,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must not be null/);
         });
-        it("should throw if Line is null", function() {
+        it('should throw if Line is null', function() {
             expect(() => {
                 server.gettestcontext({
                     FileName: '',
@@ -1225,7 +1225,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must not be null/);
         });
-        it("should throw if Line is less than 0", function() {
+        it('should throw if Line is less than 0', function() {
             expect(() => {
                 server.gettestcontext({
                     FileName: '',
@@ -1235,7 +1235,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must be greater than or equal to 0/);
         });
-        it("should throw if Column is null", function() {
+        it('should throw if Column is null', function() {
             expect(() => {
                 server.gettestcontext({
                     FileName: '',
@@ -1245,7 +1245,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must not be null/);
         });
-        it("should throw if Column is less than 0", function() {
+        it('should throw if Column is less than 0', function() {
             expect(() => {
                 server.gettestcontext({
                     FileName: '',
@@ -1255,7 +1255,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must be greater than or equal to 0/);
         });
-        it("should throw if Type is null", function() {
+        it('should throw if Type is null', function() {
             expect(() => {
                 server.gettestcontext({
                     FileName: '',
@@ -1265,7 +1265,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must not be null/);
         });
-        it("should throw if Type is less than 0", function() {
+        it('should throw if Type is less than 0', function() {
             expect(() => {
                 server.gettestcontext({
                     FileName: '',
@@ -1275,7 +1275,7 @@ describe("Commands", function() {
                 })
             }).to.throw(/must be greater than or equal to 0/);
         });
-        it("should not throw of required fields are set", function() {
+        it('should not throw of required fields are set', function() {
             expect(() => {
                 server.gettestcontext({
                     FileName: '',

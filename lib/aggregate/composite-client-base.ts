@@ -104,7 +104,7 @@ export class CombinationClientBase<Client> implements OmniSharp.Aggregate.Events
             _.each(removal, z => delete cache[z]);
 
             return Observable.combineLatest(
-                clients.map(z => selector(z).startWith(cache[z['uniqueId']])),
+                ...clients.map(z => selector(z).startWith(cache[z['uniqueId']])),
                 (...values: T[]) =>
                     values.map((value, index) => {
                         cache[clients[index]['uniqueId']] = value;

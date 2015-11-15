@@ -1,14 +1,14 @@
-/// <reference path="./tsd.d.ts" />
+/// <reference path='./tsd.d.ts' />
 import {expect} from 'chai';
-declare var xdescribe: Function;
-import {ClientV1, ClientEventsV1} from "../lib/clients/client-v1";
-import {ClientV2, ClientEventsV2} from "../lib/clients/client-v2";
-import {ObservationClientV1, AggregateClientV1} from "../lib/aggregate/composite-client-v1";
-import {ObservationClientV2, AggregateClientV2} from "../lib/aggregate/composite-client-v2";
+declare const xdescribe: Function;
+import {ClientV1} from '../lib/clients/client-v1';
+import {ClientV2} from '../lib/clients/client-v2';
+import {ObservationClientV1, AggregateClientV1} from '../lib/aggregate/composite-client-v1';
+import {ObservationClientV2, AggregateClientV2} from '../lib/aggregate/composite-client-v2';
 
-describe("Decorator Methods", function() {
+describe('Decorator Methods', function() {
     it('ClientV1', function() {
-        var client = new ClientV1({ projectPath: process.cwd() });
+        const client = new ClientV1({ projectPath: process.cwd() });
 
         expect(client.updatebuffer).to.equal(client.updatebuffer);
         expect(client.changebuffer).to.equal(client.changebuffer);
@@ -24,7 +24,7 @@ describe("Decorator Methods", function() {
     });
 
     it('ClientV2', function() {
-        var client = new ClientV2({ projectPath: process.cwd() });
+        const client = new ClientV2({ projectPath: process.cwd() });
 
         expect(client.updatebuffer).to.equal(client.updatebuffer);
         expect(client.changebuffer).to.equal(client.changebuffer);
@@ -40,7 +40,7 @@ describe("Decorator Methods", function() {
     });
 
     it('ObservationClientV1', function() {
-        var client = new ObservationClientV1();
+        const client = new ObservationClientV1();
 
         expect(client.updatebuffer).to.equal(client.updatebuffer);
         expect(client.changebuffer).to.equal(client.changebuffer);
@@ -50,7 +50,7 @@ describe("Decorator Methods", function() {
     });
 
     it('ObservationClientV2', function() {
-        var client = new ObservationClientV2();
+        const client = new ObservationClientV2();
 
         expect(client.updatebuffer).to.equal(client.updatebuffer);
         expect(client.changebuffer).to.equal(client.changebuffer);
@@ -61,7 +61,7 @@ describe("Decorator Methods", function() {
     });
 
     it('AggregateClientV1', function() {
-        var client = new AggregateClientV1();
+        const client = new AggregateClientV1();
 
         expect(client.updatebuffer).to.equal(client.updatebuffer);
         expect(client.changebuffer).to.equal(client.changebuffer);
@@ -71,7 +71,7 @@ describe("Decorator Methods", function() {
     });
 
     it('AggregateClientV2', function() {
-        var client = new AggregateClientV2();
+        const client = new AggregateClientV2();
 
         expect(client.updatebuffer).to.equal(client.updatebuffer);
         expect(client.changebuffer).to.equal(client.changebuffer);

@@ -17,7 +17,7 @@ childProcess.stdout.pipe(process.stdout);
 childProcess.stderr.pipe(process.stderr);
 
 process.stdin.resume();
-process.on('message', function(message) {
+process.on('message', function(message: any) {
     if (message === 'kill')
         process.exit();
 });

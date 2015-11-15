@@ -1,12 +1,12 @@
-import * as _ from "lodash";
-import {OmnisharpClientOptions} from "./interfaces";
+import * as _ from 'lodash';
+import {OmnisharpClientOptions} from './interfaces';
 
 export function ensureClientOptions(options: OmnisharpClientOptions) {
-    var statusSampleTime = options.statusSampleTime || (options.statusSampleTime = 500);
-    var responseSampleTime = options.responseSampleTime || (options.responseSampleTime = 100);
-    var responseConcurrency = options.concurrency || (options.concurrency = 4);
-    var timeout = options.timeout || (options.timeout = 60);
-    var responseConcurencyTimeout = options.concurrencyTimeout || (options.concurrencyTimeout = Math.ceil(options.timeout / 6) * 1000);
+    if (!options.statusSampleTime) options.statusSampleTime = 500;
+    if (!options.responseSampleTime) options.responseSampleTime = 100;
+    if (!options.concurrency) options.concurrency = 4;
+    if (!options.timeout) options.timeout = 60;
+    if (!options.concurrencyTimeout) options.concurrencyTimeout = Math.ceil(options.timeout / 6) * 1000;
 
     // Keep concurrency capped at 2
     // This lets us get around an issue with a single stuck request (that is taking a while to complete)
@@ -23,15 +23,15 @@ export function ensureClientOptions(options: OmnisharpClientOptions) {
     }
 }
 
-export function flattenArguments(obj, prefix = '') {
-    var result: any[] = [];
+export function flattenArguments(obj: any, prefix = '') {
+    const result: any[] = [];
     _.each(obj, (value, key) => {
         if (_.isObject(value)) {
-            result.push(...flattenArguments(value, `${prefix ? prefix + ':' : ''}${key[0].toUpperCase() + key.substr(1) }`));
-            return
+            result.push(...flattenArguments(value, `${prefix ? prefix + ':' : ''}${key[0].toUpperCase() + key.substr(1)}`));
+            return;
         }
 
-        result.push(`--${prefix ? prefix + ':' : ''}${key[0].toUpperCase() + key.substr(1) }=${value}`);
+        result.push(`--${prefix ? prefix + ':' : ''}${key[0].toUpperCase() + key.substr(1)}=${value}`);
     });
 
     return result;

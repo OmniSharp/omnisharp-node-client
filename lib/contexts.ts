@@ -1,7 +1,11 @@
-import {Observable, CompositeDisposable} from "rx";
-import {uniqueId, isObject, cloneDeep} from "lodash";
-import {requestMutator, responseMutator} from "./response-handling";
-var stripBom = require('strip-bom');
+import {Observable, Subscriber} from '@reactivex/rxjs';
+import {uniqueId, isObject, cloneDeep} from 'lodash';
+import {requestMutator, responseMutator} from './response-handling';
+const stripBom = require('strip-bom');
+
+function isRequest(value: any): value is OmniSharp.Models.Request {
+    return isObject(value);
+}
 
 export class CommandContext<T> {
     constructor(public command: string, public value: T) { }
@@ -21,14 +25,16 @@ export class RequestContext<T> {
         return null;
     }
 
-    constructor(public clientId, command: string, request: T, {silent, oneBasedIndices}: OmniSharp.RequestOptions, sequence = uniqueId("__request")) {
+    constructor(public clientId: string, command: string, request: T, {silent, oneBasedIndices}: OmniSharp.RequestOptions, sequence = uniqueId('__request')) {
         if (command) this.command = command.toLowerCase();
 
-        if (isObject(request)) {
-            if (request['Buffer']) {
-                request['Buffer'] = stripBom(request['Buffer']);
+        if (isRequest(request)) {
+            const r: OmniSharp.Models.Request = request;
+            if (r.Buffer) {
+                r.Buffer = stripBom(r.Buffer);
             }
-            var obj = cloneDeep(request);
+
+            let obj = cloneDeep(request);
             if (!oneBasedIndices) {
                 obj = requestMutator(obj);
             }
@@ -44,13 +50,14 @@ export class RequestContext<T> {
     }
 
     public getResponse<TResponse>(stream: Observable<ResponseContext<T, TResponse>>) {
-        return Observable.create<TResponse>(observer =>
-            stream.first(res => res.sequence === this.sequence).subscribe(res => {
+        return Observable.create((subscriber: Subscriber<TResponse>) =>
+            stream.first(res => res.sequence === this.sequence)
+            .subscribe(res => {
                 if (!res.failed) {
-                    observer.onNext(res.response);
-                    observer.onCompleted();
+                    subscriber.next(res.response);
+                    subscriber.complete();
                 } else {
-                    observer.onCompleted();
+                    subscriber.complete();
                 }
             }));
     }

@@ -6,10 +6,11 @@ export function pausableBuffered<T>(observable: Observable<T>, pauser: Observabl
 
 class PausableBufferedOperator<T> /*implements Operator<T, R>*/ {
     constructor(private self: Observable<T>, private pauser: Observable<boolean>) { }
-
+	/* tslint:disable:no-unused-variable */
     private call(subscriber: Subscriber<T>): Subscriber<T> {
         return new PausableBufferedSubscriber(subscriber, this.self, this.pauser);
     }
+	/* tslint:enable:no-unused-variable */
 }
 
 class PausableBufferedSubscriber<T> extends Subscriber<T> {

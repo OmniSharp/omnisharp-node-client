@@ -1,6 +1,6 @@
-import {isArray, each, keys, filter, isNumber, has, get, set} from "lodash";
+import {isArray, each, filter, has, get, set} from 'lodash';
 
-export var serverLineNumbers = [
+export const serverLineNumbers = [
     'Line', 'Column',
     'StartLine', 'StartColumn',
     'EndLine', 'EndColumn',
@@ -12,7 +12,7 @@ export var serverLineNumbers = [
     'Location.EndLine', 'Location.EndColumn',
 ];
 
-export var serverLineNumberArrays = [
+export const serverLineNumberArrays = [
     'Lines'
 ];
 
@@ -23,19 +23,19 @@ export function requestMutator(data: any) {
     }
 
     each(serverLineNumbers, path => {
-        var hasPath = has(data, path);
+        const hasPath = has(data, path);
         if (hasPath) {
-            var value = get<number>(data, path);
+            let value = get<number>(data, path);
             value = value + 1;
             set(data, path, value);
         }
     });
 
     each(serverLineNumberArrays, path => {
-        var hasPath = has(data, path);
+        const hasPath = has(data, path);
         if (hasPath) {
-            var value = get<number[]>(data, path);
-            for (var i = 0; i < value.length; i++) {
+            const value = get<number[]>(data, path);
+            for (let i = 0; i < value.length; i++) {
                 value[i] = value[i] + 1;
             }
             set(data, path, value);
@@ -54,19 +54,19 @@ export function responseMutator(data: any) {
     }
 
     each(serverLineNumbers, path => {
-        var hasPath = has(data, path);
+        const hasPath = has(data, path);
         if (hasPath) {
-            var value = get<number>(data, path);
+            let value = get<number>(data, path);
             value = value - 1;
             set(data, path, value);
         }
     });
 
     each(serverLineNumberArrays, path => {
-        var hasPath = has(data, path);
+        const hasPath = has(data, path);
         if (hasPath) {
-            var value = get<number[]>(data, path);
-            for (var i = 0; i < value.length; i++) {
+            const value = get<number[]>(data, path);
+            for (let i = 0; i < value.length; i++) {
                 value[i] = value[i] + 1;
             }
             set(data, path, value);

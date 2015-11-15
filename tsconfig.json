@@ -1,5 +1,8 @@
 {
-    "externalTranspiler": "babel",
+    "externalTranspiler": {
+        "name": "babel",
+        "options": {}
+    },
     "compilerOptions": {
         "target": "es6",
         "module": "es6",
@@ -9,8 +12,7 @@
         "removeComments": true,
         "noLib": false,
         "preserveConstEnums": true,
-        "experimentalDecorators": true,
-        "experimentalAsyncFunctions": true
+        "experimentalDecorators": true
     },
     "compileOnSave": true,
     "filesGlob": [
@@ -36,13 +38,13 @@
         "./lib/drivers/websocket.ts",
         "./lib/enums.ts",
         "./lib/helpers/Disposable.ts",
+        "./lib/helpers/fromCallback.ts",
         "./lib/helpers/pausableBuffered.ts",
         "./lib/helpers/plugin-manager.ts",
         "./lib/helpers/prioritization.ts",
         "./lib/omnisharp-client.ts",
         "./lib/omnisharp-path.ts",
         "./lib/options.ts",
-        "./lib/project-finder.ts",
         "./lib/queue.ts",
         "./lib/response-handling.ts",
         "./lib/stdio/child.ts",
@@ -50,7 +52,6 @@
         "./spec/omnisharp-client-commands-v2.ts",
         "./spec/omnisharp-client-commands.ts",
         "./spec/omnisharp-client-spec.ts",
-        "./spec/project-find-spec.ts",
         "./spec/stdio-spec.ts",
         "./spec/validate-proxies-spec.ts",
         "./tsd.d.ts"

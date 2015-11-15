@@ -1,13 +1,14 @@
-import {each, reduce} from "lodash";
-import {IOmnisharpPlugin} from "../interfaces";
-import {exec} from "child_process";
-import {Observable, Subject} from "rx";
-import {bootstrapLocation} from "../omnisharp-path";
-import * as fs from "fs";
-import {join} from "path";
-var exists = Observable.fromCallback(fs.exists),
-    readFile: (file: string) => Observable<any> = Observable.fromNodeCallback(fs.readFile);
-var md5: (value: any) => string = require('md5');
+import {each} from 'lodash';
+import {IOmnisharpPlugin} from '../interfaces';
+import {exec} from 'child_process';
+import {Observable, Subject, Subscriber} from '@reactivex/rxjs';
+import {bootstrapLocation} from '../omnisharp-path';
+import * as fs from 'fs';
+import {join} from 'path';
+import {fromCallback, fromNodeCallback} from './fromCallback';
+const exists = fromCallback(fs.exists),
+    readFile: (file: string) => Observable<any> = fromNodeCallback(fs.readFile);
+const md5: (value: any) => string = require('md5');
 
 export class PluginManager {
     private _plugins: Set<IOmnisharpPlugin>;
@@ -24,34 +25,35 @@ export class PluginManager {
     }
 
     public getOmnisharpPath() {
-        if (this._currentBootstrap) return Observable.just(this._currentBootstrap);
+        if (this._currentBootstrap) return Observable.of(this._currentBootstrap);
 
-        var plugins = [];
-        var hashStrings = [];
-        var hash;
+        let hash: string;
+        const plugins : IOmnisharpPlugin[] = [];
+        const hashStrings : string[] = [];
         this._plugins.forEach(plugin => {
             plugins.push(plugin);
         });
 
-        return Observable.create<string>(observer => {
+        return (<Observable<string>> Observable.create((subscriber: Subscriber<string>) => {
             // Include the plugins defined in omnisharp.json, they could have changed.
-            exists(join(this._solutionLocation, "omnisharp.json"))
-                .where(x => !!x)
-                .flatMap(x => readFile(join(this._solutionLocation, "omnisharp.json")))
+            exists(join(this._solutionLocation, 'omnisharp.json'))
+                .filter(x => !!x)
+                .flatMap(x => readFile(join(this._solutionLocation, 'omnisharp.json')))
                 .map(x => JSON.parse(x.toString()))
-                .tapOnNext(obj => {
-                    if (obj.plugins) { hashStrings.push(obj.plugins); }
-                })
-                .subscribeOnCompleted(() => {
+                .do(obj => {
+                        if (obj.plugins) {
+                            hashStrings.push(obj.plugins);
+                        }
+                    }, null, () => {
                     hash = md5(JSON.stringify(plugins.concat(hashStrings)));
 
                     if (this._bootstrappedPlugins.has(hash)) {
-                        observer.onNext(this._bootstrappedPlugins.get(hash));
-                        observer.onCompleted();
+                        subscriber.next(this._bootstrappedPlugins.get(hash));
+                        subscriber.complete();
                         return;
                     }
 
-                    var command = [bootstrapLocation, '-    s', this._solutionLocation].concat(
+                    const command = [bootstrapLocation, '-s', this._solutionLocation].concat(
                         plugins.map(x => {
                             if (x.location) {
                                 return `--plugins ${x.location}`;
@@ -63,11 +65,11 @@ export class PluginManager {
                         })).join(' ');
 
                     exec(command, function(error, stdout) {
-                        observer.onNext(stdout.toString());
-                        observer.onCompleted();
+                        subscriber.next(stdout.toString());
+                        subscriber.complete();
                     });
                 });
-        }).tapOnNext(result => {
+        })).do(result => {
             this._currentBootstrap = result;
             this._bootstrappedPlugins.set(hash, result);
         });
@@ -75,11 +77,11 @@ export class PluginManager {
 
     public add(plugin: IOmnisharpPlugin) {
         this._plugins.add(plugin);
-        this._pluginsChanged.onNext(true);
+        this._pluginsChanged.next(true);
     }
 
     public remove(plugin: IOmnisharpPlugin) {
         this._plugins.delete(plugin);
-        this._pluginsChanged.onNext(true);
+        this._pluginsChanged.next(true);
     }
 }

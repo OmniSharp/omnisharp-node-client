@@ -1,16 +1,16 @@
-import {delay, each} from "lodash";
+import {delay, each} from 'lodash';
 // Globally handle events over all stdio drivers
-export var enqueue = (function() {
-    var _queue : Function[] = [];
-    var _queueFinished = true;
+export const enqueue = (function() {
+    let _queueFinished = true;
+    const _queue : Function[] = [];
     // Fake RAF for environments that don't have it.
-    var requestAnimationFrame : any = window && window.requestAnimationFrame || function (cb: Function): number { delay(cb, 33); return -1; }
+    const requestAnimationFrame : any = window && window.requestAnimationFrame || function (cb: Function): number { delay(cb, 33); return -1; };
 
-    var _raf = () => requestAnimationFrame(() => _dequeue());
+    const _raf = () => requestAnimationFrame(() => _dequeue());
 
     function _dequeue() {
-        var framesToFinish = Math.min(Math.ceil(_queue.length / 20), 5);
-        var queue = _queue.splice(0, framesToFinish);
+        const framesToFinish = Math.min(Math.ceil(_queue.length / 20), 5);
+        const queue = _queue.splice(0, framesToFinish);
 
         each(queue, cb => cb());
 
@@ -28,5 +28,5 @@ export var enqueue = (function() {
             _queueFinished = false;
             _raf();
         }
-    }
+    };
 })();

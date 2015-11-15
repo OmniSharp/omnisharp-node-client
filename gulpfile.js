@@ -9,13 +9,31 @@ var fs = require('fs');
 var win32 = process.platform === 'win32';
 var spawn = require('child_process').spawn;
 var glob = require('glob');
+var tslint = require('gulp-tslint');
+var babel = require("gulp-babel");
 var gulpPath = path.join(__dirname, 'node_modules/.bin/gulp' + (win32 && '.cmd' || ''));
 var metadata = {
     lib: ['lib/**/*.d.ts', 'lib/**/*.js', '!lib/es6.d.ts', '!lib/interfaces.d.ts'],
     spec: ['spec/**/*.d.ts', 'spec/**/*.js', '!spec/tsd.d.ts'],
 };
 
-gulp.task('typescript', ['sync-clients','clean'], function() {
+var tsMetadata = {
+    lib: ['lib/**/*.ts', '!lib/**/*.d.ts'],
+    spec: ['spec/**/*.ts', '!spec/**/*.d.ts']
+};
+
+var babelMetadata = {
+    lib: ['lib/**/*.js'],
+    spec: ['spec/**/*.js']
+};
+
+gulp.task('lint', ['clean'], function() {
+    return gulp.src(tsMetadata.lib.concat(tsMetadata.spec))
+        .pipe(tslint())
+        .pipe(tslint.report('prose'));
+});
+
+gulp.task('typescript', ['lint', 'sync-clients', 'clean'], function() {
     var args = ['--declaration', '-p', path.resolve(__dirname.toString())];
     var compile = new Promise(function(resolve, reject) {
         var tsc = spawn(path.resolve(__dirname + '/node_modules/.bin/ntsc' + (win32 && '.cmd' || '')), args);
@@ -29,10 +47,26 @@ gulp.task('typescript', ['sync-clients','clean'], function() {
     return compile;
 });
 
+gulp.task('babel', ['babel:lib', 'babel:spec']);
+
+gulp.task('babel:lib', ['typescript'], function() {
+    return gulp.src(babelMetadata.lib)
+        .pipe(babel())
+        .pipe(gulp.dest('lib'));
+});
+
+gulp.task('babel:spec', ['typescript'], function() {
+    return gulp.src(babelMetadata.spec)
+        .pipe(babel())
+        .pipe(gulp.dest('spec'));
+});
+
 gulp.task('omnisharp-client-declaration', ['typescript'], function() {
     return new Promise(function(resolve) {
         glob('lib/**/*.d.ts', {}, function(e, files) {
-            files = _.filter(files, function(x) { return !(_.endsWith(x, 'es6.d.ts') || _.contains(x, 'drivers/')) });
+            files = _.filter(files, function(x) {
+                return !(_.endsWith(x, 'es6.d.ts') || _.contains(x, 'drivers/'))
+            });
             var output = ['/// <reference path=\'./omnisharp-server.d.ts\' />'];
             var temp = _.template('declare module \'${name}\' {\n${content}\n}\n');
             _.each(files, function(file) {
@@ -47,10 +81,13 @@ gulp.task('omnisharp-client-declaration', ['typescript'], function() {
                 content = content.replace(/export declare/g, 'export');
                 content = content.replace(/declare module/g, 'export module');
 
-                output.push(temp({name: name, content: content }));
+                output.push(temp({
+                    name: name,
+                    content: content
+                }));
             });
 
-                output = output.join('\n\n').replace('declare module \'omnisharp-client/omnisharp-client\'', 'declare module \'omnisharp-client\'');
+            output = output.join('\n\n').replace('declare module \'omnisharp-client/omnisharp-client\'', 'declare module \'omnisharp-client\'');
 
             fs.writeFileSync('omnisharp-client.d.ts', output);
 
@@ -83,7 +120,7 @@ gulp.task('sync-clients', [], function() {
     var omnisharpServer = fs.readFileSync('./omnisharp-server.d.ts').toString();
     _.each(['v1', 'v2'], function(version) {
         var VERSION = version.toUpperCase();
-        var regex = new RegExp('declare module OmniSharp\\.Events {[\\s\\S]*?interface '+VERSION+' {([\\s\\S]*?)}');
+        var regex = new RegExp('declare module OmniSharp\\.Events {[\\s\\S]*?interface ' + VERSION + ' {([\\s\\S]*?)}');
 
         var interf = omnisharpServer.match(regex)[1];
         var properties = [];
@@ -100,7 +137,7 @@ gulp.task('sync-clients', [], function() {
             }
         });
 
-        var regex2 = new RegExp('declare module OmniSharp\\.Events\\.Aggregate {[\\s\\S]*?interface '+VERSION+' {([\\s\\S]*?)}');
+        var regex2 = new RegExp('declare module OmniSharp\\.Events\\.Aggregate {[\\s\\S]*?interface ' + VERSION + ' {([\\s\\S]*?)}');
         var interf2 = omnisharpServer.match(regex2)[1];
         var aggregateProperties = [];
         _.each(_.trim(interf2).split('\n'), function(line) {
@@ -131,9 +168,14 @@ export class ObservationClient${VERSION}<T extends Client${VERSION}> extends Obs
 \n\
 export class AggregateClient${VERSION}<T extends Client${VERSION}> extends CombinationClientBase<T> implements OmniSharp.Events.Aggregate.${VERSION} {\
 <% _.each(aggregateProperties, function(property){ %>\n    @aggregate public get ${property.name}()${property.line} { throw new Error(\'Implemented by decorator\'); }<% }); %>\n\
-}\n')({ properties: properties, aggregateProperties: aggregateProperties, VERSION: VERSION, version: version });
+}\n')({
+            properties: properties,
+            aggregateProperties: aggregateProperties,
+            VERSION: VERSION,
+            version: version
+        });
 
-        fs.writeFileSync('./lib/aggregate/composite-client-'+version+'.ts', result);
+        fs.writeFileSync('./lib/aggregate/composite-client-' + version + '.ts', result);
     });
 });
 
@@ -142,10 +184,14 @@ gulp.task('watch', function() {
     //  you need to install manually but don't save it as it causes CI issues.
     var watch = require('gulp-watch');
     // Auto restart watch when gulpfile is changed.
-    var p = spawn(gulpPath, ['file-watch'], {stdio: 'inherit'});
+    var p = spawn(gulpPath, ['file-watch'], {
+        stdio: 'inherit'
+    });
     return watch('gulpfile.js', function() {
         p.kill();
-        p = spawn(gulpPath, ['file-watch'], {stdio: 'inherit'});
+        p = spawn(gulpPath, ['file-watch'], {
+            stdio: 'inherit'
+        });
     });
 });
 
@@ -172,4 +218,4 @@ gulp.task('file-watch', function() {
 gulp.task('npm-prepublish', ['typescript', 'omnisharp-client-declaration']);
 
 // The default task (called when you run `gulp` from CLI)
-gulp.task('default', ['typescript', 'omnisharp-client-declaration']);
+gulp.task('default', ['typescript', 'babel', 'omnisharp-client-declaration']);

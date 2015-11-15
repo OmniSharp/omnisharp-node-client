@@ -1,20 +1,21 @@
-/// <reference path="./tsd.d.ts" />
+/// <reference path='./tsd.d.ts' />
 import {expect} from 'chai';
-import {Driver, DriverState} from "../lib/enums";
-import {resolve} from "path";
-import {ClientV2 as OmnisharpClient} from "../lib/clients/client-v2";
-import * as _ from "lodash";
+import {Driver, DriverState} from '../lib/enums';
+import {resolve} from 'path';
+import {ClientV2 as OmnisharpClient} from '../lib/clients/client-v2';
+import * as _ from 'lodash';
 
-declare var xdescribe: Function;
+declare const xdescribe: Function;
 
-describe("Omnisharp Server", function() {
-    it("must construct", () => {
+/* tslint:disable:semicolon */
+describe('Omnisharp Server', function() {
+    it('must construct', () => {
         new OmnisharpClient({
             projectPath: process.cwd()
         });
     });
 
-    it("must construct with a specific driver", () => {
+    it('must construct with a specific driver', () => {
         new OmnisharpClient({
             driver: Driver.Stdio,
             projectPath: process.cwd()
@@ -24,7 +25,7 @@ describe("Omnisharp Server", function() {
     describe('state', function() {
 
         this.timeout(20000);
-        var server: OmnisharpClient;
+        let server: OmnisharpClient;
 
         before((done) => {
             server = new OmnisharpClient({
@@ -32,9 +33,9 @@ describe("Omnisharp Server", function() {
                 projectPath: process.cwd()
             });
 
-            var sub = server.state.startWith(server.currentState).subscribe(state => {
+            const sub = server.state.startWith(server.currentState).subscribe(state => {
                 if (state === DriverState.Connected) {
-                    sub.dispose();
+                    sub.unsubscribe();
                     done();
                 }
             });
@@ -42,8 +43,8 @@ describe("Omnisharp Server", function() {
             server.connect();
         })
 
-        it("must respond to all requests", function(done) {
-            var count = 4;
+        it('must respond to all requests', function(done) {
+            let count = 4;
             server.observe.checkalivestatus.subscribe((data) => {
                 count--;
                 if (!count)
@@ -56,9 +57,9 @@ describe("Omnisharp Server", function() {
             server.checkalivestatus();
         });
 
-        it("must give status", function(done) {
-            var sub = server.status.delay(1).subscribe(status => {
-                sub.dispose();
+        it('must give status', function(done) {
+            const sub = server.status.delay(1).subscribe(status => {
+                sub.unsubscribe();
                 done();
             })
 
@@ -67,19 +68,19 @@ describe("Omnisharp Server", function() {
         });
     });
 
-    describe("configuration", function() {
+    describe('configuration', function() {
         it('should call with given omnisharp parameters', function(done) {
-            var server = new OmnisharpClient({
+            const server = new OmnisharpClient({
                 driver: Driver.Stdio,
                 projectPath: resolve(__dirname, '../roslyn/'),
                 logger: {
                     log: (message) => {
-                        if (_.startsWith(message, "Arguments: ")) {
+                        if (_.startsWith(message, 'Arguments: ')) {
                             expect(message).to.contain('--Dnx:Alias=notdefault')
                             done();
                         }
                     },
-                    error: (message) => { }
+                    error: (message) => { /* */ }
                 },
                 omnisharp: {
                     dnx: { alias: 'notdefault' }
@@ -90,21 +91,21 @@ describe("Omnisharp Server", function() {
         });
 
         it('should call with given omnisharp parameters', function(done) {
-            var server = new OmnisharpClient({
+            const server = new OmnisharpClient({
                 driver: Driver.Stdio,
                 projectPath: resolve(__dirname, '../roslyn/'),
                 logger: {
                     log: (message) => {
-                        if (_.startsWith(message, "Arguments: ")) {
+                        if (_.startsWith(message, 'Arguments: ')) {
                             expect(message).to.contain('--Dnx:Alias=beta4')
                             expect(message).to.contain('--FormattingOptions:NewLine=blah')
                             done();
                         }
                     },
-                    error: (message) => { }
+                    error: (message) => { /* */ }
                 },
                 omnisharp: {
-                    formattingOptions: { newLine: "blah" },
+                    formattingOptions: { newLine: 'blah' },
                     dnx: { alias: 'beta4' }
                 }
             });

@@ -1,6 +1,5 @@
-/// <reference path="./tsd.d.ts" />
+/// <reference path='./tsd.d.ts' />
 import {expect} from 'chai';
-import * as _ from 'lodash';
 import {join} from 'path';
 
 import {findCandidates} from '../lib/candidate-finder';
@@ -8,7 +7,7 @@ import {findCandidates} from '../lib/candidate-finder';
 declare var xdescribe: Function;
 declare var xit: Function;
 
-describe("Candidate Finder", function() {
+describe('Candidate Finder', function() {
     it('z1 candidate should return root most files', function(done) {
         findCandidates.withCandidates(join(__dirname, 'fixture/candidate-finder/same-folder/cs'), console).subscribe(cs => {
             expect(cs.map(z => '' + z)).to.be.deep.equal([join(__dirname, 'fixture/candidate-finder/same-folder/cs')]);
@@ -249,7 +248,7 @@ describe("Candidate Finder", function() {
     });
 
     it('z23b candidate find projects up the folder heirarchy if not found', function(done) {
-        findCandidates.withCandidates(join(__dirname, 'fixture/candidate-finder/solution-root-folder/two-solution'), { log: () => { }, error: () => { } }).subscribe(solution => {
+        findCandidates.withCandidates(join(__dirname, 'fixture/candidate-finder/solution-root-folder/two-solution'), { log: () => { /* */ }, error: () => { /* */ } }).subscribe(solution => {
             expect(solution).to.not.be.null;
             expect(solution.map(z => '' + z)).to.be.deep.equal([
                 join(__dirname, 'fixture/candidate-finder/solution-root-folder/two-solution/something.sln'),

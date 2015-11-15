@@ -41,11 +41,13 @@
     "chai": "^3.0.0",
     "del": "^1.2.1",
     "gulp": "^3.9.0",
+    "gulp-babel": "^6.1.0",
+    "gulp-tslint": "^3.6.0",
     "gulp-util": "^3.0.6",
     "merge-stream": "^1.0.0",
     "mocha": "^2.3.3",
+    "ntypescript": "^1.201511140604.1",
     "through2": "^2.0.0",
-    "tsd": "^0.6.5",
-    "ntypescript": "^1.201510130006.1"
+    "tsd": "^0.6.5"
   }
 }

@@ -1,3 +1,4 @@
+declare module Rx { export interface Observable<T> { } }
 
 declare module OmniSharp.Models {
     enum HighlightClassification {

@@ -1,5 +1,4 @@
 /// <reference path="omnisharp-server.d.ts" />
-/// <reference path="lib/es6.d.ts" />
 /// <reference path="lib/interfaces.d.ts" />
 /// <reference path="typings/chai/chai.d.ts" />
 /// <reference path="typings/lodash/lodash.d.ts" />
