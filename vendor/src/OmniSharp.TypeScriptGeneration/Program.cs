@@ -41,7 +41,7 @@ namespace OmniSharp.TypeScriptGeneration
 
             var result = fluent.Generate();
 			//result = "import * as Rx from '@reactivex/rxjs';\n" + result;
-			result = "declare module Rx { export interface Observable<T> { } };\n" + result;
+			result = "interface Observable<T> { };\n" + result;
 
             var generated = string.Join("\n", OmnisharpControllerExtractor.GetInterface());
             var projectInterfaces = $@"
@@ -60,7 +60,7 @@ declare module {OmnisharpControllerExtractor.InferNamespace(typeof(Request)).Tri
             ";
 
             result = string.Join("\n", result, generated, OmnisharpEventExtractor.GetInterface(), projectInterfaces);
-
+            result = result.replace("interface", "export interface").replace("declare module", "export module");
 
             if (!string.IsNullOrWhiteSpace(path))
             {

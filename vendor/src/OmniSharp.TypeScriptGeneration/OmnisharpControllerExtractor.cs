@@ -114,11 +114,11 @@ namespace OmniSharp.TypeScriptGeneration
                 yield return new ItemVersion(version, actionName, $"// '{actionName}'");
                 if (method.RequestType != null)
                 {
-                    yield return new ItemVersion(version, actionName, $"{actionName}(request: {requestType}, options?: RequestOptions): Rx.Observable<{returnType}>;");
+                    yield return new ItemVersion(version, actionName, $"{actionName}(request: {requestType}, options?: RequestOptions): Observable<{returnType}>;");
                 }
                 else
                 {
-                    yield return new ItemVersion(version, actionName, $"{actionName}(): Rx.Observable<{returnType}, options?: RequestOptions>;");
+                    yield return new ItemVersion(version, actionName, $"{actionName}(): Observable<{returnType}, options?: RequestOptions>;");
                 }
             }
         }
@@ -143,11 +143,11 @@ namespace OmniSharp.TypeScriptGeneration
                 yield return new ItemVersion(version, actionName, $"// '{actionName}'");
                 if (method.RequestType != null)
                 {
-                    yield return new ItemVersion(version, actionName, $"{observeName}: Rx.Observable<Context<{requestType}, {returnType}>>;");
+                    yield return new ItemVersion(version, actionName, $"{observeName}: Observable<Context<{requestType}, {returnType}>>;");
                 }
                 else
                 {
-                    yield return new ItemVersion(version, actionName, $"{observeName}: Rx.Observable<{returnType}>;");
+                    yield return new ItemVersion(version, actionName, $"{observeName}: Observable<{returnType}>;");
                 }
             }
         }
@@ -172,11 +172,11 @@ namespace OmniSharp.TypeScriptGeneration
                 yield return new ItemVersion(version, actionName, $"// '{actionName}'");
                 if (method.RequestType != null)
                 {
-                    yield return new ItemVersion(version, actionName, $"{observeName}: Rx.Observable<CombinationKey<Context<{requestType}, {returnType}>>[]>;");
+                    yield return new ItemVersion(version, actionName, $"{observeName}: Observable<CombinationKey<Context<{requestType}, {returnType}>>[]>;");
                 }
                 else
                 {
-                    yield return new ItemVersion(version, actionName, $"{observeName}: Rx.Observable<CombinationKey<{returnType}>[]>;");
+                    yield return new ItemVersion(version, actionName, $"{observeName}: Observable<CombinationKey<{returnType}>[]>;");
                 }
             }
         }

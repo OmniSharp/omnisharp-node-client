@@ -1,3 +1,4 @@
+import {OmniSharp} from "../../omnisharp-server.d.ts";
 import {Observable, Subject, BehaviorSubject, Scheduler, Subscriber} from "@reactivex/rxjs";
 import {CompositeDisposable, IDisposable} from "../helpers/Disposable";
 import {isObject, uniqueId, each, defaults, cloneDeep, memoize, keys} from "lodash";

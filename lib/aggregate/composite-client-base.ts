@@ -1,3 +1,4 @@
+import {OmniSharp} from "../../omnisharp-server.d.ts";
 import {ReplaySubject, Observable} from "@reactivex/rxjs";
 import {IDisposable, Disposable, CompositeDisposable}  from "../helpers/Disposable";
 import * as _ from "lodash";

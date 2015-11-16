@@ -1,3 +1,4 @@
+import {OmniSharp} from "../../omnisharp-server.d.ts";
 import {Observable, Subject, ReplaySubject} from "@reactivex/rxjs";
 import {Disposable, CompositeDisposable} from "../helpers/Disposable";
 import {IDriver, IDriverOptions, ILogger} from "../interfaces";

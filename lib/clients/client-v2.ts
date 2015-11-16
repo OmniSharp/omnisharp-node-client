@@ -1,3 +1,4 @@
+import {OmniSharp} from "../../omnisharp-server.d.ts";
 import {Observable} from "@reactivex/rxjs";
 import {ClientBase, ClientEventsBase} from "./client-base";
 import {ClientV1} from "./client-v1";

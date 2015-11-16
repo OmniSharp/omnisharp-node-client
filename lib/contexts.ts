@@ -1,3 +1,4 @@
+import {OmniSharp} from "../omnisharp-server.d.ts";
 import {Observable, Subscriber} from "@reactivex/rxjs";
 import {uniqueId, isObject, cloneDeep} from "lodash";
 import {requestMutator, responseMutator} from "./response-handling";

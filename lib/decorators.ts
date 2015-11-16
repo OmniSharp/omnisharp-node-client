@@ -1,3 +1,4 @@
+import {OmniSharp} from "../omnisharp-server.d.ts";
 import * as _ from "lodash";
 (<any>_.memoize).Cache = Map;
 

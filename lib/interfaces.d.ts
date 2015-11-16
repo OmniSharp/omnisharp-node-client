@@ -1,3 +1,4 @@
+import {OmniSharp} from "../omnisharp-server.d.ts";
 import {IDisposable} from "./helpers/Disposable";
 import {Observable} from "@reactivex/rxjs";
 import {DriverState, Driver} from "./enums";
