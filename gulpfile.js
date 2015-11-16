@@ -51,19 +51,13 @@ gulp.task('babel', ['babel:lib', 'babel:spec']);
 
 gulp.task('babel:lib', ['typescript'], function() {
     return gulp.src(babelMetadata.lib)
-        .pipe(babel({
-            "presets": ["es2015", "stage-3"],
-            "plugins": ["transform-es2015-modules-commonjs"]
-        }))
+        .pipe(babel())
         .pipe(gulp.dest('lib'));
 });
 
 gulp.task('babel:spec', ['typescript'], function() {
     return gulp.src(babelMetadata.spec)
-        .pipe(babel({
-            "presets": ["es2015", "stage-3"],
-            "plugins": ["transform-es2015-modules-commonjs"]
-        }))
+        .pipe(babel())
         .pipe(gulp.dest('spec'));
 });
 

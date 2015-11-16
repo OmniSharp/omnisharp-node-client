@@ -10,6 +10,20 @@
     "preserveConstEnums": true,
     "experimentalDecorators": true
   },
+  "moduleResolution": "node",
+  "formatCodeOptions": {
+    "indentSize": 4,
+    "tabSize": 4,
+    "convertTabsToSpaces": true,
+    "insertSpaceAfterCommaDelimiter": true,
+    "insertSpaceAfterSemicolonInForStatements": true,
+    "insertSpaceBeforeAndAfterBinaryOperators": true,
+    "insertSpaceAfterKeywordsInControlFlowStatements": true,
+    "insertSpaceAfterFunctionKeywordForAnonymousFunctions": false,
+    "insertSpaceAfterOpeningAndBeforeClosingNonemptyParenthesis": false,
+    "placeOpenBraceOnNewLineForFunctions": false,
+    "placeOpenBraceOnNewLineForControlBlocks": false
+  },
   "compileOnSave": true,
   "externalTranspiler": {
     "name": "babel",
