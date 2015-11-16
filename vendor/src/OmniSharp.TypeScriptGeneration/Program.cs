@@ -41,7 +41,7 @@ namespace OmniSharp.TypeScriptGeneration
 
             var result = fluent.Generate();
 			//result = "import * as Rx from '@reactivex/rxjs';\n" + result;
-			result = "interface Observable<T> { };\n" + result;
+			result = "import {Observable} from \"@reactivex/rxjs\";\n" + result;
 
             var generated = string.Join("\n", OmnisharpControllerExtractor.GetInterface());
             var projectInterfaces = $@"

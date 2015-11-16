@@ -1,4 +1,4 @@
-export interface Observable<T> { }
+import {Observable} from "@reactivex/rxjs";
 
 export module OmniSharp.Models {
     enum HighlightClassification {
