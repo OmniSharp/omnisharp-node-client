@@ -1,23 +1,23 @@
-import {Observable, Subject, ReplaySubject} from '@reactivex/rxjs';
-import {Disposable, CompositeDisposable} from '../helpers/Disposable';
-import {IDriver, IDriverOptions, ILogger} from '../interfaces';
-import {defaults} from 'lodash';
-import {DriverState} from '../enums';
-import {spawn, ChildProcess} from 'child_process';
-import * as readline from 'readline';
-import {join} from 'path';
-import {omnisharpLocation} from '../omnisharp-path';
+import {Observable, Subject, ReplaySubject} from "@reactivex/rxjs";
+import {Disposable, CompositeDisposable} from "../helpers/Disposable";
+import {IDriver, IDriverOptions, ILogger} from "../interfaces";
+import {defaults} from "lodash";
+import {DriverState} from "../enums";
+import {spawn, ChildProcess} from "child_process";
+import * as readline from "readline";
+import {join} from "path";
+import {omnisharpLocation} from "../omnisharp-path";
 
 let env: any;
 let win32: boolean;
 // Setup the new process env.
-if (process.platform === 'win32') {
+if (process.platform === "win32") {
     win32 = true;
     // ALL I have to say is WTF.
-    env = { ATOM_SHELL_INTERNAL_RUN_AS_NODE: '1' };
+    env = { ATOM_SHELL_INTERNAL_RUN_AS_NODE: "1" };
 } else {
     win32 = false;
-    env = defaults({ ATOM_SHELL_INTERNAL_RUN_AS_NODE: '1' }, process.env);
+    env = defaults({ ATOM_SHELL_INTERNAL_RUN_AS_NODE: "1" }, process.env);
 }
 
 export class StdioDriver implements IDriver {
@@ -109,36 +109,36 @@ export class StdioDriver implements IDriver {
 
         if (win32) {
             // Spawn a special windows only node client... so that we can shutdown nicely.
-            const serverArguments: any[] = [join(__dirname, '../stdio/child.js'), '--serverPath', this._serverPath, '--projectPath', this._projectPath].concat(this._additionalArguments || []);
+            const serverArguments: any[] = [join(__dirname, "../stdio/child.js"), "--serverPath", this._serverPath, "--projectPath", this._projectPath].concat(this._additionalArguments || []);
             this._logger.log(`Arguments: ${serverArguments}`);
             this._process = spawn(process.execPath, serverArguments, { env });
         } else {
-            const serverArguments: any[] = ['--stdio', '-s', this._projectPath, '--hostPID', process.pid].concat(this._additionalArguments || []);
+            const serverArguments: any[] = ["--stdio", "-s", this._projectPath, "--hostPID", process.pid].concat(this._additionalArguments || []);
             this._logger.log(`Arguments: ${serverArguments}`);
             this._process = spawn(this._serverPath, serverArguments, { env });
         }
 
         if (!this._process.pid) {
-            this.serverErr('failed to connect to connect to server');
+            this.serverErr("failed to connect to connect to server");
             return;
         }
 
-        this._process.stderr.on('data', (data: any) => this._logger.error(data.toString()));
-        this._process.stderr.on('data', (data: any) => this.serverErr(data));
+        this._process.stderr.on("data", (data: any) => this._logger.error(data.toString()));
+        this._process.stderr.on("data", (data: any) => this.serverErr(data));
 
         const rl = readline.createInterface({
             input: this._process.stdout,
             output: undefined
         });
 
-        rl.on('line', (data: any) => this.handleData(data));
-        //rl.on('line', (data) => enqueue(() => this.handleData(data)));
+        rl.on("line", (data: any) => this.handleData(data));
+        //rl.on("line", (data) => enqueue(() => this.handleData(data)));
 
         this.id = this._process.pid.toString();
-        this._process.on('error', (data: any) => this.serverErr(data));
-        this._process.on('close', () => this.disconnect());
-        this._process.on('exit', () => this.disconnect());
-        this._process.on('disconnect', () => this.disconnect());
+        this._process.on("error", (data: any) => this.serverErr(data));
+        this._process.on("close", () => this.disconnect());
+        this._process.on("exit", () => this.disconnect());
+        this._process.on("disconnect", () => this.disconnect());
     }
 
     private serverErr(data: any) {
@@ -150,8 +150,8 @@ export class StdioDriver implements IDriver {
 
         if (!this._eventStream.isUnsubscribed) {
             this._eventStream.next({
-                Type: 'error',
-                Event: 'error',
+                Type: "error",
+                Event: "error",
                 Seq: -1,
                 Body: {
                     Message: friendlyMessage
@@ -162,15 +162,15 @@ export class StdioDriver implements IDriver {
 
     private parseError(data: any) {
         let message = data.toString();
-        if (data.code === 'ENOENT' && data.path === 'mono') {
-            message = 'mono could not be found, please ensure it is installed and in your path';
+        if (data.code === "ENOENT" && data.path === "mono") {
+            message = "mono could not be found, please ensure it is installed and in your path";
         }
         return message;
     }
 
     public disconnect() {
         if (this._process != null && this._process.pid) {
-            this._process.kill('SIGTERM');
+            this._process.kill("SIGTERM");
         }
         this._process = null;
         if (!this._connectionStream.isUnsubscribed) {
@@ -180,7 +180,7 @@ export class StdioDriver implements IDriver {
 
     public request<TRequest, TResponse>(command: string, request?: TRequest): Observable<TResponse> {
         if (!this._process) {
-            return Observable.throw<any>(new Error('Server is not connected, erroring out'));
+            return Observable.throw<any>(new Error("Server is not connected, erroring out"));
         }
 
         const sequence = this._seq++;
@@ -192,8 +192,8 @@ export class StdioDriver implements IDriver {
 
         const subject = new ReplaySubject<TResponse>(1);
         this._outstandingRequests.set(sequence, subject);
-        this._process.stdin.write(JSON.stringify(packet) + '\n', 'utf8');
-        return subject.timeout(this._timeout, Observable.throw<any>('Request timed out'));
+        this._process.stdin.write(JSON.stringify(packet) + "\n", "utf8");
+        return subject.timeout(this._timeout, Observable.throw<any>("Request timed out"));
     }
 
     private handleData(data: string) {
@@ -210,9 +210,9 @@ export class StdioDriver implements IDriver {
     }
 
     private handlePacket(packet: OmniSharp.Stdio.Protocol.Packet) {
-        if (packet.Type === 'response') {
+        if (packet.Type === "response") {
             this.handlePacketResponse(<OmniSharp.Stdio.Protocol.ResponsePacket>packet);
-        } else if (packet.Type === 'event') {
+        } else if (packet.Type === "event") {
             this.handlePacketEvent(<OmniSharp.Stdio.Protocol.EventPacket>packet);
         }
     }
@@ -243,7 +243,7 @@ export class StdioDriver implements IDriver {
         if (!this._eventStream.isUnsubscribed) {
             this._eventStream.next(event);
         }
-        if (!this._connectionStream.isUnsubscribed && event.Event === 'started') {
+        if (!this._connectionStream.isUnsubscribed && event.Event === "started") {
             this._connectionStream.next(DriverState.Connected);
         }
     }
@@ -252,8 +252,8 @@ export class StdioDriver implements IDriver {
         const s = data.toString();
         if (!this._eventStream.isUnsubscribed) {
             this._eventStream.next({
-                Type: 'unknown',
-                Event: 'unknown',
+                Type: "unknown",
+                Event: "unknown",
                 Seq: -1,
                 Body: {
                     Message: s

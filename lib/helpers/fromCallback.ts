@@ -1,4 +1,4 @@
-import {Observable, Subscriber} from '@reactivex/rxjs';
+import {Observable, Subscriber} from "@reactivex/rxjs";
 
 export function fromCallback<TResult, T1>(func: (arg1: T1, callback: (result: TResult) => any) => any): (arg1: T1) => Observable<TResult>;
 export function fromCallback<TResult, T1, T2>(func: (arg1: T1, arg2: T2, callback: (result: TResult) => any) => any): (arg1: T1, arg2: T2) => Observable<TResult>;

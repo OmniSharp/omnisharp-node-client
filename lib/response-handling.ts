@@ -1,19 +1,19 @@
-import {isArray, each, filter, has, get, set} from 'lodash';
+import {isArray, each, filter, has, get, set} from "lodash";
 
 export const serverLineNumbers = [
-    'Line', 'Column',
-    'StartLine', 'StartColumn',
-    'EndLine', 'EndColumn',
-    'SelectionStartColumn', 'SelectionStartLine',
-    'SelectionEndColumn', 'SelectionEndLine',
-    'Selection.Start.Line', 'Selection.Start.Column',
-    'Selection.End.Line', 'Selection.End.Column',
-    'Location.Line', 'Location.Column',
-    'Location.EndLine', 'Location.EndColumn',
+    "Line", "Column",
+    "StartLine", "StartColumn",
+    "EndLine", "EndColumn",
+    "SelectionStartColumn", "SelectionStartLine",
+    "SelectionEndColumn", "SelectionEndLine",
+    "Selection.Start.Line", "Selection.Start.Column",
+    "Selection.End.Line", "Selection.End.Column",
+    "Location.Line", "Location.Column",
+    "Location.EndLine", "Location.EndColumn",
 ];
 
 export const serverLineNumberArrays = [
-    'Lines'
+    "Lines"
 ];
 
 export function requestMutator(data: any) {

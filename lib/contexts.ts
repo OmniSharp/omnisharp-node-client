@@ -1,7 +1,7 @@
-import {Observable, Subscriber} from '@reactivex/rxjs';
-import {uniqueId, isObject, cloneDeep} from 'lodash';
-import {requestMutator, responseMutator} from './response-handling';
-const stripBom = require('strip-bom');
+import {Observable, Subscriber} from "@reactivex/rxjs";
+import {uniqueId, isObject, cloneDeep} from "lodash";
+import {requestMutator, responseMutator} from "./response-handling";
+const stripBom = require("strip-bom");
 
 function isRequest(value: any): value is OmniSharp.Models.Request {
     return isObject(value);
@@ -25,7 +25,7 @@ export class RequestContext<T> {
         return null;
     }
 
-    constructor(public clientId: string, command: string, request: T, {silent, oneBasedIndices}: OmniSharp.RequestOptions, sequence = uniqueId('__request')) {
+    constructor(public clientId: string, command: string, request: T, {silent, oneBasedIndices}: OmniSharp.RequestOptions, sequence = uniqueId("__request")) {
         if (command) this.command = command.toLowerCase();
 
         if (isRequest(request)) {

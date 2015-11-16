@@ -1,29 +1,29 @@
-/// <reference path='./tsd.d.ts' />
-import {expect} from 'chai';
-import {resolve} from 'path';
-import {StdioDriver} from '../lib/drivers/stdio';
+/// <reference path="./tsd.d.ts" />
+import {expect} from "chai";
+import {resolve} from "path";
+import {StdioDriver} from "../lib/drivers/stdio";
 
 declare const xdescribe: Function;
 
 /* tslint:disable:semicolon */
-describe('Omnisharp Local - Stdio', function() {
-    it('must construct', () => {
+describe("Omnisharp Local - Stdio", function() {
+    it("must construct", () => {
         new StdioDriver({
-            projectPath: resolve(__dirname, '../roslyn/')
+            projectPath: resolve(__dirname, "../roslyn/")
         });
     });
 
-    it('must construct with a specific driver', () => {
+    it("must construct with a specific driver", () => {
         new StdioDriver({
-            projectPath: resolve(__dirname, '../roslyn/')
+            projectPath: resolve(__dirname, "../roslyn/")
         });
     });
 
-    describe('properties', function() {
+    describe("properties", function() {
         this.timeout(20000);
-        it('should implement the interface', function(done) {
+        it("should implement the interface", function(done) {
             const server = new StdioDriver({
-                projectPath: resolve(__dirname, '../roslyn/')
+                projectPath: resolve(__dirname, "../roslyn/")
             });
 
             const sub = server.state.subscribe(state => {
@@ -39,11 +39,11 @@ describe('Omnisharp Local - Stdio', function() {
         })
     })
 
-    /*describe('properties', function() {
+    /*describe("properties", function() {
         this.timeout(20000);
-        it('should disconnect if no an invalid project path is given', function(done) {
+        it("should disconnect if no an invalid project path is given", function(done) {
             const server = new Stdio({
-                projectPath: '/invalid/path/to/things/'
+                projectPath: "/invalid/path/to/things/"
             });
 
             const sub = server.state.subscribe(state => {

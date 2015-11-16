@@ -32,7 +32,7 @@ export class Disposable implements IDisposable {
     constructor(value: any) {
         if (!value) return empty;
 
-        if (typeof value === 'function') {
+        if (typeof value === "function") {
             this._action = value;
         } else if (value.unsubscribe) {
             this._action = () => (<ISubscription>value).unsubscribe();

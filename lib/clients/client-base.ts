@@ -1,15 +1,15 @@
-import {Observable, Subject, BehaviorSubject, Scheduler, Subscriber} from '@reactivex/rxjs';
-import {CompositeDisposable, IDisposable} from '../helpers/Disposable';
-import {isObject, uniqueId, each, defaults, cloneDeep, memoize, keys} from 'lodash';
-import {IDriver, IStaticDriver, OmnisharpClientStatus, OmnisharpClientOptions} from '../interfaces';
-import {Driver, DriverState} from '../enums';
-import {RequestContext, ResponseContext, CommandContext} from '../contexts';
-import {serverLineNumbers, serverLineNumberArrays} from '../response-handling';
-import {ensureClientOptions} from '../options';
-import {watchEvent, reference} from '../decorators';
-import {isPriorityCommand, isNormalCommand, isDeferredCommand} from '../helpers/prioritization';
-import {PluginManager} from '../helpers/plugin-manager';
-import {pausableBuffered} from '../helpers/pausableBuffered';
+import {Observable, Subject, BehaviorSubject, Scheduler, Subscriber} from "@reactivex/rxjs";
+import {CompositeDisposable, IDisposable} from "../helpers/Disposable";
+import {isObject, uniqueId, each, defaults, cloneDeep, memoize, keys} from "lodash";
+import {IDriver, IStaticDriver, OmnisharpClientStatus, OmnisharpClientOptions} from "../interfaces";
+import {Driver, DriverState} from "../enums";
+import {RequestContext, ResponseContext, CommandContext} from "../contexts";
+import {serverLineNumbers, serverLineNumberArrays} from "../response-handling";
+import {ensureClientOptions} from "../options";
+import {watchEvent, reference} from "../decorators";
+import {isPriorityCommand, isNormalCommand, isDeferredCommand} from "../helpers/prioritization";
+import {PluginManager} from "../helpers/plugin-manager";
+import {pausableBuffered} from "../helpers/pausableBuffered";
 
 export class ClientBase<TEvents extends ClientEventsBase> implements IDriver, IDisposable {
     public static serverLineNumbers = serverLineNumbers;
@@ -21,7 +21,7 @@ export class ClientBase<TEvents extends ClientEventsBase> implements IDriver, ID
     private _statusStream: Observable<OmnisharpClientStatus>;
     private _errorStream = new Subject<CommandContext<any>>();
     private _customEvents = new Subject<OmniSharp.Stdio.Protocol.EventPacket>();
-    private _uniqueId = uniqueId('client');
+    private _uniqueId = uniqueId("client");
     protected _lowestIndexValue: number;
     private _eventWatchers = new Map<string, Subject<CommandContext<any>>>();
     private _commandWatchers = new Map<string, Subject<ResponseContext<any, any>>>();
@@ -80,7 +80,7 @@ export class ClientBase<TEvents extends ClientEventsBase> implements IDriver, ID
         ensureClientOptions(_options);
         const {driver} = _options;
 
-        const driverModule = require('../drivers/' + Driver[driver].toLowerCase());
+        const driverModule = require("../drivers/" + Driver[driver].toLowerCase());
         const driverFactory: IStaticDriver = driverModule[keys(driverModule)[0]];
         this._driver = new driverFactory(_options);
 
@@ -103,7 +103,7 @@ export class ClientBase<TEvents extends ClientEventsBase> implements IDriver, ID
         this._enqueuedResponses = Observable.merge(
             this._responseStream,
             this._driver.commands
-                .map(packet => new ResponseContext(new RequestContext(this._uniqueId, packet.Command, {}, {}, 'command'), packet.Body)));
+                .map(packet => new ResponseContext(new RequestContext(this._uniqueId, packet.Command, {}, {}, "command"), packet.Body)));
 
         this._lowestIndexValue = _options.oneBasedIndices ? 1 : 0;
 
@@ -133,13 +133,13 @@ export class ClientBase<TEvents extends ClientEventsBase> implements IDriver, ID
             this._disposable.add(this._responseStream.subscribe(context => {
                 // log our complete response time
                 this._customEvents.next({
-                    Event: 'log',
+                    Event: "log",
                     Body: {
                         Message: `/${context.command}  ${context.responseTime}ms (round trip)`,
-                        LogLevel: 'INFORMATION'
+                        LogLevel: "INFORMATION"
                     },
                     Seq: -1,
-                    Type: 'log'
+                    Type: "log"
                 });
             }));
         }
@@ -176,7 +176,7 @@ export class ClientBase<TEvents extends ClientEventsBase> implements IDriver, ID
 
         // These are operations that should wait until after
         // we have executed all the current priority commands
-        // We also defer silent commands to this queue, as they are generally for 'background' work
+        // We also defer silent commands to this queue, as they are generally for "background" work
         const deferredQueue = pausableBuffered(this._requestStream.filter(isDeferredCommand), pauser)
             .map(request => this.handleResult(request))
             .merge(deferredConcurrency);
@@ -200,7 +200,7 @@ export class ClientBase<TEvents extends ClientEventsBase> implements IDriver, ID
 
     private handleResult(context: RequestContext<any>): Observable<ResponseContext<any, any>> {
         // TODO: Find a way to not repeat the same commands, if there are outstanding (timed out) requests.
-        // In some cases for example find usages has taken over 30 seconds, so we shouldn't hit the server with multiple of these requests (as we slam the cpU)
+        // In some cases for example find usages has taken over 30 seconds, so we shouldn"t hit the server with multiple of these requests (as we slam the cpU)
         const result = <Observable<ResponseContext<any, any>>>this._driver.request<any, any>(context.command, context.request);
 
         result.subscribe((data) => {
@@ -214,7 +214,7 @@ export class ClientBase<TEvents extends ClientEventsBase> implements IDriver, ID
         });
 
         return result
-            // This timeout doesn't prevent the request from completing
+            // This timeout doesn"t prevent the request from completing
             // It simply unblocks the queue, so we can continue to process items.
             .timeoutWith(this._options.concurrencyTimeout, Observable.empty<ResponseContext<any, any>>(), Scheduler.nextTick);
     }
@@ -222,13 +222,13 @@ export class ClientBase<TEvents extends ClientEventsBase> implements IDriver, ID
     public log(message: string, logLevel?: string) {
         // log our complete response time
         this._customEvents.next({
-            Event: 'log',
+            Event: "log",
             Body: {
                 Message: message,
-                LogLevel: logLevel ? logLevel.toUpperCase() : 'INFORMATION'
+                LogLevel: logLevel ? logLevel.toUpperCase() : "INFORMATION"
             },
             Seq: -1,
-            Type: 'log'
+            Type: "log"
         });
     }
 
@@ -310,22 +310,22 @@ export class ClientEventsBase implements OmniSharp.Events {
 
     public get uniqueId() { return this._client.uniqueId; }
 
-    @watchEvent public get projectAdded(): Observable<OmniSharp.Models.ProjectInformationResponse> { throw new Error('Implemented by decorator'); }
-    @watchEvent public get projectChanged(): Observable<OmniSharp.Models.ProjectInformationResponse> { throw new Error('Implemented by decorator'); }
-    @watchEvent public get projectRemoved(): Observable<OmniSharp.Models.ProjectInformationResponse> { throw new Error('Implemented by decorator'); }
-    @watchEvent public get error(): Observable<OmniSharp.Models.ErrorMessage> { throw new Error('Implemented by decorator'); }
-    @watchEvent public get msBuildProjectDiagnostics(): Observable<OmniSharp.Models.MSBuildProjectDiagnostics> { throw new Error('Implemented by decorator'); }
-    @watchEvent public get packageRestoreStarted(): Observable<OmniSharp.Models.PackageRestoreMessage> { throw new Error('Implemented by decorator'); }
-    @watchEvent public get packageRestoreFinished(): Observable<OmniSharp.Models.PackageRestoreMessage> { throw new Error('Implemented by decorator'); }
-    @watchEvent public get unresolvedDependencies(): Observable<OmniSharp.Models.UnresolvedDependenciesMessage> { throw new Error('Implemented by decorator'); }
+    @watchEvent public get projectAdded(): Observable<OmniSharp.Models.ProjectInformationResponse> { throw new Error("Implemented by decorator"); }
+    @watchEvent public get projectChanged(): Observable<OmniSharp.Models.ProjectInformationResponse> { throw new Error("Implemented by decorator"); }
+    @watchEvent public get projectRemoved(): Observable<OmniSharp.Models.ProjectInformationResponse> { throw new Error("Implemented by decorator"); }
+    @watchEvent public get error(): Observable<OmniSharp.Models.ErrorMessage> { throw new Error("Implemented by decorator"); }
+    @watchEvent public get msBuildProjectDiagnostics(): Observable<OmniSharp.Models.MSBuildProjectDiagnostics> { throw new Error("Implemented by decorator"); }
+    @watchEvent public get packageRestoreStarted(): Observable<OmniSharp.Models.PackageRestoreMessage> { throw new Error("Implemented by decorator"); }
+    @watchEvent public get packageRestoreFinished(): Observable<OmniSharp.Models.PackageRestoreMessage> { throw new Error("Implemented by decorator"); }
+    @watchEvent public get unresolvedDependencies(): Observable<OmniSharp.Models.UnresolvedDependenciesMessage> { throw new Error("Implemented by decorator"); }
 
-    @reference public get events(): Observable<OmniSharp.Stdio.Protocol.EventPacket> { throw new Error('Implemented by decorator'); }
-    @reference public get commands(): Observable<OmniSharp.Stdio.Protocol.ResponsePacket> { throw new Error('Implemented by decorator'); }
-    @reference public get state(): Observable<DriverState> { throw new Error('Implemented by decorator'); }
-    @reference public get status(): Observable<OmnisharpClientStatus> { throw new Error('Implemented by decorator'); }
-    @reference public get requests(): Observable<RequestContext<any>> { throw new Error('Implemented by decorator'); }
-    @reference public get responses(): Observable<ResponseContext<any, any>> { throw new Error('Implemented by decorator'); }
-    @reference public get errors(): Observable<CommandContext<any>> { throw new Error('Implemented by decorator'); }
+    @reference public get events(): Observable<OmniSharp.Stdio.Protocol.EventPacket> { throw new Error("Implemented by decorator"); }
+    @reference public get commands(): Observable<OmniSharp.Stdio.Protocol.ResponsePacket> { throw new Error("Implemented by decorator"); }
+    @reference public get state(): Observable<DriverState> { throw new Error("Implemented by decorator"); }
+    @reference public get status(): Observable<OmnisharpClientStatus> { throw new Error("Implemented by decorator"); }
+    @reference public get requests(): Observable<RequestContext<any>> { throw new Error("Implemented by decorator"); }
+    @reference public get responses(): Observable<ResponseContext<any, any>> { throw new Error("Implemented by decorator"); }
+    @reference public get errors(): Observable<CommandContext<any>> { throw new Error("Implemented by decorator"); }
 
     /* tslint:disable:no-unused-variable */
     private watchEvent(event: string): Observable<any> {

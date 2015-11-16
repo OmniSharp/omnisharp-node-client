@@ -119,7 +119,7 @@ declare class Mocha {
 
 // merge the Mocha class declaration with a module
 declare module Mocha {
-    /** Partial interface for Mocha's `Runnable` class. */
+    /** Partial interface for Mocha"s `Runnable` class. */
     interface IRunnable extends NodeJS.EventEmitter {
         title: string;
         fn: Function;
@@ -128,7 +128,7 @@ declare module Mocha {
         timedOut: boolean;
     }
 
-    /** Partial interface for Mocha's `Suite` class. */
+    /** Partial interface for Mocha"s `Suite` class. */
     interface ISuite extends NodeJS.EventEmitter {
         parent: ISuite;
         title: string;
@@ -136,7 +136,7 @@ declare module Mocha {
         fullTitle(): string;
     }
 
-    /** Partial interface for Mocha's `Test` class. */
+    /** Partial interface for Mocha"s `Test` class. */
     interface ITest extends IRunnable {
         parent: ISuite;
         pending: boolean;
@@ -144,7 +144,7 @@ declare module Mocha {
         fullTitle(): string;
     }
 
-    /** Partial interface for Mocha's `Runner` class. */
+    /** Partial interface for Mocha"s `Runner` class. */
     interface IRunner extends NodeJS.EventEmitter {}
 
     interface IContextDefinition {

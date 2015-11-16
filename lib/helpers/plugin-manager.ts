@@ -1,14 +1,14 @@
-import {each} from 'lodash';
-import {IOmnisharpPlugin} from '../interfaces';
-import {exec} from 'child_process';
-import {Observable, Subject, Subscriber} from '@reactivex/rxjs';
-import {bootstrapLocation} from '../omnisharp-path';
-import * as fs from 'fs';
-import {join} from 'path';
-import {fromCallback, fromNodeCallback} from './fromCallback';
+import {each} from "lodash";
+import {IOmnisharpPlugin} from "../interfaces";
+import {exec} from "child_process";
+import {Observable, Subject, Subscriber} from "@reactivex/rxjs";
+import {bootstrapLocation} from "../omnisharp-path";
+import * as fs from "fs";
+import {join} from "path";
+import {fromCallback, fromNodeCallback} from "./fromCallback";
 const exists = fromCallback(fs.exists),
     readFile: (file: string) => Observable<any> = fromNodeCallback(fs.readFile);
-const md5: (value: any) => string = require('md5');
+const md5: (value: any) => string = require("md5");
 
 export class PluginManager {
     private _plugins: Set<IOmnisharpPlugin>;
@@ -36,9 +36,9 @@ export class PluginManager {
 
         return (<Observable<string>> Observable.create((subscriber: Subscriber<string>) => {
             // Include the plugins defined in omnisharp.json, they could have changed.
-            exists(join(this._solutionLocation, 'omnisharp.json'))
+            exists(join(this._solutionLocation, "omnisharp.json"))
                 .filter(x => !!x)
-                .flatMap(x => readFile(join(this._solutionLocation, 'omnisharp.json')))
+                .flatMap(x => readFile(join(this._solutionLocation, "omnisharp.json")))
                 .map(x => JSON.parse(x.toString()))
                 .do(obj => {
                         if (obj.plugins) {
@@ -53,7 +53,7 @@ export class PluginManager {
                         return;
                     }
 
-                    const command = [bootstrapLocation, '-s', this._solutionLocation].concat(
+                    const command = [bootstrapLocation, "-s", this._solutionLocation].concat(
                         plugins.map(x => {
                             if (x.location) {
                                 return `--plugins ${x.location}`;
@@ -62,7 +62,7 @@ export class PluginManager {
                             } else {
                                 return `--plugin-name ${x.name}`;
                             }
-                        })).join(' ');
+                        })).join(" ");
 
                     exec(command, function(error, stdout) {
                         subscriber.next(stdout.toString());

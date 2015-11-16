@@ -65,14 +65,14 @@ interface Buffer extends NodeBuffer {}
 /**
  * Raw data is stored in instances of the Buffer class.
  * A Buffer is similar to an array of integers but corresponds to a raw memory allocation outside the V8 heap.  A Buffer cannot be resized.
- * Valid string encodings: 'ascii'|'utf8'|'utf16le'|'ucs2'(alias of 'utf16le')|'base64'|'binary'(deprecated)|'hex'
+ * Valid string encodings: "ascii"|"utf8"|"utf16le"|"ucs2"(alias of "utf16le")|"base64"|"binary"(deprecated)|"hex"
  */
 declare var Buffer: {
     /**
      * Allocates a new buffer containing the given {str}.
      *
      * @param str String to store in buffer.
-     * @param encoding encoding to use, optional.  Default is 'utf8'
+     * @param encoding encoding to use, optional.  Default is "utf8"
      */
     new (str: string, encoding?: string): Buffer;
     /**
@@ -102,17 +102,17 @@ declare var Buffer: {
     isBuffer(obj: any): boolean;
     /**
      * Returns true if {encoding} is a valid encoding argument.
-     * Valid string encodings in Node 0.12: 'ascii'|'utf8'|'utf16le'|'ucs2'(alias of 'utf16le')|'base64'|'binary'(deprecated)|'hex'
+     * Valid string encodings in Node 0.12: "ascii"|"utf8"|"utf16le"|"ucs2"(alias of "utf16le")|"base64"|"binary"(deprecated)|"hex"
      *
      * @param encoding string to test.
      */
     isEncoding(encoding: string): boolean;
     /**
-     * Gives the actual byte length of a string. encoding defaults to 'utf8'.
+     * Gives the actual byte length of a string. encoding defaults to "utf8".
      * This is not the same as String.prototype.length since that returns the number of characters in a string.
      *
      * @param string string to test.
-     * @param encoding encoding used to evaluate (defaults to 'utf8')
+     * @param encoding encoding used to evaluate (defaults to "utf8")
      */
     byteLength(string: string, encoding?: string): number;
     /**
@@ -1272,7 +1272,7 @@ declare module "fs" {
     export var W_OK: number;
     /** Constant for fs.access(). File can be executed by the calling process. */
     export var X_OK: number;
-    /** Tests a user's permissions for the file specified by path. */
+    /** Tests a user"s permissions for the file specified by path. */
     export function access(path: string, callback: (err: NodeJS.ErrnoException) => void): void;
     export function access(path: string, mode: number, callback: (err: NodeJS.ErrnoException) => void): void;
     /** Synchronous version of fs.access. This throws if any accessibility checks fail, and does nothing otherwise. */
@@ -1305,30 +1305,30 @@ declare module "path" {
      */
     export interface ParsedPath {
         /**
-         * The root of the path such as '/' or 'c:\'
+         * The root of the path such as "/" or "c:\"
          */
         root: string;
         /**
-         * The full directory path such as '/home/user/dir' or 'c:\path\dir'
+         * The full directory path such as "/home/user/dir" or "c:\path\dir"
          */
         dir: string;
         /**
-         * The file name including extension (if any) such as 'index.html'
+         * The file name including extension (if any) such as "index.html"
          */
         base: string;
         /**
-         * The file extension (if any) such as '.html'
+         * The file extension (if any) such as ".html"
          */
         ext: string;
         /**
-         * The file name without extension (if any) such as 'index'
+         * The file name without extension (if any) such as "index"
          */
         name: string;
     }
 
     /**
-     * Normalize a string path, reducing '..' and '.' parts.
-     * When multiple slashes are found, they're replaced by a single one; when the path contains a trailing slash, it is preserved. On Windows backslashes are used.
+     * Normalize a string path, reducing ".." and "." parts.
+     * When multiple slashes are found, they"re replaced by a single one; when the path contains a trailing slash, it is preserved. On Windows backslashes are used.
      *
      * @param p string path to normalize.
      */
@@ -1352,7 +1352,7 @@ declare module "path" {
      *
      * Starting from leftmost {from} paramter, resolves {to} to an absolute path.
      *
-     * If {to} isn't already absolute, {from} arguments are prepended in right to left order, until an absolute path is found. If after using all {from} paths still no absolute path is found, the current working directory is used as well. The resulting path is normalized, and trailing slashes are removed unless the path gets resolved to the root directory.
+     * If {to} isn"t already absolute, {from} arguments are prepended in right to left order, until an absolute path is found. If after using all {from} paths still no absolute path is found, the current working directory is used as well. The resulting path is normalized, and trailing slashes are removed unless the path gets resolved to the root directory.
      *
      * @param pathSegments string paths to join.  Non-string arguments are ignored.
      */
@@ -1386,18 +1386,18 @@ declare module "path" {
      */
     export function basename(p: string, ext?: string): string;
     /**
-     * Return the extension of the path, from the last '.' to end of string in the last portion of the path.
-     * If there is no '.' in the last portion of the path or the first character of it is '.', then it returns an empty string
+     * Return the extension of the path, from the last "." to end of string in the last portion of the path.
+     * If there is no "." in the last portion of the path or the first character of it is ".", then it returns an empty string
      *
      * @param p the path to evaluate.
      */
     export function extname(p: string): string;
     /**
-     * The platform-specific file separator. '\\' or '/'.
+     * The platform-specific file separator. "\\" or "/".
      */
     export var sep: string;
     /**
-     * The platform-specific file delimiter. ';' or ':'.
+     * The platform-specific file delimiter. ";" or ":".
      */
     export var delimiter: string;
     /**
@@ -1571,13 +1571,13 @@ declare module "crypto" {
     export function createHmac(algorithm: string, key: Buffer): Hmac;
     interface Hash {
         update(data: any, input_encoding?: string): Hash;
-        digest(encoding: 'buffer'): Buffer;
+        digest(encoding: "buffer"): Buffer;
         digest(encoding: string): any;
         digest(): Buffer;
     }
     interface Hmac {
         update(data: any, input_encoding?: string): Hmac;
-        digest(encoding: 'buffer'): Buffer;
+        digest(encoding: "buffer"): Buffer;
         digest(encoding: string): any;
         digest(): Buffer;
     }

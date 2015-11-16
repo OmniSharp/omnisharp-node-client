@@ -1,7 +1,7 @@
-import {IDisposable} from './helpers/Disposable';
-import {Observable} from '@reactivex/rxjs';
-import {DriverState, Driver} from './enums';
-import {RequestContext, ResponseContext, CommandContext} from './contexts';
+import {IDisposable} from "./helpers/Disposable";
+import {Observable} from "@reactivex/rxjs";
+import {DriverState, Driver} from "./enums";
+import {RequestContext, ResponseContext, CommandContext} from "./contexts";
 
 export interface IStaticDriver {
     new (options: IDriverOptions): IDriver;

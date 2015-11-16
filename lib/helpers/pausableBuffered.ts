@@ -1,4 +1,4 @@
-import {Subscriber, Observable} from '@reactivex/rxjs';
+import {Subscriber, Observable} from "@reactivex/rxjs";
 
 export function pausableBuffered<T>(observable: Observable<T>, pauser: Observable<boolean>): Observable<T> {
     return (<any>observable).lift(new PausableBufferedOperator(observable, pauser));

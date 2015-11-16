@@ -1,5 +1,5 @@
-import * as _ from 'lodash';
-import {OmnisharpClientOptions} from './interfaces';
+import * as _ from "lodash";
+import {OmnisharpClientOptions} from "./interfaces";
 
 export function ensureClientOptions(options: OmnisharpClientOptions) {
     if (!options.statusSampleTime) options.statusSampleTime = 500;
@@ -23,15 +23,15 @@ export function ensureClientOptions(options: OmnisharpClientOptions) {
     }
 }
 
-export function flattenArguments(obj: any, prefix = '') {
+export function flattenArguments(obj: any, prefix = "") {
     const result: any[] = [];
     _.each(obj, (value, key) => {
         if (_.isObject(value)) {
-            result.push(...flattenArguments(value, `${prefix ? prefix + ':' : ''}${key[0].toUpperCase() + key.substr(1)}`));
+            result.push(...flattenArguments(value, `${prefix ? prefix + ":" : ""}${key[0].toUpperCase() + key.substr(1)}`));
             return;
         }
 
-        result.push(`--${prefix ? prefix + ':' : ''}${key[0].toUpperCase() + key.substr(1)}=${value}`);
+        result.push(`--${prefix ? prefix + ":" : ""}${key[0].toUpperCase() + key.substr(1)}=${value}`);
     });
 
     return result;

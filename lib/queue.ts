@@ -1,9 +1,9 @@
-import {delay, each} from 'lodash';
+import {delay, each} from "lodash";
 // Globally handle events over all stdio drivers
 export const enqueue = (function() {
     let _queueFinished = true;
     const _queue : Function[] = [];
-    // Fake RAF for environments that don't have it.
+    // Fake RAF for environments that don"t have it.
     const requestAnimationFrame : any = window && window.requestAnimationFrame || function (cb: Function): number { delay(cb, 33); return -1; };
 
     const _raf = () => requestAnimationFrame(() => _dequeue());

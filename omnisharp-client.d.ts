@@ -1,11 +1,11 @@
 /// <reference path='./omnisharp-server.d.ts' />
 
 declare module 'omnisharp-client/aggregate/composite-client-base' {
-import { ReplaySubject, Observable } from '@reactivex/rxjs';
-import { IDisposable, Disposable, CompositeDisposable } from 'omnisharp-client/helpers/Disposable';
-import { DriverState } from 'omnisharp-client/enums';
-import { OmnisharpClientStatus } from 'omnisharp-client/interfaces';
-import { RequestContext, ResponseContext, CommandContext } from 'omnisharp-client/contexts';
+import { ReplaySubject, Observable } from "@reactivex/rxjs";
+import { IDisposable, Disposable, CompositeDisposable } from "omnisharp-client/helpers/Disposable";
+import { DriverState } from "omnisharp-client/enums";
+import { OmnisharpClientStatus } from "omnisharp-client/interfaces";
+import { RequestContext, ResponseContext, CommandContext } from "omnisharp-client/contexts";
 export class ObservationClientBase<Client> implements OmniSharp.Events, IDisposable {
     private clients;
     protected _disposable: CompositeDisposable;
@@ -66,9 +66,9 @@ export class CombinationClientBase<Client> implements OmniSharp.Aggregate.Events
 
 
 declare module 'omnisharp-client/aggregate/composite-client-v1' {
-import * as Rx from '@reactivex/rxjs';
-import { ClientV1 } from 'omnisharp-client/clients/client-v1';
-import { ObservationClientBase, CombinationClientBase } from 'omnisharp-client/aggregate/composite-client-base';
+import * as Rx from "@reactivex/rxjs";
+import { ClientV1 } from "omnisharp-client/clients/client-v1";
+import { ObservationClientBase, CombinationClientBase } from "omnisharp-client/aggregate/composite-client-base";
 export class ObservationClientV1<T extends ClientV1> extends ObservationClientBase<T> implements OmniSharp.Events.V1 {
     autocomplete: Rx.Observable<OmniSharp.Context<OmniSharp.Models.AutoCompleteRequest, OmniSharp.Models.AutoCompleteResponse[]>>;
     changebuffer: Rx.Observable<OmniSharp.Context<OmniSharp.Models.ChangeBufferRequest, any>>;
@@ -142,9 +142,9 @@ export class AggregateClientV1<T extends ClientV1> extends CombinationClientBase
 
 
 declare module 'omnisharp-client/aggregate/composite-client-v2' {
-import * as Rx from '@reactivex/rxjs';
-import { ClientV2 } from 'omnisharp-client/clients/client-v2';
-import { ObservationClientBase, CombinationClientBase } from 'omnisharp-client/aggregate/composite-client-base';
+import * as Rx from "@reactivex/rxjs";
+import { ClientV2 } from "omnisharp-client/clients/client-v2";
+import { ObservationClientBase, CombinationClientBase } from "omnisharp-client/aggregate/composite-client-base";
 export class ObservationClientV2<T extends ClientV2> extends ObservationClientBase<T> implements OmniSharp.Events.V2 {
     autocomplete: Rx.Observable<OmniSharp.Context<OmniSharp.Models.AutoCompleteRequest, OmniSharp.Models.AutoCompleteResponse[]>>;
     changebuffer: Rx.Observable<OmniSharp.Context<OmniSharp.Models.ChangeBufferRequest, any>>;
@@ -218,8 +218,8 @@ export class AggregateClientV2<T extends ClientV2> extends CombinationClientBase
 
 
 declare module 'omnisharp-client/candidate-finder' {
-import { ILogger } from 'omnisharp-client/interfaces';
-import { Observable } from '@reactivex/rxjs';
+import { ILogger } from "omnisharp-client/interfaces";
+import { Observable } from "@reactivex/rxjs";
 export interface Options {
     solutionFilesToSearch?: string[];
     projectFilesToSearch?: string[];
@@ -243,11 +243,11 @@ export const findCandidates: {
 
 
 declare module 'omnisharp-client/clients/client-base' {
-import { Observable } from '@reactivex/rxjs';
-import { IDisposable } from 'omnisharp-client/helpers/Disposable';
-import { IDriver, OmnisharpClientStatus, OmnisharpClientOptions } from 'omnisharp-client/interfaces';
-import { DriverState } from 'omnisharp-client/enums';
-import { RequestContext, ResponseContext, CommandContext } from 'omnisharp-client/contexts';
+import { Observable } from "@reactivex/rxjs";
+import { IDisposable } from "omnisharp-client/helpers/Disposable";
+import { IDriver, OmnisharpClientStatus, OmnisharpClientOptions } from "omnisharp-client/interfaces";
+import { DriverState } from "omnisharp-client/enums";
+import { RequestContext, ResponseContext, CommandContext } from "omnisharp-client/contexts";
 export class ClientBase<TEvents extends ClientEventsBase> implements IDriver, IDisposable {
     private _options;
     static serverLineNumbers: string[];
@@ -331,9 +331,9 @@ export class ClientEventsBase implements OmniSharp.Events {
 
 
 declare module 'omnisharp-client/clients/client-v1' {
-import { Observable } from '@reactivex/rxjs';
-import { ClientBase, ClientEventsBase } from 'omnisharp-client/clients/client-base';
-import { OmnisharpClientOptions } from 'omnisharp-client/interfaces';
+import { Observable } from "@reactivex/rxjs";
+import { ClientBase, ClientEventsBase } from "omnisharp-client/clients/client-base";
+import { OmnisharpClientOptions } from "omnisharp-client/interfaces";
 export class ClientEventsV1 extends ClientEventsBase implements OmniSharp.Events.V1 {
     updatebuffer: Observable<OmniSharp.Context<OmniSharp.Models.UpdateBufferRequest, any>>;
     changebuffer: Observable<OmniSharp.Context<OmniSharp.Models.ChangeBufferRequest, any>>;
@@ -414,10 +414,10 @@ export class ClientV1 extends ClientBase<ClientEventsV1> implements OmniSharp.Ap
 
 
 declare module 'omnisharp-client/clients/client-v2' {
-import { Observable } from '@reactivex/rxjs';
-import { ClientBase, ClientEventsBase } from 'omnisharp-client/clients/client-base';
-import { ClientV1 } from 'omnisharp-client/clients/client-v1';
-import { OmnisharpClientOptions } from 'omnisharp-client/interfaces';
+import { Observable } from "@reactivex/rxjs";
+import { ClientBase, ClientEventsBase } from "omnisharp-client/clients/client-base";
+import { ClientV1 } from "omnisharp-client/clients/client-v1";
+import { OmnisharpClientOptions } from "omnisharp-client/interfaces";
 export class ClientEventsV2 extends ClientEventsBase implements OmniSharp.Events.V2 {
     updatebuffer: Observable<OmniSharp.Context<OmniSharp.Models.UpdateBufferRequest, any>>;
     changebuffer: Observable<OmniSharp.Context<OmniSharp.Models.ChangeBufferRequest, any>>;
@@ -498,7 +498,7 @@ export class ClientV2 extends ClientBase<ClientEventsV2> implements OmniSharp.Ap
 
 
 declare module 'omnisharp-client/contexts' {
-import { Observable } from '@reactivex/rxjs';
+import { Observable } from "@reactivex/rxjs";
 export class CommandContext<T> {
     command: string;
     value: T;
@@ -598,7 +598,7 @@ export class CompositeDisposable implements IDisposable {
 
 
 declare module 'omnisharp-client/helpers/fromCallback' {
-import { Observable } from '@reactivex/rxjs';
+import { Observable } from "@reactivex/rxjs";
 export function fromCallback<TResult, T1>(func: (arg1: T1, callback: (result: TResult) => any) => any): (arg1: T1) => Observable<TResult>;
 export function fromCallback<TResult, T1, T2>(func: (arg1: T1, arg2: T2, callback: (result: TResult) => any) => any): (arg1: T1, arg2: T2) => Observable<TResult>;
 export function fromCallback<TResult, T1, T2, T3>(func: (arg1: T1, arg2: T2, arg3: T3, callback: (result: TResult) => any) => any): (arg1: T1, arg2: T2, arg3: T3) => Observable<TResult>;
@@ -614,15 +614,15 @@ export function fromNodeCallback<TResult>(func: Function): (...args: any[]) => O
 
 
 declare module 'omnisharp-client/helpers/pausableBuffered' {
-import { Observable } from '@reactivex/rxjs';
+import { Observable } from "@reactivex/rxjs";
 export function pausableBuffered<T>(observable: Observable<T>, pauser: Observable<boolean>): Observable<T>;
 
 }
 
 
 declare module 'omnisharp-client/helpers/plugin-manager' {
-import { IOmnisharpPlugin } from 'omnisharp-client/interfaces';
-import { Observable } from '@reactivex/rxjs';
+import { IOmnisharpPlugin } from "omnisharp-client/interfaces";
+import { Observable } from "@reactivex/rxjs";
 export class PluginManager {
     private _solutionLocation;
     private _plugins;
@@ -639,7 +639,7 @@ export class PluginManager {
 
 
 declare module 'omnisharp-client/helpers/prioritization' {
-import { RequestContext } from 'omnisharp-client/contexts';
+import { RequestContext } from "omnisharp-client/contexts";
 export function isPriorityCommand(request: RequestContext<any>): boolean;
 export function isNormalCommand(request: RequestContext<any>): boolean;
 export function isDeferredCommand(request: RequestContext<any>): boolean;
@@ -648,10 +648,10 @@ export function isDeferredCommand(request: RequestContext<any>): boolean;
 
 
 declare module 'omnisharp-client/interfaces' {
-import {IDisposable} from 'omnisharp-client/helpers/Disposable';
-import {Observable} from '@reactivex/rxjs';
-import {DriverState, Driver} from 'omnisharp-client/enums';
-import {RequestContext, ResponseContext, CommandContext} from 'omnisharp-client/contexts';
+import {IDisposable} from "omnisharp-client/helpers/Disposable";
+import {Observable} from "@reactivex/rxjs";
+import {DriverState, Driver} from "omnisharp-client/enums";
+import {RequestContext, ResponseContext, CommandContext} from "omnisharp-client/contexts";
 
 export interface IStaticDriver {
     new (options: IDriverOptions): IDriver;
@@ -737,13 +737,14 @@ export module Omnisharp {
 
 
 declare module 'omnisharp-client' {
-export { ClientV1 } from 'omnisharp-client/clients/client-v1';
-export { ClientV2 } from 'omnisharp-client/clients/client-v2';
-export { ObservationClientV1, AggregateClientV1 } from 'omnisharp-client/aggregate/composite-client-v1';
-export { ObservationClientV2, AggregateClientV2 } from 'omnisharp-client/aggregate/composite-client-v2';
-export { findCandidates } from 'omnisharp-client/candidate-finder';
-export { Driver, DriverState } from 'omnisharp-client/enums';
-export { IDriver, OmnisharpClientOptions, OmnisharpClientStatus } from 'omnisharp-client/interfaces';
+export { ClientV1 } from "omnisharp-client/clients/client-v1";
+export { ClientV2 } from "omnisharp-client/clients/client-v2";
+export { ObservationClientV1, AggregateClientV1 } from "omnisharp-client/aggregate/composite-client-v1";
+export { ObservationClientV2, AggregateClientV2 } from "omnisharp-client/aggregate/composite-client-v2";
+export { findCandidates } from "omnisharp-client/candidate-finder";
+export { Driver, DriverState } from "omnisharp-client/enums";
+export { IDriver, OmnisharpClientOptions, OmnisharpClientStatus } from "omnisharp-client/interfaces";
+export { IDisposable, Disposable, CompositeDisposable } from "omnisharp-client/helpers/Disposable";
 
 }
 
@@ -756,7 +757,7 @@ export var bootstrapLocation: any;
 
 
 declare module 'omnisharp-client/options' {
-import { OmnisharpClientOptions } from 'omnisharp-client/interfaces';
+import { OmnisharpClientOptions } from "omnisharp-client/interfaces";
 export function ensureClientOptions(options: OmnisharpClientOptions): void;
 export function flattenArguments(obj: any, prefix?: string): any[];
 

@@ -1,4 +1,4 @@
-import * as _ from 'lodash';
+import * as _ from "lodash";
 (<any>_.memoize).Cache = Map;
 
 export function isNotNull(method: Function) {
@@ -123,7 +123,7 @@ export function inheritProperties(source: any, dest: any) {
         const descriptor = Object.getOwnPropertyDescriptor(source.prototype, key);
         const isDefined = !!_.has(dest.prototype, key);
         if (descriptor && !isDefined) {
-            if (_.has(descriptor, 'value') || _.has(descriptor, 'writable')) {
+            if (_.has(descriptor, "value") || _.has(descriptor, "writable")) {
                 Object.defineProperty(dest.prototype, key, {
                     configurable: descriptor.configurable,
                     enumerable: descriptor.enumerable,
