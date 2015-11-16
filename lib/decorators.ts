@@ -119,10 +119,7 @@ export function reference(target: Object, propertyKey: string, descriptor: Typed
 }
 
 export function inheritProperties(source: any, dest: any) {
-    console.log('inheriting properties');
-    console.log(source, Object.getOwnPropertyNames(source.prototype));
     _.each(_.keys(source.prototype), key => {
-        console.log(`key: ${key}`);
         const descriptor = Object.getOwnPropertyDescriptor(source.prototype, key);
         const isDefined = !!_.has(dest.prototype, key);
         if (descriptor && !isDefined) {

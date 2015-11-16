@@ -33,12 +33,14 @@ describe('Omnisharp Server', function() {
                 projectPath: process.cwd()
             });
 
-            const sub = server.state.startWith(server.currentState).subscribe(state => {
-                if (state === DriverState.Connected) {
-                    sub.unsubscribe();
-                    done();
-                }
-            });
+            const sub = server.state.startWith(server.currentState)
+                .filter(x => x === DriverState.Connected)
+                .subscribe(state => {
+                    if (state === DriverState.Connected) {
+                        sub.unsubscribe();
+                        done();
+                    }
+                });
 
             server.connect();
         })

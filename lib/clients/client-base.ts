@@ -178,12 +178,12 @@ export class ClientBase<TEvents extends ClientEventsBase> implements IDriver, ID
         // we have executed all the current priority commands
         // We also defer silent commands to this queue, as they are generally for 'background' work
         const deferredQueue = pausableBuffered(this._requestStream.filter(isDeferredCommand), pauser)
-            .map(request => Observable.defer(() => this.handleResult(request)))
+            .map(request => this.handleResult(request))
             .merge(deferredConcurrency);
 
         // We just pass these operations through as soon as possible
         const normalQueue = pausableBuffered(this._requestStream.filter(isNormalCommand), pauser)
-            .map(request => Observable.defer(() => this.handleResult(request)))
+            .map(request => this.handleResult(request))
             .merge(this._options.concurrency);
 
         // We must wait for these commands
@@ -191,7 +191,8 @@ export class ClientBase<TEvents extends ClientEventsBase> implements IDriver, ID
         const priorityQueue = this._requestStream
             .filter(isPriorityCommand)
             .do(() => priorityRequests.next((<any>priorityRequests).value + 1))
-            .mergeMap(request => this.handleResult(request), null, this._options.concurrency)
+            .map(request => this.handleResult(request))
+            .merge(this._options.concurrency)
             .do(() => priorityResponses.next((<any>priorityResponses).value + 1));
 
         this._disposable.add(Observable.merge(deferredQueue, normalQueue, priorityQueue).subscribe());
