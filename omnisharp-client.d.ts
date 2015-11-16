@@ -50,8 +50,14 @@ export class CombinationClientBase<Client> implements OmniSharp.Aggregate.Events
     status: Observable<OmniSharp.CombinationKey<OmnisharpClientStatus>[]>;
     constructor(clients?: Client[]);
     dispose(): void;
-    protected makeAggregateObserable: <T>(selector: (client: Client) => Observable<T>) => Observable<any>;
-    observe<T>(selector: (client: Client) => Observable<T>): Observable<any>;
+    protected makeAggregateObserable: <T>(selector: (client: Client) => Observable<T>) => Observable<{
+        key: any;
+        value: T;
+    }[]>;
+    observe<T>(selector: (client: Client) => Observable<T>): Observable<{
+        key: any;
+        value: T;
+    }[]>;
     private next;
     add(client: Client): Disposable;
 }
