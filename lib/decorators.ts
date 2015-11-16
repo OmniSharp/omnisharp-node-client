@@ -7,7 +7,8 @@ export function isNotNull(method: Function) {
         descriptor.value = function(request: OmniSharp.Models.Request) {
             const result = method(request);
             if (result === null || result === undefined) {
-                const methodText = method.toString().match(/function \(request\) { return (.*?); }/)[1] || method.toString();
+                const match = method.toString().match(/function \(request\) { return (.*?); }/);
+                const methodText = match && match[1] || method.toString();
                 const errorText = `${methodText}  must not be null.`;
                 throw new Error(errorText);
             }
@@ -26,7 +27,8 @@ export function isAboveZero(method: Function) {
                 return;
             }
             if (result <= minValue) {
-                const methodText = method.toString().match(/function \(request\) { return (.*?); }/)[1] || method.toString();
+                const match = method.toString().match(/function \(request\) { return (.*?); }/);
+                const methodText = match && match[1] || method.toString();
                 const errorText = `${methodText} must be greater than or equal to ${minValue + 1}.`;
                 throw new Error(errorText);
             }

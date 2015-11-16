@@ -5,7 +5,7 @@ import {ClientV2 as OmnisharpClient} from '../lib/clients/client-v2';
 declare const xdescribe: Function;
 
 /* tslint:disable:semicolon */
-describe('Commands', function() {
+describe('Commands v42', function() {
     let server: OmnisharpClient;
     beforeEach(function() {
         server = new OmnisharpClient({
