@@ -65,6 +65,7 @@ export function endpoint(version = 1) {
         descriptor.value = function(request: OmniSharp.Models.Request, options: any) {
             return this.request(name, request, options);
         };
+        descriptor.enumerable = true;
     };
 }
 
@@ -77,36 +78,38 @@ export function fixup(target: Object, propertyKey: string, descriptor: TypedProp
 }
 
 export function watchCommand(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
+    let value: any;
     descriptor.get = function() {
-        const value = this.watchCommand(propertyKey);
-        this[propertyKey] = value;
+        if (!value) value = this.watchCommand(propertyKey);
         return value;
     };
+    descriptor.enumerable = true;
 }
 
 export function watchEvent(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
     const eventKey = propertyKey[0].toUpperCase() + propertyKey.substr(1);
+    let value: any;
     descriptor.get = function() {
-        const value = this.watchEvent(eventKey);
-        this[propertyKey] = value;
+        if (!value) value = this.watchEvent(eventKey);
         return value;
     };
+    descriptor.enumerable = true;
 }
 
 export function merge(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
     const method = (c: any) => c.observe[propertyKey] || c[propertyKey];
+    let value: any;
     descriptor.get = function() {
-        const value = this.makeMergeObserable(method);
-        this[propertyKey] = value;
+        if (!value) value = this.makeMergeObserable(method);
         return value;
     };
 }
 
 export function aggregate(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
     const method = (c: any) => c.observe[propertyKey] || c[propertyKey];
+    let value: any;
     descriptor.get = function() {
-        const value = this.makeAggregateObserable(method);
-        this[propertyKey] = value;
+        if (!value) value = this.makeAggregateObserable(method);
         return value;
     };
 }
@@ -116,7 +119,10 @@ export function reference(target: Object, propertyKey: string, descriptor: Typed
 }
 
 export function inheritProperties(source: any, dest: any) {
+    console.log('inheriting properties');
+    console.log(source, Object.getOwnPropertyNames(source.prototype));
     _.each(_.keys(source.prototype), key => {
+        console.log(`key: ${key}`);
         const descriptor = Object.getOwnPropertyDescriptor(source.prototype, key);
         const isDefined = !!_.has(dest.prototype, key);
         if (descriptor && !isDefined) {

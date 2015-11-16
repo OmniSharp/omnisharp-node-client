@@ -16,12 +16,10 @@
     "options": {}
   },
   "filesGlob": [
-    "./**/*.ts",
-    "!./*/**/*.d.ts",
-    "!./omnisharp-client.d.ts",
-    "!./omnisharp-server.d.ts",
-    "!./typings/**/*.d.ts",
-    "!./node_modules/**/*",
+    "./lib/**/*.ts",
+    "!./lib/**/*.d.ts",
+    "./spec/**/*.ts",
+    "!./spec/**/*.d.ts",
     "./tsd.d.ts"
   ],
   "files": [
