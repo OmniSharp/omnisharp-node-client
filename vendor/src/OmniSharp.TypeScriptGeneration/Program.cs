@@ -60,7 +60,7 @@ declare module {OmnisharpControllerExtractor.InferNamespace(typeof(Request)).Tri
             ";
 
             result = string.Join("\n", result, generated, OmnisharpEventExtractor.GetInterface(), projectInterfaces);
-            result = result.replace("interface", "export interface").replace("declare module", "export module");
+            result = result.Replace("interface", "export interface").Replace("declare module", "export module");
 
             if (!string.IsNullOrWhiteSpace(path))
             {

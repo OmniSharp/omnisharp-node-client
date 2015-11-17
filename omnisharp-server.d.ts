@@ -449,136 +449,136 @@ export module OmniSharp {
 export module OmniSharp.Api {
 
     export interface V1 {
-        // "autocomplete"
+        // 'autocomplete'
         autocomplete(request: OmniSharp.Models.AutoCompleteRequest, options?: RequestOptions): Observable<OmniSharp.Models.AutoCompleteResponse[]>;
-        // "changebuffer"
+        // 'changebuffer'
         changebuffer(request: OmniSharp.Models.ChangeBufferRequest, options?: RequestOptions): Observable<any>;
-        // "codecheck"
+        // 'codecheck'
         codecheck(request: OmniSharp.Models.CodeCheckRequest, options?: RequestOptions): Observable<OmniSharp.Models.QuickFixResponse>;
-        // "codeformat"
+        // 'codeformat'
         codeformat(request: OmniSharp.Models.CodeFormatRequest, options?: RequestOptions): Observable<OmniSharp.Models.CodeFormatResponse>;
-        // "currentfilemembersasflat"
+        // 'currentfilemembersasflat'
         currentfilemembersasflat(request: OmniSharp.Models.MembersFlatRequest, options?: RequestOptions): Observable<OmniSharp.Models.QuickFix[]>;
-        // "currentfilemembersastree"
+        // 'currentfilemembersastree'
         currentfilemembersastree(request: OmniSharp.Models.MembersTreeRequest, options?: RequestOptions): Observable<OmniSharp.Models.FileMemberTree>;
-        // "filesChanged"
+        // 'filesChanged'
         filesChanged(request: OmniSharp.Models.Request[], options?: RequestOptions): Observable<OmniSharp.Models.FilesChangedResponse>;
-        // "findimplementations"
+        // 'findimplementations'
         findimplementations(request: OmniSharp.Models.FindImplementationsRequest, options?: RequestOptions): Observable<OmniSharp.Models.QuickFixResponse>;
-        // "findsymbols"
+        // 'findsymbols'
         findsymbols(request: OmniSharp.Models.FindSymbolsRequest, options?: RequestOptions): Observable<OmniSharp.Models.QuickFixResponse>;
-        // "findusages"
+        // 'findusages'
         findusages(request: OmniSharp.Models.FindUsagesRequest, options?: RequestOptions): Observable<OmniSharp.Models.QuickFixResponse>;
-        // "fixusings"
+        // 'fixusings'
         fixusings(request: OmniSharp.Models.FixUsingsRequest, options?: RequestOptions): Observable<OmniSharp.Models.FixUsingsResponse>;
-        // "formatAfterKeystroke"
+        // 'formatAfterKeystroke'
         formatAfterKeystroke(request: OmniSharp.Models.FormatAfterKeystrokeRequest, options?: RequestOptions): Observable<OmniSharp.Models.FormatRangeResponse>;
-        // "formatRange"
+        // 'formatRange'
         formatRange(request: OmniSharp.Models.FormatRangeRequest, options?: RequestOptions): Observable<OmniSharp.Models.FormatRangeResponse>;
-        // "getcodeactions"
+        // 'getcodeactions'
         getcodeactions(request: OmniSharp.Models.GetCodeActionRequest, options?: RequestOptions): Observable<OmniSharp.Models.GetCodeActionsResponse>;
-        // "gettestcontext"
+        // 'gettestcontext'
         gettestcontext(request: OmniSharp.Models.TestCommandRequest, options?: RequestOptions): Observable<OmniSharp.Models.GetTestCommandResponse>;
-        // "gotodefinition"
+        // 'gotodefinition'
         gotodefinition(request: OmniSharp.Models.GotoDefinitionRequest, options?: RequestOptions): Observable<OmniSharp.Models.GotoDefinitionResponse>;
-        // "gotofile"
+        // 'gotofile'
         gotofile(request: OmniSharp.Models.GotoFileRequest, options?: RequestOptions): Observable<OmniSharp.Models.QuickFixResponse>;
-        // "gotoregion"
+        // 'gotoregion'
         gotoregion(request: OmniSharp.Models.GotoRegionRequest, options?: RequestOptions): Observable<OmniSharp.Models.QuickFixResponse>;
-        // "highlight"
+        // 'highlight'
         highlight(request: OmniSharp.Models.HighlightRequest, options?: RequestOptions): Observable<OmniSharp.Models.HighlightResponse>;
-        // "metadata"
+        // 'metadata'
         metadata(request: OmniSharp.Models.MetadataRequest, options?: RequestOptions): Observable<OmniSharp.Models.MetadataResponse>;
-        // "navigatedown"
+        // 'navigatedown'
         navigatedown(request: OmniSharp.Models.NavigateDownRequest, options?: RequestOptions): Observable<OmniSharp.Models.NavigateResponse>;
-        // "navigateup"
+        // 'navigateup'
         navigateup(request: OmniSharp.Models.NavigateUpRequest, options?: RequestOptions): Observable<OmniSharp.Models.NavigateResponse>;
-        // "packagesearch"
+        // 'packagesearch'
         packagesearch(request: OmniSharp.Models.PackageSearchRequest, options?: RequestOptions): Observable<OmniSharp.Models.PackageSearchResponse>;
-        // "packagesource"
+        // 'packagesource'
         packagesource(request: OmniSharp.Models.PackageSourceRequest, options?: RequestOptions): Observable<OmniSharp.Models.PackageSourceResponse>;
-        // "packageversion"
+        // 'packageversion'
         packageversion(request: OmniSharp.Models.PackageVersionRequest, options?: RequestOptions): Observable<OmniSharp.Models.PackageVersionResponse>;
-        // "project"
+        // 'project'
         project(request: OmniSharp.Models.v1.ProjectInformationRequest, options?: RequestOptions): Observable<OmniSharp.Models.ProjectInformationResponse>;
-        // "projects"
+        // 'projects'
         projects(request: OmniSharp.Models.v1.WorkspaceInformationRequest, options?: RequestOptions): Observable<OmniSharp.Models.WorkspaceInformationResponse>;
-        // "rename"
+        // 'rename'
         rename(request: OmniSharp.Models.RenameRequest, options?: RequestOptions): Observable<OmniSharp.Models.RenameResponse>;
-        // "runcodeaction"
+        // 'runcodeaction'
         runcodeaction(request: OmniSharp.Models.RunCodeActionRequest, options?: RequestOptions): Observable<OmniSharp.Models.RunCodeActionResponse>;
-        // "signatureHelp"
+        // 'signatureHelp'
         signatureHelp(request: OmniSharp.Models.SignatureHelpRequest, options?: RequestOptions): Observable<OmniSharp.Models.SignatureHelp>;
-        // "typelookup"
+        // 'typelookup'
         typelookup(request: OmniSharp.Models.TypeLookupRequest, options?: RequestOptions): Observable<OmniSharp.Models.TypeLookupResponse>;
-        // "updatebuffer"
+        // 'updatebuffer'
         updatebuffer(request: OmniSharp.Models.UpdateBufferRequest, options?: RequestOptions): Observable<any>;
     }
 
     export interface V2 {
-        // "autocomplete"
+        // 'autocomplete'
         autocomplete(request: OmniSharp.Models.AutoCompleteRequest, options?: RequestOptions): Observable<OmniSharp.Models.AutoCompleteResponse[]>;
-        // "changebuffer"
+        // 'changebuffer'
         changebuffer(request: OmniSharp.Models.ChangeBufferRequest, options?: RequestOptions): Observable<any>;
-        // "codecheck"
+        // 'codecheck'
         codecheck(request: OmniSharp.Models.CodeCheckRequest, options?: RequestOptions): Observable<OmniSharp.Models.QuickFixResponse>;
-        // "codeformat"
+        // 'codeformat'
         codeformat(request: OmniSharp.Models.CodeFormatRequest, options?: RequestOptions): Observable<OmniSharp.Models.CodeFormatResponse>;
-        // "currentfilemembersasflat"
+        // 'currentfilemembersasflat'
         currentfilemembersasflat(request: OmniSharp.Models.MembersFlatRequest, options?: RequestOptions): Observable<OmniSharp.Models.QuickFix[]>;
-        // "currentfilemembersastree"
+        // 'currentfilemembersastree'
         currentfilemembersastree(request: OmniSharp.Models.MembersTreeRequest, options?: RequestOptions): Observable<OmniSharp.Models.FileMemberTree>;
-        // "filesChanged"
+        // 'filesChanged'
         filesChanged(request: OmniSharp.Models.Request[], options?: RequestOptions): Observable<OmniSharp.Models.FilesChangedResponse>;
-        // "findimplementations"
+        // 'findimplementations'
         findimplementations(request: OmniSharp.Models.FindImplementationsRequest, options?: RequestOptions): Observable<OmniSharp.Models.QuickFixResponse>;
-        // "findsymbols"
+        // 'findsymbols'
         findsymbols(request: OmniSharp.Models.FindSymbolsRequest, options?: RequestOptions): Observable<OmniSharp.Models.QuickFixResponse>;
-        // "findusages"
+        // 'findusages'
         findusages(request: OmniSharp.Models.FindUsagesRequest, options?: RequestOptions): Observable<OmniSharp.Models.QuickFixResponse>;
-        // "fixusings"
+        // 'fixusings'
         fixusings(request: OmniSharp.Models.FixUsingsRequest, options?: RequestOptions): Observable<OmniSharp.Models.FixUsingsResponse>;
-        // "formatAfterKeystroke"
+        // 'formatAfterKeystroke'
         formatAfterKeystroke(request: OmniSharp.Models.FormatAfterKeystrokeRequest, options?: RequestOptions): Observable<OmniSharp.Models.FormatRangeResponse>;
-        // "formatRange"
+        // 'formatRange'
         formatRange(request: OmniSharp.Models.FormatRangeRequest, options?: RequestOptions): Observable<OmniSharp.Models.FormatRangeResponse>;
-        // "getcodeactions"
+        // 'getcodeactions'
         getcodeactions(request: OmniSharp.Models.V2.GetCodeActionsRequest, options?: RequestOptions): Observable<OmniSharp.Models.V2.GetCodeActionsResponse>;
-        // "gettestcontext"
+        // 'gettestcontext'
         gettestcontext(request: OmniSharp.Models.TestCommandRequest, options?: RequestOptions): Observable<OmniSharp.Models.GetTestCommandResponse>;
-        // "gotodefinition"
+        // 'gotodefinition'
         gotodefinition(request: OmniSharp.Models.GotoDefinitionRequest, options?: RequestOptions): Observable<OmniSharp.Models.GotoDefinitionResponse>;
-        // "gotofile"
+        // 'gotofile'
         gotofile(request: OmniSharp.Models.GotoFileRequest, options?: RequestOptions): Observable<OmniSharp.Models.QuickFixResponse>;
-        // "gotoregion"
+        // 'gotoregion'
         gotoregion(request: OmniSharp.Models.GotoRegionRequest, options?: RequestOptions): Observable<OmniSharp.Models.QuickFixResponse>;
-        // "highlight"
+        // 'highlight'
         highlight(request: OmniSharp.Models.HighlightRequest, options?: RequestOptions): Observable<OmniSharp.Models.HighlightResponse>;
-        // "metadata"
+        // 'metadata'
         metadata(request: OmniSharp.Models.MetadataRequest, options?: RequestOptions): Observable<OmniSharp.Models.MetadataResponse>;
-        // "navigatedown"
+        // 'navigatedown'
         navigatedown(request: OmniSharp.Models.NavigateDownRequest, options?: RequestOptions): Observable<OmniSharp.Models.NavigateResponse>;
-        // "navigateup"
+        // 'navigateup'
         navigateup(request: OmniSharp.Models.NavigateUpRequest, options?: RequestOptions): Observable<OmniSharp.Models.NavigateResponse>;
-        // "packagesearch"
+        // 'packagesearch'
         packagesearch(request: OmniSharp.Models.PackageSearchRequest, options?: RequestOptions): Observable<OmniSharp.Models.PackageSearchResponse>;
-        // "packagesource"
+        // 'packagesource'
         packagesource(request: OmniSharp.Models.PackageSourceRequest, options?: RequestOptions): Observable<OmniSharp.Models.PackageSourceResponse>;
-        // "packageversion"
+        // 'packageversion'
         packageversion(request: OmniSharp.Models.PackageVersionRequest, options?: RequestOptions): Observable<OmniSharp.Models.PackageVersionResponse>;
-        // "project"
+        // 'project'
         project(request: OmniSharp.Models.v1.ProjectInformationRequest, options?: RequestOptions): Observable<OmniSharp.Models.ProjectInformationResponse>;
-        // "projects"
+        // 'projects'
         projects(request: OmniSharp.Models.v1.WorkspaceInformationRequest, options?: RequestOptions): Observable<OmniSharp.Models.WorkspaceInformationResponse>;
-        // "rename"
+        // 'rename'
         rename(request: OmniSharp.Models.RenameRequest, options?: RequestOptions): Observable<OmniSharp.Models.RenameResponse>;
-        // "runcodeaction"
+        // 'runcodeaction'
         runcodeaction(request: OmniSharp.Models.V2.RunCodeActionRequest, options?: RequestOptions): Observable<OmniSharp.Models.V2.RunCodeActionResponse>;
-        // "signatureHelp"
+        // 'signatureHelp'
         signatureHelp(request: OmniSharp.Models.SignatureHelpRequest, options?: RequestOptions): Observable<OmniSharp.Models.SignatureHelp>;
-        // "typelookup"
+        // 'typelookup'
         typelookup(request: OmniSharp.Models.TypeLookupRequest, options?: RequestOptions): Observable<OmniSharp.Models.TypeLookupResponse>;
-        // "updatebuffer"
+        // 'updatebuffer'
         updatebuffer(request: OmniSharp.Models.UpdateBufferRequest, options?: RequestOptions): Observable<any>;
     }
 
@@ -586,136 +586,136 @@ export module OmniSharp.Api {
 export module OmniSharp.Events {
 
     export interface V1 {
-        // "autocomplete"
+        // 'autocomplete'
         autocomplete: Observable<Context<OmniSharp.Models.AutoCompleteRequest, OmniSharp.Models.AutoCompleteResponse[]>>;
-        // "changebuffer"
+        // 'changebuffer'
         changebuffer: Observable<Context<OmniSharp.Models.ChangeBufferRequest, any>>;
-        // "codecheck"
+        // 'codecheck'
         codecheck: Observable<Context<OmniSharp.Models.CodeCheckRequest, OmniSharp.Models.QuickFixResponse>>;
-        // "codeformat"
+        // 'codeformat'
         codeformat: Observable<Context<OmniSharp.Models.CodeFormatRequest, OmniSharp.Models.CodeFormatResponse>>;
-        // "currentfilemembersasflat"
+        // 'currentfilemembersasflat'
         currentfilemembersasflat: Observable<Context<OmniSharp.Models.MembersFlatRequest, OmniSharp.Models.QuickFix[]>>;
-        // "currentfilemembersastree"
+        // 'currentfilemembersastree'
         currentfilemembersastree: Observable<Context<OmniSharp.Models.MembersTreeRequest, OmniSharp.Models.FileMemberTree>>;
-        // "filesChanged"
+        // 'filesChanged'
         filesChanged: Observable<Context<OmniSharp.Models.Request[], OmniSharp.Models.FilesChangedResponse>>;
-        // "findimplementations"
+        // 'findimplementations'
         findimplementations: Observable<Context<OmniSharp.Models.FindImplementationsRequest, OmniSharp.Models.QuickFixResponse>>;
-        // "findsymbols"
+        // 'findsymbols'
         findsymbols: Observable<Context<OmniSharp.Models.FindSymbolsRequest, OmniSharp.Models.QuickFixResponse>>;
-        // "findusages"
+        // 'findusages'
         findusages: Observable<Context<OmniSharp.Models.FindUsagesRequest, OmniSharp.Models.QuickFixResponse>>;
-        // "fixusings"
+        // 'fixusings'
         fixusings: Observable<Context<OmniSharp.Models.FixUsingsRequest, OmniSharp.Models.FixUsingsResponse>>;
-        // "formatAfterKeystroke"
+        // 'formatAfterKeystroke'
         formatAfterKeystroke: Observable<Context<OmniSharp.Models.FormatAfterKeystrokeRequest, OmniSharp.Models.FormatRangeResponse>>;
-        // "formatRange"
+        // 'formatRange'
         formatRange: Observable<Context<OmniSharp.Models.FormatRangeRequest, OmniSharp.Models.FormatRangeResponse>>;
-        // "getcodeactions"
+        // 'getcodeactions'
         getcodeactions: Observable<Context<OmniSharp.Models.GetCodeActionRequest, OmniSharp.Models.GetCodeActionsResponse>>;
-        // "gettestcontext"
+        // 'gettestcontext'
         gettestcontext: Observable<Context<OmniSharp.Models.TestCommandRequest, OmniSharp.Models.GetTestCommandResponse>>;
-        // "gotodefinition"
+        // 'gotodefinition'
         gotodefinition: Observable<Context<OmniSharp.Models.GotoDefinitionRequest, OmniSharp.Models.GotoDefinitionResponse>>;
-        // "gotofile"
+        // 'gotofile'
         gotofile: Observable<Context<OmniSharp.Models.GotoFileRequest, OmniSharp.Models.QuickFixResponse>>;
-        // "gotoregion"
+        // 'gotoregion'
         gotoregion: Observable<Context<OmniSharp.Models.GotoRegionRequest, OmniSharp.Models.QuickFixResponse>>;
-        // "highlight"
+        // 'highlight'
         highlight: Observable<Context<OmniSharp.Models.HighlightRequest, OmniSharp.Models.HighlightResponse>>;
-        // "metadata"
+        // 'metadata'
         metadata: Observable<Context<OmniSharp.Models.MetadataRequest, OmniSharp.Models.MetadataResponse>>;
-        // "navigatedown"
+        // 'navigatedown'
         navigatedown: Observable<Context<OmniSharp.Models.NavigateDownRequest, OmniSharp.Models.NavigateResponse>>;
-        // "navigateup"
+        // 'navigateup'
         navigateup: Observable<Context<OmniSharp.Models.NavigateUpRequest, OmniSharp.Models.NavigateResponse>>;
-        // "packagesearch"
+        // 'packagesearch'
         packagesearch: Observable<Context<OmniSharp.Models.PackageSearchRequest, OmniSharp.Models.PackageSearchResponse>>;
-        // "packagesource"
+        // 'packagesource'
         packagesource: Observable<Context<OmniSharp.Models.PackageSourceRequest, OmniSharp.Models.PackageSourceResponse>>;
-        // "packageversion"
+        // 'packageversion'
         packageversion: Observable<Context<OmniSharp.Models.PackageVersionRequest, OmniSharp.Models.PackageVersionResponse>>;
-        // "project"
+        // 'project'
         project: Observable<Context<OmniSharp.Models.v1.ProjectInformationRequest, OmniSharp.Models.ProjectInformationResponse>>;
-        // "projects"
+        // 'projects'
         projects: Observable<Context<OmniSharp.Models.v1.WorkspaceInformationRequest, OmniSharp.Models.WorkspaceInformationResponse>>;
-        // "rename"
+        // 'rename'
         rename: Observable<Context<OmniSharp.Models.RenameRequest, OmniSharp.Models.RenameResponse>>;
-        // "runcodeaction"
+        // 'runcodeaction'
         runcodeaction: Observable<Context<OmniSharp.Models.RunCodeActionRequest, OmniSharp.Models.RunCodeActionResponse>>;
-        // "signatureHelp"
+        // 'signatureHelp'
         signatureHelp: Observable<Context<OmniSharp.Models.SignatureHelpRequest, OmniSharp.Models.SignatureHelp>>;
-        // "typelookup"
+        // 'typelookup'
         typelookup: Observable<Context<OmniSharp.Models.TypeLookupRequest, OmniSharp.Models.TypeLookupResponse>>;
-        // "updatebuffer"
+        // 'updatebuffer'
         updatebuffer: Observable<Context<OmniSharp.Models.UpdateBufferRequest, any>>;
     }
 
     export interface V2 {
-        // "autocomplete"
+        // 'autocomplete'
         autocomplete: Observable<Context<OmniSharp.Models.AutoCompleteRequest, OmniSharp.Models.AutoCompleteResponse[]>>;
-        // "changebuffer"
+        // 'changebuffer'
         changebuffer: Observable<Context<OmniSharp.Models.ChangeBufferRequest, any>>;
-        // "codecheck"
+        // 'codecheck'
         codecheck: Observable<Context<OmniSharp.Models.CodeCheckRequest, OmniSharp.Models.QuickFixResponse>>;
-        // "codeformat"
+        // 'codeformat'
         codeformat: Observable<Context<OmniSharp.Models.CodeFormatRequest, OmniSharp.Models.CodeFormatResponse>>;
-        // "currentfilemembersasflat"
+        // 'currentfilemembersasflat'
         currentfilemembersasflat: Observable<Context<OmniSharp.Models.MembersFlatRequest, OmniSharp.Models.QuickFix[]>>;
-        // "currentfilemembersastree"
+        // 'currentfilemembersastree'
         currentfilemembersastree: Observable<Context<OmniSharp.Models.MembersTreeRequest, OmniSharp.Models.FileMemberTree>>;
-        // "filesChanged"
+        // 'filesChanged'
         filesChanged: Observable<Context<OmniSharp.Models.Request[], OmniSharp.Models.FilesChangedResponse>>;
-        // "findimplementations"
+        // 'findimplementations'
         findimplementations: Observable<Context<OmniSharp.Models.FindImplementationsRequest, OmniSharp.Models.QuickFixResponse>>;
-        // "findsymbols"
+        // 'findsymbols'
         findsymbols: Observable<Context<OmniSharp.Models.FindSymbolsRequest, OmniSharp.Models.QuickFixResponse>>;
-        // "findusages"
+        // 'findusages'
         findusages: Observable<Context<OmniSharp.Models.FindUsagesRequest, OmniSharp.Models.QuickFixResponse>>;
-        // "fixusings"
+        // 'fixusings'
         fixusings: Observable<Context<OmniSharp.Models.FixUsingsRequest, OmniSharp.Models.FixUsingsResponse>>;
-        // "formatAfterKeystroke"
+        // 'formatAfterKeystroke'
         formatAfterKeystroke: Observable<Context<OmniSharp.Models.FormatAfterKeystrokeRequest, OmniSharp.Models.FormatRangeResponse>>;
-        // "formatRange"
+        // 'formatRange'
         formatRange: Observable<Context<OmniSharp.Models.FormatRangeRequest, OmniSharp.Models.FormatRangeResponse>>;
-        // "getcodeactions"
+        // 'getcodeactions'
         getcodeactions: Observable<Context<OmniSharp.Models.V2.GetCodeActionsRequest, OmniSharp.Models.V2.GetCodeActionsResponse>>;
-        // "gettestcontext"
+        // 'gettestcontext'
         gettestcontext: Observable<Context<OmniSharp.Models.TestCommandRequest, OmniSharp.Models.GetTestCommandResponse>>;
-        // "gotodefinition"
+        // 'gotodefinition'
         gotodefinition: Observable<Context<OmniSharp.Models.GotoDefinitionRequest, OmniSharp.Models.GotoDefinitionResponse>>;
-        // "gotofile"
+        // 'gotofile'
         gotofile: Observable<Context<OmniSharp.Models.GotoFileRequest, OmniSharp.Models.QuickFixResponse>>;
-        // "gotoregion"
+        // 'gotoregion'
         gotoregion: Observable<Context<OmniSharp.Models.GotoRegionRequest, OmniSharp.Models.QuickFixResponse>>;
-        // "highlight"
+        // 'highlight'
         highlight: Observable<Context<OmniSharp.Models.HighlightRequest, OmniSharp.Models.HighlightResponse>>;
-        // "metadata"
+        // 'metadata'
         metadata: Observable<Context<OmniSharp.Models.MetadataRequest, OmniSharp.Models.MetadataResponse>>;
-        // "navigatedown"
+        // 'navigatedown'
         navigatedown: Observable<Context<OmniSharp.Models.NavigateDownRequest, OmniSharp.Models.NavigateResponse>>;
-        // "navigateup"
+        // 'navigateup'
         navigateup: Observable<Context<OmniSharp.Models.NavigateUpRequest, OmniSharp.Models.NavigateResponse>>;
-        // "packagesearch"
+        // 'packagesearch'
         packagesearch: Observable<Context<OmniSharp.Models.PackageSearchRequest, OmniSharp.Models.PackageSearchResponse>>;
-        // "packagesource"
+        // 'packagesource'
         packagesource: Observable<Context<OmniSharp.Models.PackageSourceRequest, OmniSharp.Models.PackageSourceResponse>>;
-        // "packageversion"
+        // 'packageversion'
         packageversion: Observable<Context<OmniSharp.Models.PackageVersionRequest, OmniSharp.Models.PackageVersionResponse>>;
-        // "project"
+        // 'project'
         project: Observable<Context<OmniSharp.Models.v1.ProjectInformationRequest, OmniSharp.Models.ProjectInformationResponse>>;
-        // "projects"
+        // 'projects'
         projects: Observable<Context<OmniSharp.Models.v1.WorkspaceInformationRequest, OmniSharp.Models.WorkspaceInformationResponse>>;
-        // "rename"
+        // 'rename'
         rename: Observable<Context<OmniSharp.Models.RenameRequest, OmniSharp.Models.RenameResponse>>;
-        // "runcodeaction"
+        // 'runcodeaction'
         runcodeaction: Observable<Context<OmniSharp.Models.V2.RunCodeActionRequest, OmniSharp.Models.V2.RunCodeActionResponse>>;
-        // "signatureHelp"
+        // 'signatureHelp'
         signatureHelp: Observable<Context<OmniSharp.Models.SignatureHelpRequest, OmniSharp.Models.SignatureHelp>>;
-        // "typelookup"
+        // 'typelookup'
         typelookup: Observable<Context<OmniSharp.Models.TypeLookupRequest, OmniSharp.Models.TypeLookupResponse>>;
-        // "updatebuffer"
+        // 'updatebuffer'
         updatebuffer: Observable<Context<OmniSharp.Models.UpdateBufferRequest, any>>;
     }
 
@@ -723,136 +723,136 @@ export module OmniSharp.Events {
 export module OmniSharp.Events.Aggregate {
 
     export interface V1 {
-        // "autocomplete"
+        // 'autocomplete'
         autocomplete: Observable<CombinationKey<Context<OmniSharp.Models.AutoCompleteRequest, OmniSharp.Models.AutoCompleteResponse[]>>[]>;
-        // "changebuffer"
+        // 'changebuffer'
         changebuffer: Observable<CombinationKey<Context<OmniSharp.Models.ChangeBufferRequest, any>>[]>;
-        // "codecheck"
+        // 'codecheck'
         codecheck: Observable<CombinationKey<Context<OmniSharp.Models.CodeCheckRequest, OmniSharp.Models.QuickFixResponse>>[]>;
-        // "codeformat"
+        // 'codeformat'
         codeformat: Observable<CombinationKey<Context<OmniSharp.Models.CodeFormatRequest, OmniSharp.Models.CodeFormatResponse>>[]>;
-        // "currentfilemembersasflat"
+        // 'currentfilemembersasflat'
         currentfilemembersasflat: Observable<CombinationKey<Context<OmniSharp.Models.MembersFlatRequest, OmniSharp.Models.QuickFix[]>>[]>;
-        // "currentfilemembersastree"
+        // 'currentfilemembersastree'
         currentfilemembersastree: Observable<CombinationKey<Context<OmniSharp.Models.MembersTreeRequest, OmniSharp.Models.FileMemberTree>>[]>;
-        // "filesChanged"
+        // 'filesChanged'
         filesChanged: Observable<CombinationKey<Context<OmniSharp.Models.Request[], OmniSharp.Models.FilesChangedResponse>>[]>;
-        // "findimplementations"
+        // 'findimplementations'
         findimplementations: Observable<CombinationKey<Context<OmniSharp.Models.FindImplementationsRequest, OmniSharp.Models.QuickFixResponse>>[]>;
-        // "findsymbols"
+        // 'findsymbols'
         findsymbols: Observable<CombinationKey<Context<OmniSharp.Models.FindSymbolsRequest, OmniSharp.Models.QuickFixResponse>>[]>;
-        // "findusages"
+        // 'findusages'
         findusages: Observable<CombinationKey<Context<OmniSharp.Models.FindUsagesRequest, OmniSharp.Models.QuickFixResponse>>[]>;
-        // "fixusings"
+        // 'fixusings'
         fixusings: Observable<CombinationKey<Context<OmniSharp.Models.FixUsingsRequest, OmniSharp.Models.FixUsingsResponse>>[]>;
-        // "formatAfterKeystroke"
+        // 'formatAfterKeystroke'
         formatAfterKeystroke: Observable<CombinationKey<Context<OmniSharp.Models.FormatAfterKeystrokeRequest, OmniSharp.Models.FormatRangeResponse>>[]>;
-        // "formatRange"
+        // 'formatRange'
         formatRange: Observable<CombinationKey<Context<OmniSharp.Models.FormatRangeRequest, OmniSharp.Models.FormatRangeResponse>>[]>;
-        // "getcodeactions"
+        // 'getcodeactions'
         getcodeactions: Observable<CombinationKey<Context<OmniSharp.Models.GetCodeActionRequest, OmniSharp.Models.GetCodeActionsResponse>>[]>;
-        // "gettestcontext"
+        // 'gettestcontext'
         gettestcontext: Observable<CombinationKey<Context<OmniSharp.Models.TestCommandRequest, OmniSharp.Models.GetTestCommandResponse>>[]>;
-        // "gotodefinition"
+        // 'gotodefinition'
         gotodefinition: Observable<CombinationKey<Context<OmniSharp.Models.GotoDefinitionRequest, OmniSharp.Models.GotoDefinitionResponse>>[]>;
-        // "gotofile"
+        // 'gotofile'
         gotofile: Observable<CombinationKey<Context<OmniSharp.Models.GotoFileRequest, OmniSharp.Models.QuickFixResponse>>[]>;
-        // "gotoregion"
+        // 'gotoregion'
         gotoregion: Observable<CombinationKey<Context<OmniSharp.Models.GotoRegionRequest, OmniSharp.Models.QuickFixResponse>>[]>;
-        // "highlight"
+        // 'highlight'
         highlight: Observable<CombinationKey<Context<OmniSharp.Models.HighlightRequest, OmniSharp.Models.HighlightResponse>>[]>;
-        // "metadata"
+        // 'metadata'
         metadata: Observable<CombinationKey<Context<OmniSharp.Models.MetadataRequest, OmniSharp.Models.MetadataResponse>>[]>;
-        // "navigatedown"
+        // 'navigatedown'
         navigatedown: Observable<CombinationKey<Context<OmniSharp.Models.NavigateDownRequest, OmniSharp.Models.NavigateResponse>>[]>;
-        // "navigateup"
+        // 'navigateup'
         navigateup: Observable<CombinationKey<Context<OmniSharp.Models.NavigateUpRequest, OmniSharp.Models.NavigateResponse>>[]>;
-        // "packagesearch"
+        // 'packagesearch'
         packagesearch: Observable<CombinationKey<Context<OmniSharp.Models.PackageSearchRequest, OmniSharp.Models.PackageSearchResponse>>[]>;
-        // "packagesource"
+        // 'packagesource'
         packagesource: Observable<CombinationKey<Context<OmniSharp.Models.PackageSourceRequest, OmniSharp.Models.PackageSourceResponse>>[]>;
-        // "packageversion"
+        // 'packageversion'
         packageversion: Observable<CombinationKey<Context<OmniSharp.Models.PackageVersionRequest, OmniSharp.Models.PackageVersionResponse>>[]>;
-        // "project"
+        // 'project'
         project: Observable<CombinationKey<Context<OmniSharp.Models.v1.ProjectInformationRequest, OmniSharp.Models.ProjectInformationResponse>>[]>;
-        // "projects"
+        // 'projects'
         projects: Observable<CombinationKey<Context<OmniSharp.Models.v1.WorkspaceInformationRequest, OmniSharp.Models.WorkspaceInformationResponse>>[]>;
-        // "rename"
+        // 'rename'
         rename: Observable<CombinationKey<Context<OmniSharp.Models.RenameRequest, OmniSharp.Models.RenameResponse>>[]>;
-        // "runcodeaction"
+        // 'runcodeaction'
         runcodeaction: Observable<CombinationKey<Context<OmniSharp.Models.RunCodeActionRequest, OmniSharp.Models.RunCodeActionResponse>>[]>;
-        // "signatureHelp"
+        // 'signatureHelp'
         signatureHelp: Observable<CombinationKey<Context<OmniSharp.Models.SignatureHelpRequest, OmniSharp.Models.SignatureHelp>>[]>;
-        // "typelookup"
+        // 'typelookup'
         typelookup: Observable<CombinationKey<Context<OmniSharp.Models.TypeLookupRequest, OmniSharp.Models.TypeLookupResponse>>[]>;
-        // "updatebuffer"
+        // 'updatebuffer'
         updatebuffer: Observable<CombinationKey<Context<OmniSharp.Models.UpdateBufferRequest, any>>[]>;
     }
 
     export interface V2 {
-        // "autocomplete"
+        // 'autocomplete'
         autocomplete: Observable<CombinationKey<Context<OmniSharp.Models.AutoCompleteRequest, OmniSharp.Models.AutoCompleteResponse[]>>[]>;
-        // "changebuffer"
+        // 'changebuffer'
         changebuffer: Observable<CombinationKey<Context<OmniSharp.Models.ChangeBufferRequest, any>>[]>;
-        // "codecheck"
+        // 'codecheck'
         codecheck: Observable<CombinationKey<Context<OmniSharp.Models.CodeCheckRequest, OmniSharp.Models.QuickFixResponse>>[]>;
-        // "codeformat"
+        // 'codeformat'
         codeformat: Observable<CombinationKey<Context<OmniSharp.Models.CodeFormatRequest, OmniSharp.Models.CodeFormatResponse>>[]>;
-        // "currentfilemembersasflat"
+        // 'currentfilemembersasflat'
         currentfilemembersasflat: Observable<CombinationKey<Context<OmniSharp.Models.MembersFlatRequest, OmniSharp.Models.QuickFix[]>>[]>;
-        // "currentfilemembersastree"
+        // 'currentfilemembersastree'
         currentfilemembersastree: Observable<CombinationKey<Context<OmniSharp.Models.MembersTreeRequest, OmniSharp.Models.FileMemberTree>>[]>;
-        // "filesChanged"
+        // 'filesChanged'
         filesChanged: Observable<CombinationKey<Context<OmniSharp.Models.Request[], OmniSharp.Models.FilesChangedResponse>>[]>;
-        // "findimplementations"
+        // 'findimplementations'
         findimplementations: Observable<CombinationKey<Context<OmniSharp.Models.FindImplementationsRequest, OmniSharp.Models.QuickFixResponse>>[]>;
-        // "findsymbols"
+        // 'findsymbols'
         findsymbols: Observable<CombinationKey<Context<OmniSharp.Models.FindSymbolsRequest, OmniSharp.Models.QuickFixResponse>>[]>;
-        // "findusages"
+        // 'findusages'
         findusages: Observable<CombinationKey<Context<OmniSharp.Models.FindUsagesRequest, OmniSharp.Models.QuickFixResponse>>[]>;
-        // "fixusings"
+        // 'fixusings'
         fixusings: Observable<CombinationKey<Context<OmniSharp.Models.FixUsingsRequest, OmniSharp.Models.FixUsingsResponse>>[]>;
-        // "formatAfterKeystroke"
+        // 'formatAfterKeystroke'
         formatAfterKeystroke: Observable<CombinationKey<Context<OmniSharp.Models.FormatAfterKeystrokeRequest, OmniSharp.Models.FormatRangeResponse>>[]>;
-        // "formatRange"
+        // 'formatRange'
         formatRange: Observable<CombinationKey<Context<OmniSharp.Models.FormatRangeRequest, OmniSharp.Models.FormatRangeResponse>>[]>;
-        // "getcodeactions"
+        // 'getcodeactions'
         getcodeactions: Observable<CombinationKey<Context<OmniSharp.Models.V2.GetCodeActionsRequest, OmniSharp.Models.V2.GetCodeActionsResponse>>[]>;
-        // "gettestcontext"
+        // 'gettestcontext'
         gettestcontext: Observable<CombinationKey<Context<OmniSharp.Models.TestCommandRequest, OmniSharp.Models.GetTestCommandResponse>>[]>;
-        // "gotodefinition"
+        // 'gotodefinition'
         gotodefinition: Observable<CombinationKey<Context<OmniSharp.Models.GotoDefinitionRequest, OmniSharp.Models.GotoDefinitionResponse>>[]>;
-        // "gotofile"
+        // 'gotofile'
         gotofile: Observable<CombinationKey<Context<OmniSharp.Models.GotoFileRequest, OmniSharp.Models.QuickFixResponse>>[]>;
-        // "gotoregion"
+        // 'gotoregion'
         gotoregion: Observable<CombinationKey<Context<OmniSharp.Models.GotoRegionRequest, OmniSharp.Models.QuickFixResponse>>[]>;
-        // "highlight"
+        // 'highlight'
         highlight: Observable<CombinationKey<Context<OmniSharp.Models.HighlightRequest, OmniSharp.Models.HighlightResponse>>[]>;
-        // "metadata"
+        // 'metadata'
         metadata: Observable<CombinationKey<Context<OmniSharp.Models.MetadataRequest, OmniSharp.Models.MetadataResponse>>[]>;
-        // "navigatedown"
+        // 'navigatedown'
         navigatedown: Observable<CombinationKey<Context<OmniSharp.Models.NavigateDownRequest, OmniSharp.Models.NavigateResponse>>[]>;
-        // "navigateup"
+        // 'navigateup'
         navigateup: Observable<CombinationKey<Context<OmniSharp.Models.NavigateUpRequest, OmniSharp.Models.NavigateResponse>>[]>;
-        // "packagesearch"
+        // 'packagesearch'
         packagesearch: Observable<CombinationKey<Context<OmniSharp.Models.PackageSearchRequest, OmniSharp.Models.PackageSearchResponse>>[]>;
-        // "packagesource"
+        // 'packagesource'
         packagesource: Observable<CombinationKey<Context<OmniSharp.Models.PackageSourceRequest, OmniSharp.Models.PackageSourceResponse>>[]>;
-        // "packageversion"
+        // 'packageversion'
         packageversion: Observable<CombinationKey<Context<OmniSharp.Models.PackageVersionRequest, OmniSharp.Models.PackageVersionResponse>>[]>;
-        // "project"
+        // 'project'
         project: Observable<CombinationKey<Context<OmniSharp.Models.v1.ProjectInformationRequest, OmniSharp.Models.ProjectInformationResponse>>[]>;
-        // "projects"
+        // 'projects'
         projects: Observable<CombinationKey<Context<OmniSharp.Models.v1.WorkspaceInformationRequest, OmniSharp.Models.WorkspaceInformationResponse>>[]>;
-        // "rename"
+        // 'rename'
         rename: Observable<CombinationKey<Context<OmniSharp.Models.RenameRequest, OmniSharp.Models.RenameResponse>>[]>;
-        // "runcodeaction"
+        // 'runcodeaction'
         runcodeaction: Observable<CombinationKey<Context<OmniSharp.Models.V2.RunCodeActionRequest, OmniSharp.Models.V2.RunCodeActionResponse>>[]>;
-        // "signatureHelp"
+        // 'signatureHelp'
         signatureHelp: Observable<CombinationKey<Context<OmniSharp.Models.SignatureHelpRequest, OmniSharp.Models.SignatureHelp>>[]>;
-        // "typelookup"
+        // 'typelookup'
         typelookup: Observable<CombinationKey<Context<OmniSharp.Models.TypeLookupRequest, OmniSharp.Models.TypeLookupResponse>>[]>;
-        // "updatebuffer"
+        // 'updatebuffer'
         updatebuffer: Observable<CombinationKey<Context<OmniSharp.Models.UpdateBufferRequest, any>>[]>;
     }
 
@@ -894,3 +894,4 @@ export module OmniSharp.Models {
         ScriptCs: OmniSharp.ScriptCs.ScriptCsContext;
     }
 }
+            
