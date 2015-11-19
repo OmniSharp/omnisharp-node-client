@@ -1,6 +1,6 @@
 import {OmniSharp} from "../omnisharp-server";
 import {Observable, Subject, AsyncSubject, BehaviorSubject, Scheduler, CompositeDisposable} from "rx";
-import { isObject, uniqueId, each, defaults, cloneDeep, memoize} from "lodash";
+import {keys, isObject, uniqueId, each, defaults, cloneDeep, memoize} from "lodash";
 import {IDriver, IStaticDriver, OmnisharpClientStatus, OmnisharpClientOptions} from "../interfaces";
 import {Driver, DriverState} from "../enums";
 import {RequestContext, ResponseContext, CommandContext} from "../contexts";
@@ -80,7 +80,8 @@ export class ClientBase<TEvents extends ClientEventsBase> implements IDriver, Rx
         ensureClientOptions(_options);
         const {driver} = _options;
 
-        const driverFactory: IStaticDriver = require("../drivers/" + Driver[driver].toLowerCase());
+        const item = require("../drivers/" + Driver[driver].toLowerCase());
+        const driverFactory: IStaticDriver = item[keys(item)[0]];
         this._driver = new driverFactory(_options);
 
         this._plugins = new PluginManager(_options.projectPath, _options.plugins);
