@@ -129,17 +129,17 @@ export class ClientBase<TEvents extends ClientEventsBase> implements IDriver, Rx
         this._observe = observableFactory(this);
 
         if (this._options.debug) {
-            this._disposable.add(this._responseStream.subscribe(Context => {
+            this._disposable.add(this._responseStream.subscribe(context => {
                 // log our complete response time
                 this._customEvents.onNext({
                     Event: "log",
                     Body: {
-                        Message: `/${Context.command}  ${Context.responseTime}ms (round trip)`,
+                        Message: `/${context.command}  ${context.responseTime}ms (round trip)`,
                         LogLevel: "INFORMATION"
                     },
                     Seq: -1,
                     Type: "log"
-                })
+                });
             }));
         }
     }
@@ -320,7 +320,7 @@ export class ClientBase<TEvents extends ClientEventsBase> implements IDriver, Rx
 export class ClientEventsBase implements OmniSharp.Events {
     constructor(private _client: any) { }
 
-    public get uniqueId() { return this._client.uniqueId }
+    public get uniqueId() { return this._client.uniqueId; }
 
     @watchEvent public get projectAdded(): Rx.Observable<OmniSharp.Models.ProjectInformationResponse> { throw new Error("Implemented by decorator"); }
     @watchEvent public get projectChanged(): Rx.Observable<OmniSharp.Models.ProjectInformationResponse> { throw new Error("Implemented by decorator"); }

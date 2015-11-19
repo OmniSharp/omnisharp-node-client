@@ -160,7 +160,7 @@ function searchForCandidates(location: string, filesToSearch: string[], projectF
         .filter(z => z.length > 0)
         .defaultIfEmpty([])
         .first()
-        .flatMap(z => Observable.from(z))
+        .flatMap(z => Observable.from(z));
 
     return rootObservable;
 }

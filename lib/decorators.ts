@@ -13,7 +13,7 @@ export function isNotNull(method: Function) {
             }
             return value.apply(this, arguments);
         };
-    }
+    };
 }
 
 export function isAboveZero(method: Function) {
@@ -32,7 +32,7 @@ export function isAboveZero(method: Function) {
             }
             return value.apply(this, arguments);
         };
-    }
+    };
 }
 
 export function precondition(method: Function, ...decorators: MethodDecorator[]) {
@@ -40,7 +40,7 @@ export function precondition(method: Function, ...decorators: MethodDecorator[])
         const originalValue = descriptor.value;
         const methods = _.map(decorators, decorator => {
             descriptor.value = _.noop;
-            decorator(target, propertyKey, descriptor)
+            decorator(target, propertyKey, descriptor);
             return descriptor.value;
         });
 
@@ -49,8 +49,8 @@ export function precondition(method: Function, ...decorators: MethodDecorator[])
                 methods.forEach(m => m.call(this, request));
             }
             return originalValue.apply(this, arguments);
-        }
-    }
+        };
+    };
 }
 
 export function endpoint(version = 1) {
@@ -62,8 +62,8 @@ export function endpoint(version = 1) {
         const name = format(propertyKey);
         descriptor.value = function(request: any, options: any) {
             return this.request(name, request, options);
-        }
-    }
+        };
+    };
 }
 
 export function fixup(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
@@ -71,7 +71,7 @@ export function fixup(target: Object, propertyKey: string, descriptor: TypedProp
     descriptor.value = function(request: any, options: any) {
         this._fixup(propertyKey, request, options);
         return value.apply(this, arguments);
-    }
+    };
 }
 
 export function watchCommand(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
@@ -79,7 +79,7 @@ export function watchCommand(target: Object, propertyKey: string, descriptor: Ty
         const value = this.watchCommand(propertyKey);
         this[propertyKey] = value;
         return value;
-    }
+    };
 }
 
 export function watchEvent(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
@@ -88,7 +88,7 @@ export function watchEvent(target: Object, propertyKey: string, descriptor: Type
         const value = this.watchEvent(eventKey);
         this[propertyKey] = value;
         return value;
-    }
+    };
 }
 
 export function merge(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
@@ -97,7 +97,7 @@ export function merge(target: Object, propertyKey: string, descriptor: TypedProp
         const value = this.makeMergeObserable(method);
         this[propertyKey] = value;
         return value;
-    }
+    };
 }
 
 export function aggregate(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
@@ -106,11 +106,11 @@ export function aggregate(target: Object, propertyKey: string, descriptor: Typed
         const value = this.makeAggregateObserable(method);
         this[propertyKey] = value;
         return value;
-    }
+    };
 }
 
 export function reference(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
-    descriptor.get = function() { return this._client[propertyKey]; }
+    descriptor.get = function() { return this._client[propertyKey]; };
 }
 
 export function inheritProperties(source: any, dest: any) {

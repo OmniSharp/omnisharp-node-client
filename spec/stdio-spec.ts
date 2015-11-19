@@ -36,8 +36,8 @@ describe("Omnisharp Local - Stdio", function() {
                 done();
             });
             server.connect();
-        })
-    })
+        });
+    });
 
     /*describe("properties", function() {
         this.timeout(20000);

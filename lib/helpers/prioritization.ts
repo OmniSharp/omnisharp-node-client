@@ -27,7 +27,7 @@ each(priorityCommands, x => {
 });
 
 export function isPriorityCommand(request: RequestContext<any>) {
-    return prioritySet.has(request.command)
+    return prioritySet.has(request.command);
 };
 
 export function isNormalCommand(request: RequestContext<any>) {

@@ -28,7 +28,7 @@ export function flattenArguments(obj: any, prefix = "") {
     _.each(obj, (value, key) => {
         if (_.isObject(value)) {
             result.push(...flattenArguments(value, `${prefix ? prefix + ":" : ""}${key[0].toUpperCase() + key.substr(1) }`));
-            return
+            return;
         }
 
         result.push(`--${prefix ? prefix + ":" : ""}${key[0].toUpperCase() + key.substr(1) }=${value}`);

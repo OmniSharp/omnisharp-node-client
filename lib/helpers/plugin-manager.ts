@@ -1,4 +1,4 @@
-import {each, reduce} from "lodash";
+import {each} from "lodash";
 import {IOmnisharpPlugin} from "../interfaces";
 import {exec} from "child_process";
 import {Observable, Subject} from "rx";

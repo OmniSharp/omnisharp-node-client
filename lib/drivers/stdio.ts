@@ -191,7 +191,7 @@ export class StdioDriver implements IDriver {
     }
 
     private handleData(data: string) {
-        let packet: OmniSharp.Stdio.Protocol.Packet
+        let packet: OmniSharp.Stdio.Protocol.Packet;
         try {
             packet = JSON.parse(data.trim());
         } catch (_error) {

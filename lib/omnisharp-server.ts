@@ -429,18 +429,15 @@ export module OmniSharp {
 }
 
 export module OmniSharp {
-    export interface Context<TRequest, TResponse>
-    {
+    export interface Context<TRequest, TResponse> {
         request: TRequest;
         response: TResponse;
     }
-    export interface RequestOptions
-    {
+    export interface RequestOptions {
         silent?: boolean;
-        oneBasedIndices?: boolean
+        oneBasedIndices?: boolean;
     }
-    export interface CombinationKey<T>
-    {
+    export interface CombinationKey<T> {
         key: string;
         value: T;
     }

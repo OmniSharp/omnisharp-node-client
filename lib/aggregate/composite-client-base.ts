@@ -97,6 +97,7 @@ export class CombinationClientBase<Client> implements OmniSharp.Aggregate.Events
         // we can start with the old value of the remaining clients
         const cache: { [key: string]: T } = {};
 
+        /* tslint:disable:no-string-literal */
         return this._clientsSubject.flatMapLatest(clients => {
             // clean up after ourselves.
             const removal = _.difference(_.keys(cache), clients.map(z => z["uniqueId"]));
@@ -113,8 +114,10 @@ export class CombinationClientBase<Client> implements OmniSharp.Aggregate.Events
                             value: value
                         };
                     })
-            )
+            );
         }).share();
+        /* tslint:enable:no-string-literal */
+
     });
 
     public observe<T>(selector: (client: Client) => Observable<T>) {
