@@ -297,7 +297,7 @@ declare module Chai {
     }
 }
 
-declare var chai: Chai.ChaiStatic;
+declare const chai: Chai.ChaiStatic;
 
 declare module "chai" {
     export = chai;

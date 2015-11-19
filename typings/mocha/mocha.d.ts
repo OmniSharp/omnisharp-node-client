@@ -35,17 +35,17 @@ interface MochaDone {
     (error?: Error): void;
 }
 
-declare var mocha: Mocha;
-declare var describe: Mocha.IContextDefinition;
-declare var xdescribe: Mocha.IContextDefinition;
+declare const mocha: Mocha;
+declare const describe: Mocha.IContextDefinition;
+declare const xdescribe: Mocha.IContextDefinition;
 // alias for `describe`
-declare var context: Mocha.IContextDefinition;
+declare const context: Mocha.IContextDefinition;
 // alias for `describe`
-declare var suite: Mocha.IContextDefinition;
-declare var it: Mocha.ITestDefinition;
-declare var xit: Mocha.ITestDefinition;
+declare const suite: Mocha.IContextDefinition;
+declare const it: Mocha.ITestDefinition;
+declare const xit: Mocha.ITestDefinition;
 // alias for `it`
-declare var test: Mocha.ITestDefinition;
+declare const test: Mocha.ITestDefinition;
 
 declare function before(action: () => void): void;
 
@@ -119,7 +119,7 @@ declare class Mocha {
 
 // merge the Mocha class declaration with a module
 declare module Mocha {
-    /** Partial interface for Mocha's `Runnable` class. */
+    /** Partial interface for Mocha"s `Runnable` class. */
     interface IRunnable extends NodeJS.EventEmitter {
         title: string;
         fn: Function;
@@ -128,7 +128,7 @@ declare module Mocha {
         timedOut: boolean;
     }
 
-    /** Partial interface for Mocha's `Suite` class. */
+    /** Partial interface for Mocha"s `Suite` class. */
     interface ISuite extends NodeJS.EventEmitter {
         parent: ISuite;
         title: string;
@@ -136,7 +136,7 @@ declare module Mocha {
         fullTitle(): string;
     }
 
-    /** Partial interface for Mocha's `Test` class. */
+    /** Partial interface for Mocha"s `Test` class. */
     interface ITest extends IRunnable {
         parent: ISuite;
         pending: boolean;
@@ -144,7 +144,7 @@ declare module Mocha {
         fullTitle(): string;
     }
 
-    /** Partial interface for Mocha's `Runner` class. */
+    /** Partial interface for Mocha"s `Runner` class. */
     interface IRunner extends NodeJS.EventEmitter {}
 
     interface IContextDefinition {

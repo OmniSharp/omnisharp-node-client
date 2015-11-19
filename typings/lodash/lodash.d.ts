@@ -3,7 +3,7 @@
 // Definitions by: Brian Zengel <https://github.com/bczengel>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
 
-declare var _: _.LoDashStatic;
+declare const _: _.LoDashStatic;
 
 declare module _ {
     interface LoDashStatic {
@@ -99,7 +99,7 @@ declare module _ {
     **/
     interface Support {
         /**
-        * Detect if an arguments object's [[Class]] is resolvable (all but Firefox < 4, IE < 9).
+        * Detect if an arguments object"s [[Class]] is resolvable (all but Firefox < 4, IE < 9).
         **/
         argsClass: boolean;
 
@@ -163,7 +163,7 @@ declare module _ {
         /**
         * Detect lack of support for accessing string characters by index.
         *
-        * IE < 8 can't access characters by index and IE 8 can only access characters by index on
+        * IE < 8 can"t access characters by index and IE 8 can only access characters by index on
         * string literals.
         **/
         unindexedChars: boolean;
@@ -261,7 +261,7 @@ declare module _ {
     //_.chunk
     interface LoDashStatic {
         /**
-        * Creates an array of elements split into groups the length of size. If collection can't be
+        * Creates an array of elements split into groups the length of size. If collection can"t be
         * split evenly, the final chunk will be the remaining elements.
         * @param array The array to process.
         * @param size The length of each chunk.
@@ -1658,7 +1658,7 @@ declare module _ {
         * @param array Array to remove duplicates from.
         * @param isSorted True if `array` is already sorted, optiona, default = false.
         * @param iterator Transform the elements of `array` before comparisons for uniqueness.
-        * @param context 'this' object in `iterator`, optional.
+        * @param context "this" object in `iterator`, optional.
         * @return Copy of `array` where all elements are unique.
         **/
         uniq<T, TSort>(array: Array<T>, isSorted?: boolean): T[];
@@ -5045,7 +5045,7 @@ declare module _ {
         /**
         * Creates a function that, when called, invokes the method at object[key] and prepends any
         * additional bindKey arguments to those provided to the bound function. This method differs
-        * from _.bind by allowing bound functions to reference methods that will be redefined or don't
+        * from _.bind by allowing bound functions to reference methods that will be redefined or don"t
         * yet exist. See http://michaux.ca/articles/lazy-function-definition-pattern.
         * @param object The object the method belongs to.
         * @param key The key of the method.
@@ -5169,7 +5169,7 @@ declare module _ {
         * @param wait The number of milliseconds to delay.
         * @param options The options object.
         * @param options.leading Specify execution on the leading edge of the timeout.
-        * @param options.maxWait The maximum time func is allowed to be delayed before it's called.
+        * @param options.maxWait The maximum time func is allowed to be delayed before it"s called.
         * @param options.trailing Specify execution on the trailing edge of the timeout.
         * @return The new debounced function.
         **/
@@ -5195,7 +5195,7 @@ declare module _ {
         leading?: boolean;
 
         /**
-        * The maximum time func is allowed to be delayed before it's called.
+        * The maximum time func is allowed to be delayed before it"s called.
         **/
         maxWait?: number;
 
@@ -5335,12 +5335,12 @@ declare module _ {
     interface ThrottleSettings {
 
         /**
-        * If you'd like to disable the leading-edge call, pass this as false.
+        * If you"d like to disable the leading-edge call, pass this as false.
         **/
         leading?: boolean;
 
         /**
-        * If you'd like to disable the execution on the trailing-edge, pass false.
+        * If you"d like to disable the execution on the trailing-edge, pass false.
         **/
         trailing?: boolean;
     }
@@ -6037,7 +6037,7 @@ declare module _ {
     interface LoDashStatic {
         /**
         * Checks if value is the language type of Object. (e.g. arrays, functions, objects, regexes,
-        * new Number(0), and new String(''))
+        * new Number(0), and new String(""))
         * @param value The value to check.
         * @return True if the value is an object, else false.
         **/
@@ -6161,7 +6161,7 @@ declare module _ {
     //_.merge
     interface LoDashStatic {
         /**
-        * Recursively merges own enumerable properties of the source object(s), that don't resolve
+        * Recursively merges own enumerable properties of the source object(s), that don"t resolve
         * to undefined into the destination object. Subsequent sources will overwrite property
         * assignments of previous sources. If a callback is provided it will be executed to produce
         * the merged values of the destination and source properties. If the callback returns undefined
@@ -6269,7 +6269,7 @@ declare module _ {
     //_.pairs
     interface LoDashStatic {
         /**
-        * Creates a two dimensional array of an object's key-value pairs,
+        * Creates a two dimensional array of an object"s key-value pairs,
         * i.e. [[key1, value1], [key2, value2]].
         * @param object The object to inspect.
         * @return Aew array of key-value pairs.
@@ -6437,7 +6437,7 @@ declare module _ {
     //_.escape
     interface LoDashStatic {
         /**
-        * Converts the characters &, <, >, ", and ' in string to their corresponding HTML entities.
+        * Converts the characters &, <, >, ", and " in string to their corresponding HTML entities.
         * @param string The string to escape.
         * @return The escaped string.
         **/
@@ -6466,7 +6466,7 @@ declare module _ {
     //_.noConflict
     interface LoDashStatic {
         /**
-        * Reverts the '_' variable to its previous value and returns a reference to the lodash function.
+        * Reverts the "_" variable to its previous value and returns a reference to the lodash function.
         * @return The lodash function.
         **/
         noConflict(): typeof _;
@@ -6547,7 +6547,7 @@ declare module _ {
         * @param options.evaluate The "evaluate" delimiter.
         * @param options.import An object to import into the template as local variables.
         * @param options.interpolate The "interpolate" delimiter.
-        * @param sourceURL The sourceURL of the template's compiled source.
+        * @param sourceURL The sourceURL of the template"s compiled source.
         * @param variable The data object variable name.
         * @return Returns the compiled Lo-Dash HTML template or a TemplateExecutor if no data is passed.
         **/

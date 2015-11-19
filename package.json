@@ -29,11 +29,11 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "@reactivex/rxjs": "^5.0.0-alpha.10",
     "glob": "^5.0.15",
     "globby": "^3.0.1",
     "lodash": "^3.10.1",
     "md5": "^2.0.0",
+    "rx": "^4.0.7",
     "strip-bom": "^2.0.0",
     "yargs": "^3.21.0"
   },
@@ -41,11 +41,13 @@
     "chai": "^3.0.0",
     "del": "^1.2.1",
     "gulp": "^3.9.0",
+    "gulp-babel": "^6.1.0",
+    "gulp-tslint": "^3.6.0",
     "gulp-util": "^3.0.6",
     "merge-stream": "^1.0.0",
     "mocha": "^2.3.3",
+    "ntypescript": "^1.201510130006.1",
     "through2": "^2.0.0",
-    "tsd": "^0.6.5",
-    "ntypescript": "^1.201510130006.1"
+    "tsd": "^0.6.5"
   }
 }

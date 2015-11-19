@@ -53,5 +53,8 @@
         "./spec/validate-proxies-spec.ts",
         "./tsd.d.ts"
     ],
-    "exclude": []
+    "exclude": [],
+    "atom": {
+        "rewriteTsconfig": true
+    }
 }

@@ -1,6 +1,6 @@
 
-declare module OmniSharp.Models {
-    enum HighlightClassification {
+export module OmniSharp.Models {
+    export enum HighlightClassification {
         Name = 1,
         Comment = 2,
         String = 3,
@@ -12,7 +12,7 @@ declare module OmniSharp.Models {
         PreprocessorKeyword = 9,
         ExcludedCode = 10
     }
-    interface AutoCompleteRequest extends OmniSharp.Models.Request {
+    export interface AutoCompleteRequest extends OmniSharp.Models.Request {
         WordToComplete?: string;
         WantDocumentationForEveryCompletionResult?: boolean;
         WantImportableTypes?: boolean;
@@ -21,21 +21,21 @@ declare module OmniSharp.Models {
         WantReturnType?: boolean;
         WantKind?: boolean;
     }
-    interface Request {
+    export interface Request {
         Line?: number;
         Column?: number;
         Buffer?: string;
         Changes?: OmniSharp.Models.LinePositionSpanTextChange[];
         FileName?: string;
     }
-    interface LinePositionSpanTextChange {
+    export interface LinePositionSpanTextChange {
         NewText: string;
         StartLine: number;
         StartColumn: number;
         EndLine: number;
         EndColumn: number;
     }
-    interface AutoCompleteResponse {
+    export interface AutoCompleteResponse {
         CompletionText: string;
         Description: string;
         DisplayText: string;
@@ -45,7 +45,7 @@ declare module OmniSharp.Models {
         Snippet: string;
         Kind: string;
     }
-    interface ChangeBufferRequest {
+    export interface ChangeBufferRequest {
         FileName?: string;
         StartLine?: number;
         StartColumn?: number;
@@ -53,7 +53,7 @@ declare module OmniSharp.Models {
         EndColumn?: number;
         NewText?: string;
     }
-    interface CodeActionRequest extends OmniSharp.Models.Request {
+    export interface CodeActionRequest extends OmniSharp.Models.Request {
         CodeAction?: number;
         WantsTextChanges?: boolean;
         SelectionStartColumn?: number;
@@ -61,17 +61,17 @@ declare module OmniSharp.Models {
         SelectionEndColumn?: number;
         SelectionEndLine?: number;
     }
-    interface CodeCheckRequest extends OmniSharp.Models.Request {
+    export interface CodeCheckRequest extends OmniSharp.Models.Request {
     }
-    interface CodeFormatRequest extends OmniSharp.Models.Request {
+    export interface CodeFormatRequest extends OmniSharp.Models.Request {
     }
-    interface CodeFormatResponse {
+    export interface CodeFormatResponse {
         Buffer: string;
     }
-    interface DiagnosticLocation extends OmniSharp.Models.QuickFix {
+    export interface DiagnosticLocation extends OmniSharp.Models.QuickFix {
         LogLevel: string;
     }
-    interface QuickFix {
+    export interface QuickFix {
         FileName: string;
         Line: number;
         Column: number;
@@ -80,87 +80,87 @@ declare module OmniSharp.Models {
         Text: string;
         Projects: string[];
     }
-    interface ErrorMessage {
+    export interface ErrorMessage {
         Text: string;
         FileName: string;
         Line: number;
         Column: number;
     }
-    interface EventTypes {
+    export interface EventTypes {
     }
-    interface FileMemberElement {
+    export interface FileMemberElement {
         ChildNodes: OmniSharp.Models.FileMemberElement[];
         Location: OmniSharp.Models.QuickFix;
         Kind: string;
         Projects: string[];
     }
-    interface FileMemberTree {
+    export interface FileMemberTree {
         TopLevelTypeDefinitions: OmniSharp.Models.FileMemberElement[];
     }
-    interface FilesChangedRequest {
+    export interface FilesChangedRequest {
     }
-    interface FilesChangedResponse {
+    export interface FilesChangedResponse {
     }
-    interface FindImplementationsRequest extends OmniSharp.Models.Request {
+    export interface FindImplementationsRequest extends OmniSharp.Models.Request {
     }
-    interface FindSymbolsRequest {
+    export interface FindSymbolsRequest {
         Language?: string;
         Filter?: string;
     }
-    interface FindUsagesRequest extends OmniSharp.Models.Request {
+    export interface FindUsagesRequest extends OmniSharp.Models.Request {
         OnlyThisFile?: boolean;
         ExcludeDefinition?: boolean;
     }
-    interface FixUsingsRequest extends OmniSharp.Models.Request {
+    export interface FixUsingsRequest extends OmniSharp.Models.Request {
         WantsTextChanges?: boolean;
     }
-    interface FixUsingsResponse {
+    export interface FixUsingsResponse {
         Buffer: string;
         AmbiguousResults: OmniSharp.Models.QuickFix[];
         Changes: OmniSharp.Models.LinePositionSpanTextChange[];
     }
-    interface FormatAfterKeystrokeRequest extends OmniSharp.Models.Request {
+    export interface FormatAfterKeystrokeRequest extends OmniSharp.Models.Request {
         Character?: string;
         Char?: string;
     }
-    interface FormatRangeRequest extends OmniSharp.Models.Request {
+    export interface FormatRangeRequest extends OmniSharp.Models.Request {
         EndLine?: number;
         EndColumn?: number;
     }
-    interface FormatRangeResponse {
+    export interface FormatRangeResponse {
         Changes: OmniSharp.Models.LinePositionSpanTextChange[];
     }
-    interface GetCodeActionRequest extends OmniSharp.Models.CodeActionRequest {
+    export interface GetCodeActionRequest extends OmniSharp.Models.CodeActionRequest {
     }
-    interface GetCodeActionsResponse {
+    export interface GetCodeActionsResponse {
         CodeActions: string[];
     }
-    interface GetTestCommandResponse {
+    export interface GetTestCommandResponse {
         Directory: string;
         TestCommand: string;
     }
-    interface GotoDefinitionRequest extends OmniSharp.Models.Request {
+    export interface GotoDefinitionRequest extends OmniSharp.Models.Request {
         Timeout?: number;
         WantMetadata?: boolean;
     }
-    interface GotoDefinitionResponse {
+    export interface GotoDefinitionResponse {
         FileName: string;
         Line: number;
         Column: number;
         MetadataSource: OmniSharp.Models.MetadataSource;
     }
-    interface MetadataSource {
+    export interface MetadataSource {
         AssemblyName: string;
         TypeName: string;
         ProjectName: string;
         VersionNumber: string;
         Language: string;
     }
-    interface GotoFileRequest extends OmniSharp.Models.Request {
+    export interface GotoFileRequest extends OmniSharp.Models.Request {
     }
-    interface GotoRegionRequest extends OmniSharp.Models.Request {
+    export interface GotoRegionRequest extends OmniSharp.Models.Request {
     }
-    interface HighlightSpan {
+    export interface HighlightSpan {
         StartLine: number;
         StartColumn: number;
         EndLine: number;
@@ -168,54 +168,54 @@ declare module OmniSharp.Models {
         Kind: string;
         Projects: string[];
     }
-    interface HighlightRequest extends OmniSharp.Models.Request {
+    export interface HighlightRequest extends OmniSharp.Models.Request {
         Lines?: number[];
         ProjectNames?: string[];
         Classifications?: OmniSharp.Models.HighlightClassification[];
         ExcludeClassifications?: OmniSharp.Models.HighlightClassification[];
     }
-    interface HighlightResponse {
+    export interface HighlightResponse {
         Highlights: OmniSharp.Models.HighlightSpan[];
     }
-    interface MembersFlatRequest extends OmniSharp.Models.Request {
+    export interface MembersFlatRequest extends OmniSharp.Models.Request {
     }
-    interface MembersTreeRequest extends OmniSharp.Models.Request {
+    export interface MembersTreeRequest extends OmniSharp.Models.Request {
     }
-    interface MetadataRequest extends OmniSharp.Models.MetadataSource {
+    export interface MetadataRequest extends OmniSharp.Models.MetadataSource {
         Timeout?: number;
     }
-    interface MetadataResponse {
+    export interface MetadataResponse {
         SourceName: string;
         Source: string;
     }
-    interface ModifiedFileResponse {
+    export interface ModifiedFileResponse {
         FileName: string;
         Buffer: string;
         Changes: OmniSharp.Models.LinePositionSpanTextChange[];
     }
-    interface NavigateDownRequest extends OmniSharp.Models.Request {
+    export interface NavigateDownRequest extends OmniSharp.Models.Request {
     }
-    interface NavigateResponse {
+    export interface NavigateResponse {
         Line: number;
         Column: number;
     }
-    interface NavigateUpRequest extends OmniSharp.Models.Request {
+    export interface NavigateUpRequest extends OmniSharp.Models.Request {
     }
-    interface PackageDependency {
+    export interface PackageDependency {
         Name: string;
         Version: string;
     }
-    interface PackageRestoreMessage {
+    export interface PackageRestoreMessage {
         FileName: string;
         Succeeded: boolean;
     }
-    interface PackageSearchItem {
+    export interface PackageSearchItem {
         Id: string;
         HasVersion: boolean;
         Version: string;
         Description: string;
     }
-    interface PackageSearchRequest {
+    export interface PackageSearchRequest {
         ProjectPath?: string;
         Sources?: string[];
         Search?: string;
@@ -223,89 +223,89 @@ declare module OmniSharp.Models {
         IncludePrerelease?: boolean;
         PackageTypes?: string[];
     }
-    interface PackageSearchResponse {
+    export interface PackageSearchResponse {
         Packages: OmniSharp.Models.PackageSearchItem[];
     }
-    interface PackageSourceRequest {
+    export interface PackageSourceRequest {
         ProjectPath?: string;
     }
-    interface PackageSourceResponse {
+    export interface PackageSourceResponse {
         Sources: string[];
     }
-    interface PackageVersionRequest {
+    export interface PackageVersionRequest {
         ProjectPath?: string;
         Sources?: string[];
         Id?: string;
         IncludePrerelease?: boolean;
     }
-    interface PackageVersionResponse {
+    export interface PackageVersionResponse {
         Versions: string[];
     }
-    interface QuickFixResponse {
+    export interface QuickFixResponse {
         QuickFixes: OmniSharp.Models.QuickFix[];
     }
-    interface RenameRequest extends OmniSharp.Models.Request {
+    export interface RenameRequest extends OmniSharp.Models.Request {
         WantsTextChanges?: boolean;
         ApplyTextChanges?: boolean;
         RenameTo?: string;
     }
-    interface RenameResponse {
+    export interface RenameResponse {
         Changes: OmniSharp.Models.ModifiedFileResponse[];
         ErrorMessage: string;
     }
-    interface RunCodeActionRequest extends OmniSharp.Models.CodeActionRequest {
+    export interface RunCodeActionRequest extends OmniSharp.Models.CodeActionRequest {
     }
-    interface RunCodeActionResponse {
+    export interface RunCodeActionResponse {
         Text: string;
         Changes: OmniSharp.Models.LinePositionSpanTextChange[];
     }
-    interface SignatureHelp {
+    export interface SignatureHelp {
         Signatures: OmniSharp.Models.SignatureHelpItem[];
         ActiveSignature: number;
         ActiveParameter: number;
     }
-    interface SignatureHelpItem {
+    export interface SignatureHelpItem {
         Name: string;
         Label: string;
         Documentation: string;
         Parameters: OmniSharp.Models.SignatureHelpParameter[];
     }
-    interface SignatureHelpParameter {
+    export interface SignatureHelpParameter {
         Name: string;
         Label: string;
         Documentation: string;
     }
-    interface SignatureHelpRequest extends OmniSharp.Models.Request {
+    export interface SignatureHelpRequest extends OmniSharp.Models.Request {
     }
-    interface SymbolLocation extends OmniSharp.Models.QuickFix {
+    export interface SymbolLocation extends OmniSharp.Models.QuickFix {
         Kind: string;
     }
-    interface TestCommandRequest extends OmniSharp.Models.Request {
+    export interface TestCommandRequest extends OmniSharp.Models.Request {
         Type?: OmniSharp.TestCommandType;
     }
-    interface TestCommandResponse {
+    export interface TestCommandResponse {
         TestCommand: string;
     }
-    interface TypeLookupRequest extends OmniSharp.Models.Request {
+    export interface TypeLookupRequest extends OmniSharp.Models.Request {
         IncludeDocumentation?: boolean;
     }
-    interface TypeLookupResponse {
+    export interface TypeLookupResponse {
         Type: string;
         Documentation: string;
     }
-    interface UnresolvedDependenciesMessage {
+    export interface UnresolvedDependenciesMessage {
         FileName: string;
         UnresolvedDependencies: OmniSharp.Models.PackageDependency[];
     }
-    interface UpdateBufferRequest extends OmniSharp.Models.Request {
+    export interface UpdateBufferRequest extends OmniSharp.Models.Request {
         FromDisk?: boolean;
     }
-    interface DnxFramework {
+    export interface DnxFramework {
         Name: string;
         FriendlyName: string;
         ShortName: string;
     }
-    interface DnxProject {
+    export interface DnxProject {
         Path: string;
         Name: string;
         Commands: { [key: string]: string };
@@ -315,12 +315,12 @@ declare module OmniSharp.Models {
         GlobalJsonPath: string;
         SourceFiles: string[];
     }
-    interface DnxWorkspaceInformation {
+    export interface DnxWorkspaceInformation {
         Projects: OmniSharp.Models.DnxProject[];
         RuntimePath: string;
         DesignTimeHostPort: number;
     }
-    interface MSBuildDiagnosticsMessage {
+    export interface MSBuildDiagnosticsMessage {
         LogLevel: string;
         FileName: string;
         Text: string;
@@ -329,7 +329,7 @@ declare module OmniSharp.Models {
         EndLine: number;
         EndColumn: number;
     }
-    interface MSBuildProject {
+    export interface MSBuildProject {
         ProjectGuid: string;
         Path: string;
         AssemblyName: string;
@@ -337,72 +337,72 @@ declare module OmniSharp.Models {
         TargetFramework: string;
         SourceFiles: string[];
     }
-    interface MSBuildProjectDiagnostics {
+    export interface MSBuildProjectDiagnostics {
         FileName: string;
         Warnings: OmniSharp.Models.MSBuildDiagnosticsMessage[];
         Errors: OmniSharp.Models.MSBuildDiagnosticsMessage[];
     }
-    interface MsBuildWorkspaceInformation {
+    export interface MsBuildWorkspaceInformation {
         SolutionPath: string;
         Projects: OmniSharp.Models.MSBuildProject[];
     }
 }
-declare module OmniSharp.Models.V2 {
-    interface OmniSharpCodeAction {
+export module OmniSharp.Models.V2 {
+    export interface OmniSharpCodeAction {
         Identifier: string;
         Name: string;
     }
-    interface GetCodeActionsRequest extends OmniSharp.Models.Request {
+    export interface GetCodeActionsRequest extends OmniSharp.Models.Request {
         Selection?: OmniSharp.Models.V2.Range;
     }
-    interface Range {
+    export interface Range {
         Start: OmniSharp.Models.V2.Point;
         End: OmniSharp.Models.V2.Point;
     }
-    interface Point {
+    export interface Point {
         Line: number;
         Column: number;
     }
-    interface GetCodeActionsResponse {
+    export interface GetCodeActionsResponse {
         CodeActions: OmniSharp.Models.V2.OmniSharpCodeAction[];
     }
-    interface ICodeActionRequest {
+    export interface ICodeActionRequest {
         Line?: number;
         Column?: number;
         Buffer?: string;
         FileName?: string;
         Selection?: OmniSharp.Models.V2.Range;
     }
-    interface RunCodeActionRequest extends OmniSharp.Models.Request {
+    export interface RunCodeActionRequest extends OmniSharp.Models.Request {
         Identifier?: string;
         Selection?: OmniSharp.Models.V2.Range;
         WantsTextChanges?: boolean;
     }
-    interface RunCodeActionResponse {
+    export interface RunCodeActionResponse {
         Changes: OmniSharp.Models.ModifiedFileResponse[];
     }
 }
-declare module OmniSharp.Models.v1 {
-    interface ProjectInformationRequest extends OmniSharp.Models.Request {
+export module OmniSharp.Models.v1 {
+    export interface ProjectInformationRequest extends OmniSharp.Models.Request {
     }
-    interface WorkspaceInformationRequest {
+    export interface WorkspaceInformationRequest {
         ExcludeSourceFiles?: boolean;
     }
 }
-declare module OmniSharp.Stdio.Protocol {
-    interface EventPacket extends OmniSharp.Stdio.Protocol.Packet {
+export module OmniSharp.Stdio.Protocol {
+    export interface EventPacket extends OmniSharp.Stdio.Protocol.Packet {
         Event: string;
         Body: any;
     }
-    interface Packet {
+    export interface Packet {
         Seq: number;
         Type?: string;
     }
-    interface RequestPacket extends OmniSharp.Stdio.Protocol.Packet {
+    export interface RequestPacket extends OmniSharp.Stdio.Protocol.Packet {
         Command: string;
         Arguments: any;
     }
-    interface ResponsePacket extends OmniSharp.Stdio.Protocol.Packet {
+    export interface ResponsePacket extends OmniSharp.Stdio.Protocol.Packet {
         Request_seq: number;
         Command: string;
         Running: boolean;
@@ -411,8 +411,8 @@ declare module OmniSharp.Stdio.Protocol {
         Body: any;
     }
 }
-declare module OmniSharp.ScriptCs {
-    interface ScriptCsContext {
+export module OmniSharp.ScriptCs {
+    export interface ScriptCsContext {
         CsxFiles: string[];
         References: string[];
         Usings: string[];
@@ -420,34 +420,34 @@ declare module OmniSharp.ScriptCs {
         Path: string;
     }
 }
-declare module OmniSharp {
-    enum TestCommandType {
+export module OmniSharp {
+    export enum TestCommandType {
         All = 0,
         Fixture = 1,
         Single = 2
     }
 }
 
-declare module OmniSharp {
-    interface Context<TRequest, TResponse>
+export module OmniSharp {
+    export interface Context<TRequest, TResponse>
     {
         request: TRequest;
         response: TResponse;
     }
-    interface RequestOptions
+    export interface RequestOptions
     {
         silent?: boolean;
         oneBasedIndices?: boolean
     }
-    interface CombinationKey<T>
+    export interface CombinationKey<T>
     {
         key: string;
         value: T;
     }
 }
-declare module OmniSharp.Api {
+export module OmniSharp.Api {
 
-    interface V1 {
+    export interface V1 {
         // 'autocomplete'
         autocomplete(request: OmniSharp.Models.AutoCompleteRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.AutoCompleteResponse[]>;
         // 'changebuffer'
@@ -514,7 +514,7 @@ declare module OmniSharp.Api {
         updatebuffer(request: OmniSharp.Models.UpdateBufferRequest, options?: RequestOptions): Rx.Observable<any>;
     }
 
-    interface V2 {
+    export interface V2 {
         // 'autocomplete'
         autocomplete(request: OmniSharp.Models.AutoCompleteRequest, options?: RequestOptions): Rx.Observable<OmniSharp.Models.AutoCompleteResponse[]>;
         // 'changebuffer'
@@ -582,9 +582,9 @@ declare module OmniSharp.Api {
     }
 
 }
-declare module OmniSharp.Events {
+export module OmniSharp.Events {
 
-    interface V1 {
+    export interface V1 {
         // 'autocomplete'
         autocomplete: Rx.Observable<Context<OmniSharp.Models.AutoCompleteRequest, OmniSharp.Models.AutoCompleteResponse[]>>;
         // 'changebuffer'
@@ -651,7 +651,7 @@ declare module OmniSharp.Events {
         updatebuffer: Rx.Observable<Context<OmniSharp.Models.UpdateBufferRequest, any>>;
     }
 
-    interface V2 {
+    export interface V2 {
         // 'autocomplete'
         autocomplete: Rx.Observable<Context<OmniSharp.Models.AutoCompleteRequest, OmniSharp.Models.AutoCompleteResponse[]>>;
         // 'changebuffer'
@@ -719,9 +719,9 @@ declare module OmniSharp.Events {
     }
 
 }
-declare module OmniSharp.Events.Aggregate {
+export module OmniSharp.Events.Aggregate {
 
-    interface V1 {
+    export interface V1 {
         // 'autocomplete'
         autocomplete: Rx.Observable<CombinationKey<Context<OmniSharp.Models.AutoCompleteRequest, OmniSharp.Models.AutoCompleteResponse[]>>[]>;
         // 'changebuffer'
@@ -788,7 +788,7 @@ declare module OmniSharp.Events.Aggregate {
         updatebuffer: Rx.Observable<CombinationKey<Context<OmniSharp.Models.UpdateBufferRequest, any>>[]>;
     }
 
-    interface V2 {
+    export interface V2 {
         // 'autocomplete'
         autocomplete: Rx.Observable<CombinationKey<Context<OmniSharp.Models.AutoCompleteRequest, OmniSharp.Models.AutoCompleteResponse[]>>[]>;
         // 'changebuffer'
@@ -856,8 +856,8 @@ declare module OmniSharp.Events.Aggregate {
     }
 
 }
-declare module OmniSharp {
-    interface Events {
+export module OmniSharp {
+    export interface Events {
         projectAdded: Rx.Observable<OmniSharp.Models.ProjectInformationResponse>;
         projectChanged: Rx.Observable<OmniSharp.Models.ProjectInformationResponse>;
         projectRemoved: Rx.Observable<OmniSharp.Models.ProjectInformationResponse>;
@@ -868,8 +868,8 @@ declare module OmniSharp {
         unresolvedDependencies: Rx.Observable<OmniSharp.Models.UnresolvedDependenciesMessage>;
     }
 }
-declare module OmniSharp.Aggregate {
-    interface Events {
+export module OmniSharp.Aggregate {
+    export interface Events {
         projectAdded: Rx.Observable<CombinationKey<OmniSharp.Models.ProjectInformationResponse>[]>;
         projectChanged: Rx.Observable<CombinationKey<OmniSharp.Models.ProjectInformationResponse>[]>;
         projectRemoved: Rx.Observable<CombinationKey<OmniSharp.Models.ProjectInformationResponse>[]>;
@@ -881,16 +881,15 @@ declare module OmniSharp.Aggregate {
     }
 }
 
-declare module OmniSharp.Models {
-    interface ProjectInformationResponse {
+export module OmniSharp.Models {
+    export interface ProjectInformationResponse {
         MsBuildProject: OmniSharp.Models.MSBuildProject;
         DnxProject: OmniSharp.Models.DnxProject;
     }
 
-    interface WorkspaceInformationResponse {
+    export interface WorkspaceInformationResponse {
         Dnx: OmniSharp.Models.DnxWorkspaceInformation;
         MSBuild: OmniSharp.Models.MsBuildWorkspaceInformation;
         ScriptCs: OmniSharp.ScriptCs.ScriptCsContext;
     }
 }
-            

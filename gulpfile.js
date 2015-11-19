@@ -1,68 +1,71 @@
-var gulp = require('gulp');
-var through = require('through2');
-var gutil = require('gulp-util');
-var merge = require('merge-stream');
-var del = require('del');
-var _ = require('lodash');
-var path = require('path');
-var fs = require('fs');
-var win32 = process.platform === "win32";
-var spawn = require('child_process').spawn;
-var glob = require('glob');
+const gulp = require('gulp');
+const through = require('through2');
+const gutil = require('gulp-util');
+const merge = require('merge-stream');
+const del = require('del');
+const _ = require('lodash');
+const path = require('path');
+const fs = require('fs');
+const win32 = process.platform === "win32";
+const spawn = require('child_process').spawn;
+const glob = require('glob');
+var babel = require("gulp-babel");
 var gulpPath = path.join(__dirname, 'node_modules/.bin/gulp' + (win32 && '.cmd' || ''));
+var ts = require('ntypescript');
+
 var metadata = {
-    lib: ['lib/**/*.d.ts', 'lib/**/*.js', '!lib/es6.d.ts', '!lib/interfaces.d.ts'],
-    spec: ['spec/**/*.d.ts', 'spec/**/*.js', '!spec/tsd.d.ts'],
+    lib: ['lib/**/*.ts', '!lib/**/*.d.ts'],
+    spec: ['spec/**/*.ts', '!spec/**/*.d.ts'],
 };
 
-gulp.task('typescript', ['sync-clients','clean'], function() {
-    var args = ['--declaration', '-p', path.resolve(__dirname.toString())];
-    var compile = new Promise(function(resolve, reject) {
-        var tsc = spawn(path.resolve(__dirname + '/node_modules/.bin/ntsc' + (win32 && '.cmd' || '')), args);
-        tsc.stdout.pipe(process.stdout);
-        tsc.stderr.pipe(process.stderr);
-        tsc.on('close', function(code) {
-            resolve();
-        });
+// Simply take TS code and strip anything not javascript
+// Does not do any compile time checking.
+function tsTranspile() {
+    return through.obj(function(file, enc, cb) {
+        if (file.isNull()) {
+            cb(null, file);
+            return;
+        }
+
+        try {
+            var res = ts.transpile(file.contents.toString(), {
+                module: ts.ModuleKind.ES6,
+                target: ts.ScriptTarget.ES6
+            }, file.path);
+
+            file.contents = new Buffer(res);
+            file.path = gutil.replaceExtension(file.path, '.js');
+            gutil.log(gutil.colors.cyan('Writing ') + gutil.colors.green(_.trim(file.path.replace(__dirname, ''), path.sep)));
+
+            this.push(file);
+        } catch (e) {
+            console.log('failed', file.path, e);
+        }
+
+        cb();
     });
+}
 
-    return compile;
-});
+function tsTranspiler(source, dest) {
+    return source
+        .pipe(tslint())
+        .pipe(tsTranspile())
+        .pipe(babel())
+        .pipe(gulp.dest(dest))
+        .pipe(tslint.report('prose'));
+}
 
-gulp.task('omnisharp-client-declaration', ['typescript'], function() {
-    return new Promise(function(resolve) {
-        glob('lib/**/*.d.ts', {}, function(e, files) {
-            files = _.filter(files, function(x) { return !(_.endsWith(x, 'es6.d.ts') || _.contains(x, 'drivers/')) });
-            var output = ['/// <reference path="./omnisharp-server.d.ts" />'];
-            var temp = _.template('declare module "${name}" {\n${content}\n}\n');
-            _.each(files, function(file) {
-                var name = 'omnisharp-client/' + file.substring(0, file.length - 5).replace(/lib\//g, '');
-                var dot = name.split('/');
-                dot = dot.slice(0, dot.length - 1).join('/');
-                var dotdot = name.split('/');
-                dotdot = dotdot.slice(0, dotdot.length - 2).join('/');
-                var content = fs.readFileSync(file).toString();
-                content = content.replace(/\.\.\//g, '' + dotdot + '/');
-                content = content.replace(/\.\//g, '' + dot + '/');
-                content = content.replace(/export declare/g, 'export');
-                content = content.replace(/declare module/g, 'export module');
+gulp.task('typescript', ['clean'], function() {
+    var lib = tsTranspiler(gulp.src(metadata.lib), './lib');
+    var spec = tsTranspiler(gulp.src(metadata.spec), './spec');
 
-                output.push(temp({name: name, content: content }));
-            });
-
-                output = output.join('\n\n').replace('declare module "omnisharp-client/omnisharp-client"', 'declare module "omnisharp-client"');
-
-            fs.writeFileSync('omnisharp-client.d.ts', output);
-
-            resolve();
-        });
-    });
+    return merge(lib, spec);
 });
 
 gulp.task('clean', ['clean:lib', 'clean:spec']);
 
 gulp.task('clean:lib', function(done) {
-    del(metadata.lib, function(err, paths) {
+    del(metadata.lib.map(z => z.indexOf('.d.ts') > -1 ? z : z.replace('.ts', '.js')), function(err, paths) {
         _.each(paths, function(path) {
             gutil.log(gutil.colors.red('Deleted ') + gutil.colors.magenta(path.replace(__dirname, '').substring(1)));
         });
@@ -71,7 +74,7 @@ gulp.task('clean:lib', function(done) {
 });
 
 gulp.task('clean:spec', function(done) {
-    del(metadata.spec, function(err, paths) {
+    del(metadata.spec.map(z => z.indexOf('.d.ts') > -1 ? z : z.replace('.ts', '.js')), function(err, paths) {
         _.each(paths, function(path) {
             gutil.log(gutil.colors.red('Deleted ') + gutil.colors.magenta(path.replace(__dirname, '').substring(1)));
         });
@@ -80,18 +83,18 @@ gulp.task('clean:spec', function(done) {
 });
 
 gulp.task('sync-clients', [], function() {
-    var omnisharpServer = fs.readFileSync('./omnisharp-server.d.ts').toString();
+    const omnisharpServer = fs.readFileSync('./omnisharp-server.d.ts').toString();
     _.each(['v1', 'v2'], function(version) {
-        var VERSION = version.toUpperCase();
-        var regex = new RegExp('declare module OmniSharp\\.Events {[\\s\\S]*?interface '+VERSION+' {([\\s\\S]*?)}');
+        const VERSION = version.toUpperCase();
+        const regex = new RegExp('declare module OmniSharp\\.Events {[\\s\\S]*?interface '+VERSION+' {([\\s\\S]*?)}');
 
-        var interf = omnisharpServer.match(regex)[1];
-        var properties = [];
+        const interf = omnisharpServer.match(regex)[1];
+        const properties = [];
         _.each(_.trim(interf).split('\n'), function(line) {
             line = _.trim(line);
             if (_.startsWith(line, '//')) return;
 
-            var name = line.indexOf(':');
+            const name = line.indexOf(':');
             if (line && name > -1) {
                 properties.push({
                     line: _.trimRight(line.substr(name), ';').replace('CombinationKey<', 'OmniSharp.CombinationKey<').replace('Context<', 'OmniSharp.Context<'),
@@ -100,14 +103,14 @@ gulp.task('sync-clients', [], function() {
             }
         });
 
-        var regex2 = new RegExp('declare module OmniSharp\\.Events\\.Aggregate {[\\s\\S]*?interface '+VERSION+' {([\\s\\S]*?)}');
-        var interf2 = omnisharpServer.match(regex2)[1];
-        var aggregateProperties = [];
+        const regex2 = new RegExp('declare module OmniSharp\\.Events\\.Aggregate {[\\s\\S]*?interface '+VERSION+' {([\\s\\S]*?)}');
+        const interf2 = omnisharpServer.match(regex2)[1];
+        const aggregateProperties = [];
         _.each(_.trim(interf2).split('\n'), function(line) {
             line = _.trim(line);
             if (_.startsWith(line, '//')) return;
 
-            var name = line.indexOf(':');
+            const name = line.indexOf(':');
             if (line && name > -1) {
                 aggregateProperties.push({
                     line: _.trimRight(line.substr(name), ';').replace('CombinationKey<', 'OmniSharp.CombinationKey<').replace('Context<', 'OmniSharp.Context<'),
@@ -116,7 +119,7 @@ gulp.task('sync-clients', [], function() {
             }
         });
 
-        var result = _.template('\
+        const result = _.template('\
 // THIS FILE IS GENERATED BY GULP TASK: "sync-clients"\n\
 import {Client${VERSION}} from "../clients/client-${version}";\n\
 import {ObservationClientBase, CombinationClientBase} from "./composite-client-base";\n\
@@ -139,9 +142,9 @@ export class AggregateClient${VERSION}<T extends Client${VERSION}> extends Combi
 gulp.task('watch', function() {
     // Watch is not installed by default if you want to use it
     //  you need to install manually but don't save it as it causes CI issues.
-    var watch = require('gulp-watch');
+    const watch = require('gulp-watch');
     // Auto restart watch when gulpfile is changed.
-    var p = spawn(gulpPath, ['file-watch'], {stdio: 'inherit'});
+    const p = spawn(gulpPath, ['file-watch'], {stdio: 'inherit'});
     return watch('gulpfile.js', function() {
         p.kill();
         p = spawn(gulpPath, ['file-watch'], {stdio: 'inherit'});
@@ -151,16 +154,16 @@ gulp.task('watch', function() {
 gulp.task('file-watch', function() {
     // Watch is not installed by default if you want to use it
     //  you need to install manually but don't save it as it causes CI issues.
-    var watch = require('gulp-watch');
-    var plumber = require('gulp-plumber');
-    var newer = require('gulp-newer');
+    const watch = require('gulp-watch');
+    const plumber = require('gulp-plumber');
+    const newer = require('gulp-newer');
 
-    var lib = tsTranspiler(gulp.src(metadata.lib)
+    const lib = tsTranspiler(gulp.src(metadata.lib)
         .pipe(watch(metadata.lib))
         .pipe(plumber())
         .pipe(newer('./lib')), './lib')
 
-    var spec = tsTranspiler(gulp.src(metadata.spec)
+    const spec = tsTranspiler(gulp.src(metadata.spec)
         .pipe(watch(metadata.spec))
         .pipe(plumber())
         .pipe(newer('./spec')), './spec');
@@ -168,7 +171,7 @@ gulp.task('file-watch', function() {
     return merge(lib, spec);
 });
 
-gulp.task('npm-prepublish', ['typescript', 'omnisharp-client-declaration']);
+gulp.task('npm-prepublish', ['typescript']);
 
 // The default task (called when you run `gulp` from CLI)
-gulp.task('default', ['typescript', 'omnisharp-client-declaration']);
+gulp.task('default', ['typescript']);
