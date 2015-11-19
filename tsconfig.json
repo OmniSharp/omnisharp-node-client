@@ -14,12 +14,11 @@
     },
     "compileOnSave": true,
     "filesGlob": [
-        "./**/*.ts",
-        "!./*/**/*.d.ts",
-        "!./omnisharp-client.d.ts",
-        "!./omnisharp-server.d.ts",
-        "!./typings/**/*.d.ts",
-        "!./node_modules/**/*.ts"
+        "./lib/**/*.ts",
+        "!./lib/**/*.d.ts",
+        "./spec/**/*.ts",
+        "!./spec/**/*.d.ts",
+        "./tsd.d.ts"
     ],
     "files": [
         "./lib/aggregate/composite-client-base.ts",
@@ -37,18 +36,17 @@
         "./lib/enums.ts",
         "./lib/helpers/plugin-manager.ts",
         "./lib/helpers/prioritization.ts",
+        "./lib/interfaces.ts",
         "./lib/omnisharp-client.ts",
         "./lib/omnisharp-path.ts",
+        "./lib/omnisharp-server.ts",
         "./lib/options.ts",
-        "./lib/project-finder.ts",
-        "./lib/queue.ts",
         "./lib/response-handling.ts",
         "./lib/stdio/child.ts",
         "./spec/candidate-find-spec.ts",
         "./spec/omnisharp-client-commands-v2.ts",
         "./spec/omnisharp-client-commands.ts",
         "./spec/omnisharp-client-spec.ts",
-        "./spec/project-find-spec.ts",
         "./spec/stdio-spec.ts",
         "./spec/validate-proxies-spec.ts",
         "./tsd.d.ts"

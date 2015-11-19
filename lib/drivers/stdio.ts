@@ -1,25 +1,25 @@
+import {OmniSharp} from "../omnisharp-server";
 import {IDriver, IDriverOptions, ILogger} from "../interfaces";
 import {defaults} from "lodash";
 import {DriverState} from "../enums";
-import {spawn, exec, ChildProcess} from "child_process";
+import {spawn, ChildProcess} from "child_process";
 import * as readline from "readline";
-import {Observable, Observer, Subject, AsyncSubject, CompositeDisposable, Disposable} from "rx";
-import {resolve, join} from 'path';
-import {omnisharpLocation} from '../omnisharp-path';
-import {findProject as projectFinder} from "../project-finder";
-import {enqueue} from "../queue";
+import {Observable, Subject, AsyncSubject, CompositeDisposable, Disposable} from "rx";
+import {join} from "path";
+import {omnisharpLocation} from "../omnisharp-path";
 
-var win32 = false;
+let win32 = false;
+let env: any;
 // Setup the new process env.
-if (process.platform === 'win32') {
+if (process.platform === "win32") {
     win32 = true;
     // ALL I have to say is WTF.
-    var env: any = { ATOM_SHELL_INTERNAL_RUN_AS_NODE: '1' };
+    env = { ATOM_SHELL_INTERNAL_RUN_AS_NODE: "1" };
 } else {
-    var env: any = defaults({ ATOM_SHELL_INTERNAL_RUN_AS_NODE: '1' }, process.env);
+    env = defaults({ ATOM_SHELL_INTERNAL_RUN_AS_NODE: "1" }, process.env);
 }
 
-class StdioDriver implements IDriver {
+export class StdioDriver implements IDriver {
     private _seq: number;
     private _process: ChildProcess;
     private _outstandingRequests = new Map<number, AsyncSubject<any>>();
@@ -41,7 +41,7 @@ class StdioDriver implements IDriver {
     private _timeout: number;
     public id: string;
 
-    constructor({projectPath, debug, serverPath, findProject, logger, timeout, additionalArguments}: IDriverOptions) {
+    constructor({projectPath, serverPath, findProject, logger, timeout, additionalArguments}: IDriverOptions) {
         this._projectPath = projectPath;
         this._findProject = findProject || false;
         this._serverPath = serverPath || omnisharpLocation;
@@ -61,11 +61,11 @@ class StdioDriver implements IDriver {
         }));
 
         this._disposable.add(Disposable.create(() => {
-            var iterator = this._outstandingRequests.entries();
-            var iteratee = iterator.next();
+            const iterator = this._outstandingRequests.entries();
+            let iteratee = iterator.next();
 
             while (!iteratee.done) {
-                var [key, disposable] = iteratee.value;
+                const [key, disposable] = iteratee.value;
 
                 this._outstandingRequests.delete(key);
                 disposable.dispose();
@@ -98,7 +98,7 @@ class StdioDriver implements IDriver {
     public connect() {
         this._seq = 1;
         this._outstandingRequests.clear();
-        !this._connectionStream.isDisposed && this._connectionStream.onNext(DriverState.Connecting);
+        if (!this._connectionStream.isDisposed) { this._connectionStream.onNext(DriverState.Connecting); }
 
         this._logger.log(`Connecting to child @ ${process.execPath}`);
         this._logger.log(`Path to server: ${this._serverPath}`);
@@ -106,57 +106,59 @@ class StdioDriver implements IDriver {
 
         if (win32) {
             // Spawn a special windows only node client... so that we can shutdown nicely.
-            var serverArguments: any[] = [join(__dirname, "../stdio/child.js"), "--serverPath", this._serverPath, "--projectPath", this._projectPath].concat(this._additionalArguments || []);
+            const serverArguments: any[] = [join(__dirname, "../stdio/child.js"), "--serverPath", this._serverPath, "--projectPath", this._projectPath].concat(this._additionalArguments || []);
             this._logger.log(`Arguments: ${serverArguments}`);
             this._process = spawn(process.execPath, serverArguments, { env });
         } else {
-            var serverArguments: any[] = ["--stdio", "-s", this._projectPath, "--hostPID", process.pid].concat(this._additionalArguments || []);
+            const serverArguments: any[] = ["--stdio", "-s", this._projectPath, "--hostPID", process.pid].concat(this._additionalArguments || []);
             this._logger.log(`Arguments: ${serverArguments}`);
             this._process = spawn(this._serverPath, serverArguments, { env });
         }
 
         if (!this._process.pid) {
-            this.serverErr('failed to connect to connect to server');
+            this.serverErr("failed to connect to connect to server");
             return;
         }
 
-        this._process.stderr.on('data', (data) => this._logger.error(data.toString()));
-        this._process.stderr.on('data', (data) => this.serverErr(data));
+        this._process.stderr.on("data", (data: any) => this._logger.error(data.toString()));
+        this._process.stderr.on("data", (data: any) => this.serverErr(data));
 
-        var rl = readline.createInterface({
+        const rl = readline.createInterface({
             input: this._process.stdout,
             output: undefined
         });
 
-        rl.on('line', (data) => this.handleData(data));
-        //rl.on('line', (data) => enqueue(() => this.handleData(data)));
+        rl.on("line", (data: any) => this.handleData(data));
+        //rl.on("line", (data) => enqueue(() => this.handleData(data)));
 
         this.id = this._process.pid.toString();
-        this._process.on('error', (data) => this.serverErr(data));
-        this._process.on('close', () => this.disconnect());
-        this._process.on('exit', () => this.disconnect());
-        this._process.on('disconnect', () => this.disconnect());
+        this._process.on("error", (data: any) => this.serverErr(data));
+        this._process.on("close", () => this.disconnect());
+        this._process.on("exit", () => this.disconnect());
+        this._process.on("disconnect", () => this.disconnect());
     }
 
-    private serverErr(data) {
-        var friendlyMessage = this.parseError(data);
-        !this._connectionStream.isDisposed && this._connectionStream.onNext(DriverState.Error);
+    private serverErr(data: any) {
+        const friendlyMessage = this.parseError(data);
+        if (!this._connectionStream.isDisposed) { this._connectionStream.onNext(DriverState.Error); }
         this._process = null;
 
-        !this._eventStream.isDisposed && this._eventStream.onNext({
-            Type: "error",
-            Event: "error",
-            Seq: -1,
-            Body: {
-                Message: friendlyMessage
-            }
-        });
+        if (!this._eventStream.isDisposed) {
+            this._eventStream.onNext({
+                Type: "error",
+                Event: "error",
+                Seq: -1,
+                Body: {
+                    Message: friendlyMessage
+                }
+            });
+        }
     }
 
-    private parseError(data) {
-        var message = data.toString();
-        if (data.code === 'ENOENT' && data.path === 'mono') {
-            message = 'mono could not be found, please ensure it is installed and in your path';
+    private parseError(data: any) {
+        let message = data.toString();
+        if (data.code === "ENOENT" && data.path === "mono") {
+            message = "mono could not be found, please ensure it is installed and in your path";
         }
         return message;
     }
@@ -175,22 +177,23 @@ class StdioDriver implements IDriver {
             return Observable.throw<any>(new Error("Server is not connected, erroring out"));
         }
 
-        var sequence = this._seq++;
-        var packet: OmniSharp.Stdio.Protocol.RequestPacket = {
+        const sequence = this._seq++;
+        const packet: OmniSharp.Stdio.Protocol.RequestPacket = {
             Command: command,
             Seq: sequence,
             Arguments: request
         };
 
-        var subject = new AsyncSubject<TResponse>();
+        const subject = new AsyncSubject<TResponse>();
         this._outstandingRequests.set(sequence, subject);
-        this._process.stdin.write(JSON.stringify(packet) + '\n', 'utf8');
-        return subject.timeout(this._timeout, Observable.throw<any>('Request timed out'));
+        this._process.stdin.write(JSON.stringify(packet) + "\n", "utf8");
+        return subject.timeout(this._timeout, Observable.throw<any>("Request timed out"));
     }
 
     private handleData(data: string) {
+        let packet: OmniSharp.Stdio.Protocol.Packet
         try {
-            var packet: OmniSharp.Stdio.Protocol.Packet = JSON.parse(data.trim());
+            packet = JSON.parse(data.trim());
         } catch (_error) {
             this.handleNonPacket(data);
         }
@@ -211,7 +214,7 @@ class StdioDriver implements IDriver {
     private handlePacketResponse(response: OmniSharp.Stdio.Protocol.ResponsePacket) {
         if (this._outstandingRequests.has(response.Request_seq)) {
 
-            var observer = this._outstandingRequests.get(response.Request_seq);
+            const observer = this._outstandingRequests.get(response.Request_seq);
             this._outstandingRequests.delete(response.Request_seq);
             if (observer.isDisposed) return;
             if (response.Success) {
@@ -231,28 +234,28 @@ class StdioDriver implements IDriver {
     }
 
     private handlePacketEvent(event: OmniSharp.Stdio.Protocol.EventPacket) {
-        !this._eventStream.isDisposed && this._eventStream.onNext(event);
+        if (!this._eventStream.isDisposed) { this._eventStream.onNext(event); }
         if (!this._connectionStream.isDisposed && event.Event === "started") {
             this._connectionStream.onNext(DriverState.Connected);
         }
     }
 
     private handleNonPacket(data: any) {
-        var s = data.toString();
-        !this._eventStream.isDisposed && this._eventStream.onNext({
-            Type: "unknown",
-            Event: "unknown",
-            Seq: -1,
-            Body: {
-                Message: s
-            }
-        });
+        const s = data.toString();
+        if (!this._eventStream.isDisposed) {
+            this._eventStream.onNext({
+                Type: "unknown",
+                Event: "unknown",
+                Seq: -1,
+                Body: {
+                    Message: s
+                }
+            });
+        }
 
-        var ref = s.match(/Detected an OmniSharp instance already running on port/);
+        const ref = s.match(/Detected an OmniSharp instance already running on port/);
         if ((ref != null ? ref.length : 0) > 0) {
             this.disconnect();
         }
     }
 }
-
-export = StdioDriver;

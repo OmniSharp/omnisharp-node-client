@@ -1,6 +1,4 @@
 // TODO: When omnisharp supports websockets
-class WsDriver {
+export class WsDriver {
 
 }
-
-export = WsDriver;

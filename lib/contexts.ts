@@ -1,7 +1,8 @@
-import {Observable, CompositeDisposable} from "rx";
+import {OmniSharp} from "./omnisharp-server";
+import {Observable} from "rx";
 import {uniqueId, isObject, cloneDeep} from "lodash";
 import {requestMutator, responseMutator} from "./response-handling";
-var stripBom = require('strip-bom');
+const stripBom = require("strip-bom");
 
 export class CommandContext<T> {
     constructor(public command: string, public value: T) { }
@@ -21,14 +22,16 @@ export class RequestContext<T> {
         return null;
     }
 
-    constructor(public clientId, command: string, request: T, {silent, oneBasedIndices}: OmniSharp.RequestOptions, sequence = uniqueId("__request")) {
+    constructor(public clientId: string, command: string, request: T, {silent, oneBasedIndices}: OmniSharp.RequestOptions, sequence = uniqueId("__request")) {
         if (command) this.command = command.toLowerCase();
 
         if (isObject(request)) {
-            if (request['Buffer']) {
-                request['Buffer'] = stripBom(request['Buffer']);
+            /* tslint:disable:no-string-literal */
+            if (request["Buffer"]) {
+                request["Buffer"] = stripBom(request["Buffer"]);
             }
-            var obj = cloneDeep(request);
+            /* tslint:enable:no-string-literal */
+            let obj = cloneDeep(request);
             if (!oneBasedIndices) {
                 obj = requestMutator(obj);
             }

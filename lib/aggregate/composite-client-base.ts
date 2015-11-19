@@ -1,10 +1,10 @@
 import {ReplaySubject, Observable, CompositeDisposable, Disposable} from "rx";
-import * as _ from 'lodash';
-import {ClientEventsBase, ClientBase} from "../clients/client-base";
+import * as _ from "lodash";
 import {DriverState} from "../enums";
 import {OmnisharpClientStatus} from "../interfaces";
 import {RequestContext, ResponseContext, CommandContext} from "../contexts";
 import {merge, aggregate} from "../decorators";
+import {OmniSharp} from "../omnisharp-server";
 
 export class ObservationClientBase<Client> implements OmniSharp.Events, Rx.IDisposable {
     protected _disposable = new CompositeDisposable();
@@ -53,7 +53,7 @@ export class ObservationClientBase<Client> implements OmniSharp.Events, Rx.IDisp
     public add(client: Client) {
         this.clients.push(client);
         this.onNext();
-        var d = Disposable.create(() => {
+        const d = Disposable.create(() => {
             _.pull(this.clients, client);
             this.onNext();
         });
@@ -95,21 +95,21 @@ export class CombinationClientBase<Client> implements OmniSharp.Aggregate.Events
 
         // Caches the value, so that when the underlying clients change
         // we can start with the old value of the remaining clients
-        var cache: { [key: string]: T } = {};
+        const cache: { [key: string]: T } = {};
 
         return this._clientsSubject.flatMapLatest(clients => {
             // clean up after ourselves.
-            var removal = _.difference(_.keys(cache), clients.map(z => z['uniqueId']));
+            const removal = _.difference(_.keys(cache), clients.map(z => z["uniqueId"]));
             _.each(removal, z => delete cache[z]);
 
             return Observable.combineLatest(
-                clients.map(z => selector(z).startWith(cache[z['uniqueId']])),
+                clients.map(z => selector(z).startWith(cache[z["uniqueId"]])),
                 (...values: T[]) =>
                     values.map((value, index) => {
-                        cache[clients[index]['uniqueId']] = value;
+                        cache[clients[index]["uniqueId"]] = value;
 
                         return {
-                            key: clients[index]['uniqueId'],
+                            key: clients[index]["uniqueId"],
                             value: value
                         };
                     })
@@ -126,7 +126,7 @@ export class CombinationClientBase<Client> implements OmniSharp.Aggregate.Events
     public add(client: Client) {
         this.clients.push(client);
         this.onNext();
-        var d = Disposable.create(() => {
+        const d = Disposable.create(() => {
             _.pull(this.clients, client);
             this.onNext();
         });

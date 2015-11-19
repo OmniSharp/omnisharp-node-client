@@ -1,20 +1,20 @@
 import {RequestContext} from "../contexts";
 import {each} from "lodash";
 
-var normalCommands = [
-    'findimplementations', 'findsymbols', 'findusages',
-    'gotodefinition', 'typelookup', 'navigateup',
-    'navigatedown', 'getcodeactions', 'filesChanged',
-    'runcodeaction', 'autocomplete', 'signatureHelp'
+const normalCommands = [
+    "findimplementations", "findsymbols", "findusages",
+    "gotodefinition", "typelookup", "navigateup",
+    "navigatedown", "getcodeactions", "filesChanged",
+    "runcodeaction", "autocomplete", "signatureHelp"
 ];
-var priorityCommands = [
-    'updatebuffer', 'changebuffer', 'formatAfterKeystroke'
+const priorityCommands = [
+    "updatebuffer", "changebuffer", "formatAfterKeystroke"
 ];
 
-var prioritySet = new Set<string>();
-var normalSet = new Set<string>();
-var deferredSet = new Set<string>();
-var undeferredSet = new Set<string>();
+const prioritySet = new Set<string>();
+const normalSet = new Set<string>();
+const deferredSet = new Set<string>();
+const undeferredSet = new Set<string>();
 
 each(normalCommands, x => {
     normalSet.add(x);

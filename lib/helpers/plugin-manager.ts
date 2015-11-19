@@ -5,9 +5,9 @@ import {Observable, Subject} from "rx";
 import {bootstrapLocation} from "../omnisharp-path";
 import * as fs from "fs";
 import {join} from "path";
-var exists = Observable.fromCallback(fs.exists),
+const exists = Observable.fromCallback(fs.exists),
     readFile: (file: string) => Observable<any> = Observable.fromNodeCallback(fs.readFile);
-var md5: (value: any) => string = require('md5');
+const md5: (value: any) => string = require("md5");
 
 export class PluginManager {
     private _plugins: Set<IOmnisharpPlugin>;
@@ -26,9 +26,9 @@ export class PluginManager {
     public getOmnisharpPath() {
         if (this._currentBootstrap) return Observable.just(this._currentBootstrap);
 
-        var plugins = [];
-        var hashStrings = [];
-        var hash;
+        const plugins: any[] = [];
+        const hashStrings: any[] = [];
+        let hash: string;
         this._plugins.forEach(plugin => {
             plugins.push(plugin);
         });
@@ -51,7 +51,7 @@ export class PluginManager {
                         return;
                     }
 
-                    var command = [bootstrapLocation, '-    s', this._solutionLocation].concat(
+                    const command = [bootstrapLocation, "-    s", this._solutionLocation].concat(
                         plugins.map(x => {
                             if (x.location) {
                                 return `--plugins ${x.location}`;
@@ -60,7 +60,7 @@ export class PluginManager {
                             } else {
                                 return `--plugin-name ${x.name}`;
                             }
-                        })).join(' ');
+                        })).join(" ");
 
                     exec(command, function(error, stdout) {
                         observer.onNext(stdout.toString());

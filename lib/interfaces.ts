@@ -1,3 +1,4 @@
+import {OmniSharp} from "./omnisharp-server";
 import {DriverState, Driver} from "./enums";
 import {RequestContext, ResponseContext, CommandContext} from "./contexts";
 
@@ -6,8 +7,8 @@ export interface IStaticDriver {
 }
 
 export interface ILogger {
-    log(...values: any[]);
-    error(...values: any[]);
+    log(...values: any[]): void;
+    error(...values: any[]): void;
 }
 
 export interface IDriverOptions {
@@ -23,12 +24,12 @@ export interface IDriverOptions {
 
 export interface IDriver extends Rx.IDisposable {
     id: string;
-    connect();
+    connect(): void;
     currentState: DriverState;
     events: Rx.Observable<OmniSharp.Stdio.Protocol.EventPacket>;
     commands: Rx.Observable<OmniSharp.Stdio.Protocol.ResponsePacket>;
     state: Rx.Observable<DriverState>;
-    disconnect();
+    disconnect(): void;
     serverPath: string;
     projectPath: string;
     request<TRequest, TResponse>(command: string, request?: TRequest): Rx.Observable<TResponse>;
@@ -54,7 +55,7 @@ export interface OmnisharpClientOptions extends IDriverOptions {
             tabSize?: number;
         }
     };
-    plugins: IOmnisharpPlugin[];
+    plugins?: IOmnisharpPlugin[];
 }
 
 export interface IOmnisharpPlugin {
@@ -69,8 +70,8 @@ export interface OmnisharpClientStatus {
     hasOutgoingRequests: boolean;
 }
 
-declare module Omnisharp {
-    interface Events {
+export module Omnisharp {
+    export interface Events {
         events: Rx.Observable<OmniSharp.Stdio.Protocol.EventPacket>;
         commands: Rx.Observable<OmniSharp.Stdio.Protocol.ResponsePacket>;
         state: Rx.Observable<DriverState>;
