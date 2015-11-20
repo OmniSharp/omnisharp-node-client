@@ -295,14 +295,12 @@ export class ClientBase<TEvents extends ClientEventsBase> implements IDriver, Rx
     protected watchEvent = memoize(<TBody>(event: string): Observable<TBody> => {
         const subject = new Subject<CommandContext<any>>();
         this._eventWatchers.set(event, subject);
-        this._disposable.add(subject);
         return <any>subject.share();
     });
 
     protected watchCommand = memoize((command: string): Observable<OmniSharp.Context<any, any>> => {
         const subject = new Subject<ResponseContext<any, any>>();
         this._commandWatchers.set(command.toLowerCase(), subject);
-        this._disposable.add(subject);
         return subject.share();
     });
 

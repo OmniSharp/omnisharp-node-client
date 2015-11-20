@@ -30,8 +30,6 @@ export class ObservationClientBase<Client> implements OmniSharp.Events, Rx.IDisp
 
     constructor(private clients: Client[] = []) {
         this.onNext();
-
-        this._disposable.add(this._clientsSubject);
         this._disposable.add(this._clientDisposable);
     }
 
@@ -81,8 +79,6 @@ export class CombinationClientBase<Client> implements OmniSharp.Aggregate.Events
 
     constructor(private clients: Client[] = []) {
         this.onNext();
-
-        this._disposable.add(this._clientsSubject);
         this._disposable.add(this._clientDisposable);
     }
 

@@ -8,7 +8,6 @@ const path = require('path');
 const fs = require('fs');
 const win32 = process.platform === "win32";
 const spawn = require('child_process').spawn;
-const glob = require('glob');
 var babel = require("gulp-babel");
 var tslint = require("gulp-tslint");
 var gulpPath = path.join(__dirname, 'node_modules/.bin/gulp' + (win32 && '.cmd' || ''));
