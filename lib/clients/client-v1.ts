@@ -259,12 +259,12 @@ export class ClientV1 extends ClientBase<ClientEventsV1> implements OmniSharp.Ap
 
     @fixup
     @endpoint()
-    public projects(request: OmniSharp.Models.v1.ProjectInformationRequest, options?: OmniSharp.RequestOptions): Rx.Observable<OmniSharp.Models.WorkspaceInformationResponse> { throw new Error("Implemented by decorator"); }
+    public projects(request: OmniSharp.Models.v1.WorkspaceInformationRequest, options?: OmniSharp.RequestOptions): Rx.Observable<OmniSharp.Models.WorkspaceInformationResponse> { throw new Error("Implemented by decorator"); }
 
     @fixup
     @isNotNull((request: any) => request.FileName)
     @endpoint()
-    public project(request: OmniSharp.Models.Request, options?: OmniSharp.RequestOptions): Rx.Observable<OmniSharp.Models.ProjectInformationResponse> { throw new Error("Implemented by decorator"); }
+    public project(request: OmniSharp.Models.v1.ProjectInformationRequest, options?: OmniSharp.RequestOptions): Rx.Observable<OmniSharp.Models.ProjectInformationResponse> { throw new Error("Implemented by decorator"); }
 
     @fixup
     @isNotNull((request: any) => request.FileName)

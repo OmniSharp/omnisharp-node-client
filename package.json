@@ -30,8 +30,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "glob": "^5.0.15",
-    "globby": "^3.0.1",
+    "globby": "^4.0.0",
     "lodash": "^3.10.1",
     "md5": "^2.0.0",
     "rx": "^4.0.7",
