@@ -38,9 +38,9 @@ export class ObservationClientBase<Client> implements OmniSharp.Events, Rx.IDisp
         this._disposable.dispose();
     }
 
-    protected makeMergeObserable = _.memoize(<T>(selector: (client: Client) => Observable<T>) => {
+    protected makeMergeObserable = <T>(selector: (client: Client) => Observable<T>) => {
         return this._clientsSubject.flatMapLatest(clients => Observable.merge<T>(...clients.map(selector))).share();
-    });
+    };
 
     public observe<T>(selector: (client: Client) => Observable<T>) {
         return this.makeMergeObserable(selector);
@@ -87,7 +87,7 @@ export class CombinationClientBase<Client> implements OmniSharp.Aggregate.Events
         this._disposable.dispose();
     }
 
-    protected makeAggregateObserable = _.memoize(<T>(selector: (client: Client) => Observable<T>) => {
+    protected makeAggregateObserable = <T>(selector: (client: Client) => Observable<T>) => {
 
         // Caches the value, so that when the underlying clients change
         // we can start with the old value of the remaining clients
@@ -114,7 +114,7 @@ export class CombinationClientBase<Client> implements OmniSharp.Aggregate.Events
         }).share();
         /* tslint:enable:no-string-literal */
 
-    });
+    };
 
     public observe<T>(selector: (client: Client) => Observable<T>) {
         return this.makeAggregateObserable(selector);

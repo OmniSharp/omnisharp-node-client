@@ -177,38 +177,27 @@ export class ClientBase<TEvents extends ClientEventsBase> implements IDriver, Rx
         // These are operations that should wait until after
         // we have executed all the current priority commands
         // We also defer silent commands to this queue, as they are generally for "background" work
-        const deferredQueue = this._requestStream
-            .where(isDeferredCommand)
+        const deferredQueue = this._requestStream.filter(isDeferredCommand)
             .pausableBuffered(pauser)
-            .map(request => Observable.defer(() => this.handleResult(request)))
+            .map(request => this.handleResult(request))
             .merge(deferredConcurrency);
 
         // We just pass these operations through as soon as possible
-        const normalQueue = this._requestStream
-            .where(isNormalCommand)
+        const normalQueue = this._requestStream.filter(isNormalCommand)
             .pausableBuffered(pauser)
-            .map(request => Observable.defer(() => this.handleResult(request)))
+            .map(request => this.handleResult(request))
             .merge(this._options.concurrency);
 
         // We must wait for these commands
         // And these commands must run in order.
-        const priorityQueueController = this._requestStream
-            .where(isPriorityCommand)
-            .doOnNext(() => priorityRequests.onNext(priorityRequests.getValue() + 1))
-            .controlled();
-
-        const priorityQueue = priorityQueueController
-            .map(request => Observable.defer(() => this.handleResult(request))
-                .tapOnCompleted(() => {
-                    priorityResponses.onNext(priorityResponses.getValue() + 1);
-                    priorityQueueController.request(1);
-                })
-            )
-            .merge(this._options.concurrency);
+        const priorityQueue = this._requestStream
+            .filter(isPriorityCommand)
+            .do(() => priorityRequests.onNext((<any>priorityRequests).value + 1))
+            .map(request => this.handleResult(request))
+            .merge(this._options.concurrency)
+            .do(() => priorityResponses.onNext((<any>priorityResponses).value + 1));
 
         this._disposable.add(Observable.merge(deferredQueue, normalQueue, priorityQueue).subscribe());
-        // We need to have a pending request to catch the first one coming in.
-        priorityQueueController.request(1);
     }
 
     private handleResult(context: RequestContext<any>): Observable<ResponseContext<any, any>> {
