@@ -188,8 +188,8 @@ Since the request is bundled with the response in the context object, you have a
   * `observeCurrentfilemembersasflat: Rx.Observable<Context<OmniSharp.Models.Request, any>>`
   * `observeTypelookup: Rx.Observable<Context<OmniSharp.Models.TypeLookupRequest, any>>`
   * `observeFilesChanged: Rx.Observable<Context<OmniSharp.Models.Request[], boolean>>`
-  * `observeProjects: Rx.Observable<Context<any, OmniSharp.Models.WorkspaceInformationResponse>>`
-  * `observeProject: Rx.Observable<Context<OmniSharp.Models.Request, OmniSharp.Models.ProjectInformationResponse>>`
+  * `observeProjects: Rx.Observable<Context<OmniSharp.Models.v1.WorkspaceInformationRequest, OmniSharp.Models.WorkspaceInformationResponse>>`
+  * `observeProject: Rx.Observable<Context<OmniSharp.Models.v1.ProjectInformationRequest, OmniSharp.Models.ProjectInformationResponse>>`
   * `observeGetcodeactions: Rx.Observable<Context<OmniSharp.Models.CodeActionRequest, OmniSharp.Models.GetCodeActionsResponse>>`
   * `observeRuncodeaction: Rx.Observable<Context<OmniSharp.Models.CodeActionRequest, OmniSharp.Models.RunCodeActionResponse>>`
   * `observeGettestcontext: Rx.Observable<Context<OmniSharp.Models.TestCommandRequest, OmniSharp.Models.GetTestCommandResponse>>`

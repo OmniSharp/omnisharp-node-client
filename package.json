@@ -22,6 +22,7 @@
     "atom": ">=0.194.0"
   },
   "main": "lib/omnisharp-client.js",
+  "typings": "lib/omnisharp-client.d.ts",
   "scripts": {
     "prepublish": "./node_modules/.bin/gulp npm-prepublish",
     "test": "mocha spec"
