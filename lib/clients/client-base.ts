@@ -255,10 +255,11 @@ export class ClientBase<TEvents extends ClientEventsBase> implements IDriver, Rx
         if (this.currentState !== DriverState.Connected && this.currentState !== DriverState.Error) {
             const response = new AsyncSubject<TResponse>();
 
-            const sub = this.state.where(z => z === DriverState.Connected).subscribe(z => {
-                sub.dispose();
-                this.request<TRequest, TResponse>(action, request, options).subscribe(x => response.onNext(x));
-            });
+            this.state.where(z => z === DriverState.Connected)
+                .take(1)
+                .subscribe(z => {
+                    this.request<TRequest, TResponse>(action, request, options).subscribe(x => response.onNext(x));
+                });
 
             return response;
         }

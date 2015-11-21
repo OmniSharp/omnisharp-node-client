@@ -221,14 +221,20 @@ export class ClientV1 extends ClientBase<ClientEventsV1> implements OmniSharp.Ap
     @endpoint()
     public signatureHelp(request: OmniSharp.Models.Request, options?: OmniSharp.RequestOptions): Rx.Observable<OmniSharp.Models.SignatureHelp> { throw new Error("Implemented by decorator"); }
 
+    @fixup
+    @endpoint()
     public stopserver(request: any, options?: OmniSharp.RequestOptions) {
         return this.request<any, boolean>("stopserver", request, options);
     }
 
+    @fixup
+    @endpoint()
     public checkalivestatus(options?: OmniSharp.RequestOptions) {
         return this.request<any, any>("checkalivestatus", {}, options);
     }
 
+    @fixup
+    @endpoint()
     public checkreadystatus(options?: OmniSharp.RequestOptions) {
         return this.request<any, any>("checkreadystatus", {}, options);
     }

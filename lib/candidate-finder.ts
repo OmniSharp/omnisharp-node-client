@@ -150,9 +150,6 @@ function searchForCandidates(location: string, filesToSearch: string[], projectF
                             const content = readFileSync(file).toString();
                             return _.any(projectFilesToSearch, path => content.indexOf(_.trimLeft(path, "*")) > -1);
                         });
-                        /*} else if (x.length) {
-                            // We only need to return one file
-                            return [x[0]];*/
                     }
                     return x;
                 });
