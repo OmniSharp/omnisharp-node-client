@@ -65,7 +65,7 @@ gulp.task('typescript', ['clean', 'sync-clients'], function() {
 gulp.task('clean', ['clean:lib', 'clean:spec']);
 
 gulp.task('clean:lib', function(done) {
-    del(metadata.lib.map(z => z.indexOf('.d.ts') > -1 ? z : z.replace('.ts', '.js')), function(err, paths) {
+    del(metadata.lib.map(function(z) { return z.indexOf('.d.ts') > -1 ? z : z.replace('.ts', '.js'); }), function(err, paths) {
         _.each(paths, function(path) {
             gutil.log(gutil.colors.red('Deleted ') + gutil.colors.magenta(path.replace(__dirname, '').substring(1)));
         });
@@ -74,7 +74,7 @@ gulp.task('clean:lib', function(done) {
 });
 
 gulp.task('clean:spec', function(done) {
-    del(metadata.spec.map(z => z.indexOf('.d.ts') > -1 ? z : z.replace('.ts', '.js')), function(err, paths) {
+    del(metadata.spec.map(function(z) { return z.indexOf('.d.ts') > -1 ? z : z.replace('.ts', '.js'); }), function(err, paths) {
         _.each(paths, function(path) {
             gutil.log(gutil.colors.red('Deleted ') + gutil.colors.magenta(path.replace(__dirname, '').substring(1)));
         });
