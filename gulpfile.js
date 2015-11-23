@@ -18,6 +18,11 @@ var metadata = {
     spec: ['spec/**/*.ts', '!spec/**/*.d.ts'],
 };
 
+var metadataDel = {
+    lib: ['lib/**/*.js', 'lib/**/*.d.ts'],
+    spec: ['spec/**/*.js', 'spec/**/*.d.ts', '!spec/tsd.d.ts'],
+};
+
 // Simply take TS code and strip anything not javascript
 // Does not do any compile time checking.
 function tsTranspile() {
@@ -55,7 +60,21 @@ function tsTranspiler(source, dest) {
         .pipe(tslint.report('prose'));
 }
 
-gulp.task('typescript', ['clean', 'sync-clients'], function() {
+gulp.task('typescript', ['sync-clients','clean'], function() {
+    var args = ['--declaration', '-p', path.resolve(__dirname.toString())];
+    var compile = new Promise(function(resolve, reject) {
+        var tsc = spawn(path.resolve(__dirname + '/node_modules/.bin/ntsc' + (win32 && '.cmd' || '')), args);
+        tsc.stdout.pipe(process.stdout);
+        tsc.stderr.pipe(process.stderr);
+        tsc.on('close', function(code) {
+            resolve();
+        });
+    });
+
+    return compile;
+});
+
+gulp.task('typescript-babel', ['typescript'], function() {
     var lib = tsTranspiler(gulp.src(metadata.lib), './lib');
     var spec = tsTranspiler(gulp.src(metadata.spec), './spec');
 
@@ -65,7 +84,8 @@ gulp.task('typescript', ['clean', 'sync-clients'], function() {
 gulp.task('clean', ['clean:lib', 'clean:spec']);
 
 gulp.task('clean:lib', function(done) {
-    del(metadata.lib.map(function(z) { return z.indexOf('.d.ts') > -1 ? z : z.replace('.ts', '.js'); }), function(err, paths) {
+    var items = metadata.lib
+    del(metadataDel.lib, function(err, paths) {
         _.each(paths, function(path) {
             gutil.log(gutil.colors.red('Deleted ') + gutil.colors.magenta(path.replace(__dirname, '').substring(1)));
         });
@@ -74,7 +94,7 @@ gulp.task('clean:lib', function(done) {
 });
 
 gulp.task('clean:spec', function(done) {
-    del(metadata.spec.map(function(z) { return z.indexOf('.d.ts') > -1 ? z : z.replace('.ts', '.js'); }), function(err, paths) {
+    del(metadataDel.spec, function(err, paths) {
         _.each(paths, function(path) {
             gutil.log(gutil.colors.red('Deleted ') + gutil.colors.magenta(path.replace(__dirname, '').substring(1)));
         });
@@ -172,7 +192,7 @@ gulp.task('file-watch', function() {
     return merge(lib, spec);
 });
 
-gulp.task('npm-prepublish', ['typescript']);
+gulp.task('npm-prepublish', ['typescript-babel']);
 
 // The default task (called when you run `gulp` from CLI)
-gulp.task('default', ['typescript']);
+gulp.task('default', ['typescript-babel']);

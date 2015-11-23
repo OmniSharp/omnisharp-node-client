@@ -1,7 +1,7 @@
 import {ReplaySubject, Observable, CompositeDisposable, Disposable} from "rx";
 import * as _ from "lodash";
 import {DriverState} from "../enums";
-import {OmnisharpClientStatus} from "../interfaces";
+import {OmnisharpClientStatus} from "../enums";
 import {RequestContext, ResponseContext, CommandContext} from "../contexts";
 import {merge, aggregate} from "../decorators";
 import {OmniSharp} from "../omnisharp-server";

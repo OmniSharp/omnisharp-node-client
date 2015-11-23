@@ -1,7 +1,7 @@
 import {OmniSharp} from "../omnisharp-server";
 import {Observable, Subject, AsyncSubject, BehaviorSubject, Scheduler, CompositeDisposable} from "rx";
 import {keys, isObject, uniqueId, each, defaults, cloneDeep, memoize} from "lodash";
-import {IDriver, IStaticDriver, OmnisharpClientStatus, OmnisharpClientOptions} from "../interfaces";
+import {IDriver, IStaticDriver, OmnisharpClientStatus, OmnisharpClientOptions} from "../enums";
 import {Driver, DriverState} from "../enums";
 import {RequestContext, ResponseContext, CommandContext} from "../contexts";
 import {serverLineNumbers, serverLineNumberArrays} from "../response-handling";

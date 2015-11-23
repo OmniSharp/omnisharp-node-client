@@ -1,5 +1,5 @@
 import {OmniSharp} from "../omnisharp-server";
-import {IDriver, IDriverOptions, ILogger} from "../interfaces";
+import {IDriver, IDriverOptions, ILogger} from "../enums";
 import {defaults} from "lodash";
 import {DriverState} from "../enums";
 import {spawn, ChildProcess} from "child_process";

@@ -1,5 +1,5 @@
 import {each} from "lodash";
-import {IOmnisharpPlugin} from "../interfaces";
+import {IOmnisharpPlugin} from "../enums";
 import {exec} from "child_process";
 import {Observable, Subject} from "rx";
 import {bootstrapLocation} from "../omnisharp-path";

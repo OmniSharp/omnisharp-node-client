@@ -4,13 +4,12 @@
     "target": "es6",
     "module": "es6",
     "moduleResolution": "node",
-    "declaration": false,
+    "declaration": true,
     "noImplicitAny": true,
     "removeComments": true,
     "noLib": false,
     "preserveConstEnums": true,
-    "experimentalDecorators": true,
-    "experimentalAsyncFunctions": true
+    "experimentalDecorators": true
   },
   "compileOnSave": true,
   "formatCodeOptions": {
@@ -49,7 +48,6 @@
     "./lib/enums.ts",
     "./lib/helpers/plugin-manager.ts",
     "./lib/helpers/prioritization.ts",
-    "./lib/interfaces.ts",
     "./lib/omnisharp-client.ts",
     "./lib/omnisharp-path.ts",
     "./lib/omnisharp-server.ts",

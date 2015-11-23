@@ -1,7 +1,7 @@
 import {OmniSharp} from "../omnisharp-server";
 import {ClientBase, ClientEventsBase} from "./client-base";
 import {ClientV1} from "./client-v1";
-import {OmnisharpClientOptions} from "../interfaces";
+import {OmnisharpClientOptions} from "../enums";
 import {isNotNull, isAboveZero, watchCommand, precondition, endpoint, inheritProperties, fixup} from "../decorators";
 
 export class ClientEventsV2 extends ClientEventsBase implements OmniSharp.Events.V2 {

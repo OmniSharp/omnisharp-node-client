@@ -1,5 +1,5 @@
 import * as _ from "lodash";
-import {OmnisharpClientOptions} from "./interfaces";
+import {OmnisharpClientOptions} from "./enums";
 
 export function ensureClientOptions(options: OmnisharpClientOptions) {
     if (options.statusSampleTime) options.statusSampleTime = 500;

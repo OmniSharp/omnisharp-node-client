@@ -1,5 +1,5 @@
 import * as _ from "lodash";
-import {ILogger} from "./interfaces";
+import {ILogger} from "./enums";
 import {join, dirname, sep, normalize} from "path";
 import {Observable, Scheduler, CompositeDisposable} from "rx";
 import {readFileSync} from "fs";
