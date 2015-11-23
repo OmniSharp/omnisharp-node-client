@@ -1,5 +1,8 @@
 {
-  "externalTranspiler": "babel",
+  "externalTranspiler": {
+    "name": "babel",
+    "options": {}
+  },
   "compilerOptions": {
     "target": "es6",
     "module": "es6",
@@ -15,6 +18,7 @@
   "formatCodeOptions": {
     "indentSize": 4,
     "tabSize": 4,
+    "indentStyle": "smart",
     "convertTabsToSpaces": true,
     "insertSpaceAfterCommaDelimiter": true,
     "insertSpaceAfterSemicolonInForStatements": true,
