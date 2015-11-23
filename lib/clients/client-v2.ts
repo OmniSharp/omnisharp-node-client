@@ -1,4 +1,4 @@
-import {OmniSharp} from "../omnisharp-server";
+import * as OmniSharp from "../omnisharp-server";
 import {ClientBase, ClientEventsBase} from "./client-base";
 import {ClientV1} from "./client-v1";
 import {OmnisharpClientOptions} from "../enums";

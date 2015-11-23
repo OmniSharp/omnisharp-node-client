@@ -1,4 +1,7 @@
-export {OmniSharp} from "./omnisharp-server";
+import * as LocalOmniSharp from "./omnisharp-server";
+/* tslint:disable */
+export var OmniSharp = LocalOmniSharp;
+/* tslint:enable */
 export {ClientV1} from "./clients/client-v1";
 export {ClientV2} from "./clients/client-v2";
 

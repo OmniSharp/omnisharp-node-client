@@ -1,4 +1,4 @@
-import {OmniSharp} from "../omnisharp-server";
+import * as OmniSharp from "../omnisharp-server";
 import {IDriver, IDriverOptions, ILogger} from "../enums";
 import {defaults} from "lodash";
 import {DriverState} from "../enums";

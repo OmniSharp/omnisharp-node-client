@@ -11,7 +11,8 @@ pushd roslyn
 Invoke-WebRequest ($json.assets[0].browser_download_url) -OutFile '.\omnisharp.tar.gz'
 #>
 
-copy-item D:\Development\Omnisharp\omnisharp-roslyn\omnisharp.bootstrap.tar.gz .\omnisharp.bootstrap.tar.gz
+#copy-item D:\Development\Omnisharp\omnisharp-roslyn\omnisharp.bootstrap.tar.gz .\omnisharp.bootstrap.tar.gz
+copy-item C:\Dev\OmniSharp\omnisharp-roslyn\omnisharp.bootstrap.tar.gz .\omnisharp.bootstrap.tar.gz
 
 tar zxvf omnisharp.bootstrap.tar.gz
 Remove-Item omnisharp.bootstrap.tar.gz

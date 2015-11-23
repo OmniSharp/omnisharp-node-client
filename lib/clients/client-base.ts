@@ -1,4 +1,4 @@
-import {OmniSharp} from "../omnisharp-server";
+import * as OmniSharp from "../omnisharp-server";
 import {Observable, Subject, AsyncSubject, BehaviorSubject, CompositeDisposable} from "rx";
 import {keys, isObject, uniqueId, each, defaults, cloneDeep, memoize} from "lodash";
 import {IDriver, IStaticDriver, OmnisharpClientStatus, OmnisharpClientOptions} from "../enums";

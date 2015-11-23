@@ -4,7 +4,7 @@ import {DriverState} from "../enums";
 import {OmnisharpClientStatus} from "../enums";
 import {RequestContext, ResponseContext, CommandContext} from "../contexts";
 import {merge, aggregate} from "../decorators";
-import {OmniSharp} from "../omnisharp-server";
+import * as OmniSharp from "../omnisharp-server";
 
 export class ObservationClientBase<Client> implements OmniSharp.Events, Rx.IDisposable {
     protected _disposable = new CompositeDisposable();

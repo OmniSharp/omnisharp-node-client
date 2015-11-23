@@ -27,27 +27,27 @@ namespace OmniSharp.TypeScriptGeneration
 
         public static IEnumerable<string> GetInterface()
         {
-            const methodStrings = GetMethods().GroupBy(z => z.Version).ToDictionary(z => z.Key, z => z.GroupBy(x => x.ActionName).ToArray());
-            const eventStrings = GetEvents().GroupBy(z => z.Version).ToDictionary(z => z.Key, z => z.GroupBy(x => x.ActionName).ToArray());
-            const aggregateEventStrings = GetAggregateEvents().GroupBy(z => z.Version).ToDictionary(z => z.Key, z => z.GroupBy(x => x.ActionName).ToArray());
+            var methodStrings = GetMethods().GroupBy(z => z.Version).ToDictionary(z => z.Key, z => z.GroupBy(x => x.ActionName).ToArray());
+            var eventStrings = GetEvents().GroupBy(z => z.Version).ToDictionary(z => z.Key, z => z.GroupBy(x => x.ActionName).ToArray());
+            var aggregateEventStrings = GetAggregateEvents().GroupBy(z => z.Version).ToDictionary(z => z.Key, z => z.GroupBy(x => x.ActionName).ToArray());
 
-            const keys = methodStrings.Keys;
+            var keys = methodStrings.Keys;
             yield return $"declare module {nameof(OmniSharp)} {{\n{ContextInterface}{RequestOptionsInterface}{CombinationKeyInterface}}}";
 
             yield return $"declare module {nameof(OmniSharp)}.Api {{\n";
 
-            foreach (const kvp in methodStrings)
+            foreach (var kvp in methodStrings)
             {
-                const key = kvp.Key;
-                const items = kvp.Value.ToList();
+                var key = kvp.Key;
+                var items = kvp.Value.ToList();
 
-                foreach (const previousKey in keys.TakeWhile(z => z != key).Reverse())
+                foreach (var previousKey in keys.TakeWhile(z => z != key).Reverse())
                 {
                     items.AddRange(methodStrings[previousKey].Where(x => !items.Any(z => z.Key == x.Key)));
                 }
 
-                const results = items.SelectMany(x => x).OrderBy(x => x.ActionName).Select(z => z.Value);
-                const methods = "        " + string.Join("\n        ", results) + "\n";
+                var results = items.SelectMany(x => x).OrderBy(x => x.ActionName).Select(z => z.Value);
+                var methods = "        " + string.Join("\n        ", results) + "\n";
                 yield return $"    interface {key.ToUpper()} {{\n{methods}    }}\n";
             }
 
@@ -55,18 +55,18 @@ namespace OmniSharp.TypeScriptGeneration
 
             yield return $"declare module {nameof(OmniSharp)}.Events {{\n";
 
-            foreach (const kvp in eventStrings)
+            foreach (var kvp in eventStrings)
             {
-                const key = kvp.Key;
-                const items = kvp.Value.ToList();
+                var key = kvp.Key;
+                var items = kvp.Value.ToList();
 
-                foreach (const previousKey in keys.TakeWhile(z => z != key).Reverse())
+                foreach (var previousKey in keys.TakeWhile(z => z != key).Reverse())
                 {
                     items.AddRange(eventStrings[previousKey].Where(x => !items.Any(z => z.Key == x.Key)));
                 }
 
-                const results = items.SelectMany(x => x).OrderBy(x => x.ActionName).Select(z => z.Value);
-                const events = "        " + string.Join("\n        ", results) + "\n";
+                var results = items.SelectMany(x => x).OrderBy(x => x.ActionName).Select(z => z.Value);
+                var events = "        " + string.Join("\n        ", results) + "\n";
                 yield return $"    interface {key.ToUpper()} {{\n{events}    }}\n";
             }
 
@@ -74,18 +74,18 @@ namespace OmniSharp.TypeScriptGeneration
 
             yield return $"declare module {nameof(OmniSharp)}.Events.Aggregate {{\n";
 
-            foreach (const kvp in aggregateEventStrings)
+            foreach (var kvp in aggregateEventStrings)
             {
-                const key = kvp.Key;
-                const items = kvp.Value.ToList();
+                var key = kvp.Key;
+                var items = kvp.Value.ToList();
 
-                foreach (const previousKey in keys.TakeWhile(z => z != key).Reverse())
+                foreach (var previousKey in keys.TakeWhile(z => z != key).Reverse())
                 {
                     items.AddRange(aggregateEventStrings[previousKey].Where(x => !items.Any(z => z.Key == x.Key)));
                 }
 
-                const results = items.SelectMany(x => x).OrderBy(x => x.ActionName).Select(z => z.Value);
-                const events = "        " + string.Join("\n        ", results) + "\n";
+                var results = items.SelectMany(x => x).OrderBy(x => x.ActionName).Select(z => z.Value);
+                var events = "        " + string.Join("\n        ", results) + "\n";
                 yield return $"    interface {key.ToUpper()} {{\n{events}    }}\n";
             }
 
@@ -98,16 +98,16 @@ namespace OmniSharp.TypeScriptGeneration
 
         private static IEnumerable<ItemVersion> GetMethods()
         {
-            const methods = GetControllerMethods().ToArray();
-            foreach (const method in methods)
+            var methods = GetControllerMethods().ToArray();
+            foreach (var method in methods)
             {
-                const actionName = method.Action;
-                const version = GetVersion(ref actionName);
-                const requestType = method.RequestType;
+                var actionName = method.Action;
+                var version = GetVersion(ref actionName);
+                var requestType = method.RequestType;
                 if (method.RequestArray)
                     requestType += "[]";
 
-                const returnType = method.ReturnType;
+                var returnType = method.ReturnType;
                 if (method.ReturnArray)
                     returnType += "[]";
 
@@ -125,18 +125,18 @@ namespace OmniSharp.TypeScriptGeneration
 
         private static IEnumerable<ItemVersion> GetEvents()
         {
-            const methods = GetControllerMethods().ToArray();
-            foreach (const method in methods)
+            var methods = GetControllerMethods().ToArray();
+            foreach (var method in methods)
             {
-                const actionName = method.Action;
-                const version = GetVersion(ref actionName);
-                const observeName = actionName;
+                var actionName = method.Action;
+                var version = GetVersion(ref actionName);
+                var observeName = actionName;
 
-                const requestType = method.RequestType;
+                var requestType = method.RequestType;
                 if (method.RequestArray)
                     requestType += "[]";
 
-                const returnType = method.ReturnType;
+                var returnType = method.ReturnType;
                 if (method.ReturnArray)
                     returnType += "[]";
 
@@ -154,18 +154,18 @@ namespace OmniSharp.TypeScriptGeneration
 
         private static IEnumerable<ItemVersion> GetAggregateEvents()
         {
-            const methods = GetControllerMethods().ToArray();
-            foreach (const method in methods)
+            var methods = GetControllerMethods().ToArray();
+            foreach (var method in methods)
             {
-                const actionName = method.Action;
-                const version = GetVersion(ref actionName);
-                const observeName = actionName;
+                var actionName = method.Action;
+                var version = GetVersion(ref actionName);
+                var observeName = actionName;
 
-                const requestType = method.RequestType;
+                var requestType = method.RequestType;
                 if (method.RequestArray)
                     requestType += "[]";
 
-                const returnType = method.ReturnType;
+                var returnType = method.ReturnType;
                 if (method.ReturnArray)
                     returnType += "[]";
 
@@ -185,7 +185,7 @@ namespace OmniSharp.TypeScriptGeneration
         {
             if (actionName.Contains("/"))
             {
-                const s = actionName.Split('/');
+                var s = actionName.Split('/');
                 actionName = s[1];
                 return s[0];
             }
@@ -203,16 +203,16 @@ namespace OmniSharp.TypeScriptGeneration
 
         private static IEnumerable<MethodResult> GetControllerMethods()
         {
-            const types = typeof(Request).Assembly.GetTypes()
+            var types = typeof(Request).Assembly.GetTypes()
                 .Where(z => z.GetTypeInfo().GetCustomAttributes<OmniSharpEndpointAttribute>().Any());
 
-            foreach (const type in types.Where(z => z.IsPublic))
+            foreach (var type in types.Where(z => z.IsPublic))
             {
-                const attribute = type.GetCustomAttribute<OmniSharpEndpointAttribute>();
-                const requestType = attribute.RequestType;
-                const responseType = attribute.ResponseType;
+                var attribute = type.GetCustomAttribute<OmniSharpEndpointAttribute>();
+                var requestType = attribute.RequestType;
+                var responseType = attribute.ResponseType;
 
-                const requestArray = false;
+                var requestArray = false;
                 if (requestType != null && requestType.Name.StartsWith(nameof(IEnumerable), StringComparison.Ordinal))
                 {
                     requestArray = true;
@@ -230,7 +230,7 @@ namespace OmniSharp.TypeScriptGeneration
                     requestTypeString = nameof(Boolean).ToLowerInvariant();
                 }
 
-                const responseArray = false;
+                var responseArray = false;
                 if (responseType.Name.StartsWith(nameof(IEnumerable), StringComparison.Ordinal))
                 {
                     responseArray = true;
@@ -261,7 +261,7 @@ namespace OmniSharp.TypeScriptGeneration
 
         internal static string InferNamespace(Type type)
         {
-            const pieces = type.FullName.Split('.');
+            var pieces = type.FullName.Split('.');
             return string.Join(".", pieces.Take(pieces.Length - 1)) + ".";
         }
     }

@@ -16,33 +16,33 @@ namespace OmniSharp.TypeScriptGeneration
     {
         public void Main(string[] args)
         {
-            const path = string.Empty;
+            var path = string.Empty;
             if (args.Length == 1)
             {
                 path = args[0];
             }
 
-            const fluent = TypeScript.Definitions();
+            var fluent = TypeScript.Definitions();
             fluent.ScriptGenerator.IndentationString = "    ";
 
             fluent.WithMemberTypeFormatter(TsFluentFormatters.FormatPropertyType);
             fluent.WithMemberFormatter(TsFluentFormatters.FormatPropertyName);
 
-            foreach (const model in GetApplicableTypes())
+            foreach (var model in GetApplicableTypes())
             {
                 fluent.For(model);
             }
 
-            const tsModel = fluent.ModelBuilder.Build();
-            foreach (const @class in tsModel.Classes.Where(z => z.Module.Name.StartsWith("System", StringComparison.Ordinal)))
+            var tsModel = fluent.ModelBuilder.Build();
+            foreach (var @class in tsModel.Classes.Where(z => z.Module.Name.StartsWith("System", StringComparison.Ordinal)))
             {
                 @class.IsIgnored = true;
             }
 
-            const result = fluent.Generate();
+            var result = fluent.Generate();
 
-            const generated = string.Join("\n", OmnisharpControllerExtractor.GetInterface());
-            const projectInterfaces = $@"
+            var generated = string.Join("\n", OmnisharpControllerExtractor.GetInterface());
+            var projectInterfaces = $@"
 declare module {OmnisharpControllerExtractor.InferNamespace(typeof(Request)).TrimEnd('.')} {{
     interface ProjectInformationResponse {{
         MsBuildProject: OmniSharp.Models.MSBuildProject;
@@ -61,7 +61,30 @@ declare module {OmnisharpControllerExtractor.InferNamespace(typeof(Request)).Tri
             result = result
                 .Replace("interface", "export interface")
                 .Replace("enum", "export enum")
-                .Replace("declare module", "export module");
+                .Replace("declare module", "export module")
+                .Replace("export module OmniSharp {", "")
+                .Replace("OmniSharp.", "")
+                ;
+
+            var lines = result.Split('\n');
+            var opens = 0;
+
+            for (var i = 0; i < lines.Length; i++) {
+                if (lines[i].Contains('{')) {
+                    opens++;
+                }
+                    if (lines[i].Contains('}')) {
+                        opens--;
+                    }
+                if (opens < 0 && lines[i].TrimEnd().Length == 1) {
+                    lines[i] = string.Empty;
+                    opens = 0;
+                }
+            }
+
+            result = string.Join("\n", lines);
+
+            //result = "export module OmniSharp {\n" + result + "\n}\n";
 
             if (!string.IsNullOrWhiteSpace(path))
             {
@@ -76,7 +99,7 @@ declare module {OmnisharpControllerExtractor.InferNamespace(typeof(Request)).Tri
 
         private IEnumerable<Type> GetApplicableTypes()
         {
-            const allTypes = new [] {
+            var allTypes = new [] {
                 typeof(OmniSharp.Startup).Assembly,
                 typeof(OmniSharp.Models.Request).Assembly,
                 typeof(OmniSharp.Models.DnxProject).Assembly,
@@ -90,7 +113,7 @@ declare module {OmnisharpControllerExtractor.InferNamespace(typeof(Request)).Tri
                 .SelectMany(x => x.GetTypes())
                 .ToArray();
 
-            const models = allTypes
+            var models = allTypes
                 .Where(z => z.IsPublic && z.FullName.StartsWith(OmnisharpControllerExtractor.InferNamespace(typeof(Request)), StringComparison.Ordinal))
                 .Select(x => {
                     Console.WriteLine(x.FullName);
@@ -99,14 +122,14 @@ declare module {OmnisharpControllerExtractor.InferNamespace(typeof(Request)).Tri
                 .Where(x => x.Name != nameof(ProjectInformationResponse))
                 .Where(x => x.Name != nameof(WorkspaceInformationResponse));
 
-            const stdioProtocol = allTypes
+            var stdioProtocol = allTypes
                 .Where(z => z.IsPublic && z.FullName.StartsWith(OmnisharpControllerExtractor.InferNamespace(typeof(Packet)), StringComparison.Ordinal))
                 .Select(x => {
                     Console.WriteLine(x.FullName);
                     return x;
                 });
 
-            const scriptCs = typeof(OmniSharp.ScriptCs.ScriptCsContext);
+            var scriptCs = typeof(OmniSharp.ScriptCs.ScriptCsContext);
 
             return models.Union(stdioProtocol).Union(new[] {typeof(OmniSharp.ScriptCs.ScriptCsContext)}).ToArray();
         }

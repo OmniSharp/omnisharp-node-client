@@ -12,8 +12,8 @@ namespace OmniSharp.TypeScriptGeneration
     {
         public static string GetInterface()
         {
-            const methods = "        " + string.Join("\n        ", GetEvents()) + "\n";
-            const aggregateMethods = "        " + string.Join("\n        ", GetAggregateEvents()) + "\n";
+            var methods = "        " + string.Join("\n        ", GetEvents()) + "\n";
+            var aggregateMethods = "        " + string.Join("\n        ", GetAggregateEvents()) + "\n";
 
             return $"declare module {nameof(OmniSharp)} {{\n    interface Events {{\n{methods}    }}\n}}\ndeclare module {nameof(OmniSharp)}.Aggregate {{\n    interface Events {{\n{aggregateMethods}    }}\n}}";
         }
@@ -40,22 +40,22 @@ namespace OmniSharp.TypeScriptGeneration
 
         private static IEnumerable<string> GetEvents()
         {
-            const properties = typeof(EventTypes).GetFields(BindingFlags.Static | BindingFlags.Public);
+            var properties = typeof(EventTypes).GetFields(BindingFlags.Static | BindingFlags.Public);
 
-            foreach (const property in properties)
+            foreach (var property in properties)
             {
-                const eventName = property.Name.ToLowerInvariant()[0] + property.Name.Substring(1);
+                var eventName = property.Name.ToLowerInvariant()[0] + property.Name.Substring(1);
                 yield return $"{eventName}: Rx.Observable<{GetEventReturnType(property.Name)}>;";
             }
         }
 
         private static IEnumerable<string> GetAggregateEvents()
         {
-            const properties = typeof(EventTypes).GetFields(BindingFlags.Static | BindingFlags.Public);
+            var properties = typeof(EventTypes).GetFields(BindingFlags.Static | BindingFlags.Public);
 
-            foreach (const property in properties)
+            foreach (var property in properties)
             {
-                const eventName = property.Name.ToLowerInvariant()[0] + property.Name.Substring(1);
+                var eventName = property.Name.ToLowerInvariant()[0] + property.Name.Substring(1);
                 yield return $"{eventName}: Rx.Observable<CombinationKey<{GetEventReturnType(property.Name)}>[]>;";
             }
         }
