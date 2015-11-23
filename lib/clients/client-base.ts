@@ -1,5 +1,5 @@
 import {OmniSharp} from "../omnisharp-server";
-import {Observable, Subject, AsyncSubject, BehaviorSubject, Scheduler, CompositeDisposable} from "rx";
+import {Observable, Subject, AsyncSubject, BehaviorSubject, CompositeDisposable} from "rx";
 import {keys, isObject, uniqueId, each, defaults, cloneDeep, memoize} from "lodash";
 import {IDriver, IStaticDriver, OmnisharpClientStatus, OmnisharpClientOptions} from "../enums";
 import {Driver, DriverState} from "../enums";
@@ -192,15 +192,14 @@ export class ClientBase<TEvents extends ClientEventsBase> implements IDriver, Rx
         // And these commands must run in order.
         const priorityQueue = this._requestStream
             .filter(isPriorityCommand)
-            .do(() => priorityRequests.onNext((<any>priorityRequests).value + 1))
-            .map(request => this.handleResult(request))
-            .merge(this._options.concurrency)
-            .do(() => priorityResponses.onNext((<any>priorityResponses).value + 1));
+            .do(() => priorityRequests.onNext(priorityRequests.getValue() + 1))
+            .map(request => this.handleResult(request, () => priorityResponses.onNext(priorityResponses.getValue() + 1)))
+            .merge(this._options.concurrency);
 
         this._disposable.add(Observable.merge(deferredQueue, normalQueue, priorityQueue).subscribe());
     }
 
-    private handleResult(context: RequestContext<any>): Observable<ResponseContext<any, any>> {
+    private handleResult(context: RequestContext<any>, onComplete?: () => void): Observable<ResponseContext<any, any>> {
         // TODO: Find a way to not repeat the same commands, if there are outstanding (timed out) requests.
         // In some cases for example find usages has taken over 30 seconds, so we shouldn"t hit the server with multiple of these requests (as we slam the cpU)
         const result = <Observable<ResponseContext<any, any>>>this._driver.request<any, any>(context.command, context.request);
@@ -211,15 +210,22 @@ export class ClientBase<TEvents extends ClientEventsBase> implements IDriver, Rx
             if (!this._errorStream.isDisposed) { this._errorStream.onNext(new CommandContext(context.command, error)); }
             if (!this._responseStream.isDisposed) { this._responseStream.onNext(new ResponseContext(context, null, true)); }
             this._currentRequests.delete(context);
+            if (onComplete) {
+                onComplete();
+                onComplete = null;
+            }
         }, () => {
             this._currentRequests.delete(context);
+            if (onComplete) {
+                onComplete();
+                onComplete = null;
+            }
         });
 
         return result
-            // This timeout doesn"t prevent the request from completing
+            // This timeout doesn't prevent the request from completing
             // It simply unblocks the queue, so we can continue to process items.
-            .timeout(this._options.concurrencyTimeout, Scheduler.async)
-            .onErrorResumeNext(Observable.empty<ResponseContext<any, any>>());
+            .timeout(this._options.concurrencyTimeout, Observable.empty<ResponseContext<any, any>>());
     }
 
     public log(message: string, logLevel?: string) {
