@@ -1,4 +1,4 @@
-import {OmniSharp} from "./omnisharp-server";
+import * as OmniSharp from "./omnisharp-server";
 import {Observable} from "rx";
 import {uniqueId, isObject, cloneDeep} from "lodash";
 import {requestMutator, responseMutator} from "./response-handling";

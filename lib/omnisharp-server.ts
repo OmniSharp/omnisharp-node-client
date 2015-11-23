@@ -1,3 +1,4 @@
+/* tslint:disable */
 
 export module Models {
     export enum HighlightClassification {
@@ -421,26 +422,29 @@ export module ScriptCs {
     }
 }
 
-export enum TestCommandType {
-    All = 0,
-    Fixture = 1,
-    Single = 2
-}
+    export enum TestCommandType {
+        All = 0,
+        Fixture = 1,
+        Single = 2
+    }
 
 
 
-export interface Context<TRequest, TResponse> {
-    request: TRequest;
-    response: TResponse;
-}
-export interface RequestOptions {
-    silent?: boolean;
-    oneBasedIndices?: boolean
-}
-export interface CombinationKey<T> {
-    key: string;
-    value: T;
-}
+    export interface Context<TRequest, TResponse>
+    {
+        request: TRequest;
+        response: TResponse;
+    }
+    export interface RequestOptions
+    {
+        silent?: boolean;
+        oneBasedIndices?: boolean
+    }
+    export interface CombinationKey<T>
+    {
+        key: string;
+        value: T;
+    }
 
 export module Api {
 
@@ -854,16 +858,16 @@ export module Events.Aggregate {
 
 }
 
-export interface Events {
-    projectAdded: Rx.Observable<Models.ProjectInformationResponse>;
-    projectChanged: Rx.Observable<Models.ProjectInformationResponse>;
-    projectRemoved: Rx.Observable<Models.ProjectInformationResponse>;
-    error: Rx.Observable<Models.ErrorMessage>;
-    msBuildProjectDiagnostics: Rx.Observable<Models.MSBuildProjectDiagnostics>;
-    packageRestoreStarted: Rx.Observable<Models.PackageRestoreMessage>;
-    packageRestoreFinished: Rx.Observable<Models.PackageRestoreMessage>;
-    unresolvedDependencies: Rx.Observable<Models.UnresolvedDependenciesMessage>;
-}
+    export interface Events {
+        projectAdded: Rx.Observable<Models.ProjectInformationResponse>;
+        projectChanged: Rx.Observable<Models.ProjectInformationResponse>;
+        projectRemoved: Rx.Observable<Models.ProjectInformationResponse>;
+        error: Rx.Observable<Models.ErrorMessage>;
+        msBuildProjectDiagnostics: Rx.Observable<Models.MSBuildProjectDiagnostics>;
+        packageRestoreStarted: Rx.Observable<Models.PackageRestoreMessage>;
+        packageRestoreFinished: Rx.Observable<Models.PackageRestoreMessage>;
+        unresolvedDependencies: Rx.Observable<Models.UnresolvedDependenciesMessage>;
+    }
 
 export module Aggregate {
     export interface Events {
@@ -890,3 +894,4 @@ export module Models {
         ScriptCs: ScriptCs.ScriptCsContext;
     }
 }
+            

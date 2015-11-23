@@ -84,7 +84,7 @@ declare module {OmnisharpControllerExtractor.InferNamespace(typeof(Request)).Tri
 
             result = string.Join("\n", lines);
 
-            //result = "export module OmniSharp {\n" + result + "\n}\n";
+            result = "/* tslint:disable */\n" + result + "\n";
 
             if (!string.IsNullOrWhiteSpace(path))
             {

@@ -1,4 +1,4 @@
-import {OmniSharp} from "./omnisharp-server";
+import * as OmniSharp from "./omnisharp-server";
 import {RequestContext, ResponseContext, CommandContext} from "./contexts";
 
 export enum Driver {

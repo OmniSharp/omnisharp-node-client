@@ -1,4 +1,4 @@
-import {OmniSharp} from "./omnisharp-server";
+import * as OmniSharp from "./omnisharp-server";
 import * as _ from "lodash";
 
 export function isNotNull(method: Function) {
