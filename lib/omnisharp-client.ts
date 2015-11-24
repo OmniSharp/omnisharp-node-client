@@ -1,6 +1,6 @@
-import * as LocalOmniSharp from "./omnisharp-server";
+export {Models, Stdio, ScriptCs, TestCommandType, Context, CombinationKey, Aggregate, Api, RequestOptions, Events} from "./omnisharp-server";
 /* tslint:disable */
-export var OmniSharp = LocalOmniSharp;
+//export var OmniSharp: typeof LocalOmniSharp = LocalOmniSharp;
 /* tslint:enable */
 export {ClientV1} from "./clients/client-v1";
 export {ClientV2} from "./clients/client-v2";
