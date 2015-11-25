@@ -1,6 +1,6 @@
 import * as OmniSharp from "../omnisharp-server";
 import {Observable, Subject, AsyncSubject, BehaviorSubject, CompositeDisposable} from "rx";
-import {keys, isObject, uniqueId, each, defaults, cloneDeep, memoize} from "lodash";
+import {keys, isObject, uniqueId, each, defaults, cloneDeep} from "lodash";
 import {IDriver, IStaticDriver, OmnisharpClientStatus, OmnisharpClientOptions} from "../enums";
 import {Driver, DriverState} from "../enums";
 import {RequestContext, ResponseContext, CommandContext} from "../contexts";
@@ -23,8 +23,8 @@ export class ClientBase<TEvents extends ClientEventsBase> implements IDriver, Rx
     private _customEvents = new Subject<OmniSharp.Stdio.Protocol.EventPacket>();
     private _uniqueId = uniqueId("client");
     protected _lowestIndexValue: number;
-    private _eventWatchers = new Map<string, Subject<CommandContext<any>>>();
-    private _commandWatchers = new Map<string, Subject<ResponseContext<any, any>>>();
+    private _eventWatchers = new Map<string, [Subject<CommandContext<any>>, Observable<CommandContext<any>>]>();
+    private _commandWatchers = new Map<string, [Subject<ResponseContext<any, any>>, Observable<ResponseContext<any, any>>]>();
     private _disposable = new CompositeDisposable();
     private _plugins: PluginManager;
 
@@ -279,26 +279,14 @@ export class ClientBase<TEvents extends ClientEventsBase> implements IDriver, Rx
     private setupObservers() {
         this._driver.events.subscribe(x => {
             if (this._eventWatchers.has(x.Event))
-                this._eventWatchers.get(x.Event).onNext(x.Body);
+                this._eventWatchers.get(x.Event)[0].onNext(x.Body);
         });
 
         this._enqueuedResponses.subscribe(x => {
             if (!x.silent && this._commandWatchers.has(x.command))
-                this._commandWatchers.get(x.command).onNext(x);
+                this._commandWatchers.get(x.command)[0].onNext(x);
         });
     }
-
-    protected watchEvent = memoize(<TBody>(event: string): Observable<TBody> => {
-        const subject = new Subject<CommandContext<any>>();
-        this._eventWatchers.set(event, subject);
-        return <any>subject.share();
-    });
-
-    protected watchCommand = memoize((command: string): Observable<OmniSharp.Context<any, any>> => {
-        const subject = new Subject<ResponseContext<any, any>>();
-        this._commandWatchers.set(command.toLowerCase(), subject);
-        return subject.share();
-    });
 
     private _fixups: Array<(action: string, request: any, options?: OmniSharp.RequestOptions) => void> = [];
     public registerFixup(func: (action: string, request: any, options?: OmniSharp.RequestOptions) => void) {
@@ -333,14 +321,4 @@ export class ClientEventsBase implements OmniSharp.Events {
     @reference public get requests(): Rx.Observable<RequestContext<any>> { throw new Error("Implemented by decorator"); }
     @reference public get responses(): Rx.Observable<ResponseContext<any, any>> { throw new Error("Implemented by decorator"); }
     @reference public get errors(): Rx.Observable<CommandContext<any>> { throw new Error("Implemented by decorator"); }
-
-    /* tslint:disable:no-unused-variable */
-    private watchEvent(event: string): Observable<any> {
-        return (<any>this._client).watchEvent(event);
-    }
-
-    private watchCommand(command: string): Observable<any> {
-        return (<any>this._client).watchCommand(command);
-    }
-    /* tslint:enable:no-unused-variable */
 }

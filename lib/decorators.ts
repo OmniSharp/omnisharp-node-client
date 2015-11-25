@@ -1,5 +1,6 @@
 import * as OmniSharp from "./omnisharp-server";
 import * as _ from "lodash";
+import {Subject} from "rx";
 
 export function isNotNull(method: Function) {
     return function isNotNull(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
@@ -78,40 +79,62 @@ export function fixup(target: Object, propertyKey: string, descriptor: TypedProp
 }
 
 export function watchCommand(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
-    let value: any;
+    const internalKey = `__${propertyKey}__`;
     descriptor.get = function() {
-        if (!value) value = this.watchCommand(propertyKey);
-        return value;
+        const instance = this._client || this;
+        if (!instance._commandWatchers.get(propertyKey)) {
+            const subject = new Subject<any>();
+            const observable = subject.share();
+
+            instance._commandWatchers.set(propertyKey.toLowerCase(), [subject, observable]);
+            this[internalKey] = observable;
+        }
+        return this[internalKey];
     };
     descriptor.enumerable = true;
 }
 
 export function watchEvent(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
+    const internalKey = `__${propertyKey}__`;
     const eventKey = propertyKey[0].toUpperCase() + propertyKey.substr(1);
-    let value: any;
     descriptor.get = function() {
-        if (!value) value = this.watchEvent(eventKey);
-        return value;
+        const instance = this._client || this;
+        if (!instance._eventWatchers.get(eventKey)) {
+            const subject = new Subject<any>();
+            const observable = subject.share();
+
+            instance._eventWatchers.set(eventKey, [subject, observable]);
+            this[internalKey] = observable;
+        }
+        return this[internalKey];
     };
     descriptor.enumerable = true;
 }
 
 export function merge(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
+    const internalKey = `__${propertyKey}__`;
     const method = (c: any) => c.observe[propertyKey] || c[propertyKey];
-    let value: any;
     descriptor.get = function() {
-        if (!value) value = this.makeMergeObserable(method);
-        return value;
+        if (!this[internalKey]) {
+            const value = this.makeMergeObserable(method);
+            this[internalKey] = value;
+        }
+        return this[internalKey];
     };
+    descriptor.enumerable = true;
 }
 
 export function aggregate(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
+    const internalKey = `__${propertyKey}__`;
     const method = (c: any) => c.observe[propertyKey] || c[propertyKey];
-    let value: any;
     descriptor.get = function() {
-        if (!value) value = this.makeAggregateObserable(method);
-        return value;
+        if (!this[internalKey]) {
+            const value = this.makeAggregateObserable(method);
+            this[internalKey] = value;
+        }
+        return this[internalKey];
     };
+    descriptor.enumerable = true;
 }
 
 export function reference(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
