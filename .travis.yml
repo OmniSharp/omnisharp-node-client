@@ -1,7 +1,11 @@
 language: csharp
+sudo: false
+notifications:
+  email:
+    on_success: change
+    on_failure: change
 mono:
   - beta
-sudo: false
 env:
   global:
     - secure: ROHqg+6judrm6g8HYMAFX0tGLeLYKcUGEvQjnzw57Z7PjuaedUYdYFnPhGKW9AfodsP0Kf2zC5CuKZXmAZ/WO8qgAcj4IyIcxxi4LDFRu1D7XslEmjKc8bgVOAtUQKTZrL60JWVDozqREn4W4eWRILVejl9kDKKZ2xZkGPLDb/A=
