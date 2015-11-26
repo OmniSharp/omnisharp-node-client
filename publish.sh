@@ -17,12 +17,8 @@ echo "//registry.npmjs.org/:_authToken=$NPM_API_KEY" > ~/.npmrc
 if [ "$TRAVIS_SECURE_ENV_VARS" = "true" ] && [ -n "$TAG_COMMIT" ]; then
 	echo publishing version $TAG_COMMIT
 
-    chmod 600 ~/.ssh/id_rsa
-    eval `ssh-agent -s`
-    ssh-add ~/.ssh/id_rsa
-
-	git config user.name "OmniSharp CI"
-	git config user.email "travis@omnisharp.net"
+	git config user.name "OmniSharp Bot"
+	git config user.email "omnisharp-bot@users.noreply.github.com"
 
 	git remote add github git@github.com:OmniSharp/omnisharp-node-client.git
     git fetch github
