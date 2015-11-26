@@ -26,7 +26,7 @@ if [ "$TRAVIS_SECURE_ENV_VARS" = "true" ] && [ -n "$TAG_COMMIT" ]; then
 
 	git remote add github git@github.com:OmniSharp/omnisharp-node-client.git
     git fetch github
-	git add .
+	git reset --hard
 	npm version $TAG_COMMIT -m "[travis] Tagging release %s"
 	git push github master
 	git push github --tags
