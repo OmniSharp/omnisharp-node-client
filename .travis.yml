@@ -8,8 +8,8 @@ mono:
   - beta
 env:
   global:
-    - secure: ROHqg+6judrm6g8HYMAFX0tGLeLYKcUGEvQjnzw57Z7PjuaedUYdYFnPhGKW9AfodsP0Kf2zC5CuKZXmAZ/WO8qgAcj4IyIcxxi4LDFRu1D7XslEmjKc8bgVOAtUQKTZrL60JWVDozqREn4W4eWRILVejl9kDKKZ2xZkGPLDb/A=
-    - secure: G2JHZZ38SRPa+/vLULCjPW/QyL3fAIPtASUbB0blTaTdZBs7uLi8ozgTfuzGVcT6rcYSh1pr0w7wJ79tjE4UFlA1oYVhrr851hVj0muHs/ZxdBVBgpKs07O8t/f50/b42RVFA+irpjg2lK+uJBZfNHPmkJaCbZGvZfHjcLect6g=
+    - secure: JG+808gsJ65N/BE7yzCbVVtQYkZd2KmI5ErsS6qWF3vMzk8fewQbS0BdPl/D1dWW7Ty1cd6RTC0nTYaUovKERj7LEURjVubR97rDPR8TjukmmQthI6X/K7MkOFO9xh90q/rqDhtXbYBZQzk3fGDjTszENOJruSitAbFI6QMzcX4=
+    - secure: AbpDujLZ+ER07GllQ/cWHNYv8x1NzmsgFfUbSYIgp6OJBpLhUfgB1/ZGVtXSVByybGRnr8NBW+DZ09yA+TIDdCTp4mQBPlOCmTpEDTGmu6wSSz2zpTVwbOcgddU9pmZw4d01tGa4fG78zlpi79lo/v+vJaebZNUKkeoyurwOqkw=
 addons:
   apt:
     packages:
@@ -30,3 +30,6 @@ after_success:
   - ". ./publish.sh"
 before_install:
   - openssl aes-256-cbc -K $encrypted_43a97f4523d0_key -iv $encrypted_43a97f4523d0_iv -in travis_id_rsa.enc -out ~/.ssh/id_rsa -d
+  - chmod 600 ~/.ssh/id_rsa
+  - eval `ssh-agent -s`
+  - ssh-add ~/.ssh/id_rsa
