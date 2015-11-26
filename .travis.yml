@@ -6,81 +6,23 @@ env:
   global:
     - secure: ROHqg+6judrm6g8HYMAFX0tGLeLYKcUGEvQjnzw57Z7PjuaedUYdYFnPhGKW9AfodsP0Kf2zC5CuKZXmAZ/WO8qgAcj4IyIcxxi4LDFRu1D7XslEmjKc8bgVOAtUQKTZrL60JWVDozqREn4W4eWRILVejl9kDKKZ2xZkGPLDb/A=
     - secure: G2JHZZ38SRPa+/vLULCjPW/QyL3fAIPtASUbB0blTaTdZBs7uLi8ozgTfuzGVcT6rcYSh1pr0w7wJ79tjE4UFlA1oYVhrr851hVj0muHs/ZxdBVBgpKs07O8t/f50/b42RVFA+irpjg2lK+uJBZfNHPmkJaCbZGvZfHjcLect6g=
-#addons:
-#  apt:
-#    packages:
-#      - curl
+addons:
+  apt:
+    packages:
+      - curl
 before_script:
   - curl https://raw.github.com/creationix/nvm/master/install.sh | sh
   - nvm install 0.12
   - chmod +x build-server.sh
   - chmod +x publish.sh
-script: |
-  rm -rf roslyn
-  mkdir -p roslyn
-  pushd roslyn
-  wget $(curl -s https://api.github.com/repos/omnisharp/omnisharp-roslyn/releases/latest | grep browser_download_url | awk '{ print $2 }' | sed s/\"//g | sed s/,//g)
-  tar zxvf omnisharp.tar.gz
-  rm -f omnisharp.tar.gz
-  cp -a approot/* .
-  rm -rf approot
-  popd
-  
-  cp -f vendor/omnisharp.cmd.patch roslyn/omnisharp.cmd
-  cp -f vendor/omnisharp.patch roslyn/omnisharp
-  chmod +x roslyn/omnisharp
-  
-  npm install
-  npm test
-after_success: |
-  VERSION_COMMIT=$(git log -1 --oneline | grep -a "release bump");
-  if [ -n "$VERSION_COMMIT" ]; then TAG_COMMIT="patch"; fi;
-  VERSION_COMMIT=$(git log -1 --oneline | grep -a "release patch");
-  if [ -n "$VERSION_COMMIT" ]; then TAG_COMMIT="patch"; fi;
-  VERSION_COMMIT=$(git log -1 --oneline | grep -a "release minor");
-  if [ -n "$VERSION_COMMIT" ]; then TAG_COMMIT="minor"; fi;
-  VERSION_COMMIT=$(git log -1 --oneline | grep -a "release major");
-  if [ -n "$VERSION_COMMIT" ]; then TAG_COMMIT="major"; fi;
-  
-  echo TRAVIS_SECURE_ENV_VARS = $TRAVIS_SECURE_ENV_VARS
-  echo TRAVIS_BRANCH = $TRAVIS_BRANCH
-  echo TAG_COMMIT = $TAG_COMMIT
-  chmod 600 ~/.ssh/id_rsa
-  echo "//registry.npmjs.org/:_authToken=$NPM_API_KEY" > ~/.npmrc
-  
-  if [ "$TRAVIS_SECURE_ENV_VARS" = "true" ] && [ -n "$TAG_COMMIT" ]; then
-      echo publishing version $TAG_COMMIT
-  
-    chmod 600 ~/.ssh/id_rsa
-    eval `ssh-agent -s`
-    ssh-add ~/.ssh/id_rsa
-  
-    git config user.name "OmniSharp CI"
-    git config user.email "travis@omnisharp.net"
-  
-    echo git remote add github git@github.com:OmniSharp/omnisharp-node-client.git
-    git remote add github git@github.com:OmniSharp/omnisharp-node-client.git
-    
-    echo git fetch github
-    git fetch github
-  
-    echo npm version $TAG_COMMIT -m "[travis] Tagging release %s"
-    npm version $TAG_COMMIT -m "[travis] Tagging release %s"
-  
-    echo git push github master
-    git push github master
-  
-    echo git push github --tags
-    git push github --tags
-  
-    echo npm publish
-    npm publish
-  fi;
-  
-  if [ "$TRAVIS_SECURE_ENV_VARS" = "true" ] && [ "$TRAVIS_BRANCH" = "master" ] && [ -z "$TAG_COMMIT" ]; then
-      npm --no-git-tag-version version minor
-      echo publishing npm tag "@next"
-      npm publish --tag next
-  fi;
+script:
+  - ". ./build-server.sh"
+  - npm install
+  - npm test
+after_success:
+  - echo TRAVIS_SECURE_ENV_VARS = $TRAVIS_SECURE_ENV_VARS
+  - echo TRAVIS_BRANCH = $TRAVIS_BRANCH
+  - echo TAG_COMMIT = $TAG_COMMIT
+  - ". ./publish.sh"
 before_install:
   - openssl aes-256-cbc -K $encrypted_43a97f4523d0_key -iv $encrypted_43a97f4523d0_iv -in travis_id_rsa.enc -out ~/.ssh/id_rsa -d
