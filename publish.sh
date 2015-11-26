@@ -24,22 +24,12 @@ if [ "$TRAVIS_SECURE_ENV_VARS" = "true" ] && [ -n "$TAG_COMMIT" ]; then
 	git config user.name "OmniSharp CI"
 	git config user.email "travis@omnisharp.net"
 
-	echo git remote add github git@github.com:OmniSharp/omnisharp-node-client.git
 	git remote add github git@github.com:OmniSharp/omnisharp-node-client.git
-
-	echo git fetch github
     git fetch github
-
-	echo npm version $TAG_COMMIT -m "[travis] Tagging release %s"
+	git add .
 	npm version $TAG_COMMIT -m "[travis] Tagging release %s"
-
-	echo git push github master
 	git push github master
-
-	echo git push github --tags
 	git push github --tags
-
-	echo npm publish
 	npm publish
 fi;
 
