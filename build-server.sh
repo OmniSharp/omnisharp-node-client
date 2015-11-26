@@ -1,8 +1,9 @@
+OMNISHARP_ROSLYN_VERSION=`jq '.["omnisharp-roslyn"]' package.json | sed "s/\"//g"`
+
 rm -rf roslyn
 mkdir -p roslyn
 pushd roslyn
 
-OMNISHARP_ROSLYN_VERSION=`jq '.["omnisharp-roslyn"]' package.json | sed "s/\"//g"`
 wget https://github.com/OmniSharp/omnisharp-roslyn/releases/download/$OMNISHARP_ROSLYN_VERSION/omnisharp.tar.gz
 tar zxvf omnisharp.tar.gz
 rm -f omnisharp.tar.gz
