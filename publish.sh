@@ -1,10 +1,10 @@
-VERSION_COMMIT=$(gitgit log -1 --format="%h %s %b" | grep -a "release bump");
+VERSION_COMMIT=$(git log -1 --format="%h %s %b" | grep -a "release bump");
 if [ -n "$VERSION_COMMIT" ]; then TAG_COMMIT="patch"; fi;
-VERSION_COMMIT=$(gitgit log -1 --format="%h %s %b" | grep -a "release patch");
+VERSION_COMMIT=$(git log -1 --format="%h %s %b" | grep -a "release patch");
 if [ -n "$VERSION_COMMIT" ]; then TAG_COMMIT="patch"; fi;
-VERSION_COMMIT=$(gitgit log -1 --format="%h %s %b" | grep -a "release minor");
+VERSION_COMMIT=$(git log -1 --format="%h %s %b" | grep -a "release minor");
 if [ -n "$VERSION_COMMIT" ]; then TAG_COMMIT="minor"; fi;
-VERSION_COMMIT=$(gitgit log -1 --format="%h %s %b" | grep -a "release major");
+VERSION_COMMIT=$(git log -1 --format="%h %s %b" | grep -a "release major");
 if [ -n "$VERSION_COMMIT" ]; then TAG_COMMIT="major"; fi;
 
 echo TRAVIS_SECURE_ENV_VARS = $TRAVIS_SECURE_ENV_VARS
