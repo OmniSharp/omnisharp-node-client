@@ -22,11 +22,15 @@ if [ "$TRAVIS_SECURE_ENV_VARS" = "true" ] && [ -n "$TAG_COMMIT" ]; then
 	git remote add github git@github.com:OmniSharp/omnisharp-node-client.git
     git fetch github
 	git reset --hard
+
 	TAG=$(npm version $TAG_COMMIT -m "[travis] Tagging release %s")
-	git rebase $TAG master
-	git push github master
+	BRANCH_NAME="release/$TAG"
+	git checkout -b $BRANCH_NAME
+	git rebase $TAG $BRANCH_NAME
+	git push github $BRANCH_NAME
 	git push github --tags
 	npm publish
+	curl -X POST -H 'Authorization: token '$GITHUB_API_TOKEN'' -d '{ "title": "Automated release '$TAG'", "body": "*Automated PR*  -  Upgrade omnisharp-roslyn to '$TAG'. [release patch]", "head": "'$BRANCH_NAME'", "base": "master" }' https://api.github.com/repos/OmniSharp/omnisharp-node-client/pulls
 fi;
 
 if [ "$TRAVIS_SECURE_ENV_VARS" = "true" ] && [ "$TRAVIS_BRANCH" = "master" ] && [ -z "$TAG_COMMIT" ]; then
