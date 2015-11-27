@@ -29,7 +29,7 @@ after_success:
   - echo TAG_COMMIT = $TAG_COMMIT
   - ". ./publish.sh"
 before_install:
-  - openssl aes-256-cbc -K $encrypted_43a97f4523d0_key -iv $encrypted_43a97f4523d0_iv -in travis_id_rsa.enc -out ~/.ssh/id_rsa -d
+  - openssl enc -aes-256-cbc -a -salt -in travis_rsa.enc -out ~/.ssh/id_rsa -pass pass:$OPENSSL_PASSKEY -d
   - chmod 600 ~/.ssh/id_rsa
   - eval `ssh-agent -s`
   - ssh-add ~/.ssh/id_rsa
