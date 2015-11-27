@@ -1,10 +1,10 @@
-VERSION_COMMIT=$(gitgit log -1 --format="%h %s %b" | grep -a "release bump");
+VERSION_COMMIT=$(git log -1 --format="%h %s %b" | grep -a "release bump");
 if [ -n "$VERSION_COMMIT" ]; then TAG_COMMIT="patch"; fi;
-VERSION_COMMIT=$(gitgit log -1 --format="%h %s %b" | grep -a "release patch");
+VERSION_COMMIT=$(git log -1 --format="%h %s %b" | grep -a "release patch");
 if [ -n "$VERSION_COMMIT" ]; then TAG_COMMIT="patch"; fi;
-VERSION_COMMIT=$(gitgit log -1 --format="%h %s %b" | grep -a "release minor");
+VERSION_COMMIT=$(git log -1 --format="%h %s %b" | grep -a "release minor");
 if [ -n "$VERSION_COMMIT" ]; then TAG_COMMIT="minor"; fi;
-VERSION_COMMIT=$(gitgit log -1 --format="%h %s %b" | grep -a "release major");
+VERSION_COMMIT=$(git log -1 --format="%h %s %b" | grep -a "release major");
 if [ -n "$VERSION_COMMIT" ]; then TAG_COMMIT="major"; fi;
 
 echo TRAVIS_SECURE_ENV_VARS = $TRAVIS_SECURE_ENV_VARS
@@ -16,8 +16,8 @@ echo "//registry.npmjs.org/:_authToken=$NPM_API_KEY" > ~/.npmrc
 if [ "$TRAVIS_SECURE_ENV_VARS" = "true" ] && [ -n "$TAG_COMMIT" ]; then
 	echo publishing version $TAG_COMMIT
 
-	git config user.name "OmniSharp Bot"
-	git config user.email "omnisharp-bot@users.noreply.github.com"
+    git config --global user.name "OmniSharp Bot"
+    git config --global user.email "omnisharp-bot@users.noreply.github.com"
 
 	git remote add github git@github.com:OmniSharp/omnisharp-node-client.git
     git fetch github
