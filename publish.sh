@@ -36,5 +36,5 @@ fi;
 if [ "$TRAVIS_SECURE_ENV_VARS" = "true" ] && [ "$TRAVIS_BRANCH" = "master" ] && [ -z "$TAG_COMMIT" ]; then
 	npm --no-git-tag-version version minor
 	echo publishing npm tag "@next"
-	# npm publish --tag next
+	npm publish --tag next
 fi;
