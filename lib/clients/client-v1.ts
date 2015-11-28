@@ -133,10 +133,8 @@ export class ClientV1 extends ClientBase<ClientEventsV1> implements OmniSharp.Ap
 
     @fixup
     @isNotNull((request: any) => request.FileName)
-    public fixusings(request: OmniSharp.Models.FixUsingsRequest, options?: OmniSharp.RequestOptions) {
-
-        return this.request<OmniSharp.Models.FixUsingsRequest, OmniSharp.Models.FixUsingsResponse>("fixusings", request, options);
-    }
+    @endpoint()
+    public fixusings(request: OmniSharp.Models.FixUsingsRequest, options?: OmniSharp.RequestOptions)  { throw new Error("Implemented by decorator"); }
 
     @fixup
     @isNotNull((request: any) => request.FileName)
@@ -156,9 +154,10 @@ export class ClientV1 extends ClientBase<ClientEventsV1> implements OmniSharp.Ap
     @endpoint()
     public navigateup(request: OmniSharp.Models.Request, options?: OmniSharp.RequestOptions): Rx.Observable<OmniSharp.Models.NavigateResponse> { throw new Error("Implemented by decorator"); }
 
-    public gotofile(request?: OmniSharp.Models.Request, options?: OmniSharp.RequestOptions) {
-        return this.request<OmniSharp.Models.Request, OmniSharp.Models.QuickFixResponse>("gotofile", request, options);
-    }
+    @fixup
+    @isNotNull((request: any) => request.FileName)
+    @endpoint()
+    public gotofile(request?: OmniSharp.Models.Request, options?: OmniSharp.RequestOptions) { throw new Error("Implemented by decorator"); }
 
     @fixup
     @isNotNull((request: any) => request.FileName)
@@ -223,21 +222,15 @@ export class ClientV1 extends ClientBase<ClientEventsV1> implements OmniSharp.Ap
 
     @fixup
     @endpoint()
-    public stopserver(request: any, options?: OmniSharp.RequestOptions) {
-        return this.request<any, boolean>("stopserver", request, options);
-    }
+    public stopserver(request: any, options?: OmniSharp.RequestOptions) { throw new Error("Implemented by decorator"); }
 
     @fixup
     @endpoint()
-    public checkalivestatus(options?: OmniSharp.RequestOptions) {
-        return this.request<any, any>("checkalivestatus", {}, options);
-    }
+    public checkalivestatus(options?: OmniSharp.RequestOptions) { throw new Error("Implemented by decorator"); }
 
     @fixup
     @endpoint()
-    public checkreadystatus(options?: OmniSharp.RequestOptions) {
-        return this.request<any, any>("checkreadystatus", {}, options);
-    }
+    public checkreadystatus(options?: OmniSharp.RequestOptions) { throw new Error("Implemented by decorator"); }
 
     @fixup
     @isNotNull((request: any) => request.FileName)
