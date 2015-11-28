@@ -85,7 +85,7 @@ gulp.task('clean', ['clean:lib', 'clean:spec']);
 
 gulp.task('clean:lib', function(done) {
     var items = metadata.lib
-    del(metadataDel.lib, function(err, paths) {
+    del(metadataDel.lib).then(function(paths) {
         _.each(paths, function(path) {
             gutil.log(gutil.colors.red('Deleted ') + gutil.colors.magenta(path.replace(__dirname, '').substring(1)));
         });
@@ -94,7 +94,7 @@ gulp.task('clean:lib', function(done) {
 });
 
 gulp.task('clean:spec', function(done) {
-    del(metadataDel.spec, function(err, paths) {
+    del(metadataDel.spec).then(function(paths) {
         _.each(paths, function(path) {
             gutil.log(gutil.colors.red('Deleted ') + gutil.colors.magenta(path.replace(__dirname, '').substring(1)));
         });
