@@ -38,7 +38,7 @@
     "rx": "^4.0.7",
     "strip-bom": "^2.0.0",
     "tslint": "^3.0.0",
-    "typescript": "^1.6.2",
+    "typescript": "1.6.2",
     "yargs": "^3.21.0"
   },
   "devDependencies": {
