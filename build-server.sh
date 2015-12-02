@@ -20,6 +20,4 @@ popd
 
 cp -f vendor/omnisharp.cmd.patch roslyn/omnisharp.cmd
 cp -f vendor/omnisharp.patch roslyn/omnisharp
-rm roslyn/Bootstrapper
-rm roslyn/Bootstrapper.cmd
 chmod +x roslyn/omnisharp
