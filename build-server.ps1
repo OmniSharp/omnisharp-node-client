@@ -19,8 +19,6 @@ popd
 
 Copy-Item -Force vendor/omnisharp.cmd.patch roslyn/omnisharp.cmd
 Copy-Item -Force vendor/omnisharp.patch roslyn/omnisharp
-Remove-Item -Force roslyn/Bootstrapper.cmd
-Remove-Item -Force roslyn/Bootstrapper
 Remove-Item -Force roslyn/omnisharp.bootstrap.cmd
 Remove-Item -Force roslyn/omnisharp.bootstrap
 
