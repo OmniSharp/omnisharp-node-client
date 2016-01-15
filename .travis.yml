@@ -16,11 +16,9 @@ addons:
       - curl
 before_script:
   - curl https://raw.github.com/creationix/nvm/master/install.sh | sh
-  - nvm install 0.12
-  - chmod +x build-server.sh
+  - nvm install 4.2.4
   - chmod +x publish.sh
 script:
-  - ". ./build-server.sh"
   - npm install
   - npm test
 after_success:

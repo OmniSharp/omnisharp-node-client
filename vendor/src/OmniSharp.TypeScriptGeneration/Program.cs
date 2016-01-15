@@ -60,7 +60,6 @@ declare module {OmnisharpControllerExtractor.InferNamespace(typeof(Request)).Tri
             result = string.Join("\n", result, generated, OmnisharpEventExtractor.GetInterface(), projectInterfaces);
             result = result
                 .Replace("interface", "export interface")
-                .Replace("enum", "export enum")
                 .Replace("declare module", "export module")
                 .Replace("export module OmniSharp {", "")
                 .Replace("OmniSharp.", "")

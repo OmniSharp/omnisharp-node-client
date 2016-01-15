@@ -26,26 +26,28 @@
   "typings": "lib/omnisharp-client.d.ts",
   "scripts": {
     "prepublish": "./node_modules/.bin/gulp npm-prepublish",
-    "test": "mocha spec"
+    "test": "mocha"
   },
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "atom-package-deps": "^3.0.7",
-    "babel-plugin-transform-es2015-modules-commonjs": "^6.3.13",
-    "babel-preset-es2015": "^6.3.13",
-    "babel-preset-stage-3": "^6.3.13",
     "del": "^2.1.0",
     "globby": "^4.0.0",
-    "gulp-babel": "^6.1.1",
-    "gulp-tslint": "^4.1.1",
+    "gulp": "^3.9.0",
+    "gulp-download-stream": "0.0.13",
+    "gulp-gunzip": "0.0.3",
+    "gulp-newer": "^1.1.0",
+    "gulp-untar": "0.0.4",
+    "gulp-unzip": "^0.1.3",
+    "gulp-util": "^3.0.6",
     "lodash": "^3.10.1",
+    "through2": "^2.0.0",
     "md5": "^2.0.0",
     "ntypescript": "^1.201512040604.1",
     "rx": "^4.0.7",
     "strip-bom": "^2.0.0",
-    "tslint": "^3.2.1",
-    "typescript": "^1.7.5",
+    "tar": "^2.2.1",
+    "unzip": "^0.1.11",
     "yargs": "^3.31.0"
   },
   "devDependencies": {
@@ -54,14 +56,11 @@
     "babel-preset-stage-3": "^6.1.18",
     "chai": "^3.0.0",
     "del": "^2.2.0",
-    "gulp": "^3.9.0",
-    "gulp-babel": "^6.1.0",
-    "gulp-tslint": "^4.2.2",
-    "gulp-util": "^3.0.6",
+    "gulp-babel": "^6.1.1",
+    "gulp-tslint": "^4.3.0",
     "merge-stream": "^1.0.0",
     "mocha": "^2.3.3",
-    "ntypescript": "^1.201601090605.1",
-    "through2": "^2.0.0",
-    "tsd": "^0.6.5"
+    "ntypescript": "^1.201601150604.1",
+    "tslint": "^3.2.1"
   }
 }

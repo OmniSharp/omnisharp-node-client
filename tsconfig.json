@@ -54,6 +54,7 @@
     "./lib/helpers/prioritization.ts",
     "./lib/omnisharp-client.ts",
     "./lib/omnisharp-path.ts",
+    "./lib/omnisharp-runtime.ts",
     "./lib/omnisharp-server.ts",
     "./lib/options.ts",
     "./lib/response-handling.ts",
