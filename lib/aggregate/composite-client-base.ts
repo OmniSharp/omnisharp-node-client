@@ -60,7 +60,7 @@ export class ObservationClientBase<Client> implements OmniSharp.Events, Rx.IDisp
     }
 }
 
-export class CombinationClientBase<Client> implements OmniSharp.Aggregate.Events, Rx.IDisposable {
+export class CombinationClientBase<Client extends { uniqueId: string; }> implements OmniSharp.Aggregate.Events, Rx.IDisposable {
     protected _disposable = new CompositeDisposable();
     private _clientDisposable = new CompositeDisposable();
     public _clientsSubject = new ReplaySubject<Client[]>(1);
@@ -96,17 +96,17 @@ export class CombinationClientBase<Client> implements OmniSharp.Aggregate.Events
         /* tslint:disable:no-string-literal */
         return this._clientsSubject.flatMapLatest(clients => {
             // clean up after ourselves.
-            const removal = _.difference(_.keys(cache), clients.map(z => z["uniqueId"]));
+            const removal = _.difference(_.keys(cache), clients.map(z => z.uniqueId));
             _.each(removal, z => delete cache[z]);
 
             return Observable.combineLatest(
-                clients.map(z => selector(z).startWith(cache[z["uniqueId"]])),
+                clients.map(z => selector(z).startWith(cache[z.uniqueId])),
                 (...values: T[]) =>
                     values.map((value, index) => {
-                        cache[clients[index]["uniqueId"]] = value;
+                        cache[clients[index].uniqueId] = value;
 
                         return {
-                            key: clients[index]["uniqueId"],
+                            key: clients[index].uniqueId,
                             value: value
                         };
                     })

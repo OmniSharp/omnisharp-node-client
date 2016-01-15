@@ -7,6 +7,7 @@ import * as readline from "readline";
 import {Observable, Subject, AsyncSubject, CompositeDisposable, Disposable} from "rx";
 import {join} from "path";
 import {omnisharpLocation} from "../omnisharp-path";
+import {findRuntime, downloadRuntime} from "../omnisharp-runtime";
 
 let win32 = false;
 let env: any;
@@ -96,9 +97,14 @@ export class StdioDriver implements IDriver {
     public get outstandingRequests() { return this._outstandingRequests.size; }
 
     public connect() {
+        this._disposable.add(this._ensureRuntimeExists()
+            .subscribeOnCompleted(() => this._connect()));
+    }
+
+    private _connect() {
         this._seq = 1;
         this._outstandingRequests.clear();
-        if (!this._connectionStream.isDisposed) { this._connectionStream.onNext(DriverState.Connecting); }
+        this._connectionStream.onNext(DriverState.Connecting);
 
         this._logger.log(`Connecting to child @ ${process.execPath}`);
         this._logger.log(`Path to server: ${this._serverPath}`);
@@ -129,7 +135,6 @@ export class StdioDriver implements IDriver {
         });
 
         rl.on("line", (data: any) => this.handleData(data));
-        //rl.on("line", (data) => enqueue(() => this.handleData(data)));
 
         this.id = this._process.pid.toString();
         this._process.on("error", (data: any) => this.serverErr(data));
@@ -138,9 +143,25 @@ export class StdioDriver implements IDriver {
         this._process.on("disconnect", () => this.disconnect());
     }
 
+    private _ensureRuntimeExists() {
+        const result = findRuntime(this._runtime, process, this._logger);
+
+        return result
+            .isEmpty()
+            .flatMap(empty =>
+                Observable.if(
+                    () => empty,
+                    Observable.defer(() => {
+                        this._connectionStream.onNext(DriverState.Downloading);
+                        return downloadRuntime(this._runtime, process, this._logger)
+                            .do(() => this._connectionStream.onNext(DriverState.Downloaded));
+                    })
+                ));
+    }
+
     private serverErr(data: any) {
         const friendlyMessage = this.parseError(data);
-        if (!this._connectionStream.isDisposed) { this._connectionStream.onNext(DriverState.Error); }
+        this._connectionStream.onNext(DriverState.Error);
         this._process = null;
 
         if (!this._eventStream.isDisposed) {
