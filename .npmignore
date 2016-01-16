@@ -6,3 +6,4 @@ lib/**/*.ts
 test
 NuGet.exe
 vendor
+roslyn
