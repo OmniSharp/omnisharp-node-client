@@ -23,10 +23,10 @@ describe("Omnisharp Server", function() {
 
     describe("state", function() {
 
-        this.timeout(20000);
+        this.timeout(60000 * 10);
         let server: OmnisharpClient;
 
-        before((done) => {
+        beforeEach((done) => {
             server = new OmnisharpClient({
                 driver: Driver.Stdio,
                 projectPath: process.cwd()

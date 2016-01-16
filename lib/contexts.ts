@@ -8,7 +8,7 @@ export class CommandContext<T> {
     constructor(public command: string, public value: T) { }
 }
 
-export class RequestContext<T> {
+export class RequestContext<T extends OmniSharp.Models.Request> {
     public command: string;
     public request: T;
     public sequence: string;
@@ -27,8 +27,8 @@ export class RequestContext<T> {
 
         if (isObject(request)) {
             /* tslint:disable:no-string-literal */
-            if (request["Buffer"]) {
-                request["Buffer"] = stripBom(request["Buffer"]);
+            if (request.Buffer) {
+                request.Buffer = stripBom(request.Buffer);
             }
             /* tslint:enable:no-string-literal */
             let obj = cloneDeep(request);

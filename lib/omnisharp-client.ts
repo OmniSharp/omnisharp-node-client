@@ -9,5 +9,5 @@ export {ObservationClientV1, AggregateClientV1} from "./aggregate/composite-clie
 export {ObservationClientV2, AggregateClientV2} from "./aggregate/composite-client-v2";
 
 export {findCandidates} from "./candidate-finder";
-export {Driver, DriverState} from "./enums";
+export {Driver, DriverState, Runtime} from "./enums";
 export {IDriver, OmnisharpClientOptions, OmnisharpClientStatus} from "./enums";

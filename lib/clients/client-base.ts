@@ -2,7 +2,7 @@ import * as OmniSharp from "../omnisharp-server";
 import {Observable, Subject, AsyncSubject, BehaviorSubject, CompositeDisposable} from "rx";
 import {keys, isObject, uniqueId, each, defaults, cloneDeep} from "lodash";
 import {IDriver, IStaticDriver, OmnisharpClientStatus, OmnisharpClientOptions} from "../enums";
-import {Driver, DriverState} from "../enums";
+import {Driver, DriverState, Runtime} from "../enums";
 import {RequestContext, ResponseContext, CommandContext} from "../contexts";
 import {serverLineNumbers, serverLineNumberArrays} from "../response-handling";
 import {ensureClientOptions} from "../options";
@@ -33,6 +33,7 @@ export class ClientBase<TEvents extends ClientEventsBase> implements IDriver, Rx
     public get id() { return this._driver.id; }
     public get serverPath() { return this._driver.serverPath; }
     public get projectPath() { return this._driver.projectPath; }
+    public get runtime(): Runtime { return this._driver.runtime; }
 
     public get currentState() { return this._driver.currentState; }
     private _enqueuedEvents: Rx.Observable<OmniSharp.Stdio.Protocol.EventPacket>;

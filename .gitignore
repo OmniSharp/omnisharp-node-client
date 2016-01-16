@@ -3,9 +3,9 @@ npm-debug.log
 node_modules
 lib/**/*.js
 lib/**/*.d.ts
-spec/**/*.js
-spec/**/*.d.ts
-!spec/tsd.d.ts
+test/**/*.js
+test/**/*.d.ts
+!test/tsd.d.ts
 roslyn
 NuGet.exe
 vendor/omnisharp-roslyn/

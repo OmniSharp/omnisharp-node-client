@@ -33,7 +33,7 @@ if [ "$TRAVIS_SECURE_ENV_VARS" = "true" ] && [ -n "$TAG_COMMIT" ]; then
 	curl -X POST -H 'Authorization: token '$GITHUB_API_TOKEN'' -d '{ "title": "Automated release '$TAG'", "body": "*Automated PR*  -  Upgrade omnisharp-roslyn to '$TAG'. [release patch]", "head": "'$BRANCH_NAME'", "base": "master" }' https://api.github.com/repos/OmniSharp/omnisharp-node-client/pulls
 fi;
 
-if [ "$TRAVIS_SECURE_ENV_VARS" = "true" ] && [ "$TRAVIS_BRANCH" = "master" ] && [ -z "$TAG_COMMIT" ]; then
+if [ "$TRAVIS_SECURE_ENV_VARS" = "true" ] && [ "$TRAVIS_PULL_REQUEST" = "false" ] && [ "$TRAVIS_BRANCH" = "master" ] && [ -z "$TAG_COMMIT" ]; then
 	npm --no-git-tag-version version minor
 	echo publishing npm tag "@next"
 	npm publish --tag next

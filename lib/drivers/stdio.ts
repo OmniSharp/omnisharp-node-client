@@ -1,5 +1,5 @@
 import * as OmniSharp from "../omnisharp-server";
-import {IDriver, IDriverOptions, ILogger} from "../enums";
+import {IDriver, IDriverOptions, ILogger, Runtime} from "../enums";
 import {defaults} from "lodash";
 import {DriverState} from "../enums";
 import {spawn, ChildProcess} from "child_process";
@@ -7,6 +7,7 @@ import * as readline from "readline";
 import {Observable, Subject, AsyncSubject, CompositeDisposable, Disposable} from "rx";
 import {join} from "path";
 import {omnisharpLocation} from "../omnisharp-path";
+import {findRuntime, downloadRuntime} from "../omnisharp-runtime";
 
 let win32 = false;
 let env: any;
@@ -39,15 +40,17 @@ export class StdioDriver implements IDriver {
     private _findProject: boolean;
     private _logger: ILogger;
     private _timeout: number;
+    private _runtime: Runtime;
     public id: string;
 
-    constructor({projectPath, serverPath, findProject, logger, timeout, additionalArguments}: IDriverOptions) {
+    constructor({projectPath, serverPath, findProject, logger, timeout, additionalArguments, runtime}: IDriverOptions) {
         this._projectPath = projectPath;
         this._findProject = findProject || false;
         this._serverPath = serverPath || omnisharpLocation;
         this._connectionStream.subscribe(state => this.currentState = state);
         this._logger = logger || console;
         this._timeout = (timeout || 60) * 1000;
+        this._runtime = runtime || Runtime.ClrOrMono;
         this._additionalArguments = additionalArguments;
 
         this._disposable.add(this._commandStream);
@@ -83,6 +86,7 @@ export class StdioDriver implements IDriver {
 
     public get serverPath() { return this._serverPath; }
     public get projectPath() { return this._projectPath; }
+    public get runtime() { return this._runtime; }
 
     private _commandStream = new Subject<OmniSharp.Stdio.Protocol.ResponsePacket>();
     public get commands(): Rx.Observable<OmniSharp.Stdio.Protocol.ResponsePacket> { return this._commandStream; }
@@ -96,9 +100,14 @@ export class StdioDriver implements IDriver {
     public get outstandingRequests() { return this._outstandingRequests.size; }
 
     public connect() {
+        this._disposable.add(this._ensureRuntimeExists()
+            .subscribeOnCompleted(() => this._connect()));
+    }
+
+    private _connect() {
         this._seq = 1;
         this._outstandingRequests.clear();
-        if (!this._connectionStream.isDisposed) { this._connectionStream.onNext(DriverState.Connecting); }
+        this._connectionStream.onNext(DriverState.Connecting);
 
         this._logger.log(`Connecting to child @ ${process.execPath}`);
         this._logger.log(`Path to server: ${this._serverPath}`);
@@ -129,7 +138,6 @@ export class StdioDriver implements IDriver {
         });
 
         rl.on("line", (data: any) => this.handleData(data));
-        //rl.on("line", (data) => enqueue(() => this.handleData(data)));
 
         this.id = this._process.pid.toString();
         this._process.on("error", (data: any) => this.serverErr(data));
@@ -138,9 +146,25 @@ export class StdioDriver implements IDriver {
         this._process.on("disconnect", () => this.disconnect());
     }
 
+    private _ensureRuntimeExists() {
+        const result = findRuntime(this._runtime, process, this._logger);
+
+        return result
+            .isEmpty()
+            .flatMap(empty =>
+                Observable.if(
+                    () => empty,
+                    Observable.defer(() => {
+                        this._connectionStream.onNext(DriverState.Downloading);
+                        return downloadRuntime(this._runtime, process, this._logger)
+                            .do(() => this._connectionStream.onNext(DriverState.Downloaded));
+                    })
+                ));
+    }
+
     private serverErr(data: any) {
         const friendlyMessage = this.parseError(data);
-        if (!this._connectionStream.isDisposed) { this._connectionStream.onNext(DriverState.Error); }
+        this._connectionStream.onNext(DriverState.Error);
         this._process = null;
 
         if (!this._eventStream.isDisposed) {

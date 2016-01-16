@@ -20,7 +20,7 @@ describe("Omnisharp Local - Stdio", function() {
     });
 
     describe("properties", function() {
-        this.timeout(20000);
+        this.timeout(60000);
         it("should implement the interface", function(done) {
             const server = new StdioDriver({
                 projectPath: resolve(__dirname, "../roslyn/")
@@ -40,7 +40,7 @@ describe("Omnisharp Local - Stdio", function() {
     });
 
     /*describe("properties", function() {
-        this.timeout(20000);
+        this.timeout(60000);
         it("should disconnect if no an invalid project path is given", function(done) {
             const server = new Stdio({
                 projectPath: "/invalid/path/to/things/"
