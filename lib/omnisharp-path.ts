@@ -1,8 +1,8 @@
 import {resolve} from "path";
 
 const win32 = process.platform === "win32",
-    omnisharp = win32 ? "omnisharp.cmd" : "omnisharp",
-    bootstrap = win32 ? "omnisharp.cmd" : "omnisharp";
+    omnisharp = win32 ? "run.cmd" : "run",
+    bootstrap = win32 ? "omnisharp.bootstrap.cmd" : "omnisharp.bootstrap";
 
 /* tslint:disable:no-string-literal */
 export const omnisharpLocation = process.env["OMNISHARP"] || resolve(__dirname, "../roslyn/", omnisharp);

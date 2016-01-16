@@ -1,7 +1,7 @@
 /* tslint:disable */
 
 export module Models {
-    export enum HighlightClassification {
+    export const enum HighlightClassification {
         Name = 1,
         Comment = 2,
         String = 3,
@@ -422,7 +422,7 @@ export module ScriptCs {
     }
 }
 
-    export enum TestCommandType {
+    export const enum TestCommandType {
         All = 0,
         Fixture = 1,
         Single = 2

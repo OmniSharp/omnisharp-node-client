@@ -9,11 +9,11 @@ export enum Driver {
 
 export enum DriverState {
     Disconnected,
+    Bootstrapping,
+    Bootstrapped,
     Connecting,
     Connected,
-    Error,
-    Bootstrapping,
-    Bootstrapped
+    Error
 }
 
 export interface IStaticDriver {

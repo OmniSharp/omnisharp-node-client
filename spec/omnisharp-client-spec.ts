@@ -1,9 +1,10 @@
 /// <reference path="./tsd.d.ts" />
 import {expect} from "chai";
-import {Driver, DriverState} from "../lib/enums";
+import {Driver, DriverState, Runtime} from "../lib/enums";
 import {resolve} from "path";
 import {ClientV2 as OmnisharpClient} from "../lib/clients/client-v2";
 import * as _ from "lodash";
+import {downloadRuntime} from "../lib/omnisharp-runtime";
 
 declare const xdescribe: Function;
 
@@ -23,10 +24,10 @@ describe("Omnisharp Server", function() {
 
     describe("state", function() {
 
-        this.timeout(20000);
+        this.timeout(60000 * 10);
         let server: OmnisharpClient;
 
-        before((done) => {
+        beforeEach((done) => {
             server = new OmnisharpClient({
                 driver: Driver.Stdio,
                 projectPath: process.cwd()

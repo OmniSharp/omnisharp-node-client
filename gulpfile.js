@@ -1,17 +1,27 @@
 const gulp = require('gulp');
-const through = require('through2');
 const gutil = require('gulp-util');
-const merge = require('merge-stream');
-const del = require('del');
 const _ = require('lodash');
 const path = require('path');
 const fs = require('fs');
 const win32 = process.platform === "win32";
 const spawn = require('child_process').spawn;
-var babel = require("gulp-babel");
-var tslint = require("gulp-tslint");
-var gulpPath = path.join(__dirname, 'node_modules/.bin/gulp' + (win32 && '.cmd' || ''));
-var ts = require('ntypescript');
+const gulpPath = path.join(__dirname, 'node_modules/.bin/gulp' + (win32 && '.cmd' || ''));
+const merge = require('merge-stream');
+
+// Lazy so we don't load these when we don't need them.
+const ctx = {
+    get ts() { return require('ntypescript'); },
+    get tslint() { return require("gulp-tslint"); },
+    get babel() { return require("gulp-babel"); },
+    get through() { return require('through2'); },
+    get del() { return require('del'); },
+    get download() { return require('gulp-download-stream'); },
+    get gunzip() { return require('gulp-gunzip'); },
+    get untar() { return require('gulp-untar'); },
+    get unzip() { return require('gulp-unzip'); },
+    get newer() { return require('gulp-newer'); },
+    get package() { return require('./package.json'); }
+};
 
 var metadata = {
     lib: ['lib/**/*.ts', '!lib/**/*.d.ts'],
@@ -26,16 +36,16 @@ var metadataDel = {
 // Simply take TS code and strip anything not javascript
 // Does not do any compile time checking.
 function tsTranspile() {
-    return through.obj(function(file, enc, cb) {
+    return ctx.through.obj(function(file, enc, cb) {
         if (file.isNull()) {
             cb(null, file);
             return;
         }
 
         try {
-            var res = ts.transpile(file.contents.toString(), {
-                module: ts.ModuleKind.ES6,
-                target: ts.ScriptTarget.ES6
+            var res = ctx.ts.transpile(file.contents.toString(), {
+                module: ctx.ts.ModuleKind.ES6,
+                target: ctx.ts.ScriptTarget.ES6
             }, file.path);
 
             file.contents = new Buffer(res);
@@ -53,11 +63,11 @@ function tsTranspile() {
 
 function tsTranspiler(source, dest) {
     return source
-        .pipe(tslint())
+        .pipe(ctx.tslint())
         .pipe(tsTranspile())
-        .pipe(babel())
+        .pipe(ctx.babel())
         .pipe(gulp.dest(dest))
-        .pipe(tslint.report('prose'));
+        .pipe(ctx.tslint.report('prose'));
 }
 
 gulp.task('typescript', ['sync-clients','clean'], function() {
@@ -85,7 +95,7 @@ gulp.task('clean', ['clean:lib', 'clean:spec']);
 
 gulp.task('clean:lib', function(done) {
     var items = metadata.lib
-    del(metadataDel.lib).then(function(paths) {
+    ctx.del(metadataDel.lib).then(function(paths) {
         _.each(paths, function(path) {
             gutil.log(gutil.colors.red('Deleted ') + gutil.colors.magenta(path.replace(__dirname, '').substring(1)));
         });
@@ -94,7 +104,7 @@ gulp.task('clean:lib', function(done) {
 });
 
 gulp.task('clean:spec', function(done) {
-    del(metadataDel.spec).then(function(paths) {
+    ctx.del(metadataDel.spec).then(function(paths) {
         _.each(paths, function(path) {
             gutil.log(gutil.colors.red('Deleted ') + gutil.colors.magenta(path.replace(__dirname, '').substring(1)));
         });
@@ -191,6 +201,90 @@ gulp.task('file-watch', function() {
 });
 
 gulp.task('npm-prepublish', ['typescript-babel']);
+
+gulp.task('npm-install', ['download-roslyn', 'unzip-roslyn', 'clean-archives'], function() {
+});
+
+gulp.task('clean-roslyn', [], function() {
+    return ctx.del('./roslyn').then(function(paths) {
+        fs.mkdirSync('./roslyn');
+    });
+});
+
+gulp.task('download-roslyn', ['clean-roslyn'], function() {
+    const serverVersion = ctx.package['omnisharp-roslyn'];
+    const files = [];
+    if (win32) {
+        if (process.arch === 'x64') {
+            files.push(
+                'https://github.com/OmniSharp/omnisharp-roslyn/releases/download/' + serverVersion + '/omnisharp-clr-win-x64.zip',
+                'https://github.com/OmniSharp/omnisharp-roslyn/releases/download/' + serverVersion + '/omnisharp.bootstrap-clr-win-x64.zip',
+                'https://github.com/OmniSharp/omnisharp-roslyn/releases/download/' + serverVersion + '/omnisharp-coreclr-win-x64.zip',
+                'https://github.com/OmniSharp/omnisharp-roslyn/releases/download/' + serverVersion + '/omnisharp.bootstrap-coreclr-win-x64.zip'
+            );
+        } else {
+            files.push(
+                'https://github.com/OmniSharp/omnisharp-roslyn/releases/download/' + serverVersion + '/omnisharp-clr-win-x86.zip',
+                'https://github.com/OmniSharp/omnisharp-roslyn/releases/download/' + serverVersion + '/omnisharp.bootstrap-clr-win-x86.zip',
+                'https://github.com/OmniSharp/omnisharp-roslyn/releases/download/' + serverVersion + '/omnisharp-coreclr-win-x86.zip',
+                'https://github.com/OmniSharp/omnisharp-roslyn/releases/download/' + serverVersion + '/omnisharp.bootstrap-coreclr-win-x86.zip'
+            );
+        }
+    } else {
+        files.push(
+            'https://github.com/OmniSharp/omnisharp-roslyn/releases/download/' + serverVersion + '/omnisharp-mono.tar.gz',
+            'https://github.com/OmniSharp/omnisharp-roslyn/releases/download/' + serverVersion + '/omnisharp.bootstrap-mono.tar.gz'
+        );
+    }
+
+    if (process.platform === 'darwin') {
+        files.push(
+            'https://github.com/OmniSharp/omnisharp-roslyn/releases/download/' + serverVersion + '/omnisharp-coreclr-darwin-x64.tar.gz',
+            'https://github.com/OmniSharp/omnisharp-roslyn/releases/download/' + serverVersion + '/omnisharp.bootstrap-coreclr-darwin-x64.tar.gz'
+        );
+    } else if (process.platform === 'linux') {
+        files.push(
+            'https://github.com/OmniSharp/omnisharp-roslyn/releases/download/' + serverVersion + '/omnisharp-coreclr-linux-x64.tar.gz',
+            'https://github.com/OmniSharp/omnisharp-roslyn/releases/download/' + serverVersion + '/omnisharp.bootstrap-coreclr-linux-x64.tar.gz'
+        );
+    }
+
+    return ctx.download(files)
+        .pipe(gulp.dest('./roslyn'));
+});
+
+gulp.task('unzip-roslyn', ['download-roslyn'], function() {
+    function ifExists() {
+        return ctx.through.obj(function(file, enc, cb) {
+            if (file.isNull()) {
+                cb(null, file);
+                return;
+            }
+
+            if (!fs.existsSync("./roslyn/" + file.path)) {
+                this.push(file);
+            }
+            cb();
+        });
+    }
+    var source = gulp.src(['./roslyn/*.zip', './roslyn/*.tar.gz']);
+
+    if (win32) {
+        source = source
+            .pipe(ctx.unzip());
+    } else  {
+        source = source
+            .pipe(ctx.gunzip())
+            .pipe(ctx.untar());
+    }
+    return source
+        .pipe(ifExists())
+        .pipe(gulp.dest("./roslyn"));
+});
+
+gulp.task('clean-archives', ['unzip-roslyn'], function() {
+    return ctx.del(['./roslyn/*.zip', './roslyn/*.tar.gz']);
+});
 
 // The default task (called when you run `gulp` from CLI)
 gulp.task('default', ['typescript-babel']);
