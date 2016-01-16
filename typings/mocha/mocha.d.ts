@@ -18,7 +18,7 @@ interface MochaSetupOptions {
     //array of accepted globals
     globals?: any[];
 
-    // reporter instance (function or string), defaults to `mocha.reporters.Spec`
+    // reporter instance (function or string), defaults to `mocha.reporters.test`
     reporter?: any;
 
     // bail on the first test failure
@@ -92,9 +92,9 @@ declare class Mocha {
     setup(options: MochaSetupOptions): Mocha;
     bail(value?: boolean): Mocha;
     addFile(file: string): Mocha;
-    /** Sets reporter by name, defaults to "spec". */
+    /** Sets reporter by name, defaults to "test". */
     reporter(name: string): Mocha;
-    /** Sets reporter constructor, defaults to mocha.reporters.Spec. */
+    /** Sets reporter constructor, defaults to mocha.reporters.test. */
     reporter(reporter: (runner: Mocha.IRunner, options: any) => any): Mocha;
     ui(value: string): Mocha;
     grep(value: string): Mocha;
@@ -148,9 +148,9 @@ declare module Mocha {
     interface IRunner extends NodeJS.EventEmitter {}
 
     interface IContextDefinition {
-        (description: string, spec: () => void): ISuite;
-        only(description: string, spec: () => void): ISuite;
-        skip(description: string, spec: () => void): void;
+        (description: string, test: () => void): ISuite;
+        only(description: string, test: () => void): ISuite;
+        skip(description: string, test: () => void): void;
         timeout(ms: number): void;
     }
     
@@ -203,7 +203,7 @@ declare module Mocha {
                 close?: string;
             });
         }
-        export class Spec extends Base {}
+        export class test extends Base {}
         export class TAP extends Base {}
         export class XUnit extends Base {
             constructor(runner: IRunner, options?: any);

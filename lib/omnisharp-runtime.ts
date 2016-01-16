@@ -73,7 +73,7 @@ function ensureCurrentVersion(dest = resolve(__dirname, "../roslyn/")) {
 }
 
 export function getRuntimeId(runtime: Runtime, proc: PROC) {
-    return `dnx-${getIdKey(runtime, proc)}`
+    return `dnx-${getIdKey(runtime, proc)}`;
 }
 
 function getIdKey(runtime: Runtime, proc: PROC) {

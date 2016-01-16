@@ -1,10 +1,9 @@
 /// <reference path="./tsd.d.ts" />
 import {expect} from "chai";
-import {Driver, DriverState, Runtime} from "../lib/enums";
+import {Driver, DriverState} from "../lib/enums";
 import {resolve} from "path";
 import {ClientV2 as OmnisharpClient} from "../lib/clients/client-v2";
 import * as _ from "lodash";
-import {downloadRuntime} from "../lib/omnisharp-runtime";
 
 declare const xdescribe: Function;
 

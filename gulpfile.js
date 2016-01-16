@@ -25,12 +25,12 @@ const ctx = {
 
 var metadata = {
     lib: ['lib/**/*.ts', '!lib/**/*.d.ts'],
-    spec: ['spec/**/*.ts', '!spec/**/*.d.ts'],
+    test: ['test/**/*.ts', '!test/**/*.d.ts'],
 };
 
 var metadataDel = {
     lib: ['lib/**/*.js', 'lib/**/*.d.ts'],
-    spec: ['spec/**/*.js', 'spec/**/*.d.ts', '!spec/tsd.d.ts'],
+    test: ['test/**/*.js', 'test/**/*.d.ts', '!test/tsd.d.ts'],
 };
 
 // Simply take TS code and strip anything not javascript
@@ -86,12 +86,12 @@ gulp.task('typescript', ['sync-clients','clean'], function() {
 
 gulp.task('typescript-babel', ['typescript'], function() {
     var lib = tsTranspiler(gulp.src(metadata.lib), './lib');
-    var spec = tsTranspiler(gulp.src(metadata.spec), './spec');
+    var test = tsTranspiler(gulp.src(metadata.test), './test');
 
-    return merge(lib, spec);
+    return merge(lib, test);
 });
 
-gulp.task('clean', ['clean:lib', 'clean:spec']);
+gulp.task('clean', ['clean:lib', 'clean:test']);
 
 gulp.task('clean:lib', function(done) {
     var items = metadata.lib
@@ -103,8 +103,8 @@ gulp.task('clean:lib', function(done) {
     });
 });
 
-gulp.task('clean:spec', function(done) {
-    ctx.del(metadataDel.spec).then(function(paths) {
+gulp.task('clean:test', function(done) {
+    ctx.del(metadataDel.test).then(function(paths) {
         _.each(paths, function(path) {
             gutil.log(gutil.colors.red('Deleted ') + gutil.colors.magenta(path.replace(__dirname, '').substring(1)));
         });
@@ -192,99 +192,15 @@ gulp.task('file-watch', function() {
         .pipe(plumber())
         .pipe(newer('./lib')), './lib')
 
-    const spec = tsTranspiler(gulp.src(metadata.spec)
-        .pipe(watch(metadata.spec))
+    const test = tsTranspiler(gulp.src(metadata.test)
+        .pipe(watch(metadata.test))
         .pipe(plumber())
-        .pipe(newer('./spec')), './spec');
+        .pipe(newer('./test')), './test');
 
-    return merge(lib, spec);
+    return merge(lib, test);
 });
 
 gulp.task('npm-prepublish', ['typescript-babel']);
-
-gulp.task('npm-install', ['download-roslyn', 'unzip-roslyn', 'clean-archives'], function() {
-});
-
-gulp.task('clean-roslyn', [], function() {
-    return ctx.del('./roslyn').then(function(paths) {
-        fs.mkdirSync('./roslyn');
-    });
-});
-
-gulp.task('download-roslyn', ['clean-roslyn'], function() {
-    const serverVersion = ctx.package['omnisharp-roslyn'];
-    const files = [];
-    if (win32) {
-        if (process.arch === 'x64') {
-            files.push(
-                'https://github.com/OmniSharp/omnisharp-roslyn/releases/download/' + serverVersion + '/omnisharp-clr-win-x64.zip',
-                'https://github.com/OmniSharp/omnisharp-roslyn/releases/download/' + serverVersion + '/omnisharp.bootstrap-clr-win-x64.zip',
-                'https://github.com/OmniSharp/omnisharp-roslyn/releases/download/' + serverVersion + '/omnisharp-coreclr-win-x64.zip',
-                'https://github.com/OmniSharp/omnisharp-roslyn/releases/download/' + serverVersion + '/omnisharp.bootstrap-coreclr-win-x64.zip'
-            );
-        } else {
-            files.push(
-                'https://github.com/OmniSharp/omnisharp-roslyn/releases/download/' + serverVersion + '/omnisharp-clr-win-x86.zip',
-                'https://github.com/OmniSharp/omnisharp-roslyn/releases/download/' + serverVersion + '/omnisharp.bootstrap-clr-win-x86.zip',
-                'https://github.com/OmniSharp/omnisharp-roslyn/releases/download/' + serverVersion + '/omnisharp-coreclr-win-x86.zip',
-                'https://github.com/OmniSharp/omnisharp-roslyn/releases/download/' + serverVersion + '/omnisharp.bootstrap-coreclr-win-x86.zip'
-            );
-        }
-    } else {
-        files.push(
-            'https://github.com/OmniSharp/omnisharp-roslyn/releases/download/' + serverVersion + '/omnisharp-mono.tar.gz',
-            'https://github.com/OmniSharp/omnisharp-roslyn/releases/download/' + serverVersion + '/omnisharp.bootstrap-mono.tar.gz'
-        );
-    }
-
-    if (process.platform === 'darwin') {
-        files.push(
-            'https://github.com/OmniSharp/omnisharp-roslyn/releases/download/' + serverVersion + '/omnisharp-coreclr-darwin-x64.tar.gz',
-            'https://github.com/OmniSharp/omnisharp-roslyn/releases/download/' + serverVersion + '/omnisharp.bootstrap-coreclr-darwin-x64.tar.gz'
-        );
-    } else if (process.platform === 'linux') {
-        files.push(
-            'https://github.com/OmniSharp/omnisharp-roslyn/releases/download/' + serverVersion + '/omnisharp-coreclr-linux-x64.tar.gz',
-            'https://github.com/OmniSharp/omnisharp-roslyn/releases/download/' + serverVersion + '/omnisharp.bootstrap-coreclr-linux-x64.tar.gz'
-        );
-    }
-
-    return ctx.download(files)
-        .pipe(gulp.dest('./roslyn'));
-});
-
-gulp.task('unzip-roslyn', ['download-roslyn'], function() {
-    function ifExists() {
-        return ctx.through.obj(function(file, enc, cb) {
-            if (file.isNull()) {
-                cb(null, file);
-                return;
-            }
-
-            if (!fs.existsSync("./roslyn/" + file.path)) {
-                this.push(file);
-            }
-            cb();
-        });
-    }
-    var source = gulp.src(['./roslyn/*.zip', './roslyn/*.tar.gz']);
-
-    if (win32) {
-        source = source
-            .pipe(ctx.unzip());
-    } else  {
-        source = source
-            .pipe(ctx.gunzip())
-            .pipe(ctx.untar());
-    }
-    return source
-        .pipe(ifExists())
-        .pipe(gulp.dest("./roslyn"));
-});
-
-gulp.task('clean-archives', ['unzip-roslyn'], function() {
-    return ctx.del(['./roslyn/*.zip', './roslyn/*.tar.gz']);
-});
 
 // The default task (called when you run `gulp` from CLI)
 gulp.task('default', ['typescript-babel']);

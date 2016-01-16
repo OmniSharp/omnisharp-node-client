@@ -3,6 +3,6 @@ npm-debug.log
 node_modules
 lib/**/*.ts
 !lib/**/*.d.ts
-spec
+test
 NuGet.exe
 vendor

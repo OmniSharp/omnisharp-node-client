@@ -11,9 +11,16 @@ export enum DriverState {
     Disconnected,
     Bootstrapping,
     Bootstrapped,
+    Downloading,
+    Downloaded,
     Connecting,
     Connected,
     Error
+}
+
+export enum Runtime {
+    ClrOrMono,
+    CoreClr
 }
 
 export interface IStaticDriver {
@@ -33,6 +40,7 @@ export interface IDriverOptions {
     findProject?: boolean; // Should try and find the project using the project finder
     logger?: ILogger;
     timeout?: number; // timeout in seconds
+    runtime?: Runtime;
     additionalArguments?: string[];
 }
 
@@ -46,6 +54,7 @@ export interface IDriver extends Rx.IDisposable {
     disconnect(): void;
     serverPath: string;
     projectPath: string;
+    runtime: Runtime;
     request<TRequest, TResponse>(command: string, request?: TRequest): Rx.Observable<TResponse>;
 }
 

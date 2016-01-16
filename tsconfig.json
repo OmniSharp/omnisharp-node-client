@@ -32,8 +32,8 @@
   "filesGlob": [
     "./lib/**/*.ts",
     "!./lib/**/*.d.ts",
-    "./spec/**/*.ts",
-    "!./spec/**/*.d.ts",
+    "./test/**/*.ts",
+    "!./test/**/*.d.ts",
     "./tsd.d.ts"
   ],
   "files": [
@@ -59,12 +59,13 @@
     "./lib/options.ts",
     "./lib/response-handling.ts",
     "./lib/stdio/child.ts",
-    "./spec/candidate-find-spec.ts",
-    "./spec/omnisharp-client-commands-v2.ts",
-    "./spec/omnisharp-client-commands.ts",
-    "./spec/omnisharp-client-spec.ts",
-    "./spec/stdio-spec.ts",
-    "./spec/validate-proxies-spec.ts",
+    "./test/candidate-find-spec.ts",
+    "./test/omnisharp-client-commands-v2.ts",
+    "./test/omnisharp-client-commands.ts",
+    "./test/omnisharp-client-spec.ts",
+    "./test/omnisharp-runtime-spec.ts",
+    "./test/stdio-spec.ts",
+    "./test/validate-proxies-spec.ts",
     "./tsd.d.ts"
   ],
   "exclude": [],
