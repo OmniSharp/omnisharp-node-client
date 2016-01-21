@@ -110,8 +110,19 @@ export function downloadRuntime(runtime: Runtime, proc: PROC, logger: ILogger, d
         const path = join(destination, name);
         logger.log(`Downloading ${path}`);
 
-        return extract(proc.platform === "win32", request.get(url), path, destination, logger)
-            .doOnCompleted(() => logger.log(`Finished downloading ${path}`))
+        return Observable.create<void>((observer) => {
+            request.get(url)
+                .pipe(fs.createWriteStream(path))
+                .on("error", (e: any) => observer.onError(e))
+                .on("finish", () => {
+                    observer.onNext(null);
+                    observer.onCompleted();
+                });
+        })
+            .do(null, null, () => logger.log(`Finished downloading ${path}`))
+            .concatMap(() => extract(proc.platform === "win32", fs.createReadStream(path), path, destination, logger))
+            .do(null, null, () => fs.unlinkSync(path))
+            .do(null, null, () => logger.log(`Finished extracting ${path}`))
             .concatMap(Observable.of(path));
     };
 
