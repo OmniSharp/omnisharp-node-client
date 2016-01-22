@@ -1,0 +1,13 @@
+init:
+  - git config --global core.autocrlf true
+environment:
+  nodejs_version: "4"
+install:
+  - npm install
+test_script:
+  - node --version && npm --version
+  - npm test
+build: off
+matrix:
+  fast_finish: true
+  
