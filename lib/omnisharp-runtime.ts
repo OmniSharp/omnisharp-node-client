@@ -103,7 +103,8 @@ export function downloadRuntime(runtime: Runtime, proc: PROC, logger: ILogger, d
     const key = getIdKey(runtime, proc);
     const extractStuff = (name: string, destination: string) => {
         try {
-            fs.mkdirSync(destination);
+            if (!fs.existsSync(destination))
+                fs.mkdirSync(destination);
         } catch (e) { /* */ }
 
         const url = `https://github.com/OmniSharp/omnisharp-roslyn/releases/download/${serverVersion}/${name}`;
