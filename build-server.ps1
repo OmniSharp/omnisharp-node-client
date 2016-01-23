@@ -3,8 +3,8 @@ $OMNISHARP_ROSLYN_VERSION=(Get-Content package.json | ConvertFrom-Json).'omnisha
 pushd .
 iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/aspnet/Home/dev/dnvminstall.ps1'))
 $Env:DNX_UNSTABLE_FEED='https://www.myget.org/F/aspnetcidev/api/v2'
-dnvm install 1.0.0-rc2-16386 -u
-dnvm use 1.0.0-rc2-16386
+dnvm install 1.0.0-rc2-16388 -u
+dnvm use 1.0.0-rc2-16388
 popd
 
 Remove-Item vendor/omnisharp-roslyn -Recurse -Force

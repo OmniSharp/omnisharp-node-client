@@ -4,6 +4,7 @@ import {Driver, DriverState} from "../lib/enums";
 import {resolve} from "path";
 import {ClientV2 as OmnisharpClient} from "../lib/clients/client-v2";
 import * as _ from "lodash";
+import {Observable} from "rx";
 
 declare const xdescribe: Function;
 
@@ -40,6 +41,11 @@ describe("Omnisharp Server", function() {
             server.connect();
         });
 
+        afterEach(() => {
+            server.disconnect();
+            return Observable.timer(1000).toPromise();
+        });
+
         it("must respond to all requests", function(done) {
             let count = 4;
             server.observe.checkalivestatus.subscribe((data) => {
@@ -66,14 +72,17 @@ describe("Omnisharp Server", function() {
     });
 
     describe("configuration", function() {
+
+        this.timeout(60000 * 10);
         it("should call with given omnisharp parameters", function(done) {
             const server = new OmnisharpClient({
                 driver: Driver.Stdio,
-                projectPath: resolve(__dirname, "../roslyn/"),
+                projectPath: resolve(__dirname, "../"),
                 logger: {
                     log: (message) => {
                         if (_.startsWith(message, "Arguments: ")) {
                             expect(message).to.contain("--Dnx:Alias=notdefault");
+                            server.disconnect();
                             done();
                         }
                     },
@@ -87,15 +96,16 @@ describe("Omnisharp Server", function() {
             server.connect();
         });
 
-        it("should call with given omnisharp parameters", function(done) {
+        it("should call with given omnisharp parameters (formatting)", function(done) {
             const server = new OmnisharpClient({
                 driver: Driver.Stdio,
-                projectPath: resolve(__dirname, "../roslyn/"),
+                projectPath: resolve(__dirname, "../"),
                 logger: {
                     log: (message) => {
                         if (_.startsWith(message, "Arguments: ")) {
                             expect(message).to.contain("--Dnx:Alias=beta4");
                             expect(message).to.contain("--FormattingOptions:NewLine=blah");
+                            server.disconnect();
                             done();
                         }
                     },

@@ -7,6 +7,9 @@ test/**/*.js
 test/**/*.d.ts
 !test/tsd.d.ts
 roslyn
+clr
+mono
+coreclr
 NuGet.exe
 vendor/omnisharp-roslyn/
 project.lock.json

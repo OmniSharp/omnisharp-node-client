@@ -9,13 +9,13 @@ declare const xdescribe: Function;
 describe("Omnisharp Local - Stdio", function() {
     it("must construct", () => {
         new StdioDriver({
-            projectPath: resolve(__dirname, "../roslyn/")
+            projectPath: resolve(__dirname, "../")
         });
     });
 
     it("must construct with a specific driver", () => {
         new StdioDriver({
-            projectPath: resolve(__dirname, "../roslyn/")
+            projectPath: resolve(__dirname, "../")
         });
     });
 
@@ -23,7 +23,7 @@ describe("Omnisharp Local - Stdio", function() {
         this.timeout(60000);
         it("should implement the interface", function(done) {
             const server = new StdioDriver({
-                projectPath: resolve(__dirname, "../roslyn/")
+                projectPath: resolve(__dirname, "../")
             });
 
             const sub = server.state.subscribe(state => {
@@ -33,6 +33,7 @@ describe("Omnisharp Local - Stdio", function() {
                 expect(server.state).to.be.not.null;
                 expect(server.outstandingRequests).to.be.not.null;
                 sub.dispose();
+                server.disconnect();
                 done();
             });
             server.connect();
