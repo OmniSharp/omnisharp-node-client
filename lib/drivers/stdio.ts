@@ -1,13 +1,13 @@
 import * as OmniSharp from "../omnisharp-server";
-import {IDriver, IDriverOptions, ILogger, Runtime} from "../enums";
+import {IDriver, IDriverOptions, ILogger, Runtime, IOmnisharpPlugin} from "../enums";
 import {defaults} from "lodash";
 import {DriverState} from "../enums";
 import {spawn, ChildProcess} from "child_process";
 import * as readline from "readline";
 import {Observable, Subject, AsyncSubject, CompositeDisposable, Disposable} from "rx";
 import {join} from "path";
-import {omnisharpLocation} from "../omnisharp-path";
-import {findRuntime, downloadRuntime} from "../omnisharp-runtime";
+import {downloadRuntimeIfMissing, supportedRuntime, getRuntimeLocation} from "../helpers/runtime";
+//import {getPluginPath} from "../helpers/plugin";
 
 let win32 = false;
 let env: any;
@@ -25,37 +25,31 @@ export class StdioDriver implements IDriver {
     private _process: ChildProcess;
     private _outstandingRequests = new Map<number, AsyncSubject<any>>();
     private _projectPath: string;
-    private _serverPath: string;
     private _additionalArguments: string[];
-    private _currentState: DriverState = DriverState.Disconnected;
     private _disposable = new CompositeDisposable();
-    public get currentState() { return this._currentState; }
-    public set currentState(value) {
-        // Prevent the client from leaving the error state
-        // Error means bad things, like mono is working right
-        if (this._currentState !== DriverState.Error) {
-            this._currentState = value;
-        }
-    }
+    private _plugins: IOmnisharpPlugin[];
+    private _serverPath: string;
+
     private _findProject: boolean;
     private _logger: ILogger;
     private _timeout: number;
     private _runtime: Runtime;
     public id: string;
 
-    constructor({projectPath, serverPath, findProject, logger, timeout, additionalArguments, runtime}: IDriverOptions) {
+    private _currentState: DriverState = DriverState.Disconnected;
+    public get currentState() { return this._currentState; }
+    public set currentState(value) { this._currentState = value; }
+
+    constructor({projectPath, serverPath, findProject, logger, timeout, additionalArguments, runtime, plugins}: IDriverOptions) {
         this._projectPath = projectPath;
         this._findProject = findProject || false;
-        this._serverPath = serverPath || omnisharpLocation;
         this._connectionStream.subscribe(state => this.currentState = state);
         this._logger = logger || console;
+        this._serverPath = serverPath;
         this._timeout = (timeout || 60) * 1000;
         this._runtime = runtime || Runtime.ClrOrMono;
         this._additionalArguments = additionalArguments;
-
-        this._disposable.add(this._commandStream);
-        this._disposable.add(this._eventStream);
-        this._disposable.add(this._connectionStream);
+        this._plugins = plugins;
 
         this._disposable.add(Disposable.create(() => {
             if (this._process) {
@@ -75,6 +69,8 @@ export class StdioDriver implements IDriver {
 
                 iteratee = iterator.next();
             }
+
+            this._outstandingRequests.clear();
         }));
     }
 
@@ -84,7 +80,20 @@ export class StdioDriver implements IDriver {
         this._disposable.dispose();
     }
 
-    public get serverPath() { return this._serverPath; }
+    private _getRuntimeContext() {
+        return {
+            runtime: this.runtime,
+            platform: process.platform,
+            arch: process.arch
+        };
+    }
+
+    public get serverPath() {
+        if (this._serverPath) {
+            return this._serverPath;
+        }
+        return getRuntimeLocation(this._getRuntimeContext());
+    }
     public get projectPath() { return this._projectPath; }
     public get runtime() { return this._runtime; }
 
@@ -100,8 +109,16 @@ export class StdioDriver implements IDriver {
     public get outstandingRequests() { return this._outstandingRequests.size; }
 
     public connect() {
-        this._disposable.add(this._ensureRuntimeExists()
-            .subscribeOnCompleted(() => this._connect()));
+        if (this._disposable.isDisposed)
+            throw new Error("Driver is disposed");
+
+        this._ensureRuntimeExists()
+            .subscribeOnCompleted(() => this._connect());
+        /*
+        Enable once we can push a new build again
+        this._disposable.add(this._ensureBootstrapExists()
+            .subscribe((path) => this._serverPath = path, null, () => this._connect()));
+        */
     }
 
     private _connect() {
@@ -110,18 +127,18 @@ export class StdioDriver implements IDriver {
         this._connectionStream.onNext(DriverState.Connecting);
 
         this._logger.log(`Connecting to child @ ${process.execPath}`);
-        this._logger.log(`Path to server: ${this._serverPath}`);
+        this._logger.log(`Path to server: ${this.serverPath}`);
         this._logger.log(`Selected project: ${this._projectPath}`);
 
         if (win32) {
             // Spawn a special windows only node client... so that we can shutdown nicely.
-            const serverArguments: any[] = [join(__dirname, "../stdio/child.js"), "--serverPath", this._serverPath, "--projectPath", this._projectPath].concat(this._additionalArguments || []);
+            const serverArguments: any[] = [join(__dirname, "../stdio/child.js"), "--serverPath", this.serverPath, "--projectPath", this._projectPath].concat(this._additionalArguments || []);
             this._logger.log(`Arguments: ${serverArguments}`);
             this._process = spawn(process.execPath, serverArguments, { env });
         } else {
             const serverArguments: any[] = ["--stdio", "-s", this._projectPath, "--hostPID", process.pid].concat(this._additionalArguments || []);
             this._logger.log(`Arguments: ${serverArguments}`);
-            this._process = spawn(this._serverPath, serverArguments, { env });
+            this._process = spawn(this.serverPath, serverArguments, { env });
         }
 
         if (!this._process.pid) {
@@ -147,19 +164,28 @@ export class StdioDriver implements IDriver {
     }
 
     private _ensureRuntimeExists() {
-        const result = findRuntime(this._runtime, process, this._logger);
-
-        return result
-            .isEmpty()
-            .flatMap(empty =>
-                Observable.if(
-                    () => empty,
-                    Observable.defer(() => {
-                        this._connectionStream.onNext(DriverState.Downloading);
-                        return downloadRuntime(this._runtime, process, this._logger)
-                            .do(() => this._connectionStream.onNext(DriverState.Downloaded));
+        this._connectionStream.onNext(DriverState.Downloading);
+        return Observable.fromPromise(supportedRuntime(this._getRuntimeContext())
+            .do((runtime) => this._runtime = runtime)
+            .toPromise()
+            .then((runtime) =>
+                downloadRuntimeIfMissing(this._getRuntimeContext(), this._logger)
+                    .tapOnCompleted(() => {
+                        this._connectionStream.onNext(DriverState.Downloaded);
                     })
-                ));
+                    .toPromise()
+            ));
+    }
+
+    /*private _ensureBootstrapExists() {
+        return this._ensureRuntimeExists()
+            .flatMap(() => getPluginPath(this._projectPath, this._runtime, process, this._plugins, this._logger));
+    }*/
+
+    public updatePlugins(plugins: IOmnisharpPlugin[]) {
+        this._plugins = plugins;
+        this.disconnect();
+        this.connect();
     }
 
     private serverErr(data: any) {
@@ -167,16 +193,14 @@ export class StdioDriver implements IDriver {
         this._connectionStream.onNext(DriverState.Error);
         this._process = null;
 
-        if (!this._eventStream.isDisposed) {
-            this._eventStream.onNext({
-                Type: "error",
-                Event: "error",
-                Seq: -1,
-                Body: {
-                    Message: friendlyMessage
-                }
-            });
-        }
+        this._eventStream.onNext({
+            Type: "error",
+            Event: "error",
+            Seq: -1,
+            Body: {
+                Message: friendlyMessage
+            }
+        });
     }
 
     private parseError(data: any) {
@@ -192,8 +216,7 @@ export class StdioDriver implements IDriver {
             this._process.kill("SIGTERM");
         }
         this._process = null;
-        if (!(<any>this._connectionStream).isDisposed)
-            this._connectionStream.onNext(DriverState.Disconnected);
+        this._connectionStream.onNext(DriverState.Disconnected);
     }
 
     public request<TRequest, TResponse>(command: string, request?: TRequest): Rx.Observable<TResponse> {
@@ -249,7 +272,7 @@ export class StdioDriver implements IDriver {
             }
 
         } else {
-            if (!this._commandStream.isDisposed && response.Success) {
+            if (response.Success) {
                 this._commandStream.onNext(response);
             } else {
                 // TODO: make notification?
@@ -258,24 +281,22 @@ export class StdioDriver implements IDriver {
     }
 
     private handlePacketEvent(event: OmniSharp.Stdio.Protocol.EventPacket) {
-        if (!this._eventStream.isDisposed) { this._eventStream.onNext(event); }
-        if (!this._connectionStream.isDisposed && event.Event === "started") {
+        this._eventStream.onNext(event);
+        if (event.Event === "started") {
             this._connectionStream.onNext(DriverState.Connected);
         }
     }
 
     private handleNonPacket(data: any) {
         const s = data.toString();
-        if (!this._eventStream.isDisposed) {
-            this._eventStream.onNext({
-                Type: "unknown",
-                Event: "unknown",
-                Seq: -1,
-                Body: {
-                    Message: s
-                }
-            });
-        }
+        this._eventStream.onNext({
+            Type: "unknown",
+            Event: "unknown",
+            Seq: -1,
+            Body: {
+                Message: s
+            }
+        });
 
         const ref = s.match(/Detected an OmniSharp instance already running on port/);
         if ((ref != null ? ref.length : 0) > 0) {

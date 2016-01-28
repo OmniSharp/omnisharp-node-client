@@ -1,7 +1,7 @@
 import * as OmniSharp from "../omnisharp-server";
 import {Observable, Subject, AsyncSubject, BehaviorSubject, CompositeDisposable} from "rx";
 import {keys, isObject, uniqueId, each, defaults, cloneDeep} from "lodash";
-import {IDriver, IStaticDriver, OmnisharpClientStatus, OmnisharpClientOptions} from "../enums";
+import {IDriver, IStaticDriver, OmnisharpClientStatus, OmnisharpClientOptions, IOmnisharpPlugin, isPluginDriver} from "../enums";
 import {Driver, DriverState, Runtime} from "../enums";
 import {RequestContext, ResponseContext, CommandContext} from "../contexts";
 import {serverLineNumbers, serverLineNumberArrays} from "../response-handling";
@@ -26,7 +26,7 @@ export class ClientBase<TEvents extends ClientEventsBase> implements IDriver, Rx
     private _eventWatchers = new Map<string, [Subject<CommandContext<any>>, Observable<CommandContext<any>>]>();
     private _commandWatchers = new Map<string, [Subject<ResponseContext<any, any>>, Observable<ResponseContext<any, any>>]>();
     private _disposable = new CompositeDisposable();
-    private _plugins: PluginManager;
+    private _pluginManager: PluginManager;
 
     public get uniqueId() { return this._uniqueId; }
 
@@ -79,19 +79,16 @@ export class ClientBase<TEvents extends ClientEventsBase> implements IDriver, Rx
     constructor(private _options: OmnisharpClientOptions, observableFactory: (client: ClientBase<TEvents>) => TEvents) {
         _options.driver = _options.driver || Driver.Stdio;
         ensureClientOptions(_options);
-        const {driver} = _options;
 
-        const item = require("../drivers/" + Driver[driver].toLowerCase());
-        const driverFactory: IStaticDriver = item[keys(item)[0]];
-        this._driver = new driverFactory(_options);
+        this._pluginManager = new PluginManager(_options.plugins);
+        this._resetDriver();
 
-        this._plugins = new PluginManager(_options.projectPath, _options.plugins);
-
-        this._disposable.add(this._driver);
-        this._disposable.add(this._requestStream);
-        this._disposable.add(this._responseStream);
-        this._disposable.add(this._errorStream);
-        this._disposable.add(this._customEvents);
+        this._disposable.add(this._pluginManager.changed.subscribe(() => {
+            const driver = this._driver;
+            if (isPluginDriver(driver)) {
+                driver.updatePlugins(this._pluginManager.plugins);
+            }
+        }));
 
         this._enqueuedEvents = Observable.merge(this._customEvents, this._driver.events)
             .map(event => {
@@ -206,10 +203,10 @@ export class ClientBase<TEvents extends ClientEventsBase> implements IDriver, Rx
         const result = <Observable<ResponseContext<any, any>>>this._driver.request<any, any>(context.command, context.request);
 
         result.subscribe((data) => {
-            if (!this._responseStream.isDisposed) { this._responseStream.onNext(new ResponseContext(context, data)); }
+            this._responseStream.onNext(new ResponseContext(context, data));
         }, (error) => {
-            if (!this._errorStream.isDisposed) { this._errorStream.onNext(new CommandContext(context.command, error)); }
-            if (!this._responseStream.isDisposed) { this._responseStream.onNext(new ResponseContext(context, null, true)); }
+            this._errorStream.onNext(new CommandContext(context.command, error));
+            this._responseStream.onNext(new ResponseContext(context, null, true));
             this._currentRequests.delete(context);
             if (onComplete) {
                 onComplete();
@@ -243,11 +240,27 @@ export class ClientBase<TEvents extends ClientEventsBase> implements IDriver, Rx
     }
 
     public connect() {
-        if (this.currentState === DriverState.Connected || this.currentState === DriverState.Connecting) return;
+        // Currently connecting
+        if (this.currentState >= DriverState.Downloading && this.currentState <= DriverState.Connected) return;
         // Bootstrap plugins here
 
         this._currentRequests.clear();
         this._driver.connect();
+    }
+
+    private _resetDriver() {
+        if (this._driver) {
+            this._disposable.remove(this._driver);
+            this._driver.dispose();
+        }
+
+        const {driver} = this._options;
+        const item = require("../drivers/" + Driver[driver].toLowerCase());
+        const driverFactory: IStaticDriver = item[keys(item)[0]];
+        this._driver = new driverFactory(this._options);
+        this._disposable.add(this._driver);
+
+        return this._driver;
     }
 
     public disconnect() {
@@ -299,6 +312,13 @@ export class ClientBase<TEvents extends ClientEventsBase> implements IDriver, Rx
         each(this._fixups, f => f(action, request, options));
     }
     /* tslint:enable:no-unused-variable */
+
+    public addPlugin(plugin: IOmnisharpPlugin) {
+        this._pluginManager.add(plugin);
+    }
+    public removePlugin(plugin: IOmnisharpPlugin) {
+        this._pluginManager.remove(plugin);
+    }
 }
 
 export class ClientEventsBase implements OmniSharp.Events {

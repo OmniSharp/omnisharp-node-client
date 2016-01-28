@@ -9,10 +9,10 @@ export enum Driver {
 
 export enum DriverState {
     Disconnected,
-    Bootstrapping,
-    Bootstrapped,
     Downloading,
     Downloaded,
+    Bootstrapping,
+    Bootstrapped,
     Connecting,
     Connected,
     Error
@@ -42,6 +42,7 @@ export interface IDriverOptions {
     timeout?: number; // timeout in seconds
     runtime?: Runtime;
     additionalArguments?: string[];
+    plugins?: IOmnisharpPlugin[];
 }
 
 export interface IDriver extends Rx.IDisposable {
@@ -57,6 +58,12 @@ export interface IDriver extends Rx.IDisposable {
     runtime: Runtime;
     request<TRequest, TResponse>(command: string, request?: TRequest): Rx.Observable<TResponse>;
 }
+
+export interface IPluginDriver extends IDriver {
+    updatePlugins(plugins: IOmnisharpPlugin): void;
+}
+
+export function isPluginDriver(driver: any): driver is IPluginDriver { return !!(<any>driver).updatePlugins; }
 
 export interface OmnisharpClientOptions extends IDriverOptions {
     driver?: Driver;
@@ -78,7 +85,6 @@ export interface OmnisharpClientOptions extends IDriverOptions {
             tabSize?: number;
         }
     };
-    plugins?: IOmnisharpPlugin[];
 }
 
 export interface IOmnisharpPlugin {
