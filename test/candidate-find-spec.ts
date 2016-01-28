@@ -220,12 +220,12 @@ describe("Candidate Finder", function() {
         });
     });
 
-    it("z21 candidate find projects up the folder heirarchy if not found", function(done) {
+    xit("z21 candidate find projects up the folder heirarchy if not found", function(/*done*/) {
         findCandidates.withCandidates(join(__dirname, "fixture/candidate-finder/solution-root-folder/global"), { log: () => {/* */}, error: () => {/* */} }).subscribe(global => {
             expect(global).to.not.be.null;
             expect(global.map(z => "" + z)).to.be.deep.equal([join(__dirname, "fixture/candidate-finder/solution-root-folder/global")]);
             expect(global[0].isProject).to.be.true;
-            done();
+            //done();
         });
     });
 
