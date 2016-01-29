@@ -15,6 +15,8 @@ const readFile = Observable.fromNodeCallback(fs.readFile);
 const defaultDest = resolve(__dirname, "../../");
 //const runtimes = resolve(defaultDest, "runtimes");
 const dnu = "bin/dnu" + (process.platform === "win32" ? ".cmd" : "");
+// Handle the case of homebrew mono
+const PATH = ["/usr/local/bin", "/Library/Frameworks/Mono.framework/Commands"].concat(process.env.PATH.split(delimiter));
 
 export const supportedRuntime = memoize(function(ctx: RUNTIME_CONTEXT) {
     return Observable.defer(() => {
@@ -26,7 +28,7 @@ export const supportedRuntime = memoize(function(ctx: RUNTIME_CONTEXT) {
 
         // We need to check if mono exists on the system
         // If it doesn't we'll just run CoreClr
-        return Observable.from(<string[]>process.env.PATH.split(delimiter))
+        return Observable.from(<string[]>PATH)
             .map(path => join(path, "mono"))
             .concatMap(path => exists(path))
             .where(x => x)

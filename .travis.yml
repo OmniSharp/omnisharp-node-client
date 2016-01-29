@@ -31,6 +31,10 @@ matrix:
       os: linux
     - env: TRAVIS_CORECLR=true
       os: osx
+    - env:
+        - TRAVIS_MONO=true
+        - BREW_MONO=true
+      os: osx
 env:
   global:
     - secure: JG+808gsJ65N/BE7yzCbVVtQYkZd2KmI5ErsS6qWF3vMzk8fewQbS0BdPl/D1dWW7Ty1cd6RTC0nTYaUovKERj7LEURjVubR97rDPR8TjukmmQthI6X/K7MkOFO9xh90q/rqDhtXbYBZQzk3fGDjTszENOJruSitAbFI6QMzcX4=
@@ -42,6 +46,7 @@ install:
   - nvm install 4.2.4
   - node --version
   - chmod +x publish.sh
+  - if [ "$BREW_MONO" = "true" ]; then brew update; brew install mono; fi
 script:
   - npm install
   - npm test
@@ -50,7 +55,7 @@ after_success:
   - echo TRAVIS_BRANCH = $TRAVIS_BRANCH
   - echo TAG_COMMIT = $TAG_COMMIT
   - if [ "$LEADER" = "true" ]; then
-  - . ./publish.sh
+  -   . ./publish.sh
   - fi
 before_install:
   - openssl enc -aes-256-cbc -a -salt -in travis_rsa.enc -out ~/.ssh/id_rsa -pass pass:$OPENSSL_PASSKEY -d
