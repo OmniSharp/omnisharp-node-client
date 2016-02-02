@@ -16,7 +16,7 @@ const defaultDest = resolve(__dirname, "../../");
 //const runtimes = resolve(defaultDest, "runtimes");
 const dnu = "bin/dnu" + (process.platform === "win32" ? ".cmd" : "");
 // Handle the case of homebrew mono
-const PATH = ["/usr/local/bin", "/Library/Frameworks/Mono.framework/Commands"].concat(process.env.PATH.split(delimiter));
+const PATH = process.env.PATH.split(delimiter).concat(["/usr/local/bin", "/Library/Frameworks/Mono.framework/Commands"]);
 
 export const supportedRuntime = memoize(function(ctx: RUNTIME_CONTEXT) {
     return Observable.defer(() => {
