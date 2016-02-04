@@ -44,8 +44,9 @@ describe("Omnisharp Runtime", function() {
             platform: process.platform
         })
             .toPromise()
-            .then(runtime => {
+            .then(({runtime, path}) => {
                 expect(runtime).to.be.equal(Runtime.CoreClr);
+                expect(path).to.be.equal(process.env.PATH);
             });
     });
 
@@ -56,11 +57,16 @@ describe("Omnisharp Runtime", function() {
             platform: process.platform
         })
             .toPromise()
-            .then(runtime => {
-                if (process.platform === "win32" || process.env.TRAVIS_MONO) {
+            .then(({runtime, path}) => {
+                if (process.platform === "win32") {
                     expect(Runtime[runtime]).to.be.equal(Runtime[Runtime.ClrOrMono]);
+                    expect(path).to.be.equal(process.env.PATH);
+                } else if (process.env.TRAVIS_MONO) {
+                    expect(Runtime[runtime]).to.be.equal(Runtime[Runtime.ClrOrMono]);
+                    expect(path).to.not.be.equal(process.env.PATH);
                 } else {
                     expect(Runtime[runtime]).to.be.equal(Runtime[Runtime.CoreClr]);
+                    expect(path).to.be.equal(process.env.PATH);
                 }
             });
     });
