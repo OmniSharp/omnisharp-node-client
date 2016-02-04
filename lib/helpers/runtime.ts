@@ -23,20 +23,20 @@ export const supportedRuntime = memoize(function(ctx: RUNTIME_CONTEXT) {
         // On windows we'll just use the clr, it's there
         // On mac / linux if we've picked CoreClr stick with that
         if (ctx.platform === "win32" || ctx.runtime === Runtime.CoreClr) {
-            return Observable.just(ctx.runtime);
+            return Observable.just({ runtime: ctx.runtime, path: PATH });
         }
 
         // We need to check if mono exists on the system
         // If it doesn't we'll just run CoreClr
         return Observable.from(<string[]>PATH)
             .map(path => join(path, "mono"))
-            .concatMap(path => exists(path))
-            .where(x => x)
-            .map(x => Runtime.ClrOrMono)
+            .concatMap(path => exists(path).map(e => ({ exists: e, path })))
+            .where(x => x.exists)
+            .map(x => ({ runtime: Runtime.ClrOrMono, path: [x.path, PATH].join(delimiter) }))
             .take(1)
-            .defaultIfEmpty(Runtime.CoreClr);
+            .defaultIfEmpty({ runtime: Runtime.CoreClr, path: PATH });
     })
-        .do(rt => console.log(`Supported runtime for "${Runtime[ctx.runtime]}" was: ${Runtime[rt]}`))
+        .do(ct => console.log(`Supported runtime for "${Runtime[ct.runtime]}" was: ${Runtime[ct.runtime]}`))
         .shareReplay(1);
 }, function({platform, arch, runtime}: RUNTIME_CONTEXT) { return `${arch}-${platform}:${Runtime[runtime]}`; });
 
