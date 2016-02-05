@@ -34,6 +34,7 @@ export class StdioDriver implements IDriver {
     private _logger: ILogger;
     private _timeout: number;
     private _runtime: Runtime;
+    private _PATH: string;
     public id: string;
 
     private _currentState: DriverState = DriverState.Disconnected;
@@ -130,6 +131,7 @@ export class StdioDriver implements IDriver {
         this._logger.log(`Path to server: ${this.serverPath}`);
         this._logger.log(`Selected project: ${this._projectPath}`);
 
+        env.PATH = this._PATH || env.PATH;
         if (win32) {
             // Spawn a special windows only node client... so that we can shutdown nicely.
             const serverArguments: any[] = [join(__dirname, "../stdio/child.js"), "--serverPath", this.serverPath, "--projectPath", this._projectPath].concat(this._additionalArguments || []);
@@ -166,7 +168,10 @@ export class StdioDriver implements IDriver {
     private _ensureRuntimeExists() {
         this._connectionStream.onNext(DriverState.Downloading);
         return Observable.fromPromise(supportedRuntime(this._getRuntimeContext())
-            .do((runtime) => this._runtime = runtime)
+            .do((ctx) => {
+                this._runtime = ctx.runtime;
+                this._PATH = ctx.path;
+            })
             .toPromise()
             .then((runtime) =>
                 downloadRuntimeIfMissing(this._getRuntimeContext(), this._logger)
