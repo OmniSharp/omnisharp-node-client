@@ -29,6 +29,7 @@ export class StdioDriver implements IDriver {
     private _disposable = new CompositeDisposable();
     private _plugins: IOmnisharpPlugin[];
     private _serverPath: string;
+    private _zeroBasedIndices: boolean;
 
     private _findProject: boolean;
     private _logger: ILogger;
@@ -41,7 +42,7 @@ export class StdioDriver implements IDriver {
     public get currentState() { return this._currentState; }
     public set currentState(value) { this._currentState = value; }
 
-    constructor({projectPath, serverPath, findProject, logger, timeout, additionalArguments, runtime, plugins}: IDriverOptions) {
+    constructor({projectPath, serverPath, findProject, logger, timeout, additionalArguments, runtime, plugins, oneBasedIndices}: IDriverOptions) {
         this._projectPath = projectPath;
         this._findProject = findProject || false;
         this._connectionStream.subscribe(state => this.currentState = state);
@@ -49,8 +50,9 @@ export class StdioDriver implements IDriver {
         this._serverPath = serverPath;
         this._timeout = (timeout || 60) * 1000;
         this._runtime = runtime || Runtime.ClrOrMono;
-        this._additionalArguments = additionalArguments;
+        this._additionalArguments = additionalArguments || [];
         this._plugins = plugins;
+        this._zeroBasedIndices = !oneBasedIndices;
 
         this._disposable.add(Disposable.create(() => {
             if (this._process) {
@@ -134,11 +136,15 @@ export class StdioDriver implements IDriver {
         env.PATH = this._PATH || env.PATH;
         if (win32) {
             // Spawn a special windows only node client... so that we can shutdown nicely.
-            const serverArguments: any[] = [join(__dirname, "../stdio/child.js"), "--serverPath", this.serverPath, "--projectPath", this._projectPath].concat(this._additionalArguments || []);
+            const serverArguments: any[] = [join(__dirname, "../stdio/child.js"), "--serverPath", this.serverPath, "--projectPath", this._projectPath]
+                .concat(this._zeroBasedIndices ? ["--zero-based-indicies"] : [])
+                .concat(this._additionalArguments);
             this._logger.log(`Arguments: ${serverArguments}`);
             this._process = spawn(process.execPath, serverArguments, { env });
         } else {
-            const serverArguments: any[] = ["--stdio", "-s", this._projectPath, "--hostPID", process.pid].concat(this._additionalArguments || []);
+            const serverArguments: any[] = ["--stdio", "-s", this._projectPath, "--hostPID", process.pid]
+                .concat(this._zeroBasedIndices ? ["--zero-based-indicies"] : [])
+                .concat(this._additionalArguments);
             this._logger.log(`Arguments: ${serverArguments}`);
             this._process = spawn(this.serverPath, serverArguments, { env });
         }

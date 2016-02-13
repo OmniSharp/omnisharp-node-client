@@ -1,20 +1,15 @@
 import * as OmniSharp from "../omnisharp-server";
 import {Observable, Subject, AsyncSubject, BehaviorSubject, CompositeDisposable} from "rx";
-import {keys, isObject, uniqueId, each, defaults, cloneDeep} from "lodash";
+import {keys, isObject, uniqueId, each, cloneDeep} from "lodash";
 import {IDriver, IStaticDriver, OmnisharpClientStatus, OmnisharpClientOptions, IOmnisharpPlugin, isPluginDriver} from "../enums";
 import {Driver, DriverState, Runtime} from "../enums";
 import {RequestContext, ResponseContext, CommandContext} from "../contexts";
-import {serverLineNumbers, serverLineNumberArrays} from "../response-handling";
 import {ensureClientOptions} from "../options";
 import {watchEvent, reference} from "../decorators";
 import {isPriorityCommand, isNormalCommand, isDeferredCommand} from "../helpers/prioritization";
 import {PluginManager} from "../helpers/plugin-manager";
 
 export class ClientBase<TEvents extends ClientEventsBase> implements IDriver, Rx.IDisposable {
-
-    public static serverLineNumbers = serverLineNumbers;
-    public static serverLineNumberArrays = serverLineNumberArrays;
-
     private _driver: IDriver;
     private _requestStream = new Subject<RequestContext<any>>();
     private _responseStream = new Subject<ResponseContext<any, any>>();
@@ -22,7 +17,6 @@ export class ClientBase<TEvents extends ClientEventsBase> implements IDriver, Rx
     private _errorStream = new Subject<CommandContext<any>>();
     private _customEvents = new Subject<OmniSharp.Stdio.Protocol.EventPacket>();
     private _uniqueId = uniqueId("client");
-    protected _lowestIndexValue: number;
     private _eventWatchers = new Map<string, [Subject<CommandContext<any>>, Observable<CommandContext<any>>]>();
     private _commandWatchers = new Map<string, [Subject<ResponseContext<any, any>>, Observable<ResponseContext<any, any>>]>();
     private _disposable = new CompositeDisposable();
@@ -102,8 +96,6 @@ export class ClientBase<TEvents extends ClientEventsBase> implements IDriver, Rx
             this._responseStream,
             this._driver.commands
                 .map(packet => new ResponseContext(new RequestContext(this._uniqueId, packet.Command, {}, {}, "command"), packet.Body)));
-
-        this._lowestIndexValue = _options.oneBasedIndices ? 1 : 0;
 
         this._disposable.add(this._requestStream.subscribe(x => this._currentRequests.add(x)));
 
@@ -269,7 +261,6 @@ export class ClientBase<TEvents extends ClientEventsBase> implements IDriver, Rx
 
     public request<TRequest, TResponse>(action: string, request: TRequest, options?: OmniSharp.RequestOptions): Rx.Observable<TResponse> {
         if (!options) options = <OmniSharp.RequestOptions>{};
-        defaults(options, { oneBasedIndices: this._options.oneBasedIndices });
 
         // Handle disconnected requests
         if (this.currentState !== DriverState.Connected && this.currentState !== DriverState.Error) {

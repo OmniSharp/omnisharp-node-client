@@ -1,7 +1,6 @@
 import * as OmniSharp from "./omnisharp-server";
 import {Observable} from "rx";
 import {uniqueId, isObject, cloneDeep} from "lodash";
-import {requestMutator, responseMutator} from "./response-handling";
 const stripBom = require("strip-bom");
 
 export class CommandContext<T> {
@@ -14,7 +13,6 @@ export class RequestContext<T extends OmniSharp.Models.Request> {
     public sequence: string;
     public time: Date;
     public silent: boolean;
-    public oneBasedIndices: boolean;
     public isCommand(command: string) {
         if (command && this.command) {
             return command.toLowerCase() === this.command;
@@ -22,7 +20,7 @@ export class RequestContext<T extends OmniSharp.Models.Request> {
         return null;
     }
 
-    constructor(public clientId: string, command: string, request: T, {silent, oneBasedIndices}: OmniSharp.RequestOptions, sequence = uniqueId("__request")) {
+    constructor(public clientId: string, command: string, request: T, {silent}: OmniSharp.RequestOptions, sequence = uniqueId("__request")) {
         if (command) this.command = command.toLowerCase();
 
         if (isObject(request)) {
@@ -32,9 +30,6 @@ export class RequestContext<T extends OmniSharp.Models.Request> {
             }
             /* tslint:enable:no-string-literal */
             let obj = cloneDeep(request);
-            if (!oneBasedIndices) {
-                obj = requestMutator(obj);
-            }
             this.request = Object.freeze(obj);
         } else {
             this.request = request;
@@ -76,13 +71,10 @@ export class ResponseContext<TRequest, TResponse> {
         return null;
     }
 
-    constructor({clientId, request, command, sequence, time, silent, oneBasedIndices}: RequestContext<any>, response: TResponse = <any>{}, failed = false) {
+    constructor({clientId, request, command, sequence, time, silent}: RequestContext<any>, response: TResponse = <any>{}, failed = false) {
         if (command) this.command = command.toLowerCase();
 
         if (isObject(response)) {
-            if (!oneBasedIndices) {
-                response = responseMutator(response);
-            }
             this.response = Object.freeze(response);
         } else {
             this.response = response;

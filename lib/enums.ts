@@ -43,6 +43,7 @@ export interface IDriverOptions {
     runtime?: Runtime;
     additionalArguments?: string[];
     plugins?: IOmnisharpPlugin[];
+    oneBasedIndices?: boolean;
 }
 
 export interface IDriver extends Rx.IDisposable {
@@ -67,7 +68,6 @@ export function isPluginDriver(driver: any): driver is IPluginDriver { return !!
 
 export interface OmnisharpClientOptions extends IDriverOptions {
     driver?: Driver;
-    oneBasedIndices?: boolean;
     statusSampleTime?: number;
     responseSampleTime?: number;
     concurrency?: number;
