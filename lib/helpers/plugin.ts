@@ -1,13 +1,15 @@
-import {Observable} from "rx";
+import {Observable} from "rxjs";
 import * as fs from "fs";
 import {exec} from "child_process";
 import {RuntimeContext} from "./runtime";
 import {join} from "path";
 import {IOmnisharpPlugin, ILogger} from "../enums";
+import {extend} from "lodash";
+import {createObservable} from "../operators/create";
 
 const bootstrappedPlugins = new Map<string, string>();
-const exists = Observable.fromCallback(fs.exists),
-    readFile: (file: string) => Observable<any> = Observable.fromNodeCallback(fs.readFile);
+const exists = Observable.bindCallback(fs.exists),
+    readFile: (file: string) => Observable<any> = Observable.bindNodeCallback(fs.readFile);
 const md5: (value: any) => string = require("md5");
 
 export function getPluginPath(solutionLocation: string, ctx: RuntimeContext, requestedPlugins: IOmnisharpPlugin[], logger: ILogger) {
@@ -18,22 +20,23 @@ export function getPluginPath(solutionLocation: string, ctx: RuntimeContext, req
         plugins.push(plugin);
     });
 
-    return Observable.create<string>(observer => {
+    return createObservable<string>(observer => {
         logger.log("Bootstrapping " + solutionLocation);
         // Include the plugins defined in omnisharp.json, they could have changed.
         exists(join(solutionLocation, "omnisharp.json"))
-            .where(x => !!x)
+            .filter(x => !!x)
             .flatMap(x => readFile(join(solutionLocation, "omnisharp.json")))
             .map(x => JSON.parse(x.toString()))
-            .tapOnNext(obj => {
-                if (obj.plugins) { hashStrings.push(obj.plugins); }
-            })
-            .subscribeOnCompleted(() => {
-                hash = md5(JSON.stringify(plugins.concat(hashStrings)));
+            .do({
+                next: obj => {
+                    if (obj.plugins) { hashStrings.push(obj.plugins); }
+                },
+                complete: () => {
+                    hash = md5(JSON.stringify(plugins.concat(hashStrings)));
 
                 if (bootstrappedPlugins.has(hash)) {
-                    observer.onNext(bootstrappedPlugins.get(hash));
-                    observer.onCompleted();
+                    observer.next(bootstrappedPlugins.get(hash));
+                    observer.complete();
                     return;
                 }
 
@@ -58,8 +61,8 @@ export function getPluginPath(solutionLocation: string, ctx: RuntimeContext, req
                         // restore(location, ctx, logger).subscribe(observer);
                         return;
                     }
-                    observer.onNext(ctx.location);
-                    observer.onCompleted();
+                    observer.next(ctx.location);
+                    observer.complete();
                 });
             });
     })

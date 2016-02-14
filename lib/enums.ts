@@ -1,4 +1,6 @@
 import * as OmniSharp from "./omnisharp-server";
+import {IDisposable} from "./disposables";
+import {Observable} from "rxjs";
 import {RequestContext, ResponseContext, CommandContext} from "./contexts";
 
 export enum Driver {
@@ -46,18 +48,18 @@ export interface IDriverOptions {
     version?: string;
 }
 
-export interface IDriver extends Rx.IDisposable {
+export interface IDriver extends IDisposable {
     id: string;
     connect(): void;
     currentState: DriverState;
-    events: Rx.Observable<OmniSharp.Stdio.Protocol.EventPacket>;
-    commands: Rx.Observable<OmniSharp.Stdio.Protocol.ResponsePacket>;
-    state: Rx.Observable<DriverState>;
+    events: Observable<OmniSharp.Stdio.Protocol.EventPacket>;
+    commands: Observable<OmniSharp.Stdio.Protocol.ResponsePacket>;
+    state: Observable<DriverState>;
     disconnect(): void;
     serverPath: string;
     projectPath: string;
     runtime: Runtime;
-    request<TRequest, TResponse>(command: string, request?: TRequest): Rx.Observable<TResponse>;
+    request<TRequest, TResponse>(command: string, request?: TRequest): Observable<TResponse>;
 }
 
 export interface IPluginDriver extends IDriver {
@@ -102,12 +104,12 @@ export interface OmnisharpClientStatus {
 
 export module Omnisharp {
     export interface Events {
-        events: Rx.Observable<OmniSharp.Stdio.Protocol.EventPacket>;
-        commands: Rx.Observable<OmniSharp.Stdio.Protocol.ResponsePacket>;
-        state: Rx.Observable<DriverState>;
-        status: Rx.Observable<OmnisharpClientStatus>;
-        requests: Rx.Observable<RequestContext<any>>;
-        responses: Rx.Observable<ResponseContext<any, any>>;
-        errors: Rx.Observable<CommandContext<any>>;
+        events: Observable<OmniSharp.Stdio.Protocol.EventPacket>;
+        commands: Observable<OmniSharp.Stdio.Protocol.ResponsePacket>;
+        state: Observable<DriverState>;
+        status: Observable<OmnisharpClientStatus>;
+        requests: Observable<RequestContext<any>>;
+        responses: Observable<ResponseContext<any, any>>;
+        errors: Observable<CommandContext<any>>;
     }
 }

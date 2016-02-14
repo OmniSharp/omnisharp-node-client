@@ -1,6 +1,6 @@
 import * as OmniSharp from "./omnisharp-server";
 import _ from "lodash";
-import {Subject} from "rx";
+import {Subject} from "rxjs";
 
 export function isNotNull(method: Function) {
     return function isNotNull(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {

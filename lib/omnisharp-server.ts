@@ -1,4 +1,5 @@
 /* tslint:disable */
+import {Observable} from "rxjs";
 
 export module Models {
     export const enum HighlightClassification {
@@ -450,136 +451,136 @@ export module Api {
 
     export interface V1 {
         // 'autocomplete'
-        autocomplete(request: Models.AutoCompleteRequest, options?: RequestOptions): Rx.Observable<Models.AutoCompleteResponse[]>;
+        autocomplete(request: Models.AutoCompleteRequest, options?: RequestOptions): Observable<Models.AutoCompleteResponse[]>;
         // 'changebuffer'
-        changebuffer(request: Models.ChangeBufferRequest, options?: RequestOptions): Rx.Observable<any>;
+        changebuffer(request: Models.ChangeBufferRequest, options?: RequestOptions): Observable<any>;
         // 'codecheck'
-        codecheck(request: Models.CodeCheckRequest, options?: RequestOptions): Rx.Observable<Models.QuickFixResponse>;
+        codecheck(request: Models.CodeCheckRequest, options?: RequestOptions): Observable<Models.QuickFixResponse>;
         // 'codeformat'
-        codeformat(request: Models.CodeFormatRequest, options?: RequestOptions): Rx.Observable<Models.CodeFormatResponse>;
+        codeformat(request: Models.CodeFormatRequest, options?: RequestOptions): Observable<Models.CodeFormatResponse>;
         // 'currentfilemembersasflat'
-        currentfilemembersasflat(request: Models.MembersFlatRequest, options?: RequestOptions): Rx.Observable<Models.QuickFix[]>;
+        currentfilemembersasflat(request: Models.MembersFlatRequest, options?: RequestOptions): Observable<Models.QuickFix[]>;
         // 'currentfilemembersastree'
-        currentfilemembersastree(request: Models.MembersTreeRequest, options?: RequestOptions): Rx.Observable<Models.FileMemberTree>;
+        currentfilemembersastree(request: Models.MembersTreeRequest, options?: RequestOptions): Observable<Models.FileMemberTree>;
         // 'filesChanged'
-        filesChanged(request: Models.Request[], options?: RequestOptions): Rx.Observable<Models.FilesChangedResponse>;
+        filesChanged(request: Models.Request[], options?: RequestOptions): Observable<Models.FilesChangedResponse>;
         // 'findimplementations'
-        findimplementations(request: Models.FindImplementationsRequest, options?: RequestOptions): Rx.Observable<Models.QuickFixResponse>;
+        findimplementations(request: Models.FindImplementationsRequest, options?: RequestOptions): Observable<Models.QuickFixResponse>;
         // 'findsymbols'
-        findsymbols(request: Models.FindSymbolsRequest, options?: RequestOptions): Rx.Observable<Models.QuickFixResponse>;
+        findsymbols(request: Models.FindSymbolsRequest, options?: RequestOptions): Observable<Models.QuickFixResponse>;
         // 'findusages'
-        findusages(request: Models.FindUsagesRequest, options?: RequestOptions): Rx.Observable<Models.QuickFixResponse>;
+        findusages(request: Models.FindUsagesRequest, options?: RequestOptions): Observable<Models.QuickFixResponse>;
         // 'fixusings'
-        fixusings(request: Models.FixUsingsRequest, options?: RequestOptions): Rx.Observable<Models.FixUsingsResponse>;
+        fixusings(request: Models.FixUsingsRequest, options?: RequestOptions): Observable<Models.FixUsingsResponse>;
         // 'formatAfterKeystroke'
-        formatAfterKeystroke(request: Models.FormatAfterKeystrokeRequest, options?: RequestOptions): Rx.Observable<Models.FormatRangeResponse>;
+        formatAfterKeystroke(request: Models.FormatAfterKeystrokeRequest, options?: RequestOptions): Observable<Models.FormatRangeResponse>;
         // 'formatRange'
-        formatRange(request: Models.FormatRangeRequest, options?: RequestOptions): Rx.Observable<Models.FormatRangeResponse>;
+        formatRange(request: Models.FormatRangeRequest, options?: RequestOptions): Observable<Models.FormatRangeResponse>;
         // 'getcodeactions'
-        getcodeactions(request: Models.GetCodeActionRequest, options?: RequestOptions): Rx.Observable<Models.GetCodeActionsResponse>;
+        getcodeactions(request: Models.GetCodeActionRequest, options?: RequestOptions): Observable<Models.GetCodeActionsResponse>;
         // 'gettestcontext'
-        gettestcontext(request: Models.TestCommandRequest, options?: RequestOptions): Rx.Observable<Models.GetTestCommandResponse>;
+        gettestcontext(request: Models.TestCommandRequest, options?: RequestOptions): Observable<Models.GetTestCommandResponse>;
         // 'gotodefinition'
-        gotodefinition(request: Models.GotoDefinitionRequest, options?: RequestOptions): Rx.Observable<Models.GotoDefinitionResponse>;
+        gotodefinition(request: Models.GotoDefinitionRequest, options?: RequestOptions): Observable<Models.GotoDefinitionResponse>;
         // 'gotofile'
-        gotofile(request: Models.GotoFileRequest, options?: RequestOptions): Rx.Observable<Models.QuickFixResponse>;
+        gotofile(request: Models.GotoFileRequest, options?: RequestOptions): Observable<Models.QuickFixResponse>;
         // 'gotoregion'
-        gotoregion(request: Models.GotoRegionRequest, options?: RequestOptions): Rx.Observable<Models.QuickFixResponse>;
+        gotoregion(request: Models.GotoRegionRequest, options?: RequestOptions): Observable<Models.QuickFixResponse>;
         // 'highlight'
-        highlight(request: Models.HighlightRequest, options?: RequestOptions): Rx.Observable<Models.HighlightResponse>;
+        highlight(request: Models.HighlightRequest, options?: RequestOptions): Observable<Models.HighlightResponse>;
         // 'metadata'
-        metadata(request: Models.MetadataRequest, options?: RequestOptions): Rx.Observable<Models.MetadataResponse>;
+        metadata(request: Models.MetadataRequest, options?: RequestOptions): Observable<Models.MetadataResponse>;
         // 'navigatedown'
-        navigatedown(request: Models.NavigateDownRequest, options?: RequestOptions): Rx.Observable<Models.NavigateResponse>;
+        navigatedown(request: Models.NavigateDownRequest, options?: RequestOptions): Observable<Models.NavigateResponse>;
         // 'navigateup'
-        navigateup(request: Models.NavigateUpRequest, options?: RequestOptions): Rx.Observable<Models.NavigateResponse>;
+        navigateup(request: Models.NavigateUpRequest, options?: RequestOptions): Observable<Models.NavigateResponse>;
         // 'packagesearch'
-        packagesearch(request: Models.PackageSearchRequest, options?: RequestOptions): Rx.Observable<Models.PackageSearchResponse>;
+        packagesearch(request: Models.PackageSearchRequest, options?: RequestOptions): Observable<Models.PackageSearchResponse>;
         // 'packagesource'
-        packagesource(request: Models.PackageSourceRequest, options?: RequestOptions): Rx.Observable<Models.PackageSourceResponse>;
+        packagesource(request: Models.PackageSourceRequest, options?: RequestOptions): Observable<Models.PackageSourceResponse>;
         // 'packageversion'
-        packageversion(request: Models.PackageVersionRequest, options?: RequestOptions): Rx.Observable<Models.PackageVersionResponse>;
+        packageversion(request: Models.PackageVersionRequest, options?: RequestOptions): Observable<Models.PackageVersionResponse>;
         // 'project'
-        project(request: Models.v1.ProjectInformationRequest, options?: RequestOptions): Rx.Observable<Models.ProjectInformationResponse>;
+        project(request: Models.v1.ProjectInformationRequest, options?: RequestOptions): Observable<Models.ProjectInformationResponse>;
         // 'projects'
-        projects(request: Models.v1.WorkspaceInformationRequest, options?: RequestOptions): Rx.Observable<Models.WorkspaceInformationResponse>;
+        projects(request: Models.v1.WorkspaceInformationRequest, options?: RequestOptions): Observable<Models.WorkspaceInformationResponse>;
         // 'rename'
-        rename(request: Models.RenameRequest, options?: RequestOptions): Rx.Observable<Models.RenameResponse>;
+        rename(request: Models.RenameRequest, options?: RequestOptions): Observable<Models.RenameResponse>;
         // 'runcodeaction'
-        runcodeaction(request: Models.RunCodeActionRequest, options?: RequestOptions): Rx.Observable<Models.RunCodeActionResponse>;
+        runcodeaction(request: Models.RunCodeActionRequest, options?: RequestOptions): Observable<Models.RunCodeActionResponse>;
         // 'signatureHelp'
-        signatureHelp(request: Models.SignatureHelpRequest, options?: RequestOptions): Rx.Observable<Models.SignatureHelp>;
+        signatureHelp(request: Models.SignatureHelpRequest, options?: RequestOptions): Observable<Models.SignatureHelp>;
         // 'typelookup'
-        typelookup(request: Models.TypeLookupRequest, options?: RequestOptions): Rx.Observable<Models.TypeLookupResponse>;
+        typelookup(request: Models.TypeLookupRequest, options?: RequestOptions): Observable<Models.TypeLookupResponse>;
         // 'updatebuffer'
-        updatebuffer(request: Models.UpdateBufferRequest, options?: RequestOptions): Rx.Observable<any>;
+        updatebuffer(request: Models.UpdateBufferRequest, options?: RequestOptions): Observable<any>;
     }
 
     export interface V2 {
         // 'autocomplete'
-        autocomplete(request: Models.AutoCompleteRequest, options?: RequestOptions): Rx.Observable<Models.AutoCompleteResponse[]>;
+        autocomplete(request: Models.AutoCompleteRequest, options?: RequestOptions): Observable<Models.AutoCompleteResponse[]>;
         // 'changebuffer'
-        changebuffer(request: Models.ChangeBufferRequest, options?: RequestOptions): Rx.Observable<any>;
+        changebuffer(request: Models.ChangeBufferRequest, options?: RequestOptions): Observable<any>;
         // 'codecheck'
-        codecheck(request: Models.CodeCheckRequest, options?: RequestOptions): Rx.Observable<Models.QuickFixResponse>;
+        codecheck(request: Models.CodeCheckRequest, options?: RequestOptions): Observable<Models.QuickFixResponse>;
         // 'codeformat'
-        codeformat(request: Models.CodeFormatRequest, options?: RequestOptions): Rx.Observable<Models.CodeFormatResponse>;
+        codeformat(request: Models.CodeFormatRequest, options?: RequestOptions): Observable<Models.CodeFormatResponse>;
         // 'currentfilemembersasflat'
-        currentfilemembersasflat(request: Models.MembersFlatRequest, options?: RequestOptions): Rx.Observable<Models.QuickFix[]>;
+        currentfilemembersasflat(request: Models.MembersFlatRequest, options?: RequestOptions): Observable<Models.QuickFix[]>;
         // 'currentfilemembersastree'
-        currentfilemembersastree(request: Models.MembersTreeRequest, options?: RequestOptions): Rx.Observable<Models.FileMemberTree>;
+        currentfilemembersastree(request: Models.MembersTreeRequest, options?: RequestOptions): Observable<Models.FileMemberTree>;
         // 'filesChanged'
-        filesChanged(request: Models.Request[], options?: RequestOptions): Rx.Observable<Models.FilesChangedResponse>;
+        filesChanged(request: Models.Request[], options?: RequestOptions): Observable<Models.FilesChangedResponse>;
         // 'findimplementations'
-        findimplementations(request: Models.FindImplementationsRequest, options?: RequestOptions): Rx.Observable<Models.QuickFixResponse>;
+        findimplementations(request: Models.FindImplementationsRequest, options?: RequestOptions): Observable<Models.QuickFixResponse>;
         // 'findsymbols'
-        findsymbols(request: Models.FindSymbolsRequest, options?: RequestOptions): Rx.Observable<Models.QuickFixResponse>;
+        findsymbols(request: Models.FindSymbolsRequest, options?: RequestOptions): Observable<Models.QuickFixResponse>;
         // 'findusages'
-        findusages(request: Models.FindUsagesRequest, options?: RequestOptions): Rx.Observable<Models.QuickFixResponse>;
+        findusages(request: Models.FindUsagesRequest, options?: RequestOptions): Observable<Models.QuickFixResponse>;
         // 'fixusings'
-        fixusings(request: Models.FixUsingsRequest, options?: RequestOptions): Rx.Observable<Models.FixUsingsResponse>;
+        fixusings(request: Models.FixUsingsRequest, options?: RequestOptions): Observable<Models.FixUsingsResponse>;
         // 'formatAfterKeystroke'
-        formatAfterKeystroke(request: Models.FormatAfterKeystrokeRequest, options?: RequestOptions): Rx.Observable<Models.FormatRangeResponse>;
+        formatAfterKeystroke(request: Models.FormatAfterKeystrokeRequest, options?: RequestOptions): Observable<Models.FormatRangeResponse>;
         // 'formatRange'
-        formatRange(request: Models.FormatRangeRequest, options?: RequestOptions): Rx.Observable<Models.FormatRangeResponse>;
+        formatRange(request: Models.FormatRangeRequest, options?: RequestOptions): Observable<Models.FormatRangeResponse>;
         // 'getcodeactions'
-        getcodeactions(request: Models.V2.GetCodeActionsRequest, options?: RequestOptions): Rx.Observable<Models.V2.GetCodeActionsResponse>;
+        getcodeactions(request: Models.V2.GetCodeActionsRequest, options?: RequestOptions): Observable<Models.V2.GetCodeActionsResponse>;
         // 'gettestcontext'
-        gettestcontext(request: Models.TestCommandRequest, options?: RequestOptions): Rx.Observable<Models.GetTestCommandResponse>;
+        gettestcontext(request: Models.TestCommandRequest, options?: RequestOptions): Observable<Models.GetTestCommandResponse>;
         // 'gotodefinition'
-        gotodefinition(request: Models.GotoDefinitionRequest, options?: RequestOptions): Rx.Observable<Models.GotoDefinitionResponse>;
+        gotodefinition(request: Models.GotoDefinitionRequest, options?: RequestOptions): Observable<Models.GotoDefinitionResponse>;
         // 'gotofile'
-        gotofile(request: Models.GotoFileRequest, options?: RequestOptions): Rx.Observable<Models.QuickFixResponse>;
+        gotofile(request: Models.GotoFileRequest, options?: RequestOptions): Observable<Models.QuickFixResponse>;
         // 'gotoregion'
-        gotoregion(request: Models.GotoRegionRequest, options?: RequestOptions): Rx.Observable<Models.QuickFixResponse>;
+        gotoregion(request: Models.GotoRegionRequest, options?: RequestOptions): Observable<Models.QuickFixResponse>;
         // 'highlight'
-        highlight(request: Models.HighlightRequest, options?: RequestOptions): Rx.Observable<Models.HighlightResponse>;
+        highlight(request: Models.HighlightRequest, options?: RequestOptions): Observable<Models.HighlightResponse>;
         // 'metadata'
-        metadata(request: Models.MetadataRequest, options?: RequestOptions): Rx.Observable<Models.MetadataResponse>;
+        metadata(request: Models.MetadataRequest, options?: RequestOptions): Observable<Models.MetadataResponse>;
         // 'navigatedown'
-        navigatedown(request: Models.NavigateDownRequest, options?: RequestOptions): Rx.Observable<Models.NavigateResponse>;
+        navigatedown(request: Models.NavigateDownRequest, options?: RequestOptions): Observable<Models.NavigateResponse>;
         // 'navigateup'
-        navigateup(request: Models.NavigateUpRequest, options?: RequestOptions): Rx.Observable<Models.NavigateResponse>;
+        navigateup(request: Models.NavigateUpRequest, options?: RequestOptions): Observable<Models.NavigateResponse>;
         // 'packagesearch'
-        packagesearch(request: Models.PackageSearchRequest, options?: RequestOptions): Rx.Observable<Models.PackageSearchResponse>;
+        packagesearch(request: Models.PackageSearchRequest, options?: RequestOptions): Observable<Models.PackageSearchResponse>;
         // 'packagesource'
-        packagesource(request: Models.PackageSourceRequest, options?: RequestOptions): Rx.Observable<Models.PackageSourceResponse>;
+        packagesource(request: Models.PackageSourceRequest, options?: RequestOptions): Observable<Models.PackageSourceResponse>;
         // 'packageversion'
-        packageversion(request: Models.PackageVersionRequest, options?: RequestOptions): Rx.Observable<Models.PackageVersionResponse>;
+        packageversion(request: Models.PackageVersionRequest, options?: RequestOptions): Observable<Models.PackageVersionResponse>;
         // 'project'
-        project(request: Models.v1.ProjectInformationRequest, options?: RequestOptions): Rx.Observable<Models.ProjectInformationResponse>;
+        project(request: Models.v1.ProjectInformationRequest, options?: RequestOptions): Observable<Models.ProjectInformationResponse>;
         // 'projects'
-        projects(request: Models.v1.WorkspaceInformationRequest, options?: RequestOptions): Rx.Observable<Models.WorkspaceInformationResponse>;
+        projects(request: Models.v1.WorkspaceInformationRequest, options?: RequestOptions): Observable<Models.WorkspaceInformationResponse>;
         // 'rename'
-        rename(request: Models.RenameRequest, options?: RequestOptions): Rx.Observable<Models.RenameResponse>;
+        rename(request: Models.RenameRequest, options?: RequestOptions): Observable<Models.RenameResponse>;
         // 'runcodeaction'
-        runcodeaction(request: Models.V2.RunCodeActionRequest, options?: RequestOptions): Rx.Observable<Models.V2.RunCodeActionResponse>;
+        runcodeaction(request: Models.V2.RunCodeActionRequest, options?: RequestOptions): Observable<Models.V2.RunCodeActionResponse>;
         // 'signatureHelp'
-        signatureHelp(request: Models.SignatureHelpRequest, options?: RequestOptions): Rx.Observable<Models.SignatureHelp>;
+        signatureHelp(request: Models.SignatureHelpRequest, options?: RequestOptions): Observable<Models.SignatureHelp>;
         // 'typelookup'
-        typelookup(request: Models.TypeLookupRequest, options?: RequestOptions): Rx.Observable<Models.TypeLookupResponse>;
+        typelookup(request: Models.TypeLookupRequest, options?: RequestOptions): Observable<Models.TypeLookupResponse>;
         // 'updatebuffer'
-        updatebuffer(request: Models.UpdateBufferRequest, options?: RequestOptions): Rx.Observable<any>;
+        updatebuffer(request: Models.UpdateBufferRequest, options?: RequestOptions): Observable<any>;
     }
 
 }
@@ -587,136 +588,136 @@ export module Events {
 
     export interface V1 {
         // 'autocomplete'
-        autocomplete: Rx.Observable<Context<Models.AutoCompleteRequest, Models.AutoCompleteResponse[]>>;
+        autocomplete: Observable<Context<Models.AutoCompleteRequest, Models.AutoCompleteResponse[]>>;
         // 'changebuffer'
-        changebuffer: Rx.Observable<Context<Models.ChangeBufferRequest, any>>;
+        changebuffer: Observable<Context<Models.ChangeBufferRequest, any>>;
         // 'codecheck'
-        codecheck: Rx.Observable<Context<Models.CodeCheckRequest, Models.QuickFixResponse>>;
+        codecheck: Observable<Context<Models.CodeCheckRequest, Models.QuickFixResponse>>;
         // 'codeformat'
-        codeformat: Rx.Observable<Context<Models.CodeFormatRequest, Models.CodeFormatResponse>>;
+        codeformat: Observable<Context<Models.CodeFormatRequest, Models.CodeFormatResponse>>;
         // 'currentfilemembersasflat'
-        currentfilemembersasflat: Rx.Observable<Context<Models.MembersFlatRequest, Models.QuickFix[]>>;
+        currentfilemembersasflat: Observable<Context<Models.MembersFlatRequest, Models.QuickFix[]>>;
         // 'currentfilemembersastree'
-        currentfilemembersastree: Rx.Observable<Context<Models.MembersTreeRequest, Models.FileMemberTree>>;
+        currentfilemembersastree: Observable<Context<Models.MembersTreeRequest, Models.FileMemberTree>>;
         // 'filesChanged'
-        filesChanged: Rx.Observable<Context<Models.Request[], Models.FilesChangedResponse>>;
+        filesChanged: Observable<Context<Models.Request[], Models.FilesChangedResponse>>;
         // 'findimplementations'
-        findimplementations: Rx.Observable<Context<Models.FindImplementationsRequest, Models.QuickFixResponse>>;
+        findimplementations: Observable<Context<Models.FindImplementationsRequest, Models.QuickFixResponse>>;
         // 'findsymbols'
-        findsymbols: Rx.Observable<Context<Models.FindSymbolsRequest, Models.QuickFixResponse>>;
+        findsymbols: Observable<Context<Models.FindSymbolsRequest, Models.QuickFixResponse>>;
         // 'findusages'
-        findusages: Rx.Observable<Context<Models.FindUsagesRequest, Models.QuickFixResponse>>;
+        findusages: Observable<Context<Models.FindUsagesRequest, Models.QuickFixResponse>>;
         // 'fixusings'
-        fixusings: Rx.Observable<Context<Models.FixUsingsRequest, Models.FixUsingsResponse>>;
+        fixusings: Observable<Context<Models.FixUsingsRequest, Models.FixUsingsResponse>>;
         // 'formatAfterKeystroke'
-        formatAfterKeystroke: Rx.Observable<Context<Models.FormatAfterKeystrokeRequest, Models.FormatRangeResponse>>;
+        formatAfterKeystroke: Observable<Context<Models.FormatAfterKeystrokeRequest, Models.FormatRangeResponse>>;
         // 'formatRange'
-        formatRange: Rx.Observable<Context<Models.FormatRangeRequest, Models.FormatRangeResponse>>;
+        formatRange: Observable<Context<Models.FormatRangeRequest, Models.FormatRangeResponse>>;
         // 'getcodeactions'
-        getcodeactions: Rx.Observable<Context<Models.GetCodeActionRequest, Models.GetCodeActionsResponse>>;
+        getcodeactions: Observable<Context<Models.GetCodeActionRequest, Models.GetCodeActionsResponse>>;
         // 'gettestcontext'
-        gettestcontext: Rx.Observable<Context<Models.TestCommandRequest, Models.GetTestCommandResponse>>;
+        gettestcontext: Observable<Context<Models.TestCommandRequest, Models.GetTestCommandResponse>>;
         // 'gotodefinition'
-        gotodefinition: Rx.Observable<Context<Models.GotoDefinitionRequest, Models.GotoDefinitionResponse>>;
+        gotodefinition: Observable<Context<Models.GotoDefinitionRequest, Models.GotoDefinitionResponse>>;
         // 'gotofile'
-        gotofile: Rx.Observable<Context<Models.GotoFileRequest, Models.QuickFixResponse>>;
+        gotofile: Observable<Context<Models.GotoFileRequest, Models.QuickFixResponse>>;
         // 'gotoregion'
-        gotoregion: Rx.Observable<Context<Models.GotoRegionRequest, Models.QuickFixResponse>>;
+        gotoregion: Observable<Context<Models.GotoRegionRequest, Models.QuickFixResponse>>;
         // 'highlight'
-        highlight: Rx.Observable<Context<Models.HighlightRequest, Models.HighlightResponse>>;
+        highlight: Observable<Context<Models.HighlightRequest, Models.HighlightResponse>>;
         // 'metadata'
-        metadata: Rx.Observable<Context<Models.MetadataRequest, Models.MetadataResponse>>;
+        metadata: Observable<Context<Models.MetadataRequest, Models.MetadataResponse>>;
         // 'navigatedown'
-        navigatedown: Rx.Observable<Context<Models.NavigateDownRequest, Models.NavigateResponse>>;
+        navigatedown: Observable<Context<Models.NavigateDownRequest, Models.NavigateResponse>>;
         // 'navigateup'
-        navigateup: Rx.Observable<Context<Models.NavigateUpRequest, Models.NavigateResponse>>;
+        navigateup: Observable<Context<Models.NavigateUpRequest, Models.NavigateResponse>>;
         // 'packagesearch'
-        packagesearch: Rx.Observable<Context<Models.PackageSearchRequest, Models.PackageSearchResponse>>;
+        packagesearch: Observable<Context<Models.PackageSearchRequest, Models.PackageSearchResponse>>;
         // 'packagesource'
-        packagesource: Rx.Observable<Context<Models.PackageSourceRequest, Models.PackageSourceResponse>>;
+        packagesource: Observable<Context<Models.PackageSourceRequest, Models.PackageSourceResponse>>;
         // 'packageversion'
-        packageversion: Rx.Observable<Context<Models.PackageVersionRequest, Models.PackageVersionResponse>>;
+        packageversion: Observable<Context<Models.PackageVersionRequest, Models.PackageVersionResponse>>;
         // 'project'
-        project: Rx.Observable<Context<Models.v1.ProjectInformationRequest, Models.ProjectInformationResponse>>;
+        project: Observable<Context<Models.v1.ProjectInformationRequest, Models.ProjectInformationResponse>>;
         // 'projects'
-        projects: Rx.Observable<Context<Models.v1.WorkspaceInformationRequest, Models.WorkspaceInformationResponse>>;
+        projects: Observable<Context<Models.v1.WorkspaceInformationRequest, Models.WorkspaceInformationResponse>>;
         // 'rename'
-        rename: Rx.Observable<Context<Models.RenameRequest, Models.RenameResponse>>;
+        rename: Observable<Context<Models.RenameRequest, Models.RenameResponse>>;
         // 'runcodeaction'
-        runcodeaction: Rx.Observable<Context<Models.RunCodeActionRequest, Models.RunCodeActionResponse>>;
+        runcodeaction: Observable<Context<Models.RunCodeActionRequest, Models.RunCodeActionResponse>>;
         // 'signatureHelp'
-        signatureHelp: Rx.Observable<Context<Models.SignatureHelpRequest, Models.SignatureHelp>>;
+        signatureHelp: Observable<Context<Models.SignatureHelpRequest, Models.SignatureHelp>>;
         // 'typelookup'
-        typelookup: Rx.Observable<Context<Models.TypeLookupRequest, Models.TypeLookupResponse>>;
+        typelookup: Observable<Context<Models.TypeLookupRequest, Models.TypeLookupResponse>>;
         // 'updatebuffer'
-        updatebuffer: Rx.Observable<Context<Models.UpdateBufferRequest, any>>;
+        updatebuffer: Observable<Context<Models.UpdateBufferRequest, any>>;
     }
 
     export interface V2 {
         // 'autocomplete'
-        autocomplete: Rx.Observable<Context<Models.AutoCompleteRequest, Models.AutoCompleteResponse[]>>;
+        autocomplete: Observable<Context<Models.AutoCompleteRequest, Models.AutoCompleteResponse[]>>;
         // 'changebuffer'
-        changebuffer: Rx.Observable<Context<Models.ChangeBufferRequest, any>>;
+        changebuffer: Observable<Context<Models.ChangeBufferRequest, any>>;
         // 'codecheck'
-        codecheck: Rx.Observable<Context<Models.CodeCheckRequest, Models.QuickFixResponse>>;
+        codecheck: Observable<Context<Models.CodeCheckRequest, Models.QuickFixResponse>>;
         // 'codeformat'
-        codeformat: Rx.Observable<Context<Models.CodeFormatRequest, Models.CodeFormatResponse>>;
+        codeformat: Observable<Context<Models.CodeFormatRequest, Models.CodeFormatResponse>>;
         // 'currentfilemembersasflat'
-        currentfilemembersasflat: Rx.Observable<Context<Models.MembersFlatRequest, Models.QuickFix[]>>;
+        currentfilemembersasflat: Observable<Context<Models.MembersFlatRequest, Models.QuickFix[]>>;
         // 'currentfilemembersastree'
-        currentfilemembersastree: Rx.Observable<Context<Models.MembersTreeRequest, Models.FileMemberTree>>;
+        currentfilemembersastree: Observable<Context<Models.MembersTreeRequest, Models.FileMemberTree>>;
         // 'filesChanged'
-        filesChanged: Rx.Observable<Context<Models.Request[], Models.FilesChangedResponse>>;
+        filesChanged: Observable<Context<Models.Request[], Models.FilesChangedResponse>>;
         // 'findimplementations'
-        findimplementations: Rx.Observable<Context<Models.FindImplementationsRequest, Models.QuickFixResponse>>;
+        findimplementations: Observable<Context<Models.FindImplementationsRequest, Models.QuickFixResponse>>;
         // 'findsymbols'
-        findsymbols: Rx.Observable<Context<Models.FindSymbolsRequest, Models.QuickFixResponse>>;
+        findsymbols: Observable<Context<Models.FindSymbolsRequest, Models.QuickFixResponse>>;
         // 'findusages'
-        findusages: Rx.Observable<Context<Models.FindUsagesRequest, Models.QuickFixResponse>>;
+        findusages: Observable<Context<Models.FindUsagesRequest, Models.QuickFixResponse>>;
         // 'fixusings'
-        fixusings: Rx.Observable<Context<Models.FixUsingsRequest, Models.FixUsingsResponse>>;
+        fixusings: Observable<Context<Models.FixUsingsRequest, Models.FixUsingsResponse>>;
         // 'formatAfterKeystroke'
-        formatAfterKeystroke: Rx.Observable<Context<Models.FormatAfterKeystrokeRequest, Models.FormatRangeResponse>>;
+        formatAfterKeystroke: Observable<Context<Models.FormatAfterKeystrokeRequest, Models.FormatRangeResponse>>;
         // 'formatRange'
-        formatRange: Rx.Observable<Context<Models.FormatRangeRequest, Models.FormatRangeResponse>>;
+        formatRange: Observable<Context<Models.FormatRangeRequest, Models.FormatRangeResponse>>;
         // 'getcodeactions'
-        getcodeactions: Rx.Observable<Context<Models.V2.GetCodeActionsRequest, Models.V2.GetCodeActionsResponse>>;
+        getcodeactions: Observable<Context<Models.V2.GetCodeActionsRequest, Models.V2.GetCodeActionsResponse>>;
         // 'gettestcontext'
-        gettestcontext: Rx.Observable<Context<Models.TestCommandRequest, Models.GetTestCommandResponse>>;
+        gettestcontext: Observable<Context<Models.TestCommandRequest, Models.GetTestCommandResponse>>;
         // 'gotodefinition'
-        gotodefinition: Rx.Observable<Context<Models.GotoDefinitionRequest, Models.GotoDefinitionResponse>>;
+        gotodefinition: Observable<Context<Models.GotoDefinitionRequest, Models.GotoDefinitionResponse>>;
         // 'gotofile'
-        gotofile: Rx.Observable<Context<Models.GotoFileRequest, Models.QuickFixResponse>>;
+        gotofile: Observable<Context<Models.GotoFileRequest, Models.QuickFixResponse>>;
         // 'gotoregion'
-        gotoregion: Rx.Observable<Context<Models.GotoRegionRequest, Models.QuickFixResponse>>;
+        gotoregion: Observable<Context<Models.GotoRegionRequest, Models.QuickFixResponse>>;
         // 'highlight'
-        highlight: Rx.Observable<Context<Models.HighlightRequest, Models.HighlightResponse>>;
+        highlight: Observable<Context<Models.HighlightRequest, Models.HighlightResponse>>;
         // 'metadata'
-        metadata: Rx.Observable<Context<Models.MetadataRequest, Models.MetadataResponse>>;
+        metadata: Observable<Context<Models.MetadataRequest, Models.MetadataResponse>>;
         // 'navigatedown'
-        navigatedown: Rx.Observable<Context<Models.NavigateDownRequest, Models.NavigateResponse>>;
+        navigatedown: Observable<Context<Models.NavigateDownRequest, Models.NavigateResponse>>;
         // 'navigateup'
-        navigateup: Rx.Observable<Context<Models.NavigateUpRequest, Models.NavigateResponse>>;
+        navigateup: Observable<Context<Models.NavigateUpRequest, Models.NavigateResponse>>;
         // 'packagesearch'
-        packagesearch: Rx.Observable<Context<Models.PackageSearchRequest, Models.PackageSearchResponse>>;
+        packagesearch: Observable<Context<Models.PackageSearchRequest, Models.PackageSearchResponse>>;
         // 'packagesource'
-        packagesource: Rx.Observable<Context<Models.PackageSourceRequest, Models.PackageSourceResponse>>;
+        packagesource: Observable<Context<Models.PackageSourceRequest, Models.PackageSourceResponse>>;
         // 'packageversion'
-        packageversion: Rx.Observable<Context<Models.PackageVersionRequest, Models.PackageVersionResponse>>;
+        packageversion: Observable<Context<Models.PackageVersionRequest, Models.PackageVersionResponse>>;
         // 'project'
-        project: Rx.Observable<Context<Models.v1.ProjectInformationRequest, Models.ProjectInformationResponse>>;
+        project: Observable<Context<Models.v1.ProjectInformationRequest, Models.ProjectInformationResponse>>;
         // 'projects'
-        projects: Rx.Observable<Context<Models.v1.WorkspaceInformationRequest, Models.WorkspaceInformationResponse>>;
+        projects: Observable<Context<Models.v1.WorkspaceInformationRequest, Models.WorkspaceInformationResponse>>;
         // 'rename'
-        rename: Rx.Observable<Context<Models.RenameRequest, Models.RenameResponse>>;
+        rename: Observable<Context<Models.RenameRequest, Models.RenameResponse>>;
         // 'runcodeaction'
-        runcodeaction: Rx.Observable<Context<Models.V2.RunCodeActionRequest, Models.V2.RunCodeActionResponse>>;
+        runcodeaction: Observable<Context<Models.V2.RunCodeActionRequest, Models.V2.RunCodeActionResponse>>;
         // 'signatureHelp'
-        signatureHelp: Rx.Observable<Context<Models.SignatureHelpRequest, Models.SignatureHelp>>;
+        signatureHelp: Observable<Context<Models.SignatureHelpRequest, Models.SignatureHelp>>;
         // 'typelookup'
-        typelookup: Rx.Observable<Context<Models.TypeLookupRequest, Models.TypeLookupResponse>>;
+        typelookup: Observable<Context<Models.TypeLookupRequest, Models.TypeLookupResponse>>;
         // 'updatebuffer'
-        updatebuffer: Rx.Observable<Context<Models.UpdateBufferRequest, any>>;
+        updatebuffer: Observable<Context<Models.UpdateBufferRequest, any>>;
     }
 
 }
@@ -724,161 +725,161 @@ export module Events.Aggregate {
 
     export interface V1 {
         // 'autocomplete'
-        autocomplete: Rx.Observable<CombinationKey<Context<Models.AutoCompleteRequest, Models.AutoCompleteResponse[]>>[]>;
+        autocomplete: Observable<CombinationKey<Context<Models.AutoCompleteRequest, Models.AutoCompleteResponse[]>>[]>;
         // 'changebuffer'
-        changebuffer: Rx.Observable<CombinationKey<Context<Models.ChangeBufferRequest, any>>[]>;
+        changebuffer: Observable<CombinationKey<Context<Models.ChangeBufferRequest, any>>[]>;
         // 'codecheck'
-        codecheck: Rx.Observable<CombinationKey<Context<Models.CodeCheckRequest, Models.QuickFixResponse>>[]>;
+        codecheck: Observable<CombinationKey<Context<Models.CodeCheckRequest, Models.QuickFixResponse>>[]>;
         // 'codeformat'
-        codeformat: Rx.Observable<CombinationKey<Context<Models.CodeFormatRequest, Models.CodeFormatResponse>>[]>;
+        codeformat: Observable<CombinationKey<Context<Models.CodeFormatRequest, Models.CodeFormatResponse>>[]>;
         // 'currentfilemembersasflat'
-        currentfilemembersasflat: Rx.Observable<CombinationKey<Context<Models.MembersFlatRequest, Models.QuickFix[]>>[]>;
+        currentfilemembersasflat: Observable<CombinationKey<Context<Models.MembersFlatRequest, Models.QuickFix[]>>[]>;
         // 'currentfilemembersastree'
-        currentfilemembersastree: Rx.Observable<CombinationKey<Context<Models.MembersTreeRequest, Models.FileMemberTree>>[]>;
+        currentfilemembersastree: Observable<CombinationKey<Context<Models.MembersTreeRequest, Models.FileMemberTree>>[]>;
         // 'filesChanged'
-        filesChanged: Rx.Observable<CombinationKey<Context<Models.Request[], Models.FilesChangedResponse>>[]>;
+        filesChanged: Observable<CombinationKey<Context<Models.Request[], Models.FilesChangedResponse>>[]>;
         // 'findimplementations'
-        findimplementations: Rx.Observable<CombinationKey<Context<Models.FindImplementationsRequest, Models.QuickFixResponse>>[]>;
+        findimplementations: Observable<CombinationKey<Context<Models.FindImplementationsRequest, Models.QuickFixResponse>>[]>;
         // 'findsymbols'
-        findsymbols: Rx.Observable<CombinationKey<Context<Models.FindSymbolsRequest, Models.QuickFixResponse>>[]>;
+        findsymbols: Observable<CombinationKey<Context<Models.FindSymbolsRequest, Models.QuickFixResponse>>[]>;
         // 'findusages'
-        findusages: Rx.Observable<CombinationKey<Context<Models.FindUsagesRequest, Models.QuickFixResponse>>[]>;
+        findusages: Observable<CombinationKey<Context<Models.FindUsagesRequest, Models.QuickFixResponse>>[]>;
         // 'fixusings'
-        fixusings: Rx.Observable<CombinationKey<Context<Models.FixUsingsRequest, Models.FixUsingsResponse>>[]>;
+        fixusings: Observable<CombinationKey<Context<Models.FixUsingsRequest, Models.FixUsingsResponse>>[]>;
         // 'formatAfterKeystroke'
-        formatAfterKeystroke: Rx.Observable<CombinationKey<Context<Models.FormatAfterKeystrokeRequest, Models.FormatRangeResponse>>[]>;
+        formatAfterKeystroke: Observable<CombinationKey<Context<Models.FormatAfterKeystrokeRequest, Models.FormatRangeResponse>>[]>;
         // 'formatRange'
-        formatRange: Rx.Observable<CombinationKey<Context<Models.FormatRangeRequest, Models.FormatRangeResponse>>[]>;
+        formatRange: Observable<CombinationKey<Context<Models.FormatRangeRequest, Models.FormatRangeResponse>>[]>;
         // 'getcodeactions'
-        getcodeactions: Rx.Observable<CombinationKey<Context<Models.GetCodeActionRequest, Models.GetCodeActionsResponse>>[]>;
+        getcodeactions: Observable<CombinationKey<Context<Models.GetCodeActionRequest, Models.GetCodeActionsResponse>>[]>;
         // 'gettestcontext'
-        gettestcontext: Rx.Observable<CombinationKey<Context<Models.TestCommandRequest, Models.GetTestCommandResponse>>[]>;
+        gettestcontext: Observable<CombinationKey<Context<Models.TestCommandRequest, Models.GetTestCommandResponse>>[]>;
         // 'gotodefinition'
-        gotodefinition: Rx.Observable<CombinationKey<Context<Models.GotoDefinitionRequest, Models.GotoDefinitionResponse>>[]>;
+        gotodefinition: Observable<CombinationKey<Context<Models.GotoDefinitionRequest, Models.GotoDefinitionResponse>>[]>;
         // 'gotofile'
-        gotofile: Rx.Observable<CombinationKey<Context<Models.GotoFileRequest, Models.QuickFixResponse>>[]>;
+        gotofile: Observable<CombinationKey<Context<Models.GotoFileRequest, Models.QuickFixResponse>>[]>;
         // 'gotoregion'
-        gotoregion: Rx.Observable<CombinationKey<Context<Models.GotoRegionRequest, Models.QuickFixResponse>>[]>;
+        gotoregion: Observable<CombinationKey<Context<Models.GotoRegionRequest, Models.QuickFixResponse>>[]>;
         // 'highlight'
-        highlight: Rx.Observable<CombinationKey<Context<Models.HighlightRequest, Models.HighlightResponse>>[]>;
+        highlight: Observable<CombinationKey<Context<Models.HighlightRequest, Models.HighlightResponse>>[]>;
         // 'metadata'
-        metadata: Rx.Observable<CombinationKey<Context<Models.MetadataRequest, Models.MetadataResponse>>[]>;
+        metadata: Observable<CombinationKey<Context<Models.MetadataRequest, Models.MetadataResponse>>[]>;
         // 'navigatedown'
-        navigatedown: Rx.Observable<CombinationKey<Context<Models.NavigateDownRequest, Models.NavigateResponse>>[]>;
+        navigatedown: Observable<CombinationKey<Context<Models.NavigateDownRequest, Models.NavigateResponse>>[]>;
         // 'navigateup'
-        navigateup: Rx.Observable<CombinationKey<Context<Models.NavigateUpRequest, Models.NavigateResponse>>[]>;
+        navigateup: Observable<CombinationKey<Context<Models.NavigateUpRequest, Models.NavigateResponse>>[]>;
         // 'packagesearch'
-        packagesearch: Rx.Observable<CombinationKey<Context<Models.PackageSearchRequest, Models.PackageSearchResponse>>[]>;
+        packagesearch: Observable<CombinationKey<Context<Models.PackageSearchRequest, Models.PackageSearchResponse>>[]>;
         // 'packagesource'
-        packagesource: Rx.Observable<CombinationKey<Context<Models.PackageSourceRequest, Models.PackageSourceResponse>>[]>;
+        packagesource: Observable<CombinationKey<Context<Models.PackageSourceRequest, Models.PackageSourceResponse>>[]>;
         // 'packageversion'
-        packageversion: Rx.Observable<CombinationKey<Context<Models.PackageVersionRequest, Models.PackageVersionResponse>>[]>;
+        packageversion: Observable<CombinationKey<Context<Models.PackageVersionRequest, Models.PackageVersionResponse>>[]>;
         // 'project'
-        project: Rx.Observable<CombinationKey<Context<Models.v1.ProjectInformationRequest, Models.ProjectInformationResponse>>[]>;
+        project: Observable<CombinationKey<Context<Models.v1.ProjectInformationRequest, Models.ProjectInformationResponse>>[]>;
         // 'projects'
-        projects: Rx.Observable<CombinationKey<Context<Models.v1.WorkspaceInformationRequest, Models.WorkspaceInformationResponse>>[]>;
+        projects: Observable<CombinationKey<Context<Models.v1.WorkspaceInformationRequest, Models.WorkspaceInformationResponse>>[]>;
         // 'rename'
-        rename: Rx.Observable<CombinationKey<Context<Models.RenameRequest, Models.RenameResponse>>[]>;
+        rename: Observable<CombinationKey<Context<Models.RenameRequest, Models.RenameResponse>>[]>;
         // 'runcodeaction'
-        runcodeaction: Rx.Observable<CombinationKey<Context<Models.RunCodeActionRequest, Models.RunCodeActionResponse>>[]>;
+        runcodeaction: Observable<CombinationKey<Context<Models.RunCodeActionRequest, Models.RunCodeActionResponse>>[]>;
         // 'signatureHelp'
-        signatureHelp: Rx.Observable<CombinationKey<Context<Models.SignatureHelpRequest, Models.SignatureHelp>>[]>;
+        signatureHelp: Observable<CombinationKey<Context<Models.SignatureHelpRequest, Models.SignatureHelp>>[]>;
         // 'typelookup'
-        typelookup: Rx.Observable<CombinationKey<Context<Models.TypeLookupRequest, Models.TypeLookupResponse>>[]>;
+        typelookup: Observable<CombinationKey<Context<Models.TypeLookupRequest, Models.TypeLookupResponse>>[]>;
         // 'updatebuffer'
-        updatebuffer: Rx.Observable<CombinationKey<Context<Models.UpdateBufferRequest, any>>[]>;
+        updatebuffer: Observable<CombinationKey<Context<Models.UpdateBufferRequest, any>>[]>;
     }
 
     export interface V2 {
         // 'autocomplete'
-        autocomplete: Rx.Observable<CombinationKey<Context<Models.AutoCompleteRequest, Models.AutoCompleteResponse[]>>[]>;
+        autocomplete: Observable<CombinationKey<Context<Models.AutoCompleteRequest, Models.AutoCompleteResponse[]>>[]>;
         // 'changebuffer'
-        changebuffer: Rx.Observable<CombinationKey<Context<Models.ChangeBufferRequest, any>>[]>;
+        changebuffer: Observable<CombinationKey<Context<Models.ChangeBufferRequest, any>>[]>;
         // 'codecheck'
-        codecheck: Rx.Observable<CombinationKey<Context<Models.CodeCheckRequest, Models.QuickFixResponse>>[]>;
+        codecheck: Observable<CombinationKey<Context<Models.CodeCheckRequest, Models.QuickFixResponse>>[]>;
         // 'codeformat'
-        codeformat: Rx.Observable<CombinationKey<Context<Models.CodeFormatRequest, Models.CodeFormatResponse>>[]>;
+        codeformat: Observable<CombinationKey<Context<Models.CodeFormatRequest, Models.CodeFormatResponse>>[]>;
         // 'currentfilemembersasflat'
-        currentfilemembersasflat: Rx.Observable<CombinationKey<Context<Models.MembersFlatRequest, Models.QuickFix[]>>[]>;
+        currentfilemembersasflat: Observable<CombinationKey<Context<Models.MembersFlatRequest, Models.QuickFix[]>>[]>;
         // 'currentfilemembersastree'
-        currentfilemembersastree: Rx.Observable<CombinationKey<Context<Models.MembersTreeRequest, Models.FileMemberTree>>[]>;
+        currentfilemembersastree: Observable<CombinationKey<Context<Models.MembersTreeRequest, Models.FileMemberTree>>[]>;
         // 'filesChanged'
-        filesChanged: Rx.Observable<CombinationKey<Context<Models.Request[], Models.FilesChangedResponse>>[]>;
+        filesChanged: Observable<CombinationKey<Context<Models.Request[], Models.FilesChangedResponse>>[]>;
         // 'findimplementations'
-        findimplementations: Rx.Observable<CombinationKey<Context<Models.FindImplementationsRequest, Models.QuickFixResponse>>[]>;
+        findimplementations: Observable<CombinationKey<Context<Models.FindImplementationsRequest, Models.QuickFixResponse>>[]>;
         // 'findsymbols'
-        findsymbols: Rx.Observable<CombinationKey<Context<Models.FindSymbolsRequest, Models.QuickFixResponse>>[]>;
+        findsymbols: Observable<CombinationKey<Context<Models.FindSymbolsRequest, Models.QuickFixResponse>>[]>;
         // 'findusages'
-        findusages: Rx.Observable<CombinationKey<Context<Models.FindUsagesRequest, Models.QuickFixResponse>>[]>;
+        findusages: Observable<CombinationKey<Context<Models.FindUsagesRequest, Models.QuickFixResponse>>[]>;
         // 'fixusings'
-        fixusings: Rx.Observable<CombinationKey<Context<Models.FixUsingsRequest, Models.FixUsingsResponse>>[]>;
+        fixusings: Observable<CombinationKey<Context<Models.FixUsingsRequest, Models.FixUsingsResponse>>[]>;
         // 'formatAfterKeystroke'
-        formatAfterKeystroke: Rx.Observable<CombinationKey<Context<Models.FormatAfterKeystrokeRequest, Models.FormatRangeResponse>>[]>;
+        formatAfterKeystroke: Observable<CombinationKey<Context<Models.FormatAfterKeystrokeRequest, Models.FormatRangeResponse>>[]>;
         // 'formatRange'
-        formatRange: Rx.Observable<CombinationKey<Context<Models.FormatRangeRequest, Models.FormatRangeResponse>>[]>;
+        formatRange: Observable<CombinationKey<Context<Models.FormatRangeRequest, Models.FormatRangeResponse>>[]>;
         // 'getcodeactions'
-        getcodeactions: Rx.Observable<CombinationKey<Context<Models.V2.GetCodeActionsRequest, Models.V2.GetCodeActionsResponse>>[]>;
+        getcodeactions: Observable<CombinationKey<Context<Models.V2.GetCodeActionsRequest, Models.V2.GetCodeActionsResponse>>[]>;
         // 'gettestcontext'
-        gettestcontext: Rx.Observable<CombinationKey<Context<Models.TestCommandRequest, Models.GetTestCommandResponse>>[]>;
+        gettestcontext: Observable<CombinationKey<Context<Models.TestCommandRequest, Models.GetTestCommandResponse>>[]>;
         // 'gotodefinition'
-        gotodefinition: Rx.Observable<CombinationKey<Context<Models.GotoDefinitionRequest, Models.GotoDefinitionResponse>>[]>;
+        gotodefinition: Observable<CombinationKey<Context<Models.GotoDefinitionRequest, Models.GotoDefinitionResponse>>[]>;
         // 'gotofile'
-        gotofile: Rx.Observable<CombinationKey<Context<Models.GotoFileRequest, Models.QuickFixResponse>>[]>;
+        gotofile: Observable<CombinationKey<Context<Models.GotoFileRequest, Models.QuickFixResponse>>[]>;
         // 'gotoregion'
-        gotoregion: Rx.Observable<CombinationKey<Context<Models.GotoRegionRequest, Models.QuickFixResponse>>[]>;
+        gotoregion: Observable<CombinationKey<Context<Models.GotoRegionRequest, Models.QuickFixResponse>>[]>;
         // 'highlight'
-        highlight: Rx.Observable<CombinationKey<Context<Models.HighlightRequest, Models.HighlightResponse>>[]>;
+        highlight: Observable<CombinationKey<Context<Models.HighlightRequest, Models.HighlightResponse>>[]>;
         // 'metadata'
-        metadata: Rx.Observable<CombinationKey<Context<Models.MetadataRequest, Models.MetadataResponse>>[]>;
+        metadata: Observable<CombinationKey<Context<Models.MetadataRequest, Models.MetadataResponse>>[]>;
         // 'navigatedown'
-        navigatedown: Rx.Observable<CombinationKey<Context<Models.NavigateDownRequest, Models.NavigateResponse>>[]>;
+        navigatedown: Observable<CombinationKey<Context<Models.NavigateDownRequest, Models.NavigateResponse>>[]>;
         // 'navigateup'
-        navigateup: Rx.Observable<CombinationKey<Context<Models.NavigateUpRequest, Models.NavigateResponse>>[]>;
+        navigateup: Observable<CombinationKey<Context<Models.NavigateUpRequest, Models.NavigateResponse>>[]>;
         // 'packagesearch'
-        packagesearch: Rx.Observable<CombinationKey<Context<Models.PackageSearchRequest, Models.PackageSearchResponse>>[]>;
+        packagesearch: Observable<CombinationKey<Context<Models.PackageSearchRequest, Models.PackageSearchResponse>>[]>;
         // 'packagesource'
-        packagesource: Rx.Observable<CombinationKey<Context<Models.PackageSourceRequest, Models.PackageSourceResponse>>[]>;
+        packagesource: Observable<CombinationKey<Context<Models.PackageSourceRequest, Models.PackageSourceResponse>>[]>;
         // 'packageversion'
-        packageversion: Rx.Observable<CombinationKey<Context<Models.PackageVersionRequest, Models.PackageVersionResponse>>[]>;
+        packageversion: Observable<CombinationKey<Context<Models.PackageVersionRequest, Models.PackageVersionResponse>>[]>;
         // 'project'
-        project: Rx.Observable<CombinationKey<Context<Models.v1.ProjectInformationRequest, Models.ProjectInformationResponse>>[]>;
+        project: Observable<CombinationKey<Context<Models.v1.ProjectInformationRequest, Models.ProjectInformationResponse>>[]>;
         // 'projects'
-        projects: Rx.Observable<CombinationKey<Context<Models.v1.WorkspaceInformationRequest, Models.WorkspaceInformationResponse>>[]>;
+        projects: Observable<CombinationKey<Context<Models.v1.WorkspaceInformationRequest, Models.WorkspaceInformationResponse>>[]>;
         // 'rename'
-        rename: Rx.Observable<CombinationKey<Context<Models.RenameRequest, Models.RenameResponse>>[]>;
+        rename: Observable<CombinationKey<Context<Models.RenameRequest, Models.RenameResponse>>[]>;
         // 'runcodeaction'
-        runcodeaction: Rx.Observable<CombinationKey<Context<Models.V2.RunCodeActionRequest, Models.V2.RunCodeActionResponse>>[]>;
+        runcodeaction: Observable<CombinationKey<Context<Models.V2.RunCodeActionRequest, Models.V2.RunCodeActionResponse>>[]>;
         // 'signatureHelp'
-        signatureHelp: Rx.Observable<CombinationKey<Context<Models.SignatureHelpRequest, Models.SignatureHelp>>[]>;
+        signatureHelp: Observable<CombinationKey<Context<Models.SignatureHelpRequest, Models.SignatureHelp>>[]>;
         // 'typelookup'
-        typelookup: Rx.Observable<CombinationKey<Context<Models.TypeLookupRequest, Models.TypeLookupResponse>>[]>;
+        typelookup: Observable<CombinationKey<Context<Models.TypeLookupRequest, Models.TypeLookupResponse>>[]>;
         // 'updatebuffer'
-        updatebuffer: Rx.Observable<CombinationKey<Context<Models.UpdateBufferRequest, any>>[]>;
+        updatebuffer: Observable<CombinationKey<Context<Models.UpdateBufferRequest, any>>[]>;
     }
 
 }
 
     export interface Events {
-        projectAdded: Rx.Observable<Models.ProjectInformationResponse>;
-        projectChanged: Rx.Observable<Models.ProjectInformationResponse>;
-        projectRemoved: Rx.Observable<Models.ProjectInformationResponse>;
-        error: Rx.Observable<Models.ErrorMessage>;
-        msBuildProjectDiagnostics: Rx.Observable<Models.MSBuildProjectDiagnostics>;
-        packageRestoreStarted: Rx.Observable<Models.PackageRestoreMessage>;
-        packageRestoreFinished: Rx.Observable<Models.PackageRestoreMessage>;
-        unresolvedDependencies: Rx.Observable<Models.UnresolvedDependenciesMessage>;
+        projectAdded: Observable<Models.ProjectInformationResponse>;
+        projectChanged: Observable<Models.ProjectInformationResponse>;
+        projectRemoved: Observable<Models.ProjectInformationResponse>;
+        error: Observable<Models.ErrorMessage>;
+        msBuildProjectDiagnostics: Observable<Models.MSBuildProjectDiagnostics>;
+        packageRestoreStarted: Observable<Models.PackageRestoreMessage>;
+        packageRestoreFinished: Observable<Models.PackageRestoreMessage>;
+        unresolvedDependencies: Observable<Models.UnresolvedDependenciesMessage>;
     }
 
 export module Aggregate {
     export interface Events {
-        projectAdded: Rx.Observable<CombinationKey<Models.ProjectInformationResponse>[]>;
-        projectChanged: Rx.Observable<CombinationKey<Models.ProjectInformationResponse>[]>;
-        projectRemoved: Rx.Observable<CombinationKey<Models.ProjectInformationResponse>[]>;
-        error: Rx.Observable<CombinationKey<Models.ErrorMessage>[]>;
-        msBuildProjectDiagnostics: Rx.Observable<CombinationKey<Models.MSBuildProjectDiagnostics>[]>;
-        packageRestoreStarted: Rx.Observable<CombinationKey<Models.PackageRestoreMessage>[]>;
-        packageRestoreFinished: Rx.Observable<CombinationKey<Models.PackageRestoreMessage>[]>;
-        unresolvedDependencies: Rx.Observable<CombinationKey<Models.UnresolvedDependenciesMessage>[]>;
+        projectAdded: Observable<CombinationKey<Models.ProjectInformationResponse>[]>;
+        projectChanged: Observable<CombinationKey<Models.ProjectInformationResponse>[]>;
+        projectRemoved: Observable<CombinationKey<Models.ProjectInformationResponse>[]>;
+        error: Observable<CombinationKey<Models.ErrorMessage>[]>;
+        msBuildProjectDiagnostics: Observable<CombinationKey<Models.MSBuildProjectDiagnostics>[]>;
+        packageRestoreStarted: Observable<CombinationKey<Models.PackageRestoreMessage>[]>;
+        packageRestoreFinished: Observable<CombinationKey<Models.PackageRestoreMessage>[]>;
+        unresolvedDependencies: Observable<CombinationKey<Models.UnresolvedDependenciesMessage>[]>;
     }
 }
 
@@ -894,4 +895,4 @@ export module Models {
         ScriptCs: ScriptCs.ScriptCsContext;
     }
 }
-            
+

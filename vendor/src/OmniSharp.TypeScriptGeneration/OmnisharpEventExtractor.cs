@@ -45,7 +45,7 @@ namespace OmniSharp.TypeScriptGeneration
             foreach (var property in properties)
             {
                 var eventName = property.Name.ToLowerInvariant()[0] + property.Name.Substring(1);
-                yield return $"{eventName}: Rx.Observable<{GetEventReturnType(property.Name)}>;";
+                yield return $"{eventName}: Observable<{GetEventReturnType(property.Name)}>;";
             }
         }
 
@@ -56,7 +56,7 @@ namespace OmniSharp.TypeScriptGeneration
             foreach (var property in properties)
             {
                 var eventName = property.Name.ToLowerInvariant()[0] + property.Name.Substring(1);
-                yield return $"{eventName}: Rx.Observable<CombinationKey<{GetEventReturnType(property.Name)}>[]>;";
+                yield return $"{eventName}: Observable<CombinationKey<{GetEventReturnType(property.Name)}>[]>;";
             }
         }
     }

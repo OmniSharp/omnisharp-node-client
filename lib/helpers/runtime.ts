@@ -1,14 +1,17 @@
-import {Observable, Scheduler} from "rx";
+import {Observable, Scheduler} from "rxjs";
 import {resolve, join, delimiter} from "path";
 import * as fs from "fs";
 import {ILogger, Runtime} from "../enums";
 import {find, delay, bind, memoize, assignWith, isNull, isUndefined, toLower} from "lodash";
 import {Decompress} from "./decompress";
+import {createObservable} from "../operators/create";
+import "rxjs/add/operator/max";
+import "rxjs/add/operator/isEmpty";
 
 const request: { get(url: string): NodeJS.ReadableStream; } = require("request");
 const defaultServerVersion = require(resolve(__dirname, "../../package.json"))["omnisharp-roslyn"];
-const exists = Observable.fromCallback(fs.exists);
-const readFile = Observable.fromNodeCallback(fs.readFile);
+const exists = Observable.bindCallback(fs.exists);
+const readFile = Observable.bindNodeCallback(fs.readFile);
 const defaultDest = resolve(__dirname, "../../");
 
 // Handle the case of homebrew mono

@@ -4,7 +4,7 @@ import {Driver, DriverState} from "../lib/enums";
 import {resolve} from "path";
 import {ClientV2 as OmnisharpClient} from "../lib/clients/client-v2";
 import _ from "lodash";
-import {Observable} from "rx";
+import {Observable} from "rxjs";
 
 declare const xdescribe: Function;
 
@@ -33,8 +33,8 @@ describe("Omnisharp Server", function() {
                 projectPath: process.cwd()
             });
 
-            const sub = server.state.startWith(server.currentState).where(state => state === DriverState.Connected).subscribe(state => {
-                sub.dispose();
+            const sub = server.state.startWith(server.currentState).filter(state => state === DriverState.Connected).subscribe(state => {
+                sub.unsubscribe();
                 done();
             });
 
@@ -62,7 +62,7 @@ describe("Omnisharp Server", function() {
 
         it("must give status", function(done) {
             const sub = server.status.delay(1).subscribe(status => {
-                sub.dispose();
+                sub.unsubscribe();
                 done();
             });
 

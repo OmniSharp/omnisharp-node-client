@@ -1,14 +1,16 @@
 import {each} from "lodash";
 import {IOmnisharpPlugin} from "../enums";
-import {Subject} from "rx";
-import {CompositeDisposable} from "rx";
+/* tslint:disable:no-unused-variable */
+import {Subject, Observable} from "rxjs";
+/* tslint:enable:no-unused-variable */
+import {CompositeDisposable, IDisposable} from "../disposables";
 
-export class PluginManager implements Rx.IDisposable {
+export class PluginManager implements IDisposable {
     private _disposable = new CompositeDisposable();
     private _pluginsChanged = new Subject<any>();
     private _currentBootstrap: string = null;
 
-    private _observePluginsChanged = this._pluginsChanged.debounce(1000);
+    private _observePluginsChanged = this._pluginsChanged.debounceTime(1000);
     public get changed() { return this._observePluginsChanged; }
 
     private _plugins = new Set<IOmnisharpPlugin>();
@@ -21,12 +23,12 @@ export class PluginManager implements Rx.IDisposable {
 
     public add(plugin: IOmnisharpPlugin) {
         this._plugins.add(plugin);
-        this._pluginsChanged.onNext(true);
+        this._pluginsChanged.next(true);
     }
 
     public remove(plugin: IOmnisharpPlugin) {
         this._plugins.delete(plugin);
-        this._pluginsChanged.onNext(true);
+        this._pluginsChanged.next(true);
     }
 
     public dispose() {

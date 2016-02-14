@@ -4,7 +4,8 @@ import {defaults, startsWith} from "lodash";
 import {DriverState} from "../enums";
 import cp, {ChildProcess} from "child_process";
 import * as readline from "readline";
-import {Observable, Subject, AsyncSubject, CompositeDisposable, Disposable} from "rx";
+import {CompositeDisposable, Disposable} from "../disposables";
+import {Observable, Subject, AsyncSubject} from "rxjs";
 import {RuntimeContext, isSupportedRuntime} from "../helpers/runtime";
 
 let spawn = cp.spawn;
@@ -65,7 +66,7 @@ export class StdioDriver implements IDriver {
                 const [key, disposable] = iteratee.value;
 
                 this._outstandingRequests.delete(key);
-                disposable.dispose();
+                disposable.unsubscribe();
 
                 iteratee = iterator.next();
             }
@@ -99,13 +100,13 @@ export class StdioDriver implements IDriver {
     public get runtime() { return this._runtime; }
 
     private _commandStream = new Subject<OmniSharp.Stdio.Protocol.ResponsePacket>();
-    public get commands(): Rx.Observable<OmniSharp.Stdio.Protocol.ResponsePacket> { return this._commandStream; }
+    public get commands(): Observable<OmniSharp.Stdio.Protocol.ResponsePacket> { return this._commandStream.asObservable(); }
 
     private _eventStream = new Subject<OmniSharp.Stdio.Protocol.EventPacket>();
-    public get events(): Rx.Observable<OmniSharp.Stdio.Protocol.EventPacket> { return this._eventStream; }
+    public get events(): Observable<OmniSharp.Stdio.Protocol.EventPacket> { return this._eventStream.asObservable(); }
 
     private _connectionStream = new Subject<DriverState>();
-    public get state(): Rx.Observable<DriverState> { return this._connectionStream; }
+    public get state(): Observable<DriverState> { return this._connectionStream.asObservable(); }
 
     public get outstandingRequests() { return this._outstandingRequests.size; }
 
@@ -114,7 +115,7 @@ export class StdioDriver implements IDriver {
             throw new Error("Driver is disposed");
 
         this._ensureRuntimeExists()
-            .subscribeOnCompleted(() => this._connect());
+            .subscribe({ complete: () => this._connect() });
         /*
         Enable once we can push a new build again
         this._disposable.add(this._ensureBootstrapExists()
@@ -125,7 +126,7 @@ export class StdioDriver implements IDriver {
     private _connect() {
         this._seq = 1;
         this._outstandingRequests.clear();
-        this._connectionStream.onNext(DriverState.Connecting);
+        this._connectionStream.next(DriverState.Connecting);
 
         let path = this.serverPath;
 
@@ -168,7 +169,7 @@ export class StdioDriver implements IDriver {
     }
 
     private _ensureRuntimeExists() {
-        this._connectionStream.onNext(DriverState.Downloading);
+        this._connectionStream.next(DriverState.Downloading);
         return Observable.fromPromise(isSupportedRuntime(this._runtimeContext)
             .do((ctx) => {
                 this._runtime = ctx.runtime;
@@ -178,9 +179,7 @@ export class StdioDriver implements IDriver {
             .toPromise()
             .then((runtime) =>
                 this._runtimeContext.downloadRuntimeIfMissing()
-                    .tapOnCompleted(() => {
-                        this._connectionStream.onNext(DriverState.Downloaded);
-                    })
+                    .do({ complete: () => { this._connectionStream.next(DriverState.Downloaded); } })
                     .toPromise()
             ));
     }
@@ -198,10 +197,10 @@ export class StdioDriver implements IDriver {
 
     private serverErr(data: any) {
         const friendlyMessage = this.parseError(data);
-        this._connectionStream.onNext(DriverState.Error);
+        this._connectionStream.next(DriverState.Error);
         this._process = null;
 
-        this._eventStream.onNext({
+        this._eventStream.next({
             Type: "error",
             Event: "error",
             Seq: -1,
@@ -224,12 +223,12 @@ export class StdioDriver implements IDriver {
             this._process.kill("SIGTERM");
         }
         this._process = null;
-        this._connectionStream.onNext(DriverState.Disconnected);
+        this._connectionStream.next(DriverState.Disconnected);
     }
 
-    public request<TRequest, TResponse>(command: string, request?: TRequest): Rx.Observable<TResponse> {
+    public request<TRequest, TResponse>(command: string, request?: TRequest): Observable<TResponse> {
         if (!this._process) {
-            return Observable.throw<any>(new Error("Server is not connected, erroring out"));
+            return <any>Observable.throw<any>(new Error("Server is not connected, erroring out"));
         }
 
         const sequence = this._seq++;
@@ -271,17 +270,17 @@ export class StdioDriver implements IDriver {
 
             const observer = this._outstandingRequests.get(response.Request_seq);
             this._outstandingRequests.delete(response.Request_seq);
-            if (observer.isDisposed) return;
+            if (observer.isUnsubscribed) return;
             if (response.Success) {
-                observer.onNext(response.Body);
-                observer.onCompleted();
+                observer.next(response.Body);
+                observer.complete();
             } else {
-                observer.onError(response.Message);
+                observer.error(response.Message);
             }
 
         } else {
             if (response.Success) {
-                this._commandStream.onNext(response);
+                this._commandStream.next(response);
             } else {
                 // TODO: make notification?
             }
@@ -289,15 +288,15 @@ export class StdioDriver implements IDriver {
     }
 
     private handlePacketEvent(event: OmniSharp.Stdio.Protocol.EventPacket) {
-        this._eventStream.onNext(event);
+        this._eventStream.next(event);
         if (event.Event === "started") {
-            this._connectionStream.onNext(DriverState.Connected);
+            this._connectionStream.next(DriverState.Connected);
         }
     }
 
     private handleNonPacket(data: any) {
         const s = data.toString();
-        this._eventStream.onNext({
+        this._eventStream.next({
             Type: "unknown",
             Event: "unknown",
             Seq: -1,
