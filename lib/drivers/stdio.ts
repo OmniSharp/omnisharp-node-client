@@ -5,20 +5,9 @@ import {DriverState} from "../enums";
 import {spawn, ChildProcess} from "child_process";
 import * as readline from "readline";
 import {Observable, Subject, AsyncSubject, CompositeDisposable, Disposable} from "rx";
-import {join} from "path";
 import {downloadRuntimeIfMissing, supportedRuntime, getRuntimeLocation} from "../helpers/runtime";
-//import {getPluginPath} from "../helpers/plugin";
 
-let win32 = false;
-let env: any;
-// Setup the new process env.
-if (process.platform === "win32") {
-    win32 = true;
-    // ALL I have to say is WTF.
-    env = { ATOM_SHELL_INTERNAL_RUN_AS_NODE: "1" };
-} else {
-    env = defaults({ ATOM_SHELL_INTERNAL_RUN_AS_NODE: "1" }, process.env);
-}
+let env: any = defaults({ ATOM_SHELL_INTERNAL_RUN_AS_NODE: "1" }, process.env);
 
 export class StdioDriver implements IDriver {
     private _seq: number;
@@ -132,16 +121,9 @@ export class StdioDriver implements IDriver {
         this._logger.log(`Selected project: ${this._projectPath}`);
 
         env.PATH = this._PATH || env.PATH;
-        if (win32) {
-            // Spawn a special windows only node client... so that we can shutdown nicely.
-            const serverArguments: any[] = [join(__dirname, "../stdio/child.js"), "--serverPath", this.serverPath, "--projectPath", this._projectPath].concat(this._additionalArguments || []);
-            this._logger.log(`Arguments: ${serverArguments}`);
-            this._process = spawn(process.execPath, serverArguments, { env });
-        } else {
-            const serverArguments: any[] = ["--stdio", "-s", this._projectPath, "--hostPID", process.pid].concat(this._additionalArguments || []);
-            this._logger.log(`Arguments: ${serverArguments}`);
-            this._process = spawn(this.serverPath, serverArguments, { env });
-        }
+        const serverArguments: any[] = ["--stdio", "-s", this._projectPath, "--hostPID", process.pid].concat(this._additionalArguments || []);
+        this._logger.log(`Arguments: ${serverArguments}`);
+        this._process = spawn(this.serverPath, serverArguments, { env });
 
         if (!this._process.pid) {
             this.serverErr("failed to connect to connect to server");
