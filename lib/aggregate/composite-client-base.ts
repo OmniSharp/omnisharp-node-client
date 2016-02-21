@@ -1,5 +1,5 @@
 import {ReplaySubject, Observable, CompositeDisposable, Disposable} from "rx";
-import * as _ from "lodash";
+import _ from "lodash";
 import {DriverState} from "../enums";
 import {OmnisharpClientStatus} from "../enums";
 import {RequestContext, ResponseContext, CommandContext} from "../contexts";

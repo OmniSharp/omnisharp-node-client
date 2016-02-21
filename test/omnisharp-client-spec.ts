@@ -3,7 +3,7 @@ import {expect} from "chai";
 import {Driver, DriverState} from "../lib/enums";
 import {resolve} from "path";
 import {ClientV2 as OmnisharpClient} from "../lib/clients/client-v2";
-import * as _ from "lodash";
+import _ from "lodash";
 import {Observable} from "rx";
 
 declare const xdescribe: Function;

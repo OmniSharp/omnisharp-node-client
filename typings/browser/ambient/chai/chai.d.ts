@@ -1,3 +1,5 @@
+// Compiled using typings@0.6.8
+// Source: https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/ac3a1f059f655059484d6aa5ba1f0f85908ae06c/chai/chai.d.ts
 // Type definitions for chai 2.0.0
 // Project: http://chaijs.com/
 // Definitions by: Jed Mao <https://github.com/jedmao/>,
@@ -297,7 +299,7 @@ declare module Chai {
     }
 }
 
-declare const chai: Chai.ChaiStatic;
+declare var chai: Chai.ChaiStatic;
 
 declare module "chai" {
     export = chai;

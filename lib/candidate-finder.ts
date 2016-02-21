@@ -1,4 +1,4 @@
-import * as _ from "lodash";
+import _ from "lodash";
 import {ILogger} from "./enums";
 import {join, dirname, sep, normalize} from "path";
 import {Observable, Scheduler, CompositeDisposable} from "rx";
@@ -58,7 +58,7 @@ export class Candidate {
 
 export const findCandidates = (function() {
     function realFindCandidates(location: string, logger: ILogger, options: Options = {}) {
-        location = _.trimRight(location, sep);
+        location = _.trimEnd(location, sep);
 
         const solutionFilesToSearch = options.solutionFilesToSearch || (options.solutionFilesToSearch = ["global.json", "*.sln"]);
         const projectFilesToSearch = options.projectFilesToSearch || (options.projectFilesToSearch = ["project.json", "*.csproj"]);
@@ -79,7 +79,7 @@ export const findCandidates = (function() {
 
         const sourceFiles = searchForCandidates(location, sourceFilesToSearch, [], logger);
 
-        const predicate = (path: string) => _.any(solutionFilesToSearch.concat(projectFilesToSearch), pattern => _.endsWith(path, _.trimLeft(pattern, "*")));
+        const predicate = (path: string) => _.some(solutionFilesToSearch.concat(projectFilesToSearch), pattern => _.endsWith(path, _.trimStart(pattern, "*")));
 
         return ifEmpty(baseFiles, sourceFiles)
             .map(file => new Candidate(file, predicate))
@@ -100,13 +100,13 @@ export const findCandidates = (function() {
 
 function squashCandidates(candidates: string[]) {
     const rootCandidateCount = getMinCandidate(candidates);
-    return _.unique(_.filter(_.map(candidates, normalize), z => z.split(sep).length === rootCandidateCount));
+    return _.uniq(_.filter(_.map(candidates, normalize), z => z.split(sep).length === rootCandidateCount));
 }
 
 function getMinCandidate(candidates: string[]) {
     if (!candidates.length) return -1;
 
-    return _.min(_.map(candidates, normalize), z => z.split(sep).length).split(sep).length;
+    return _.minBy(_.map(candidates, normalize), z => z.split(sep).length).split(sep).length;
 }
 
 function searchForCandidates(location: string, filesToSearch: string[], projectFilesToSearch: string[], logger: ILogger) {
@@ -145,10 +145,10 @@ function searchForCandidates(location: string, filesToSearch: string[], projectF
                         }
                     }
 
-                    if (_.any(x, file => _.endsWith(file, ".sln"))) {
+                    if (_.some(x, file => _.endsWith(file, ".sln"))) {
                         return x.filter(file => {
                             const content = readFileSync(file).toString();
-                            return _.any(projectFilesToSearch, path => content.indexOf(_.trimLeft(path, "*")) > -1);
+                            return _.some(projectFilesToSearch, path => content.indexOf(_.trimStart(path, "*")) > -1);
                         });
                     }
                     return x;
