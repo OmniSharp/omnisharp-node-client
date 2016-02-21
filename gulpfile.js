@@ -63,9 +63,7 @@ function tsTranspile() {
 
 function tsTranspiler(source, dest) {
     return source
-        .pipe(ctx.tslint({
-            configuration: require('./tslint.json')
-        }))
+        .pipe(ctx.tslint())
         .pipe(tsTranspile())
         .pipe(ctx.babel())
         .pipe(gulp.dest(dest))
