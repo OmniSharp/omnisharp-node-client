@@ -13,3 +13,4 @@ coreclr
 NuGet.exe
 vendor/omnisharp-roslyn/
 project.lock.json
+typings
