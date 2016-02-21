@@ -1,4 +1,4 @@
-import * as _ from "lodash";
+import _ from "lodash";
 import {OmnisharpClientOptions} from "./enums";
 
 export function ensureClientOptions(options: OmnisharpClientOptions) {
@@ -23,7 +23,7 @@ export function ensureClientOptions(options: OmnisharpClientOptions) {
     }
 }
 
-export function flattenArguments(obj: any, prefix = "") {
+export function flattenArguments<T extends { [index: string]: any; }>(obj: T, prefix = "") {
     const result: any[] = [];
     _.each(obj, (value, key) => {
         if (_.isObject(value)) {

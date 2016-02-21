@@ -1,6 +1,5 @@
 /// <reference path="./tsd.d.ts" />
 import {expect} from "chai";
-//import * as _ from "lodash";
 import {Runtime} from "../lib/enums";
 import {downloadRuntimeIfMissing, getRuntimeLocation} from "../lib/helpers/runtime";
 import {getPluginPath} from "../lib/helpers/plugin";
