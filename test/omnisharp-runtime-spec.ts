@@ -1,6 +1,5 @@
 /// <reference path="./tsd.d.ts" />
 import {expect} from "chai";
-//import * as _ from "lodash";
 import {findRuntimeById, downloadRuntime, supportedRuntime} from "../lib/helpers/runtime";
 import {Runtime} from "../lib/enums";
 import {resolve} from "path";

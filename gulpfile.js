@@ -127,7 +127,7 @@ gulp.task('sync-clients', [], function() {
             const name = line.indexOf(':');
             if (line && name > -1) {
                 properties.push({
-                    line: _.trimRight(line.substr(name), ';').replace('CombinationKey<', 'CombinationKey<').replace('Context<', 'Context<'),
+                    line: _.trimEnd(line.substr(name), ';').replace('CombinationKey<', 'CombinationKey<').replace('Context<', 'Context<'),
                     name: line.substr(0, name)
                 });
             }
@@ -143,7 +143,7 @@ gulp.task('sync-clients', [], function() {
             const name = line.indexOf(':');
             if (line && name > -1) {
                 aggregateProperties.push({
-                    line: _.trimRight(line.substr(name), ';').replace('CombinationKey<', 'CombinationKey<').replace('Context<', 'Context<'),
+                    line: _.trimEnd(line.substr(name), ';').replace('CombinationKey<', 'CombinationKey<').replace('Context<', 'Context<'),
                     name: line.substr(0, name)
                 });
             }

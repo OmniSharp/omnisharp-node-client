@@ -1,5 +1,5 @@
 import * as OmniSharp from "./omnisharp-server";
-import * as _ from "lodash";
+import _ from "lodash";
 import {Subject} from "rx";
 
 export function isNotNull(method: Function) {
