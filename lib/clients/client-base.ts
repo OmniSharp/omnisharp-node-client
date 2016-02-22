@@ -69,11 +69,11 @@ export class ClientBase<TEvents extends ClientEventsBase> implements IDriver, ID
     }
 
     public get status(): Observable<OmnisharpClientStatus> { return this._statusStream; }
-    public get requests(): Observable<RequestContext<any>> { return this._requestStream.asObservable(); }
+    public get requests(): Observable<RequestContext<any>> { return <Observable<RequestContext<any>>><any>this._requestStream; }
 
     private _enqueuedResponses: Observable<ResponseContext<any, any>>;
     public get responses(): Observable<ResponseContext<any, any>> { return this._enqueuedResponses; }
-    public get errors(): Observable<CommandContext<any>> { return this._errorStream.asObservable(); }
+    public get errors(): Observable<CommandContext<any>> { return <Observable<CommandContext<any>>><any>this._errorStream; }
 
     private _observe: TEvents;
     public get observe(): TEvents { return this._observe; }
@@ -92,7 +92,7 @@ export class ClientBase<TEvents extends ClientEventsBase> implements IDriver, ID
             }
         }));*/
 
-        this._enqueuedEvents = Observable.merge(this._customEvents.asObservable(), this._driver.events)
+        this._enqueuedEvents = Observable.merge(<Observable<OmniSharp.Stdio.Protocol.EventPacket>><any>this._customEvents, this._driver.events)
             .map(event => {
                 if (isObject(event.Body)) {
                     Object.freeze(event.Body);
@@ -101,7 +101,7 @@ export class ClientBase<TEvents extends ClientEventsBase> implements IDriver, ID
             });
 
         this._enqueuedResponses = Observable.merge(
-            this._responseStream.asObservable(),
+            <Observable<ResponseContext<any, any>>><any>this._responseStream,
             this._driver.commands
                 .map(packet => new ResponseContext(new RequestContext(this._uniqueId, packet.Command, {}, {}, "command"), packet.Body)));
 
@@ -119,8 +119,8 @@ export class ClientBase<TEvents extends ClientEventsBase> implements IDriver, ID
         this.setupObservers();
 
         const status = Observable.merge(
-            this._requestStream.asObservable(),
-            this._responseStream.asObservable());
+            <Observable<any>><any>this._requestStream,
+            <Observable<any>><any>this._responseStream);
 
         this._statusStream = status
             .delay(10)
@@ -157,8 +157,8 @@ export class ClientBase<TEvents extends ClientEventsBase> implements IDriver, ID
         const priorityRequests = new BehaviorSubject(0), priorityResponses = new BehaviorSubject(0);
 
         const pauser = Observable.combineLatest(
-            priorityRequests.asObservable(),
-            priorityResponses.asObservable(),
+            <Observable<number>><any>priorityRequests,
+            <Observable<number>><any>priorityResponses,
             (requests, responses) => {
                 if (requests > 0 && responses === requests) {
                     priorityRequests.next(0);
@@ -285,13 +285,13 @@ export class ClientBase<TEvents extends ClientEventsBase> implements IDriver, ID
                     this.request<TRequest, TResponse>(action, request, options).subscribe(x => response.next(x));
                 });
 
-            return response.asObservable();
+            return <Observable<TResponse>><any>response;
         }
 
         const context = new RequestContext(this._uniqueId, action, request, options);
         this._requestStream.next(context);
 
-        return context.getResponse<TResponse>(this._responseStream.asObservable());
+        return context.getResponse<TResponse>(<Observable<any>><any>this._responseStream);
     }
 
     private setupObservers() {

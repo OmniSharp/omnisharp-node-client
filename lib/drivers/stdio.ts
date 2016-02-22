@@ -100,13 +100,13 @@ export class StdioDriver implements IDriver {
     public get runtime() { return this._runtime; }
 
     private _commandStream = new Subject<OmniSharp.Stdio.Protocol.ResponsePacket>();
-    public get commands(): Observable<OmniSharp.Stdio.Protocol.ResponsePacket> { return this._commandStream.asObservable(); }
+    public get commands(): Observable<OmniSharp.Stdio.Protocol.ResponsePacket> { return <Observable<OmniSharp.Stdio.Protocol.ResponsePacket>><any>this._commandStream; }
 
     private _eventStream = new Subject<OmniSharp.Stdio.Protocol.EventPacket>();
-    public get events(): Observable<OmniSharp.Stdio.Protocol.EventPacket> { return this._eventStream.asObservable(); }
+    public get events(): Observable<OmniSharp.Stdio.Protocol.EventPacket> { return <Observable<OmniSharp.Stdio.Protocol.EventPacket>><any>this._eventStream; }
 
     private _connectionStream = new Subject<DriverState>();
-    public get state(): Observable<DriverState> { return this._connectionStream.asObservable(); }
+    public get state(): Observable<DriverState> { return <Observable<DriverState>><any>this._connectionStream; }
 
     public get outstandingRequests() { return this._outstandingRequests.size; }
 
