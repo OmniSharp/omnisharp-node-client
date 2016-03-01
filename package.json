@@ -58,6 +58,6 @@
     "ntypescript": "^1.201602202304.1",
     "through2": "^2.0.1",
     "tslint": "^3.4.0",
-    "typescript": "^1.7.5"
+    "typescript": "^1.8.5"
   }
 }
