@@ -30,8 +30,7 @@ describe("Omnisharp Runtime", function() {
             platform: process.platform
         }, console)
             .do(artifacts => {
-                expect(artifacts[0]).to.contain("omnisharp.bootstrap-");
-                expect(artifacts[1]).to.contain("omnisharp-");
+                expect(artifacts[0]).to.contain("omnisharp-");
             })
             .toPromise();
     });

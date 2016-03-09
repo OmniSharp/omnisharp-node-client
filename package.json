@@ -39,9 +39,9 @@
     "rx": "^4.0.8",
     "strip-bom": "^2.0.0",
     "tar": "^2.2.1",
-    "typings": "^0.6.8",
+    "typings": "^0.7.5",
     "unzip": "^0.1.11",
-    "yargs": "^3.32.0"
+    "yargs": "^4.2.0"
   },
   "devDependencies": {
     "babel-plugin-transform-es2015-modules-commonjs": "^6.5.2",
