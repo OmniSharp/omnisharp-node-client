@@ -1,23 +1,17 @@
 import {Observable, Scheduler} from "rx";
 import {resolve, join, delimiter} from "path";
 import * as fs from "fs";
-import {exec} from "child_process";
 import {ILogger, Runtime} from "../enums";
-import {startsWith, delay, bind, memoize} from "lodash";
-import {EOL} from "os";
+import {delay, bind, memoize} from "lodash";
 export type RUNTIME_CONTEXT = { runtime: Runtime, platform: string; arch: string; bootstrap?: boolean };
 
 const request: { get(url: string): NodeJS.ReadableStream; } = require("request");
 const serverVersion = require(resolve(__dirname, "../../package.json"))["omnisharp-roslyn"];
-const readdir = Observable.fromNodeCallback<string[]>(fs.readdir);
 const exists = Observable.fromCallback(fs.exists);
 const readFile = Observable.fromNodeCallback(fs.readFile);
 const defaultDest = resolve(__dirname, "../../");
-//const runtimes = resolve(defaultDest, "runtimes");
-const dnu = "bin/dnu" + (process.platform === "win32" ? ".cmd" : "");
 // Handle the case of homebrew mono
 const PATH: string[] = process.env.PATH.split(delimiter).concat(["/usr/local/bin", "/Library/Frameworks/Mono.framework/Commands"]);
-
 
 export const supportedRuntime = memoize(function(ctx: RUNTIME_CONTEXT) {
     return Observable.defer(() => {
@@ -48,7 +42,7 @@ function checkCurrentVersion(dest?: string, ctx?: RUNTIME_CONTEXT) {
 
     let filename: string;
     if (ctx) {
-        filename = join(defaultDest, getRuntimeName(ctx), ".version");
+        filename = join(defaultDest, getRuntimeId(ctx), ".version");
     } else {
         filename = join(dest, ".version");
     }
@@ -67,7 +61,7 @@ function ensureCurrentVersion(dest?: string, ctx?: RUNTIME_CONTEXT) {
     }
 
     if (ctx) {
-        dest = join(defaultDest, getRuntimeName(ctx));
+        dest = join(defaultDest, getRuntimeId(ctx));
     }
 
     return checkCurrentVersion(dest, ctx)
@@ -94,43 +88,54 @@ function ensureCurrentVersion(dest?: string, ctx?: RUNTIME_CONTEXT) {
 }
 
 export function getRuntimeId(ctx: RUNTIME_CONTEXT) {
-    return `dnx-${getIdKey(ctx)}`;
+    return `omnisharp-${getIdKey(ctx)}`;
 }
 
 function getIdKey(ctx: RUNTIME_CONTEXT) {
     if (ctx.platform !== "win32" && ctx.runtime === Runtime.ClrOrMono) {
-        return `mono`;
+        return `linux-mono`;
     }
-    return `${getRuntimeName(ctx)}-${getOsName(ctx)}-${getArch(ctx)}`;
+
+    let runtimeName = "dnxcore50";
+    if (ctx.runtime === Runtime.ClrOrMono) {
+        if (ctx.platform === "win32") {
+            runtimeName = "dnx451";
+        } else {
+            runtimeName = "mono";
+        }
+    }
+
+    return `${getOsName(ctx)}-${getArch(ctx)}-${runtimeName}`;
 }
 
-export function findRuntimeById(runtimeId: string, logger: ILogger, location: string): Observable<string> {
-    return readdir(location)
-        .flatMap(x => x)
-        .filter(x => startsWith(x, runtimeId))
-        .max()
-        .onErrorResumeNext(Observable.empty<number>())
-        .map(z => z.toString())
+export function findRuntimeById(runtimeId: string, location: string): Observable<string> {
+    return Observable.merge(
+            exists(resolve(location, runtimeId, "OmniSharp.exe")),
+            exists(resolve(location, runtimeId, "OmniSharp"))
+        )
+        .filter(x => x)
+        .take(1)
+        .map(x => resolve(location, runtimeId))
         .share();
 }
 
-export function findRuntime(ctx: RUNTIME_CONTEXT, logger: ILogger, location: string = resolve(defaultDest, getRuntimeName(ctx), "runtimes")) {
-    return findRuntimeById(getRuntimeId(ctx), logger, location);
+export function findRuntime(ctx: RUNTIME_CONTEXT, location: string = resolve(defaultDest)) {
+    return findRuntimeById(getRuntimeId(ctx), location);
 }
 
-export function downloadRuntime(ctx: RUNTIME_CONTEXT, logger: ILogger, dest = resolve(defaultDest, getRuntimeName(ctx))) {
+export function downloadRuntime(ctx: RUNTIME_CONTEXT, logger: ILogger, dest = resolve(defaultDest, getRuntimeId(ctx))) {
     return Observable.defer(() => Observable.concat(
-        downloadSpecificRuntime("omnisharp.bootstrap", ctx, logger, dest),
+        // downloadSpecificRuntime("omnisharp.bootstrap", ctx, logger, dest),
         downloadSpecificRuntime("omnisharp", ctx, logger, dest)
     ))
         .subscribeOn(Scheduler.async)
         .toArray();
 }
 
-export function downloadRuntimeIfMissing(ctx: RUNTIME_CONTEXT, logger: ILogger, dest: string = resolve(defaultDest, getRuntimeName(ctx))) {
+export function downloadRuntimeIfMissing(ctx: RUNTIME_CONTEXT, logger: ILogger, dest: string = resolve(defaultDest, getRuntimeId(ctx))) {
     return ensureCurrentVersion(dest, ctx)
         .flatMap((isCurrent) =>
-            findRuntime(ctx, logger).isEmpty())
+            findRuntime(ctx).isEmpty())
         .flatMap(empty => Observable.if(
             () => empty,
             downloadRuntime(ctx, logger)
@@ -138,7 +143,7 @@ export function downloadRuntimeIfMissing(ctx: RUNTIME_CONTEXT, logger: ILogger, 
 }
 
 function downloadSpecificRuntime(name: string, ctx: RUNTIME_CONTEXT, logger: ILogger, destination: string) {
-    const filename = `${name}-${getIdKey(ctx)}.${zipOrTar(ctx)}`;
+    const filename = `${name}-${getIdKey(ctx)}.${ctx.platform === "win32" ? "zip" : "tar.gz"}`;
     try {
         if (!fs.existsSync(destination))
             fs.mkdirSync(destination);
@@ -148,8 +153,8 @@ function downloadSpecificRuntime(name: string, ctx: RUNTIME_CONTEXT, logger: ILo
     const path = join(destination, filename);
 
     return Observable.defer(() => Observable.concat(
-        downloadFile(url, path, logger),
-        Observable.defer(() => extract(ctx.platform === "win32", fs.createReadStream(path), path, destination, logger))
+        downloadFile(url, path, logger).delay(100),
+        Observable.defer(() => extract(ctx.platform === "win32", path, destination, logger))
     )
         .tapOnCompleted(() => { try { fs.unlinkSync(path); } catch (e) { /* */ } })
         .subscribeOn(Scheduler.async))
@@ -169,76 +174,78 @@ function downloadFile(url: string, path: string, logger: ILogger) {
     });
 }
 
-function extract(win32: boolean, stream: NodeJS.ReadableStream, path: string, dest: string, logger: ILogger) {
+interface IDecompressOptions {
+    mode?: string;
+    strip?: number;
+}
+interface IDecompress {
+    new (options: IDecompressOptions): IDecompress;
+    src(fileOrFiles: string | Buffer | string[]): IDecompress;
+    dest(path: string): IDecompress;
+    use(plugin: any): IDecompress;
+    run(cb: Function): void;
+}
+interface IDecompressStatic {
+    new (options: IDecompressOptions): IDecompress;
+    tar(options: IDecompressOptions): any;
+    tarbz2(options: IDecompressOptions): any;
+    targz(options: IDecompressOptions): any;
+    zip(options: IDecompressOptions): any;
+}
+
+/* tslint:disable:variable-name */
+const Decompress: IDecompressStatic = require("decompress");
+/* tslint:enable:variable-name */
+
+function extract(win32: boolean, path: string, dest: string, logger: ILogger) {
     return Observable.create<void>((observer) => {
         logger.log(`Extracting ${path}`);
-        if (win32) {
-            stream = stream
-                .pipe(require("unzip").Extract({ path: dest }));
-        } else {
-            stream = stream
-                .pipe(require("zlib").createGunzip())
-                .pipe(require("tar").Extract({ path: dest }));
-        }
-
-        stream
-            .on("error", bind(observer.onError, observer))
-            .on("close", () => {
+        console.log(path, dest);
+        new Decompress({ mode: "755" })
+            .src(path)
+            .dest(dest)
+            .run((err: any, files: any) => {
+                if (err) {
+                    observer.onError(err);
+                    return;
+                }
                 logger.log(`Finished extracting ${path}`);
                 observer.onCompleted();
             });
     });
 }
 
-export function restore(target: string, ctx: RUNTIME_CONTEXT, logger: ILogger, location: string = resolve(defaultDest, getRuntimeName(ctx))) {
-    const runtimeId = getRuntimeId(ctx);
-    return readdir(location).flatMap(x => x)
-        .filter(x => startsWith(x, runtimeId)).max()
-        .map(x => join(location, x, dnu))
-        .flatMap(dnuPath =>
-            Observable.create<string>(observer => {
-                exec(`${dnuPath} restore`, function(error, stdout) {
-                    if (error) {
-                        observer.onError(error);
-                        return;
-                    }
-                    const results = stdout.toString().split(EOL);
-                    results.forEach(r => logger.log(r));
-                    observer.onNext(target);
-                    observer.onCompleted();
-                });
-            }))
-        .subscribeOn(Scheduler.async);
-}
-
 function getArch(ctx: RUNTIME_CONTEXT) {
     return ctx.arch === "x64" ? "x64" : "x86";
-}
-
-function getRuntimeName({runtime, platform}: RUNTIME_CONTEXT) {
-    if (platform === "win32")
-        return runtime === Runtime.ClrOrMono ? "clr" : "coreclr";
-    return runtime === Runtime.ClrOrMono ? "mono" : "coreclr";
 }
 
 function getOsName(ctx: RUNTIME_CONTEXT) {
     if (ctx.platform === "win32")
         return "win";
+    if (ctx.platform === "darwin")
+        return "osx";
     return ctx.platform;
-}
-
-function zipOrTar(ctx: RUNTIME_CONTEXT) {
-    return ctx.platform === "win32" ? "zip" : "tar.gz";
 }
 
 /* tslint:disable:no-string-literal */
 export function getRuntimeLocation(ctx: RUNTIME_CONTEXT) {
-    if (ctx.bootstrap) {
-        const bootstrap = process.platform === "win32" ? "omnisharp.bootstrap.cmd" : "omnisharp.bootstrap";
-        return <string>process.env["OMNISHARP_BOOTSTRAP"] || resolve(__dirname, "../../", getRuntimeName(ctx), bootstrap);
+    /*if (ctx.bootstrap) {
+        const bootstrap = process.platform === "win32" ? "OmniSharp.exe" : "omnisharp.bootstrap";
+        return <string>process.env["OMNISHARP_BOOTSTRAP"] || resolve(__dirname, "../../", getRuntimeId(ctx), bootstrap);
+    }*/
+
+    let path: string = process.env["OMNISHARP"];
+
+    if (!path) {
+        const omnisharp = process.platform === "win32" || ctx.runtime === Runtime.ClrOrMono ? "OmniSharp.exe" : "OmniSharp";
+        path = resolve(__dirname, "../../", getRuntimeId(ctx), omnisharp);
     }
-    const omnisharp = process.platform === "win32" ? "run.cmd" : "run";
-    return <string>process.env["OMNISHARP"] || resolve(__dirname, "../../", getRuntimeName(ctx), omnisharp);
+
+    if (process.platform !== "win32" && ctx.runtime === Runtime.ClrOrMono) {
+        return `mono ${path}`;
+    }
+
+    return path;
 }
 /* tslint:enable:no-string-literal */
 
