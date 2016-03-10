@@ -127,10 +127,10 @@ export class StdioDriver implements IDriver {
         const serverArguments: any[] = ["--stdio", "-s", this._projectPath, "--hostPID", process.pid].concat(this._additionalArguments || []);
 
         if (startsWith(path, "mono ")) {
-            serverArguments.unshift(path.substr(5))
+            serverArguments.unshift(path.substr(5));
             path = "mono";
         }
-        
+
         this._logger.log(`Arguments: ${serverArguments}`);
         this._process = spawn(path, serverArguments, { env });
 
