@@ -55,7 +55,7 @@
     "gulp-util": "^3.0.7",
     "merge-stream": "^1.0.0",
     "mocha": "^2.4.5",
-    "ntypescript": "^1.201602202304.1",
+    "ntypescript": "^1.201603170103.1",
     "through2": "^2.0.1",
     "tslint": "^3.4.0",
     "typescript": "^1.7.5"
