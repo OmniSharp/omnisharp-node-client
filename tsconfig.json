@@ -51,6 +51,7 @@
     "./lib/drivers/stdio.ts",
     "./lib/drivers/websocket.ts",
     "./lib/enums.ts",
+    "./lib/helpers/decompress.ts",
     "./lib/helpers/plugin-manager.ts",
     "./lib/helpers/plugin.ts",
     "./lib/helpers/prioritization.ts",

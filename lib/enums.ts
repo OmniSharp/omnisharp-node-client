@@ -43,6 +43,7 @@ export interface IDriverOptions {
     runtime?: Runtime;
     additionalArguments?: string[];
     plugins?: IOmnisharpPlugin[];
+    version?: string;
 }
 
 export interface IDriver extends Rx.IDisposable {

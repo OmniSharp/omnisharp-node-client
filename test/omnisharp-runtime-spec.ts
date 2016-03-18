@@ -1,6 +1,6 @@
 /// <reference path="./tsd.d.ts" />
 import {expect} from "chai";
-import {findRuntimeById, downloadRuntime, supportedRuntime} from "../lib/helpers/runtime";
+import {findRuntimeById, RuntimeContext, isSupportedRuntime} from "../lib/helpers/runtime";
 import {Runtime} from "../lib/enums";
 import {resolve} from "path";
 
@@ -22,13 +22,28 @@ describe("Omnisharp Runtime", function() {
             .toPromise();
     });
 
-    xit("should download the runtimes", function() {
+    it("should download the runtimes", function() {
         this.timeout(60000);
-        return downloadRuntime({
+        return new RuntimeContext({
             runtime: Runtime.ClrOrMono,
             arch: process.arch,
-            platform: process.platform
-        }, console)
+            platform: process.platform,
+            location: resolve(__dirname, "fixture/runtimes")
+        }).downloadRuntime()
+            .do(artifacts => {
+                expect(artifacts[0]).to.contain("omnisharp-");
+            })
+            .toPromise();
+    });
+
+    it("should download a specific runtime", function() {
+        this.timeout(60000);
+        return new RuntimeContext({
+            runtime: Runtime.ClrOrMono,
+            arch: process.arch,
+            platform: process.platform,
+            version: "v1.9-alpha1"
+        }).downloadRuntime()
             .do(artifacts => {
                 expect(artifacts[0]).to.contain("omnisharp-");
             })
@@ -36,11 +51,11 @@ describe("Omnisharp Runtime", function() {
     });
 
     it("should support coreclr in an environment specific way", function() {
-        return supportedRuntime({
+        return isSupportedRuntime(new RuntimeContext({
             runtime: Runtime.CoreClr,
             arch: process.arch,
             platform: process.platform
-        })
+        }))
             .toPromise()
             .then(({runtime, path}) => {
                 expect(runtime).to.be.equal(Runtime.CoreClr);
@@ -49,11 +64,11 @@ describe("Omnisharp Runtime", function() {
     });
 
     it("should support mono or the clr in an environment specific way", function() {
-        return supportedRuntime({
+        return isSupportedRuntime(new RuntimeContext({
             runtime: Runtime.ClrOrMono,
             arch: process.arch,
             platform: process.platform
-        })
+        }))
             .toPromise()
             .then(({runtime, path}) => {
                 if (process.platform === "win32") {
