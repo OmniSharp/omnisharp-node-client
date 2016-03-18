@@ -3,7 +3,7 @@ import {expect} from "chai";
 import {findRuntimeById, RuntimeContext, isSupportedRuntime} from "../lib/helpers/runtime";
 import {Runtime} from "../lib/enums";
 import {resolve} from "path";
-import {mkdirSync, rmdirSync} from "fs";
+import {mkdirSync} from "fs";
 
 describe("Omnisharp Runtime", function() {
     it("should get a runtime id", () => {

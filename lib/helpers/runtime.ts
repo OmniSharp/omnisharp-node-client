@@ -40,8 +40,9 @@ export class RuntimeContext {
             this._logger = console;
         }
 
-        assignWith(this, runtimeContext || {}, (obj, src, key) => {
-            this[`_${key}`] = obj || src;
+        const self = <any>this;
+        assignWith(self, runtimeContext || {}, (obj, src, key) => {
+            self[`_${key}`] = obj || src;
         });
 
         if (isNull(this._runtime) || isUndefined(this._runtime)) {
