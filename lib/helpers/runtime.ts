@@ -13,7 +13,6 @@ const defaultDest = resolve(__dirname, "../../");
 // Handle the case of homebrew mono
 const PATH: string[] = process.env.PATH.split(delimiter).concat(["/usr/local/bin", "/Library/Frameworks/Mono.framework/Commands"]);
 
-
 export interface IRuntimeContext {
     runtime: Runtime;
     platform: string;
@@ -54,22 +53,28 @@ export class RuntimeContext {
         }
 
         if (isNull(this._arch) || isUndefined(this._arch)) {
-            this._platform = process.arch;
+            this._arch = process.arch;
         }
 
         if (isNull(this._version) || isUndefined(this._version)) {
             this._version = defaultServerVersion;
         }
 
-        this._key = this._getIdKey();
-        this._os = this._getOsName();
         this._arch = this._arch === "x86" ? "x86" : "x64";
+
+        this._os = this._getOsName();
+        this._key = this._getIdKey();
         this._id = `omnisharp-${this._key}`;
-        this._location = this._getRuntimeLocation();
+
+        if (isNull(this._location) || isUndefined(this._location)) {
+            this._location = this._getRuntimeLocation();
+        }
 
         if (isNull(this._destination) || isUndefined(this._destination)) {
             this._destination = resolve(defaultDest, this._id);
         }
+
+        Object.freeze(this);
     }
 
     public get runtime() { return this._runtime; };

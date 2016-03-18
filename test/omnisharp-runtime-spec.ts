@@ -28,7 +28,7 @@ describe("Omnisharp Runtime", function() {
             runtime: Runtime.ClrOrMono,
             arch: process.arch,
             platform: process.platform,
-            location: resolve(__dirname, "fixture/runtimes")
+            destination: resolve(__dirname, "fixture/runtimes/default")
         }).downloadRuntime()
             .do(artifacts => {
                 expect(artifacts[0]).to.contain("omnisharp-");
@@ -42,7 +42,8 @@ describe("Omnisharp Runtime", function() {
             runtime: Runtime.ClrOrMono,
             arch: process.arch,
             platform: process.platform,
-            version: "v1.9-alpha1"
+            version: "v1.9-alpha1",
+            destination: resolve(__dirname, "../fixture/runtimes/specific")
         }).downloadRuntime()
             .do(artifacts => {
                 expect(artifacts[0]).to.contain("omnisharp-");
