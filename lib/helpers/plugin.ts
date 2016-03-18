@@ -1,7 +1,7 @@
 import {Observable} from "rx";
 import * as fs from "fs";
 import {exec} from "child_process";
-import {restore, RUNTIME_CONTEXT, getRuntimeLocation} from "./runtime";
+import {RUNTIME_CONTEXT, getRuntimeLocation} from "./runtime";
 import {join} from "path";
 import {IOmnisharpPlugin, ILogger} from "../enums";
 import {extend} from "lodash";
@@ -56,7 +56,7 @@ export function getPluginPath(solutionLocation: string, ctx: RUNTIME_CONTEXT, re
                     }
                     const location = stdout.toString().trim();
                     if (location)                     {
-                        restore(location, ctx, logger).subscribe(observer);
+                        // restore(location, ctx, logger).subscribe(observer);
                         return;
                     }
                     observer.onNext(getRuntimeLocation(ctx));
