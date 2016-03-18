@@ -6,7 +6,7 @@ import {resolve} from "path";
 
 describe("Omnisharp Runtime", function() {
     it("should get a runtime id", () => {
-        return findRuntimeById("dnx-coreclr-dos-x64", console, resolve(__dirname, "fixture/runtimes"))
+        return findRuntimeById("dnx-coreclr-dos-x64", resolve(__dirname, "fixture/runtimes"))
             .map(runtime => {
                 expect(runtime).to.be.equal("dnx-coreclr-dos-x64.1.0.0-rc2-16389");
             })
@@ -14,7 +14,7 @@ describe("Omnisharp Runtime", function() {
     });
 
     it("should return empty if no runtime", () => {
-        return findRuntimeById("dnx-coreclr-solaris-x64", console, resolve(__dirname, "fixture/runtimes"))
+        return findRuntimeById("dnx-coreclr-solaris-x64", resolve(__dirname, "fixture/runtimes"))
             .isEmpty()
             .map(empty => {
                 expect(empty).to.be.true;
@@ -30,8 +30,7 @@ describe("Omnisharp Runtime", function() {
             platform: process.platform
         }, console)
             .do(artifacts => {
-                expect(artifacts[0]).to.contain("omnisharp.bootstrap-");
-                expect(artifacts[1]).to.contain("omnisharp-");
+                expect(artifacts[0]).to.contain("omnisharp-");
             })
             .toPromise();
     });

@@ -1,6 +1,6 @@
 import * as OmniSharp from "../omnisharp-server";
 import {IDriver, IDriverOptions, ILogger, Runtime, IOmnisharpPlugin} from "../enums";
-import {defaults} from "lodash";
+import {defaults, startsWith} from "lodash";
 import {DriverState} from "../enums";
 import {spawn, ChildProcess} from "child_process";
 import * as readline from "readline";
@@ -116,14 +116,23 @@ export class StdioDriver implements IDriver {
         this._outstandingRequests.clear();
         this._connectionStream.onNext(DriverState.Connecting);
 
+        let path = this.serverPath;
+
         this._logger.log(`Connecting to child @ ${process.execPath}`);
-        this._logger.log(`Path to server: ${this.serverPath}`);
+        this._logger.log(`Path to server: ${path}`);
         this._logger.log(`Selected project: ${this._projectPath}`);
 
         env.PATH = this._PATH || env.PATH;
+
         const serverArguments: any[] = ["--stdio", "-s", this._projectPath, "--hostPID", process.pid].concat(this._additionalArguments || []);
+
+        if (startsWith(path, "mono ")) {
+            serverArguments.unshift(path.substr(5));
+            path = "mono";
+        }
+
         this._logger.log(`Arguments: ${serverArguments}`);
-        this._process = spawn(this.serverPath, serverArguments, { env });
+        this._process = spawn(path, serverArguments, { env });
 
         if (!this._process.pid) {
             this.serverErr("failed to connect to connect to server");

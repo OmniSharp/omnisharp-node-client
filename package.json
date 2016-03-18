@@ -2,7 +2,7 @@
   "name": "omnisharp-client",
   "description": "A node client for omnisharp-roslyn",
   "version": "3.3.6",
-  "omnisharp-roslyn": "v1.7.2.1",
+  "omnisharp-roslyn": "v1.9-alpha3",
   "bugs": {
     "url": "https://github.com/OmniSharp/omnisharp-node-client/issues"
   },
@@ -31,6 +31,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "decompress": "^3.0.0",
     "globby": "^4.0.0",
     "lodash": "^4.5.0",
     "md5": "^2.0.0",
@@ -38,10 +39,8 @@
     "rimraf": "^2.5.2",
     "rx": "^4.0.8",
     "strip-bom": "^2.0.0",
-    "tar": "^2.2.1",
-    "typings": "^0.6.8",
-    "unzip": "^0.1.11",
-    "yargs": "^3.32.0"
+    "typings": "^0.7.7",
+    "yargs": "^4.2.0"
   },
   "devDependencies": {
     "babel-plugin-transform-es2015-modules-commonjs": "^6.5.2",
@@ -55,7 +54,7 @@
     "gulp-util": "^3.0.7",
     "merge-stream": "^1.0.0",
     "mocha": "^2.4.5",
-    "ntypescript": "^1.201602202304.1",
+    "ntypescript": "^1.201603100105.1",
     "through2": "^2.0.1",
     "tslint": "^3.4.0",
     "typescript": "^1.7.5"

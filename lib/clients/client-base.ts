@@ -1,14 +1,15 @@
 import * as OmniSharp from "../omnisharp-server";
 import {Observable, Subject, AsyncSubject, BehaviorSubject, CompositeDisposable} from "rx";
 import {keys, isObject, uniqueId, each, defaults, cloneDeep} from "lodash";
-import {IDriver, IStaticDriver, OmnisharpClientStatus, OmnisharpClientOptions, IOmnisharpPlugin, isPluginDriver} from "../enums";
+import {IDriver, IStaticDriver, OmnisharpClientStatus, OmnisharpClientOptions} from "../enums";
+/*import {IOmnisharpPlugin, isPluginDriver} from "../enums";*/
 import {Driver, DriverState, Runtime} from "../enums";
 import {RequestContext, ResponseContext, CommandContext} from "../contexts";
 import {serverLineNumbers, serverLineNumberArrays} from "../response-handling";
 import {ensureClientOptions} from "../options";
 import {watchEvent, reference} from "../decorators";
 import {isPriorityCommand, isNormalCommand, isDeferredCommand} from "../helpers/prioritization";
-import {PluginManager} from "../helpers/plugin-manager";
+//import {PluginManager} from "../helpers/plugin-manager";
 
 export class ClientBase<TEvents extends ClientEventsBase> implements IDriver, Rx.IDisposable {
 
@@ -26,7 +27,7 @@ export class ClientBase<TEvents extends ClientEventsBase> implements IDriver, Rx
     private _eventWatchers = new Map<string, [Subject<CommandContext<any>>, Observable<CommandContext<any>>]>();
     private _commandWatchers = new Map<string, [Subject<ResponseContext<any, any>>, Observable<ResponseContext<any, any>>]>();
     private _disposable = new CompositeDisposable();
-    private _pluginManager: PluginManager;
+    //private _pluginManager: PluginManager;
 
     public get uniqueId() { return this._uniqueId; }
 
@@ -80,15 +81,15 @@ export class ClientBase<TEvents extends ClientEventsBase> implements IDriver, Rx
         _options.driver = _options.driver || Driver.Stdio;
         ensureClientOptions(_options);
 
-        this._pluginManager = new PluginManager(_options.plugins);
+        //this._pluginManager = new PluginManager(_options.plugins);
         this._resetDriver();
 
-        this._disposable.add(this._pluginManager.changed.subscribe(() => {
+        /*this._disposable.add(this._pluginManager.changed.subscribe(() => {
             const driver = this._driver;
             if (isPluginDriver(driver)) {
                 driver.updatePlugins(this._pluginManager.plugins);
             }
-        }));
+        }));*/
 
         this._enqueuedEvents = Observable.merge(this._customEvents, this._driver.events)
             .map(event => {
@@ -313,12 +314,13 @@ export class ClientBase<TEvents extends ClientEventsBase> implements IDriver, Rx
     }
     /* tslint:enable:no-unused-variable */
 
-    public addPlugin(plugin: IOmnisharpPlugin) {
+    /*public addPlugin(plugin: IOmnisharpPlugin) {
         this._pluginManager.add(plugin);
     }
+
     public removePlugin(plugin: IOmnisharpPlugin) {
         this._pluginManager.remove(plugin);
-    }
+    }*/
 }
 
 export class ClientEventsBase implements OmniSharp.Events {
