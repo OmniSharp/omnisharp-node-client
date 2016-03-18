@@ -62,3 +62,5 @@ before_install:
   - chmod 600 ~/.ssh/id_rsa
   - eval `ssh-agent -s`
   - ssh-add ~/.ssh/id_rsa
+notifications:
+  slack: omnisharp:U358j4McaEOIzFqXvGexVokC

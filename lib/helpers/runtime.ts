@@ -221,6 +221,7 @@ export class RuntimeContext {
                 .on("error", bind(observer.onError, observer))
                 .on("finish", () => {
                     this._logger.log(`Finished downloading ${path}`);
+                    observer.onNext(null);
                     observer.onCompleted();
                 });
         });

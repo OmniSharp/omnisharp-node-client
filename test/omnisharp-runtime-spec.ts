@@ -3,6 +3,7 @@ import {expect} from "chai";
 import {findRuntimeById, RuntimeContext, isSupportedRuntime} from "../lib/helpers/runtime";
 import {Runtime} from "../lib/enums";
 import {resolve} from "path";
+import {mkdirSync, rmdirSync} from "fs";
 
 describe("Omnisharp Runtime", function() {
     it("should get a runtime id", () => {
@@ -24,29 +25,37 @@ describe("Omnisharp Runtime", function() {
 
     it("should download the runtimes", function() {
         this.timeout(60000);
+        const dir = resolve(__dirname, "fixture/rtt/default/");
+        try { require("rimraf").sync(dir); } catch (e) { /* */ }
+        try { mkdirSync(resolve(__dirname, "fixture/rtt")); } catch (e) { /* */ }
+        try { mkdirSync(dir); } catch (e) { /* */ }
         return new RuntimeContext({
             runtime: Runtime.ClrOrMono,
             arch: process.arch,
             platform: process.platform,
-            destination: resolve(__dirname, "fixture/runtimes/default")
+            destination: dir
         }).downloadRuntime()
             .do(artifacts => {
-                expect(artifacts[0]).to.contain("omnisharp-");
+                expect(artifacts[0]).to.contain("omnisharp");
             })
             .toPromise();
     });
 
     it("should download a specific runtime", function() {
         this.timeout(60000);
+        const dir = resolve(__dirname, "fixture/rtt/specific/");
+        try { require("rimraf").sync(dir); } catch (e) { /* */ }
+        try { mkdirSync(resolve(__dirname, "fixture/rtt")); } catch (e) { /* */ }
+        try { mkdirSync(dir); } catch (e) { /* */ }
         return new RuntimeContext({
             runtime: Runtime.ClrOrMono,
             arch: process.arch,
             platform: process.platform,
             version: "v1.9-alpha1",
-            destination: resolve(__dirname, "../fixture/runtimes/specific")
+            destination: dir
         }).downloadRuntime()
             .do(artifacts => {
-                expect(artifacts[0]).to.contain("omnisharp-");
+                expect(artifacts[0]).to.contain("omnisharp");
             })
             .toPromise();
     });
