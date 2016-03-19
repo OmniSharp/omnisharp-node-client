@@ -1,17 +1,16 @@
 import {Observable} from "rx";
 import * as fs from "fs";
 import {exec} from "child_process";
-import {RUNTIME_CONTEXT, getRuntimeLocation} from "./runtime";
+import {RuntimeContext} from "./runtime";
 import {join} from "path";
 import {IOmnisharpPlugin, ILogger} from "../enums";
-import {extend} from "lodash";
 
 const bootstrappedPlugins = new Map<string, string>();
 const exists = Observable.fromCallback(fs.exists),
     readFile: (file: string) => Observable<any> = Observable.fromNodeCallback(fs.readFile);
 const md5: (value: any) => string = require("md5");
 
-export function getPluginPath(solutionLocation: string, ctx: RUNTIME_CONTEXT, requestedPlugins: IOmnisharpPlugin[], logger: ILogger) {
+export function getPluginPath(solutionLocation: string, ctx: RuntimeContext, requestedPlugins: IOmnisharpPlugin[], logger: ILogger) {
     const plugins: any[] = [];
     const hashStrings: any[] = [];
     let hash: string;
@@ -38,7 +37,7 @@ export function getPluginPath(solutionLocation: string, ctx: RUNTIME_CONTEXT, re
                     return;
                 }
 
-                const command = [getRuntimeLocation(<typeof ctx>extend({}, ctx, { bootstrap: true })), "-s", solutionLocation].concat(
+                const command = [ctx.location, "-s", solutionLocation].concat(
                     plugins.map(x => {
                         if (x.location) {
                             return `--plugins ${x.location}`;
@@ -59,12 +58,12 @@ export function getPluginPath(solutionLocation: string, ctx: RUNTIME_CONTEXT, re
                         // restore(location, ctx, logger).subscribe(observer);
                         return;
                     }
-                    observer.onNext(getRuntimeLocation(ctx));
+                    observer.onNext(ctx.location);
                     observer.onCompleted();
                 });
             });
     })
-        .map(path => path && path || getRuntimeLocation(ctx))
+        .map(path => path && path || ctx.location)
         .do(result => {
             if (!bootstrappedPlugins.has(hash))
                 bootstrappedPlugins.set(hash, result);

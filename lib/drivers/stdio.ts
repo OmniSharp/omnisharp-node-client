@@ -5,7 +5,7 @@ import {DriverState} from "../enums";
 import {spawn, ChildProcess} from "child_process";
 import * as readline from "readline";
 import {Observable, Subject, AsyncSubject, CompositeDisposable, Disposable} from "rx";
-import {downloadRuntimeIfMissing, supportedRuntime, getRuntimeLocation} from "../helpers/runtime";
+import {RuntimeContext, isSupportedRuntime} from "../helpers/runtime";
 
 let env: any = defaults({ ATOM_SHELL_INTERNAL_RUN_AS_NODE: "1" }, process.env);
 
@@ -23,14 +23,16 @@ export class StdioDriver implements IDriver {
     private _logger: ILogger;
     private _timeout: number;
     private _runtime: Runtime;
+    private _version: string;
     private _PATH: string;
+    private _runtimeContext: RuntimeContext;
     public id: string;
 
     private _currentState: DriverState = DriverState.Disconnected;
     public get currentState() { return this._currentState; }
     public set currentState(value) { this._currentState = value; }
 
-    constructor({projectPath, serverPath, findProject, logger, timeout, additionalArguments, runtime, plugins}: IDriverOptions) {
+    constructor({projectPath, serverPath, findProject, logger, timeout, additionalArguments, runtime, plugins, version}: IDriverOptions) {
         this._projectPath = projectPath;
         this._findProject = findProject || false;
         this._connectionStream.subscribe(state => this.currentState = state);
@@ -40,6 +42,9 @@ export class StdioDriver implements IDriver {
         this._runtime = runtime || Runtime.ClrOrMono;
         this._additionalArguments = additionalArguments;
         this._plugins = plugins;
+        this._version = version;
+
+        this._runtimeContext = this._getRuntimeContext();
 
         this._disposable.add(Disposable.create(() => {
             if (this._process) {
@@ -64,25 +69,26 @@ export class StdioDriver implements IDriver {
         }));
     }
 
+    private _getRuntimeContext() {
+        return new RuntimeContext({
+            runtime: this.runtime,
+            platform: process.platform,
+            arch: process.arch,
+            version: this._version || undefined
+        }, this._logger);
+    }
+
     public dispose() {
         if (this._disposable.isDisposed) return;
         this.disconnect();
         this._disposable.dispose();
     }
 
-    private _getRuntimeContext() {
-        return {
-            runtime: this.runtime,
-            platform: process.platform,
-            arch: process.arch
-        };
-    }
-
     public get serverPath() {
         if (this._serverPath) {
             return this._serverPath;
         }
-        return getRuntimeLocation(this._getRuntimeContext());
+        return this._runtimeContext.location;
     }
     public get projectPath() { return this._projectPath; }
     public get runtime() { return this._runtime; }
@@ -158,14 +164,15 @@ export class StdioDriver implements IDriver {
 
     private _ensureRuntimeExists() {
         this._connectionStream.onNext(DriverState.Downloading);
-        return Observable.fromPromise(supportedRuntime(this._getRuntimeContext())
+        return Observable.fromPromise(isSupportedRuntime(this._runtimeContext)
             .do((ctx) => {
                 this._runtime = ctx.runtime;
                 this._PATH = ctx.path;
+                this._runtimeContext = this._getRuntimeContext();
             })
             .toPromise()
             .then((runtime) =>
-                downloadRuntimeIfMissing(this._getRuntimeContext(), this._logger)
+                this._runtimeContext.downloadRuntimeIfMissing()
                     .tapOnCompleted(() => {
                         this._connectionStream.onNext(DriverState.Downloaded);
                     })

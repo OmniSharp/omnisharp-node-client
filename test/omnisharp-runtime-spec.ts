@@ -1,8 +1,9 @@
 /// <reference path="./tsd.d.ts" />
 import {expect} from "chai";
-import {findRuntimeById, downloadRuntime, supportedRuntime} from "../lib/helpers/runtime";
+import {findRuntimeById, RuntimeContext, isSupportedRuntime} from "../lib/helpers/runtime";
 import {Runtime} from "../lib/enums";
 import {resolve} from "path";
+import {mkdirSync} from "fs";
 
 describe("Omnisharp Runtime", function() {
     it("should get a runtime id", () => {
@@ -22,25 +23,49 @@ describe("Omnisharp Runtime", function() {
             .toPromise();
     });
 
-    xit("should download the runtimes", function() {
+    it("should download the runtimes", function() {
         this.timeout(60000);
-        return downloadRuntime({
+        const dir = resolve(__dirname, "fixture/rtt/default/");
+        try { require("rimraf").sync(dir); } catch (e) { /* */ }
+        try { mkdirSync(resolve(__dirname, "fixture/rtt")); } catch (e) { /* */ }
+        try { mkdirSync(dir); } catch (e) { /* */ }
+        return new RuntimeContext({
             runtime: Runtime.ClrOrMono,
             arch: process.arch,
-            platform: process.platform
-        }, console)
+            platform: process.platform,
+            destination: dir
+        }).downloadRuntime()
             .do(artifacts => {
-                expect(artifacts[0]).to.contain("omnisharp-");
+                expect(artifacts[0]).to.contain("omnisharp");
+            })
+            .toPromise();
+    });
+
+    it("should download a specific runtime", function() {
+        this.timeout(60000);
+        const dir = resolve(__dirname, "fixture/rtt/specific/");
+        try { require("rimraf").sync(dir); } catch (e) { /* */ }
+        try { mkdirSync(resolve(__dirname, "fixture/rtt")); } catch (e) { /* */ }
+        try { mkdirSync(dir); } catch (e) { /* */ }
+        return new RuntimeContext({
+            runtime: Runtime.ClrOrMono,
+            arch: process.arch,
+            platform: process.platform,
+            version: "v1.9-alpha1",
+            destination: dir
+        }).downloadRuntime()
+            .do(artifacts => {
+                expect(artifacts[0]).to.contain("omnisharp");
             })
             .toPromise();
     });
 
     it("should support coreclr in an environment specific way", function() {
-        return supportedRuntime({
+        return isSupportedRuntime(new RuntimeContext({
             runtime: Runtime.CoreClr,
             arch: process.arch,
             platform: process.platform
-        })
+        }))
             .toPromise()
             .then(({runtime, path}) => {
                 expect(runtime).to.be.equal(Runtime.CoreClr);
@@ -49,11 +74,11 @@ describe("Omnisharp Runtime", function() {
     });
 
     it("should support mono or the clr in an environment specific way", function() {
-        return supportedRuntime({
+        return isSupportedRuntime(new RuntimeContext({
             runtime: Runtime.ClrOrMono,
             arch: process.arch,
             platform: process.platform
-        })
+        }))
             .toPromise()
             .then(({runtime, path}) => {
                 if (process.platform === "win32") {
