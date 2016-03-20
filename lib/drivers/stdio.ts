@@ -2,10 +2,15 @@ import * as OmniSharp from "../omnisharp-server";
 import {IDriver, IDriverOptions, ILogger, Runtime, IOmnisharpPlugin} from "../enums";
 import {defaults, startsWith} from "lodash";
 import {DriverState} from "../enums";
-import {spawn, ChildProcess} from "child_process";
+import cp, {ChildProcess} from "child_process";
 import * as readline from "readline";
 import {Observable, Subject, AsyncSubject, CompositeDisposable, Disposable} from "rx";
 import {RuntimeContext, isSupportedRuntime} from "../helpers/runtime";
+
+let spawn = cp.spawn;
+if (process.platform === "win32") {
+    spawn = require("../windows/super-spawn").spawn;
+}
 
 let env: any = defaults({ ATOM_SHELL_INTERNAL_RUN_AS_NODE: "1" }, process.env);
 
