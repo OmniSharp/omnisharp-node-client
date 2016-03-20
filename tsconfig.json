@@ -61,6 +61,7 @@
     "./lib/options.ts",
     "./lib/response-handling.ts",
     "./lib/stdio/child.ts",
+    "./lib/windows/super-spawn.ts",
     "./test/candidate-find-spec.ts",
     "./test/omnisharp-client-commands-v2.ts",
     "./test/omnisharp-client-commands.ts",
