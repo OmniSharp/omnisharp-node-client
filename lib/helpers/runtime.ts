@@ -2,7 +2,7 @@ import {Observable, Scheduler} from "rx";
 import {resolve, join, delimiter} from "path";
 import * as fs from "fs";
 import {ILogger, Runtime} from "../enums";
-import {delay, bind, memoize, assignWith, isNull, isUndefined} from "lodash";
+import {find, delay, bind, memoize, assignWith, isNull, isUndefined, toLower} from "lodash";
 import {Decompress} from "./decompress";
 
 const request: { get(url: string): NodeJS.ReadableStream; } = require("request");
@@ -10,8 +10,9 @@ const defaultServerVersion = require(resolve(__dirname, "../../package.json"))["
 const exists = Observable.fromCallback(fs.exists);
 const readFile = Observable.fromNodeCallback(fs.readFile);
 const defaultDest = resolve(__dirname, "../../");
+
 // Handle the case of homebrew mono
-const PATH: string[] = process.env.PATH.split(delimiter).concat(["/usr/local/bin", "/Library/Frameworks/Mono.framework/Commands"]);
+const PATH: string[] = find<string>(process.env, (v, key) => toLower(key) === "path").split(delimiter).concat(["/usr/local/bin", "/Library/Frameworks/Mono.framework/Commands"]);
 
 export interface IRuntimeContext {
     runtime: Runtime;
