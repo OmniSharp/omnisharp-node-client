@@ -10,7 +10,7 @@ const merge = require('merge-stream');
 
 // Lazy so we don't load these when we don't need them.
 const ctx = {
-    get ts() { return require('ntypescript'); },
+    get ts() { return require('typescript'); },
     get tslint() { return require("gulp-tslint"); },
     get babel() { return require("gulp-babel"); },
     get through() { return require('through2'); },
