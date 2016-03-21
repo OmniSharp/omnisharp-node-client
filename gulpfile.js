@@ -10,7 +10,7 @@ const merge = require('merge-stream');
 
 // Lazy so we don't load these when we don't need them.
 const ctx = {
-    get ts() { return require('ntypescript'); },
+    get ts() { return require('typescript'); },
     get tslint() { return require("gulp-tslint"); },
     get babel() { return require("gulp-babel"); },
     get through() { return require('through2'); },
@@ -73,7 +73,7 @@ function tsTranspiler(source, dest) {
 gulp.task('typescript', ['sync-clients','clean'], function() {
     var args = ['--declaration', '-p', path.resolve(__dirname.toString())];
     var compile = new Promise(function(resolve, reject) {
-        var tsc = spawn(path.resolve(__dirname + '/node_modules/.bin/ntsc' + (win32 && '.cmd' || '')), args);
+        var tsc = spawn(path.resolve(__dirname + '/node_modules/.bin/tsc' + (win32 && '.cmd' || '')), args);
         tsc.stdout.pipe(process.stdout);
         tsc.stderr.pipe(process.stderr);
         tsc.on('close', function(code) {
