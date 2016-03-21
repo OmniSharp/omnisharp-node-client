@@ -34,36 +34,37 @@ export function getPluginPath(solutionLocation: string, ctx: RuntimeContext, req
                 complete: () => {
                     hash = md5(JSON.stringify(plugins.concat(hashStrings)));
 
-                if (bootstrappedPlugins.has(hash)) {
-                    observer.next(bootstrappedPlugins.get(hash));
-                    observer.complete();
-                    return;
-                }
+                    if (bootstrappedPlugins.has(hash)) {
+                        observer.next(bootstrappedPlugins.get(hash));
+                        observer.complete();
+                        return;
+                    }
 
-                const command = [ctx.location, "-s", solutionLocation].concat(
-                    plugins.map(x => {
-                        if (x.location) {
-                            return `--plugins ${x.location}`;
-                        } else if (x.version) {
-                            return `--plugin-name ${x.name}@${x.version}`;
-                        } else {
-                            return `--plugin-name ${x.name}`;
+                    const command = [ctx.location, "-s", solutionLocation].concat(
+                        plugins.map(x => {
+                            if (x.location) {
+                                return `--plugins ${x.location}`;
+                            } else if (x.version) {
+                                return `--plugin-name ${x.name}@${x.version}`;
+                            } else {
+                                return `--plugin-name ${x.name}`;
+                            }
+                        })).join(" ");
+
+                    exec(command, function(error, stdout) {
+                        if (error) {
+                            observer.error(error);
+                            return;
                         }
-                    })).join(" ");
-
-                exec(command, function(error, stdout) {
-                    if (error) {
-                        observer.onError(error);
-                        return;
-                    }
-                    const location = stdout.toString().trim();
-                    if (location)                     {
-                        // restore(location, ctx, logger).subscribe(observer);
-                        return;
-                    }
-                    observer.next(ctx.location);
-                    observer.complete();
-                });
+                        const location = stdout.toString().trim();
+                        if (location)                     {
+                            // restore(location, ctx, logger).subscribe(observer);
+                            return;
+                        }
+                        observer.next(ctx.location);
+                        observer.complete();
+                    });
+                }
             });
     })
         .map(path => path && path || ctx.location)

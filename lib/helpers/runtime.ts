@@ -145,7 +145,7 @@ export class RuntimeContext {
             .flatMap(ex => Observable.if(
                 () => ex,
                 Observable.defer(() => readFile(filename).map(content => content.toString().trim() === this._version)),
-                Observable.just(false)
+                Observable.of(false)
             ));
     }
 
@@ -155,23 +155,23 @@ export class RuntimeContext {
         return this._checkCurrentVersion()
             .flatMap(isCurrent => Observable.if(
                 () => !isCurrent,
-                Observable.defer(() => Observable.create<any>(observer => {
+                Observable.defer(() => createObservable(observer => {
                     dest = dest || defaultDest;
                     require("rimraf")(dest, (err: any) => {
-                        if (err) { observer.onError(err); return; }
+                        if (err) { observer.error(err); return; }
 
                         delay(() =>
                             fs.mkdir(dest, (er) => {
                                 //if (er) { observer.onError(er); return; }
                                 fs.writeFile(join(dest, ".version"), this._version, (e) => {
-                                    if (e) { observer.onError(e); return; }
-                                    observer.onNext(isCurrent);
-                                    observer.onCompleted();
+                                    if (e) { observer.error(e); return; }
+                                    observer.next(isCurrent);
+                                    observer.complete();
                                 });
                             }), 500);
                     });
                 })),
-                Observable.just(isCurrent)
+                Observable.of(isCurrent)
             ));
     }
 
@@ -213,27 +213,27 @@ export class RuntimeContext {
             this.downloadFile(url, path).delay(100),
             Observable.defer(() => this._extract(this._platform === "win32", path, destination))
         )
-            .tapOnCompleted(() => { try { fs.unlinkSync(path); } catch (e) { /* */ } })
+            .do({ complete: () => { try { fs.unlinkSync(path); } catch (e) { /* */ } } })
             .subscribeOn(Scheduler.async))
             .map(() => name);
     }
 
     public downloadFile(url: string, path: string) {
         this._logger.log(`Downloading ${path}`);
-        return Observable.create<void>((observer) => {
+        return createObservable<void>((observer) => {
             request.get(url)
                 .pipe(fs.createWriteStream(path))
-                .on("error", bind(observer.onError, observer))
+                .on("error", bind(observer.error, observer))
                 .on("finish", () => {
                     this._logger.log(`Finished downloading ${path}`);
-                    observer.onNext(null);
-                    observer.onCompleted();
+                    observer.next(null);
+                    observer.complete();
                 });
         });
     }
 
     private _extract(win32: boolean, path: string, dest: string) {
-        return Observable.create<void>((observer) => {
+        return createObservable<void>((observer) => {
             this._logger.log(`Extracting ${path}`);
             console.log(path, dest);
             new Decompress({ mode: "755" })
@@ -241,11 +241,11 @@ export class RuntimeContext {
                 .dest(dest)
                 .run((err: any, files: any) => {
                     if (err) {
-                        observer.onError(err);
+                        observer.error(err);
                         return;
                     }
                     this._logger.log(`Finished extracting ${path}`);
-                    observer.onCompleted();
+                    observer.complete();
                 });
         });
     }
@@ -256,7 +256,7 @@ export const isSupportedRuntime = memoize(function(ctx: RuntimeContext) {
         // On windows we'll just use the clr, it's there
         // On mac / linux if we've picked CoreClr stick with that
         if (ctx.platform === "win32" || ctx.runtime === Runtime.CoreClr) {
-            return Observable.just({ runtime: ctx.runtime, path: process.env.PATH });
+            return Observable.of({ runtime: ctx.runtime, path: process.env.PATH });
         }
 
         // We need to check if mono exists on the system
@@ -264,13 +264,13 @@ export const isSupportedRuntime = memoize(function(ctx: RuntimeContext) {
         return Observable.from(<string[]>PATH)
             .map(path => join(path, "mono"))
             .concatMap(path => exists(path).map(e => ({ exists: e, path })))
-            .where(x => x.exists)
+            .filter(x => x.exists)
             .map(x => ({ runtime: Runtime.ClrOrMono, path: [x.path].concat(PATH).join(delimiter) }))
             .take(1)
             .defaultIfEmpty({ runtime: Runtime.CoreClr, path: process.env.PATH });
     })
         .do(ct => console.log(`Supported runtime for "${Runtime[ct.runtime]}" was: ${Runtime[ct.runtime]}`))
-        .shareReplay(1);
+        .cache(1);
 }, function({platform, arch, runtime, version}: RuntimeContext) { return `${arch}-${platform}:${Runtime[runtime]}:${version}`; });
 
 export function findRuntimeById(runtimeId: string, location: string): Observable<string> {

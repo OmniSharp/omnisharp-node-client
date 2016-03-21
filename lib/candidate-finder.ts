@@ -78,7 +78,7 @@ export const findCandidates = (function() {
             .toArray();
 
         const baseFiles = Observable.concat(solutionsOrProjects, independentSourceFiles)
-            .flatMap(x => Observable.from(x));
+            .flatMap(x => x);
 
         const sourceFiles = searchForCandidates(location, sourceFilesToSearch, [], logger);
 
@@ -129,7 +129,7 @@ function searchForCandidates(location: string, filesToSearch: string[], projectF
         .flatMap(function({loc, files}) {
             logger.log(`Omni Project Candidates: Searching ${loc} for ${filesToSearch}`);
 
-            return Observable.from(files)
+            return Observable.from<string>(files)
                 .flatMap(file => glob([file], { cache: {} }))
                 .map(x => {
                     if (x.length > 1) {
@@ -160,7 +160,7 @@ function searchForCandidates(location: string, filesToSearch: string[], projectF
         .filter(z => z.length > 0)
         .defaultIfEmpty([])
         .first()
-        .flatMap(z => Observable.from(z));
+        .flatMap(z => z);
 
     return rootObservable;
 }
