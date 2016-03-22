@@ -4,7 +4,6 @@ import {exec} from "child_process";
 import {RuntimeContext} from "./runtime";
 import {join} from "path";
 import {IOmnisharpPlugin, ILogger} from "../enums";
-import {extend} from "lodash";
 import {createObservable} from "../operators/create";
 
 const bootstrappedPlugins = new Map<string, string>();

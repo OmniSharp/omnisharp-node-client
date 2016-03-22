@@ -7,6 +7,7 @@ import {Decompress} from "./decompress";
 import {createObservable} from "../operators/create";
 import "rxjs/add/operator/max";
 import "rxjs/add/operator/isEmpty";
+require("rxjs/add/observable/if");
 
 const request: { get(url: string): NodeJS.ReadableStream; } = require("request");
 const defaultServerVersion = require(resolve(__dirname, "../../package.json"))["omnisharp-roslyn"];
