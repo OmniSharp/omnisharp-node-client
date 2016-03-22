@@ -1,4 +1,5 @@
-import {ReplaySubject, Observable, CompositeDisposable, Disposable} from "rx";
+import {ReplaySubject, Observable} from "rxjs";
+import {CompositeDisposable, Disposable, IDisposable} from "../disposables";
 import _ from "lodash";
 import {DriverState} from "../enums";
 import {OmnisharpClientStatus} from "../enums";
@@ -6,7 +7,7 @@ import {RequestContext, ResponseContext, CommandContext} from "../contexts";
 import {merge, aggregate} from "../decorators";
 import * as OmniSharp from "../omnisharp-server";
 
-export class ObservationClientBase<Client> implements OmniSharp.Events, Rx.IDisposable {
+export class ObservationClientBase<Client> implements OmniSharp.Events, IDisposable {
     protected _disposable = new CompositeDisposable();
     private _clientDisposable = new CompositeDisposable();
     protected _clientsSubject = new ReplaySubject<Client[]>(1);
@@ -20,16 +21,16 @@ export class ObservationClientBase<Client> implements OmniSharp.Events, Rx.IDisp
     @merge public get packageRestoreFinished(): Observable<OmniSharp.Models.PackageRestoreMessage> { throw new Error("Implemented by decorator"); }
     @merge public get unresolvedDependencies(): Observable<OmniSharp.Models.UnresolvedDependenciesMessage> { throw new Error("Implemented by decorator"); }
 
-    @merge public get events(): Rx.Observable<OmniSharp.Stdio.Protocol.EventPacket> { throw new Error("Implemented by decorator"); }
-    @merge public get commands(): Rx.Observable<OmniSharp.Stdio.Protocol.ResponsePacket> { throw new Error("Implemented by decorator"); }
-    @merge public get state(): Rx.Observable<DriverState> { throw new Error("Implemented by decorator"); }
-    @merge public get status(): Rx.Observable<OmnisharpClientStatus> { throw new Error("Implemented by decorator"); }
-    @merge public get requests(): Rx.Observable<RequestContext<any>> { throw new Error("Implemented by decorator"); }
-    @merge public get responses(): Rx.Observable<ResponseContext<any, any>> { throw new Error("Implemented by decorator"); }
-    @merge public get errors(): Rx.Observable<CommandContext<any>> { throw new Error("Implemented by decorator"); }
+    @merge public get events(): Observable<OmniSharp.Stdio.Protocol.EventPacket> { throw new Error("Implemented by decorator"); }
+    @merge public get commands(): Observable<OmniSharp.Stdio.Protocol.ResponsePacket> { throw new Error("Implemented by decorator"); }
+    @merge public get state(): Observable<DriverState> { throw new Error("Implemented by decorator"); }
+    @merge public get status(): Observable<OmnisharpClientStatus> { throw new Error("Implemented by decorator"); }
+    @merge public get requests(): Observable<RequestContext<any>> { throw new Error("Implemented by decorator"); }
+    @merge public get responses(): Observable<ResponseContext<any, any>> { throw new Error("Implemented by decorator"); }
+    @merge public get errors(): Observable<CommandContext<any>> { throw new Error("Implemented by decorator"); }
 
     constructor(private clients: Client[] = []) {
-        this.onNext();
+        this.next();
         this._disposable.add(this._clientDisposable);
     }
 
@@ -39,28 +40,28 @@ export class ObservationClientBase<Client> implements OmniSharp.Events, Rx.IDisp
     }
 
     protected makeMergeObserable = <T>(selector: (client: Client) => Observable<T>) => {
-        return this._clientsSubject.flatMapLatest(clients => Observable.merge<T>(...clients.map(selector))).share();
+        return this._clientsSubject.switchMap(clients => Observable.merge<T>(...clients.map(selector))).share();
     };
 
     public observe<T>(selector: (client: Client) => Observable<T>) {
         return this.makeMergeObserable(selector);
     }
 
-    private onNext = () => this._clientsSubject.onNext(this.clients.slice());
+    private next = () => this._clientsSubject.next(this.clients.slice());
 
     public add(client: Client) {
         this.clients.push(client);
-        this.onNext();
+        this.next();
         const d = Disposable.create(() => {
             _.pull(this.clients, client);
-            this.onNext();
+            this.next();
         });
         this._clientDisposable.add(d);
         return d;
     }
 }
 
-export class CombinationClientBase<Client extends { uniqueId: string; }> implements OmniSharp.Aggregate.Events, Rx.IDisposable {
+export class CombinationClientBase<Client extends { uniqueId: string; }> implements OmniSharp.Aggregate.Events, IDisposable {
     protected _disposable = new CompositeDisposable();
     private _clientDisposable = new CompositeDisposable();
     public _clientsSubject = new ReplaySubject<Client[]>(1);
@@ -74,11 +75,11 @@ export class CombinationClientBase<Client extends { uniqueId: string; }> impleme
     @aggregate public get packageRestoreFinished(): Observable<OmniSharp.CombinationKey<OmniSharp.Models.PackageRestoreMessage>[]> { throw new Error("Implemented by decorator"); }
     @aggregate public get unresolvedDependencies(): Observable<OmniSharp.CombinationKey<OmniSharp.Models.UnresolvedDependenciesMessage>[]> { throw new Error("Implemented by decorator"); }
 
-    @aggregate public get state(): Rx.Observable<OmniSharp.CombinationKey<DriverState>[]> { throw new Error("Implemented by decorator"); }
-    @aggregate public get status(): Rx.Observable<OmniSharp.CombinationKey<OmnisharpClientStatus>[]> { throw new Error("Implemented by decorator"); }
+    @aggregate public get state(): Observable<OmniSharp.CombinationKey<DriverState>[]> { throw new Error("Implemented by decorator"); }
+    @aggregate public get status(): Observable<OmniSharp.CombinationKey<OmnisharpClientStatus>[]> { throw new Error("Implemented by decorator"); }
 
     constructor(private clients: Client[] = []) {
-        this.onNext();
+        this.next();
         this._disposable.add(this._clientDisposable);
     }
 
@@ -94,7 +95,7 @@ export class CombinationClientBase<Client extends { uniqueId: string; }> impleme
         const cache: { [key: string]: T } = {};
 
         /* tslint:disable:no-string-literal */
-        return this._clientsSubject.flatMapLatest(clients => {
+        return this._clientsSubject.switchMap(clients => {
             // clean up after ourselves.
             const removal = _.difference(_.keys(cache), clients.map(z => z.uniqueId));
             _.each(removal, z => delete cache[z]);
@@ -120,14 +121,14 @@ export class CombinationClientBase<Client extends { uniqueId: string; }> impleme
         return this.makeAggregateObserable(selector);
     }
 
-    private onNext = () => this._clientsSubject.onNext(this.clients.slice());
+    private next = () => this._clientsSubject.next(this.clients.slice());
 
     public add(client: Client) {
         this.clients.push(client);
-        this.onNext();
+        this.next();
         const d = Disposable.create(() => {
             _.pull(this.clients, client);
-            this.onNext();
+            this.next();
         });
         this._clientDisposable.add(d);
         return d;

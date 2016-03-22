@@ -1,7 +1,8 @@
 import * as OmniSharp from "./omnisharp-server";
-import {Observable} from "rx";
+import {Observable} from "rxjs";
 import {uniqueId, isObject, cloneDeep} from "lodash";
 import {requestMutator, responseMutator} from "./response-handling";
+import {createObservable} from "./operators/create";
 const stripBom = require("strip-bom");
 
 export class CommandContext<T> {
@@ -47,13 +48,13 @@ export class RequestContext<T extends OmniSharp.Models.Request> {
     }
 
     public getResponse<TResponse>(stream: Observable<ResponseContext<T, TResponse>>) {
-        return Observable.create<TResponse>(observer =>
+        return createObservable<TResponse>(observer =>
             stream.first(res => res.sequence === this.sequence).subscribe(res => {
                 if (!res.failed) {
-                    observer.onNext(res.response);
-                    observer.onCompleted();
+                    observer.next(res.response);
+                    observer.complete();
                 } else {
-                    observer.onCompleted();
+                    observer.complete();
                 }
             }));
     }

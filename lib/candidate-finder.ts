@@ -1,9 +1,12 @@
 import _ from "lodash";
 import {ILogger} from "./enums";
 import {join, dirname, sep, normalize} from "path";
-import {Observable, Scheduler, CompositeDisposable} from "rx";
+import {Observable, Scheduler, Subscription} from "rxjs";
+import "rxjs/add/operator/distinctKey";
+import {CompositeDisposable} from "./disposables";
+import {createObservable} from "./operators/create";
 import {readFileSync} from "fs";
-const glob: (file: string[], options?: any) => Rx.IPromise<string[]> = require("globby");
+const glob: (file: string[], options?: any) => Promise<string[]> = require("globby");
 
 export interface Options {
     solutionFilesToSearch?: string[];
@@ -13,28 +16,28 @@ export interface Options {
 }
 
 export function ifEmpty<T>(observable: Observable<T>, other: Observable<T>) {
-    return Observable.create<T>(observer => {
+    return createObservable<T>(observer => {
         let hasValue = false;
         const cd = new CompositeDisposable();
         cd.add(observable.subscribe(
             value => {
                 hasValue = true;
-                observer.onNext(value);
+                observer.next(value);
             },
-            e => observer.onError(e),
+            e => observer.error(e),
             () => {
                 if (!hasValue) {
                     cd.add(other.subscribe(
-                        value => observer.onNext(value),
-                        e => observer.onError(e),
-                        () => observer.onCompleted()
+                        value => observer.next(value),
+                        e => observer.error(e),
+                        () => observer.complete()
                     ));
                 } else {
-                    observer.onCompleted();
+                    observer.complete();
                 }
             }
         ));
-        return cd;
+        return new Subscription(() => cd.dispose());
     });
 }
 
@@ -75,7 +78,7 @@ export const findCandidates = (function() {
             .toArray();
 
         const baseFiles = Observable.concat(solutionsOrProjects, independentSourceFiles)
-            .flatMap(x => Observable.from(x));
+            .flatMap(x => x);
 
         const sourceFiles = searchForCandidates(location, sourceFilesToSearch, [], logger);
 
@@ -83,9 +86,9 @@ export const findCandidates = (function() {
 
         return ifEmpty(baseFiles, sourceFiles)
             .map(file => new Candidate(file, predicate))
-            .distinct(x => x.path)
+            .distinctKey("path")
             .toArray()
-            .tapOnNext(candidates => logger.log(`Omni Project Candidates: Found ${candidates}`));
+            .do(candidates => logger.log(`Omni Project Candidates: Found ${candidates}`));
     }
 
     function findCandidates(location: string, logger: ILogger, options: Options = {}) {
@@ -95,7 +98,7 @@ export const findCandidates = (function() {
 
     (<any>findCandidates).withCandidates = realFindCandidates;
 
-    return <{ (location: string, logger: ILogger, options: Options = {}): Rx.Observable<string[]>; withCandidates: typeof realFindCandidates }>findCandidates;
+    return <{ (location: string, logger: ILogger, options: Options = {}): Observable<string[]>; withCandidates: typeof realFindCandidates }>findCandidates;
 })();
 
 function squashCandidates(candidates: string[]) {
@@ -118,7 +121,7 @@ function searchForCandidates(location: string, filesToSearch: string[], projectF
     locations = locations.slice(0, Math.min(5, locations.length));
 
     const rootObservable = Observable.from(locations)
-        .subscribeOn(Scheduler.async)
+        .subscribeOn(Scheduler.queue)
         .map(loc => ({
             loc,
             files: filesToSearch.map(fileName => join(loc, fileName))
@@ -126,7 +129,7 @@ function searchForCandidates(location: string, filesToSearch: string[], projectF
         .flatMap(function({loc, files}) {
             logger.log(`Omni Project Candidates: Searching ${loc} for ${filesToSearch}`);
 
-            return Observable.from(files)
+            return Observable.from<string>(files)
                 .flatMap(file => glob([file], { cache: {} }))
                 .map(x => {
                     if (x.length > 1) {
@@ -157,7 +160,7 @@ function searchForCandidates(location: string, filesToSearch: string[], projectF
         .filter(z => z.length > 0)
         .defaultIfEmpty([])
         .first()
-        .flatMap(z => Observable.from(z));
+        .flatMap(z => z);
 
     return rootObservable;
 }

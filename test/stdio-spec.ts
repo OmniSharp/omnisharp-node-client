@@ -32,7 +32,7 @@ describe("Omnisharp Local - Stdio", function() {
                 expect(server.events).to.be.not.null;
                 expect(server.state).to.be.not.null;
                 expect(server.outstandingRequests).to.be.not.null;
-                sub.dispose();
+                sub.unsubscribe();
                 server.disconnect();
                 done();
             });
@@ -48,7 +48,7 @@ describe("Omnisharp Local - Stdio", function() {
             });
 
             const sub = server.state.subscribe(state => {
-                const sub2 = server.state.where(z => z === DriverState.Error).subscribe(state => {
+                const sub2 = server.state.filter(z => z === DriverState.Error).subscribe(state => {
                     expect(state).to.be.eql(DriverState.Error);
                     done();
                     sub2.dispose();
