@@ -1,5 +1,5 @@
 import * as OmniSharp from "../omnisharp-server";
-import {Observable, Subject, AsyncSubject, BehaviorSubject} from "rxjs";
+import {Observable, Subject, AsyncSubject, BehaviorSubject, Subscription} from "rxjs";
 import {IDisposable, CompositeDisposable} from "../disposables";
 import {keys, isObject, uniqueId, each, defaults, cloneDeep} from "lodash";
 import {IDriver, IStaticDriver, OmnisharpClientStatus, OmnisharpClientOptions} from "../enums";
@@ -10,8 +10,36 @@ import {serverLineNumbers, serverLineNumberArrays} from "../response-handling";
 import {ensureClientOptions} from "../options";
 import {watchEvent, reference} from "../decorators";
 import {isPriorityCommand, isNormalCommand, isDeferredCommand} from "../helpers/prioritization";
+import {createObservable} from "../operators/create";
 //import {PluginManager} from "../helpers/plugin-manager";
-import "../operators/pausableBuffered";
+//
+function pausable<T>(incomingStream: Observable<T>, pauser: Observable<boolean>) {
+    return createObservable<T>(observer => {
+        let paused: boolean;
+        let queue: any[] = [];
+        const sub = new Subscription();
+
+        sub.add(pauser.subscribe(shouldRun => {
+            paused = !shouldRun;
+
+            if (shouldRun && queue.length) {
+                each(queue, r => observer.next(r));
+                queue = [];
+            }
+        }));
+
+        sub.add(incomingStream
+            .subscribe(request => {
+                if (paused) {
+                    queue.push(request);
+                } else {
+                    observer.next(request);
+                }
+            }));
+
+        return sub;
+    });
+}
 
 export class ClientBase<TEvents extends ClientEventsBase> implements IDriver, IDisposable {
     public static serverLineNumbers = serverLineNumbers;
@@ -171,7 +199,8 @@ export class ClientBase<TEvents extends ClientEventsBase> implements IDriver, ID
                 return true;
             })
             .startWith(true)
-            .debounceTime(120);
+            .debounceTime(120)
+            .share();
 
         // Keep deferred concurrency at a min of two, this lets us get around long running requests jamming the pipes.
         const deferredConcurrency = Math.max(Math.floor(this._options.concurrency / 4), 2);
@@ -179,14 +208,12 @@ export class ClientBase<TEvents extends ClientEventsBase> implements IDriver, ID
         // These are operations that should wait until after
         // we have executed all the current priority commands
         // We also defer silent commands to this queue, as they are generally for "background" work
-        const deferredQueue = this._requestStream.filter(isDeferredCommand)
-            .prioritizeBuffered(pauser)
+        const deferredQueue = pausable(this._requestStream.filter(isDeferredCommand), pauser)
             .map(request => this.handleResult(request))
             .merge(deferredConcurrency);
 
         // We just pass these operations through as soon as possible
-        const normalQueue = this._requestStream.filter(isNormalCommand)
-            .prioritizeBuffered(pauser)
+        const normalQueue = pausable(this._requestStream.filter(isNormalCommand), pauser)
             .map(request => this.handleResult(request))
             .merge(this._options.concurrency);
 
@@ -205,7 +232,6 @@ export class ClientBase<TEvents extends ClientEventsBase> implements IDriver, ID
         // TODO: Find a way to not repeat the same commands, if there are outstanding (timed out) requests.
         // In some cases for example find usages has taken over 30 seconds, so we shouldn"t hit the server with multiple of these requests (as we slam the cpU)
         const result = <Observable<ResponseContext<any, any>>>this._driver.request<any, any>(context.command, context.request);
-
         result.subscribe((data) => {
             this._responseStream.next(new ResponseContext(context, data));
         }, (error) => {
