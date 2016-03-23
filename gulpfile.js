@@ -7,12 +7,14 @@ const win32 = process.platform === "win32";
 const spawn = require('child_process').spawn;
 const gulpPath = path.join(__dirname, 'node_modules/.bin/gulp' + (win32 && '.cmd' || ''));
 const merge = require('merge-stream');
+const typescript = require('typescript');
 
 // Lazy so we don't load these when we don't need them.
 const ctx = {
-    get ts() { return require('typescript'); },
+    get ts() { return require('gulp-typescript'); },
     get tslint() { return require("gulp-tslint"); },
     get babel() { return require("gulp-babel"); },
+    get sourcemaps() { return require('gulp-sourcemaps'); },
     get through() { return require('through2'); },
     get del() { return require('del'); },
     get download() { return require('gulp-download-stream'); },
@@ -23,14 +25,16 @@ const ctx = {
     get package() { return require('./package.json'); }
 };
 
+const tsProject = ctx.ts.createProject('tsconfig.json', { typescript: typescript });
+
 var metadata = {
     lib: ['lib/**/*.ts', '!lib/**/*.d.ts'],
     test: ['test/**/*.ts', '!test/**/*.d.ts'],
 };
 
 var metadataDel = {
-    lib: ['lib/**/*.js', 'lib/**/*.d.ts'],
-    test: ['test/**/*.js', 'test/**/*.d.ts', '!test/tsd.d.ts'],
+    lib: ['lib/**/*.js', 'lib/**/*.js.map', 'lib/**/*.d.ts'],
+    test: ['test/**/*.js', 'test/**/*.js.map', 'test/**/*.d.ts', '!test/tsd.d.ts'],
 };
 
 // Simply take TS code and strip anything not javascript
@@ -61,15 +65,6 @@ function tsTranspile() {
     });
 }
 
-function tsTranspiler(source, dest) {
-    return source
-        .pipe(ctx.tslint())
-        .pipe(tsTranspile())
-        .pipe(ctx.babel())
-        .pipe(gulp.dest(dest))
-        .pipe(ctx.tslint.report('prose'));
-}
-
 gulp.task('typescript', ['sync-clients','clean'], function() {
     var args = ['--declaration', '-p', path.resolve(__dirname.toString())];
     var compile = new Promise(function(resolve, reject) {
@@ -85,10 +80,14 @@ gulp.task('typescript', ['sync-clients','clean'], function() {
 });
 
 gulp.task('typescript-babel', ['typescript'], function() {
-    var lib = tsTranspiler(gulp.src(metadata.lib), './lib');
-    var test = tsTranspiler(gulp.src(metadata.test), './test');
-
-    return merge(lib, test);
+    return tsProject.src()
+        .pipe(ctx.tslint())
+        .pipe(ctx.tslint.report('prose'))
+        .pipe(ctx.sourcemaps.init())
+        .pipe(ctx.ts(tsProject))
+        .pipe(ctx.babel())
+        .pipe(ctx.sourcemaps.write())
+        .pipe(gulp.dest('.'));
 });
 
 gulp.task('clean', ['clean:lib', 'clean:test']);

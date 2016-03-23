@@ -39,7 +39,6 @@
     "rimraf": "^2.5.2",
     "rxjs": "^5.0.0-beta.3",
     "strip-bom": "^2.0.0",
-    "typings": "^0.7.7",
     "yargs": "^4.2.0"
   },
   "devDependencies": {
@@ -50,12 +49,15 @@
     "del": "^2.2.0",
     "gulp": "^3.9.1",
     "gulp-babel": "^6.1.2",
+    "gulp-sourcemaps": "^1.6.0",
     "gulp-tslint": "^4.3.3",
+    "gulp-typescript": "^2.12.1",
     "gulp-util": "^3.0.7",
     "merge-stream": "^1.0.0",
     "mocha": "^2.4.5",
     "through2": "^2.0.1",
     "tslint": "^3.6.0",
-    "typescript": "^1.8.9"
+    "typescript": "^1.8.9",
+    "typings": "^0.7.7"
   }
 }

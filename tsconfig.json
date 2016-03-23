@@ -5,7 +5,7 @@
   },
   "compilerOptions": {
     "target": "es6",
-    "module": "commonjs",
+    "module": "es6",
     "moduleResolution": "node",
     "declaration": true,
     "noImplicitAny": true,
@@ -13,7 +13,9 @@
     "noLib": false,
     "preserveConstEnums": true,
     "experimentalDecorators": true,
-    "allowSyntheticDefaultImports": true
+    "suppressImplicitAnyIndexErrors": true,
+    "allowSyntheticDefaultImports": true,
+    "sourceMap": true
   },
   "compileOnSave": true,
   "formatCodeOptions": {
@@ -65,7 +67,6 @@
     "./lib/omnisharp-client.ts",
     "./lib/omnisharp-server.ts",
     "./lib/operators/create.ts",
-    "./lib/operators/pausableBuffered.ts",
     "./lib/options.ts",
     "./lib/response-handling.ts",
     "./lib/stdio/child.ts",
