@@ -2,19 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using Microsoft.Framework.Runtime;
 using OmniSharp.Models;
-using OmniSharp.Stdio;
 using OmniSharp.Stdio.Protocol;
 using TypeLite;
-using TypeLite.TsModels;
 
 namespace OmniSharp.TypeScriptGeneration
 {
     public class Program
     {
-        public void Main(string[] args)
+        public static void Main(string[] args)
         {
             var path = string.Empty;
             if (args.Length == 1)
@@ -46,23 +42,24 @@ namespace OmniSharp.TypeScriptGeneration
 declare module {OmnisharpControllerExtractor.InferNamespace(typeof(Request)).TrimEnd('.')} {{
     interface ProjectInformationResponse {{
         MsBuildProject: OmniSharp.Models.MSBuildProject;
-        DnxProject: OmniSharp.Models.DnxProject;
+        DotNetProject: OmniSharp.Models.DotNetProject;
     }}
 
     interface WorkspaceInformationResponse {{
-        Dnx: OmniSharp.Models.DnxWorkspaceInformation;
+        DotNet: OmniSharp.Models.DotNetWorkspaceInformation;
         MSBuild: OmniSharp.Models.MsBuildWorkspaceInformation;
         ScriptCs: OmniSharp.ScriptCs.ScriptCsContext;
     }}
 }}
             ";
 
-            result = string.Join("\n", result, generated, OmnisharpEventExtractor.GetInterface(), projectInterfaces);
+            result = string.Join("\n", "import {Observable} from \"rxjs\";", result, generated, OmnisharpEventExtractor.GetInterface(), projectInterfaces);
             result = result
                 .Replace("interface", "export interface")
                 .Replace("declare module", "export module")
                 .Replace("export module OmniSharp {", "")
                 .Replace("OmniSharp.", "")
+                .Replace("DotNet.Models", "Models")
                 ;
 
             var lines = result.Split('\n');
@@ -96,24 +93,24 @@ declare module {OmnisharpControllerExtractor.InferNamespace(typeof(Request)).Tri
             }
         }
 
-        private IEnumerable<Type> GetApplicableTypes()
+        private static IEnumerable<Type> GetApplicableTypes()
         {
             var allTypes = new [] {
                 typeof(OmniSharp.Startup).Assembly,
                 typeof(OmniSharp.Models.Request).Assembly,
-                typeof(OmniSharp.Models.DnxProject).Assembly,
+                typeof(OmniSharp.DotNet.Models.DotNetFramework).Assembly,
                 typeof(OmniSharp.Models.MSBuildProject).Assembly,
                 typeof(OmniSharp.NuGet.OmniSharpSourceRepositoryProvider).Assembly,
                 typeof(OmniSharp.Roslyn.BufferManager).Assembly,
                 typeof(OmniSharp.Roslyn.CSharp.Services.CodeActions.RoslynCodeActionProvider).Assembly,
                 typeof(OmniSharp.ScriptCs.ScriptCsContext).Assembly,
-                typeof(OmniSharp.Stdio.StdioServerFactory).Assembly,
+                typeof(OmniSharp.Stdio.StdioServer).Assembly,
             }
                 .SelectMany(x => x.GetTypes())
                 .ToArray();
 
             var models = allTypes
-                .Where(z => z.IsPublic && z.FullName.StartsWith(OmnisharpControllerExtractor.InferNamespace(typeof(Request)), StringComparison.Ordinal))
+                .Where(z => z.IsPublic && z.FullName.Contains("Models."))
                 .Select(x => {
                     Console.WriteLine(x.FullName);
                     return x;
