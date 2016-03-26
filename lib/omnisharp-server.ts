@@ -886,7 +886,7 @@ export module Aggregate {
 export module Models {
     export interface ProjectInformationResponse {
         MsBuildProject: Models.MSBuildProject;
-        DotNetProject: Models.DotNetProject;
+        DotNetProject: Models.DotNetProjectInformation;
     }
 
     export interface WorkspaceInformationResponse {
