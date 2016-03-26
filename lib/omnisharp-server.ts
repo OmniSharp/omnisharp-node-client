@@ -302,26 +302,6 @@ export module Models {
     export interface UpdateBufferRequest extends Models.Request {
         FromDisk?: boolean;
     }
-    export interface DnxFramework {
-        Name: string;
-        FriendlyName: string;
-        ShortName: string;
-    }
-    export interface DnxProject {
-        Path: string;
-        Name: string;
-        Commands: { [key: string]: string };
-        Configurations: string[];
-        ProjectSearchPaths: string[];
-        Frameworks: Models.DnxFramework[];
-        GlobalJsonPath: string;
-        SourceFiles: string[];
-    }
-    export interface DnxWorkspaceInformation {
-        Projects: Models.DnxProject[];
-        RuntimePath: string;
-        DesignTimeHostPort: number;
-    }
     export interface MSBuildDiagnosticsMessage {
         LogLevel: string;
         FileName: string;
@@ -389,6 +369,26 @@ export module Models.v1 {
     }
     export interface WorkspaceInformationRequest {
         ExcludeSourceFiles?: boolean;
+    }
+}
+export module Models {
+    export interface DotNetFramework {
+        Name: string;
+        FriendlyName: string;
+        ShortName: string;
+    }
+    export interface DotNetProjectInformation {
+        Path: string;
+        Name: string;
+        TargetFramework: Models.DotNetFramework;
+        CompilationOutputPath: string;
+        CompilationOutputAssemblyFile: string;
+        CompilationOutputPdbFile: string;
+        EmitEntryPoint: boolean;
+        SourceFiles: string;
+    }
+    export interface DotNetWorkspaceInformation {
+        Projects: Models.DotNetProjectInformation[];
     }
 }
 export module Stdio.Protocol {
@@ -886,13 +886,13 @@ export module Aggregate {
 export module Models {
     export interface ProjectInformationResponse {
         MsBuildProject: Models.MSBuildProject;
-        DnxProject: Models.DnxProject;
+        DotNetProject: Models.DotNetProject;
     }
 
     export interface WorkspaceInformationResponse {
-        Dnx: Models.DnxWorkspaceInformation;
+        DotNet: Models.DotNetWorkspaceInformation;
         MSBuild: Models.MsBuildWorkspaceInformation;
         ScriptCs: ScriptCs.ScriptCsContext;
     }
 }
-
+            
