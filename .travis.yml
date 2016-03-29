@@ -63,4 +63,4 @@ before_install:
   - eval `ssh-agent -s`
   - ssh-add ~/.ssh/id_rsa
 notifications:
-  slack: omnisharp:U358j4McaEOIzFqXvGexVokC
+  slack: omnisharp:UN1OlhsHD8hUXy8SEr1L6Zar
