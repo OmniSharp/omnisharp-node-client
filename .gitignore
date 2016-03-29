@@ -18,3 +18,5 @@ project.lock.json
 typings
 omnisharp-*/
 test/fixture/rtt/
+bin/
+obj/

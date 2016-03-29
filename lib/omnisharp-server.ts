@@ -372,6 +372,13 @@ export module Models.v1 {
     }
 }
 export module Models {
+    export interface DotNetConfiguration {
+        Name: string;
+        CompilationOutputPath: string;
+        CompilationOutputAssemblyFile: string;
+        CompilationOutputPdbFile: string;
+        EmitEntryPoint: boolean;
+    }
     export interface DotNetFramework {
         Name: string;
         FriendlyName: string;
@@ -380,15 +387,14 @@ export module Models {
     export interface DotNetProjectInformation {
         Path: string;
         Name: string;
-        TargetFramework: Models.DotNetFramework;
-        CompilationOutputPath: string;
-        CompilationOutputAssemblyFile: string;
-        CompilationOutputPdbFile: string;
-        EmitEntryPoint: boolean;
-        SourceFiles: string;
+        ProjectSearchPaths: string[];
+        Configurations: Models.DotNetConfiguration[];
+        Frameworks: Models.DotNetFramework[];
+        SourceFiles: string[];
     }
     export interface DotNetWorkspaceInformation {
         Projects: Models.DotNetProjectInformation[];
+        RuntimePath: string;
     }
 }
 export module Stdio.Protocol {
@@ -886,7 +892,7 @@ export module Aggregate {
 export module Models {
     export interface ProjectInformationResponse {
         MsBuildProject: Models.MSBuildProject;
-        DotNetProject: Models.DotNetProject;
+        DotNetProject: Models.DotNetProjectInformation;
     }
 
     export interface WorkspaceInformationResponse {
