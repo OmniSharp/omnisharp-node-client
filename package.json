@@ -2,7 +2,7 @@
   "name": "omnisharp-client",
   "description": "A node client for omnisharp-roslyn",
   "version": "4.1.0",
-  "omnisharp-roslyn": "v1.9-alpha7",
+  "omnisharp-roslyn": "v1.9-alpha10",
   "bugs": {
     "url": "https://github.com/OmniSharp/omnisharp-node-client/issues"
   },
