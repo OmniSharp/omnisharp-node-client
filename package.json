@@ -56,7 +56,7 @@
     "merge-stream": "^1.0.0",
     "mocha": "^2.4.5",
     "through2": "^2.0.1",
-    "tslint": "^3.6.0",
+    "tslint": "^3.7.4",
     "typescript": "^1.8.9",
     "typings": "^0.7.7"
   }
