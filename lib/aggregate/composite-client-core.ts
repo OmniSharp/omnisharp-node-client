@@ -7,7 +7,7 @@ import {RequestContext, ResponseContext, CommandContext} from "../contexts";
 import {merge, aggregate} from "../decorators";
 import * as OmniSharp from "../omnisharp-server";
 
-export class ObservationClientBase<Client> implements OmniSharp.Events, IDisposable {
+export class ObservationClientCore<Client> implements OmniSharp.Events, IDisposable {
     protected _disposable = new CompositeDisposable();
     private _clientDisposable = new CompositeDisposable();
     protected _clientsSubject = new ReplaySubject<Client[]>(1);
@@ -61,7 +61,7 @@ export class ObservationClientBase<Client> implements OmniSharp.Events, IDisposa
     }
 }
 
-export class CombinationClientBase<Client extends { uniqueId: string; }> implements OmniSharp.Aggregate.Events, IDisposable {
+export class CombinationClientCore<Client extends { uniqueId: string; }> implements OmniSharp.Aggregate.Events, IDisposable {
     protected _disposable = new CompositeDisposable();
     private _clientDisposable = new CompositeDisposable();
     public _clientsSubject = new ReplaySubject<Client[]>(1);

@@ -41,7 +41,7 @@ function pausable<T>(incomingStream: Observable<T>, pauser: Observable<boolean>)
     });
 }
 
-export class ClientBase<TEvents extends ClientEventsBase> implements IDriver, IDisposable {
+export class ClientCore<TEvents extends ClientEventsCore> implements IDriver, IDisposable {
     public static serverLineNumbers = serverLineNumbers;
     public static serverLineNumberArrays = serverLineNumberArrays;
 
@@ -106,7 +106,7 @@ export class ClientBase<TEvents extends ClientEventsBase> implements IDriver, ID
     private _observe: TEvents;
     public get observe(): TEvents { return this._observe; }
 
-    constructor(private _options: OmnisharpClientOptions, observableFactory: (client: ClientBase<TEvents>) => TEvents) {
+    constructor(private _options: OmnisharpClientOptions, observableFactory: (client: ClientCore<TEvents>) => TEvents) {
         _options.driver = _options.driver || Driver.Stdio;
         ensureClientOptions(_options);
 
@@ -352,7 +352,7 @@ export class ClientBase<TEvents extends ClientEventsBase> implements IDriver, ID
     }*/
 }
 
-export class ClientEventsBase implements OmniSharp.Events {
+export class ClientEventsCore implements OmniSharp.Events {
     constructor(private _client: any) { }
 
     public get uniqueId() { return this._client.uniqueId; }

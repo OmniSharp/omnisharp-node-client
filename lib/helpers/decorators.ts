@@ -1,4 +1,4 @@
-import * as OmniSharp from "./omnisharp-server";
+import * as OmniSharp from "../omnisharp-server";
 import _ from "lodash";
 import {Subject} from "rxjs";
 
@@ -141,26 +141,3 @@ export function reference(target: Object, propertyKey: string, descriptor: Typed
     descriptor.get = function() { return this._client[propertyKey]; };
 }
 
-export function inheritProperties(source: any, dest: any) {
-    _.each(_.keys(source.prototype), key => {
-        const descriptor = Object.getOwnPropertyDescriptor(source.prototype, key);
-        const isDefined = !!_.has(dest.prototype, key);
-        if (descriptor && !isDefined) {
-            if (_.has(descriptor, "value") || _.has(descriptor, "writable")) {
-                Object.defineProperty(dest.prototype, key, {
-                    configurable: descriptor.configurable,
-                    enumerable: descriptor.enumerable,
-                    value: descriptor.value,
-                    writable: descriptor.writable,
-                });
-            } else {
-                Object.defineProperty(dest.prototype, key, {
-                    configurable: descriptor.configurable,
-                    enumerable: descriptor.enumerable,
-                    get: descriptor.get,
-                    set: descriptor.set
-                });
-            }
-        }
-    });
-}
