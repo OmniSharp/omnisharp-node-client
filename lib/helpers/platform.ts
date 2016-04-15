@@ -1,8 +1,8 @@
 import {execSync} from "child_process";
 
 export const supportedPlatformNames: { [index: string]: string; } = {
-    get None() { return "none"; },
-    get Windows() { return "win32"; },
+    get None() { return ""; },
+    get Windows() { return "win"; },
     get OSX() { return "darwin"; },
     get Ubuntu() { return "ubuntu"; },
     get CentOS() { return "centos"; },
@@ -20,12 +20,12 @@ export enum SupportedPlatform {
     Ubuntu
 }
 
-function getSupportedPlatform() {
-    if (process.platform === "win32") {
+export function getSupportedPlatform(platform: string) {
+    if (platform === "win32") {
         return SupportedPlatform.Windows;
-    } else if (process.platform === "darwin") {
+    } else if (platform === "darwin") {
         return SupportedPlatform.OSX;
-    } else if (process.platform === "linux") {
+    } else if (platform === "linux") {
         // Get the text of /etc/*-release to discover which Linux distribution we"re running on.
         let release = execSync("cat /etc/*-release").toString().toLowerCase();
 
@@ -44,4 +44,4 @@ function getSupportedPlatform() {
 }
 
 
-export const supportedPlatform = getSupportedPlatform();
+export const supportedPlatform = getSupportedPlatform(process.platform);

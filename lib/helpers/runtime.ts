@@ -8,7 +8,7 @@ import {createObservable} from "../operators/create";
 import "rxjs/add/operator/max";
 import "rxjs/add/operator/isEmpty";
 require("rxjs/add/observable/if");
-import {SupportedPlatform, supportedPlatformNames, supportedPlatform} from "./platform";
+import {SupportedPlatform, supportedPlatformNames, supportedPlatform, getSupportedPlatform} from "./platform";
 
 const request: { get(url: string): NodeJS.ReadableStream; } = require("request");
 const defaultServerVersion = require(resolve(__dirname, "../../package.json"))["omnisharp-roslyn"];
@@ -57,6 +57,8 @@ export class RuntimeContext {
 
         if (isNull(this._platform) || isUndefined(this._platform)) {
             this._platform = supportedPlatform;
+        } else {
+            this._platform = getSupportedPlatform(runtimeContext.platform);
         }
 
         if (isNull(this._arch) || isUndefined(this._arch)) {
@@ -95,7 +97,7 @@ export class RuntimeContext {
 
     private _getIdKey() {
         if (this._platform !== SupportedPlatform.Windows && this._runtime === Runtime.ClrOrMono) {
-            return `linux-mono`;
+            return `mono`;
         }
 
         let runtimeName = "netcoreapp1.0";
@@ -111,6 +113,7 @@ export class RuntimeContext {
     }
 
     private _getOsName() {
+        console.log("key", SupportedPlatform[this._platform], supportedPlatformNames[SupportedPlatform[this._platform]]);
         return supportedPlatformNames[SupportedPlatform[this._platform]];
     }
 
