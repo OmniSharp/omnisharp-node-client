@@ -61,7 +61,6 @@ export interface IAsyncDriver extends IDisposable {
 export interface IReactiveDriver extends IDriver {
     request<TRequest, TResponse>(command: string, request?: TRequest): Observable<TResponse>;
     events: Observable<OmniSharp.Stdio.Protocol.EventPacket>;
-    commands: Observable<OmniSharp.Stdio.Protocol.ResponsePacket>;
     state: Observable<DriverState>;
 }
 

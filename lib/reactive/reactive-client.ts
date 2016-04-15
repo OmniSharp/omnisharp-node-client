@@ -1,8 +1,8 @@
 import * as OmniSharp from "../omnisharp-server";
 import {Observable, Subject, AsyncSubject, BehaviorSubject, Subscription} from "rxjs";
 import {IDisposable, CompositeDisposable} from "../disposables";
-import {keys, isObject, uniqueId, each, defaults, cloneDeep} from "lodash";
-import {IDriver, IStaticDriver, OmnisharpClientStatus, OmnisharpClientOptions} from "../enums";
+import {keys, bind, uniqueId, each, defaults, cloneDeep} from "lodash";
+import {IReactiveDriver, IDriverOptions, OmnisharpClientStatus, OmnisharpClientOptions} from "../enums";
 /*import {IOmnisharpPlugin, isPluginDriver} from "../enums";*/
 import {DriverState, Runtime} from "../enums";
 import {RequestContext, ResponseContext, CommandContext} from "../contexts";
@@ -41,20 +41,18 @@ function pausable<T>(incomingStream: Observable<T>, pauser: Observable<boolean>)
     });
 }
 
-export class ClientCore<TEvents extends ClientEventsCore> implements IDriver, IDisposable {
+export class ReactiveClient implements IReactiveDriver, IDisposable {
     public static serverLineNumbers = serverLineNumbers;
     public static serverLineNumberArrays = serverLineNumberArrays;
 
-    private _driver: IDriver;
+    private _driver: IReactiveDriver;
     private _requestStream = new Subject<RequestContext<any>>();
     private _responseStream = new Subject<ResponseContext<any, any>>();
+    private _responseStreams = new Map<string, Subject<ResponseContext<any, any>>>();
     private _statusStream: Observable<OmnisharpClientStatus>;
     private _errorStream = new Subject<CommandContext<any>>();
-    private _customEvents = new Subject<OmniSharp.Stdio.Protocol.EventPacket>();
     private _uniqueId = uniqueId("client");
     protected _lowestIndexValue: number;
-    private _eventWatchers = new Map<string, [Subject<CommandContext<any>>, Observable<CommandContext<any>>]>();
-    private _commandWatchers = new Map<string, [Subject<ResponseContext<any, any>>, Observable<ResponseContext<any, any>>]>();
     private _disposable = new CompositeDisposable();
     //private _pluginManager: PluginManager;
 
@@ -66,10 +64,13 @@ export class ClientCore<TEvents extends ClientEventsCore> implements IDriver, ID
     public get runtime(): Runtime { return this._driver.runtime; }
 
     public get currentState() { return this._driver.currentState; }
-    private _enqueuedEvents: Observable<OmniSharp.Stdio.Protocol.EventPacket>;
-    public get events(): Observable<OmniSharp.Stdio.Protocol.EventPacket> { return this._enqueuedEvents; }
-    public get commands(): Observable<OmniSharp.Stdio.Protocol.ResponsePacket> { return this._driver.commands; }
-    public get state(): Observable<DriverState> { return this._driver.state; }
+    private _eventsStream = new Subject<OmniSharp.Stdio.Protocol.EventPacket>();
+    private _events = this._eventsStream.asObservable();
+    public get events(): Observable<OmniSharp.Stdio.Protocol.EventPacket> { return this._events; }
+
+    private _stateStream = new Subject<DriverState>();
+    private _state = this._stateStream.asObservable();
+    public get state(): Observable<DriverState> { return this._state; }
 
     public get outstandingRequests() { return this._currentRequests.size; }
 
@@ -103,11 +104,26 @@ export class ClientCore<TEvents extends ClientEventsCore> implements IDriver, ID
     public get responses(): Observable<ResponseContext<any, any>> { return this._enqueuedResponses; }
     public get errors(): Observable<CommandContext<any>> { return <Observable<CommandContext<any>>><any>this._errorStream; }
 
-    private _observe: TEvents;
-    public get observe(): TEvents { return this._observe; }
+    private _observe: ClientEventsCore;
+    public get observe(): ClientEventsCore { return this._observe; }
 
-    constructor(private _options: OmnisharpClientOptions, observableFactory: (client: ClientCore<TEvents>) => TEvents) {
-        _options.driver = _options.driver || Driver.Stdio;
+    private _options: OmnisharpClientOptions & IDriverOptions;
+
+    constructor(_options: OmnisharpClientOptions) {
+        _options.driver = _options.driver || ((options: IDriverOptions) => {
+            const item = require("../drivers/stdio");
+            const driverFactory = item[keys(item)[0]];
+            return new driverFactory(this._options);
+        });
+
+        this._options = defaults(<IDriverOptions>{
+            onState: bind(this._stateStream.next, this._stateStream),
+            onEvent: bind(this._eventsStream.next, this._eventsStream),
+            onCommand(packet) {
+                const response = new ResponseContext(new RequestContext(this._uniqueId, packet.Command, {}, {}, "command"), packet.Body);
+                this._getResponseStream(packet.Command).next(response);
+            }
+        }, _options);
         ensureClientOptions(_options);
 
         //this._pluginManager = new PluginManager(_options.plugins);
@@ -120,19 +136,6 @@ export class ClientCore<TEvents extends ClientEventsCore> implements IDriver, ID
             }
         }));*/
 
-        this._enqueuedEvents = Observable.merge(<Observable<OmniSharp.Stdio.Protocol.EventPacket>><any>this._customEvents, this._driver.events)
-            .map(event => {
-                if (isObject(event.Body)) {
-                    Object.freeze(event.Body);
-                }
-                return Object.freeze(event);
-            });
-
-        this._enqueuedResponses = Observable.merge(
-            <Observable<ResponseContext<any, any>>><any>this._responseStream,
-            this._driver.commands
-                .map(packet => new ResponseContext(new RequestContext(this._uniqueId, packet.Command, {}, {}, "command"), packet.Body)));
-
         this._lowestIndexValue = _options.oneBasedIndices ? 1 : 0;
 
         this._disposable.add(this._requestStream.subscribe(x => this._currentRequests.add(x)));
@@ -144,7 +147,6 @@ export class ClientCore<TEvents extends ClientEventsCore> implements IDriver, ID
         });
 
         this.setupRequestStreams();
-        this.setupObservers();
 
         const status = Observable.merge(
             <Observable<any>><any>this._requestStream,
@@ -157,12 +159,12 @@ export class ClientCore<TEvents extends ClientEventsCore> implements IDriver, ID
             .map(Object.freeze)
             .share();
 
-        this._observe = observableFactory(this);
+        this._observe = new ClientEventsCore(this);
 
         if (this._options.debug) {
             this._disposable.add(this._responseStream.subscribe(context => {
                 // log our complete response time
-                this._customEvents.next({
+                this._eventsStream.next({
                     Event: "log",
                     Body: {
                         Message: `/${context.command}  ${context.responseTime}ms (round trip)`,
@@ -232,11 +234,12 @@ export class ClientCore<TEvents extends ClientEventsCore> implements IDriver, ID
         // TODO: Find a way to not repeat the same commands, if there are outstanding (timed out) requests.
         // In some cases for example find usages has taken over 30 seconds, so we shouldn"t hit the server with multiple of these requests (as we slam the cpU)
         const result = <Observable<ResponseContext<any, any>>>this._driver.request<any, any>(context.command, context.request);
+        const responseStream = this._getResponseStream(context.command);
         result.subscribe((data) => {
-            this._responseStream.next(new ResponseContext(context, data));
+            responseStream.next(new ResponseContext(context, data));
         }, (error) => {
             this._errorStream.next(new CommandContext(context.command, error));
-            this._responseStream.next(new ResponseContext(context, null, true));
+            responseStream.next(new ResponseContext(context, null, true));
             this._currentRequests.delete(context);
             if (complete) {
                 complete();
@@ -258,7 +261,7 @@ export class ClientCore<TEvents extends ClientEventsCore> implements IDriver, ID
 
     public log(message: string, logLevel?: string) {
         // log our complete response time
-        this._customEvents.next({
+        this._eventsStream.next({
             Event: "log",
             Body: {
                 Message: message,
@@ -285,9 +288,7 @@ export class ClientCore<TEvents extends ClientEventsCore> implements IDriver, ID
         }
 
         const {driver} = this._options;
-        const item = require("../drivers/" + Driver[driver].toLowerCase());
-        const driverFactory: IStaticDriver = item[keys(item)[0]];
-        this._driver = new driverFactory(this._options);
+        this._driver = driver(this._options);
         this._disposable.add(this._driver);
 
         return this._driver;
@@ -320,21 +321,23 @@ export class ClientCore<TEvents extends ClientEventsCore> implements IDriver, ID
         return context.getResponse<TResponse>(<Observable<any>><any>this._responseStream);
     }
 
-    private setupObservers() {
-        this._driver.events.subscribe(x => {
-            if (this._eventWatchers.has(x.Event))
-                this._eventWatchers.get(x.Event)[0].next(x.Body);
-        });
-
-        this._enqueuedResponses.subscribe(x => {
-            if (!x.silent && this._commandWatchers.has(x.command))
-                this._commandWatchers.get(x.command)[0].next(x);
-        });
-    }
-
     private _fixups: Array<(action: string, request: any, options?: OmniSharp.RequestOptions) => void> = [];
     public registerFixup(func: (action: string, request: any, options?: OmniSharp.RequestOptions) => void) {
         this._fixups.push(func);
+    }
+
+    private _getResponseStream(key: string) {
+        key = key.toLowerCase();
+        if (!this._responseStreams.has(key)) {
+            const subject = new Subject<ResponseContext<any, any>>();
+            subject.subscribe({
+                next: bind(this._responseStream.next, this._responseStream)
+            });
+            this._responseStreams.set(key, subject);
+            return subject;
+        }
+
+        return this._responseStreams.get(key);
     }
 
     /* tslint:disable:no-unused-variable */
@@ -622,7 +625,7 @@ export class ClientCore<TEvents extends ClientEventsCore> implements IDriver, ID
 }
 
 export class ClientEventsCore implements OmniSharp.Events {
-    constructor(private _client: any) { }
+    constructor(private _client: ReactiveClient) { }
 
     public get uniqueId() { return this._client.uniqueId; }
 
