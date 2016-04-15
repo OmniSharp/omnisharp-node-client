@@ -3,14 +3,14 @@ import {CompositeDisposable, Disposable, IDisposable} from "../disposables";
 import _ from "lodash";
 import {DriverState} from "../enums";
 import {OmnisharpClientStatus} from "../enums";
-import {RequestContext, ResponseContext, CommandContext} from "../contexts";
-import {merge, aggregate} from "../helpers/decorators";
-import * as OmniSharp from "../omnisharp-server";
+import {aggregate} from "../helpers/decorators";
+import OmniSharp, {Context, Models, CombinationKey} from "../omnisharp-server";
+import {ReactiveClient} from "./reactive-client";
 
-export class CombinationClientCore<Client extends { uniqueId: string; }> implements OmniSharp.Aggregate.Events, IDisposable {
+export class ReactiveCombinationClient implements OmniSharp.Aggregate.Events, OmniSharp.Events.Aggregate.V2, IDisposable {
     protected _disposable = new CompositeDisposable();
     private _clientDisposable = new CompositeDisposable();
-    public _clientsSubject = new ReplaySubject<Client[]>(1);
+    public _clientsSubject = new ReplaySubject<ReactiveClient[]>(1);
 
     @aggregate public get projectAdded(): Observable<OmniSharp.CombinationKey<OmniSharp.Models.ProjectInformationResponse>[]> { throw new Error("Implemented by decorator"); }
     @aggregate public get projectChanged(): Observable<OmniSharp.CombinationKey<OmniSharp.Models.ProjectInformationResponse>[]> { throw new Error("Implemented by decorator"); }
@@ -24,7 +24,7 @@ export class CombinationClientCore<Client extends { uniqueId: string; }> impleme
     @aggregate public get state(): Observable<OmniSharp.CombinationKey<DriverState>[]> { throw new Error("Implemented by decorator"); }
     @aggregate public get status(): Observable<OmniSharp.CombinationKey<OmnisharpClientStatus>[]> { throw new Error("Implemented by decorator"); }
 
-    constructor(private clients: Client[] = []) {
+    constructor(private clients: ReactiveClient[] = []) {
         this.next();
         this._disposable.add(this._clientDisposable);
     }
@@ -34,7 +34,7 @@ export class CombinationClientCore<Client extends { uniqueId: string; }> impleme
         this._disposable.dispose();
     }
 
-    protected makeAggregateObserable = <T>(selector: (client: Client) => Observable<T>) => {
+    protected makeAggregateObserable = <T>(selector: (client: ReactiveClient) => Observable<T>) => {
 
         // Caches the value, so that when the underlying clients change
         // we can start with the old value of the remaining clients
@@ -63,13 +63,13 @@ export class CombinationClientCore<Client extends { uniqueId: string; }> impleme
 
     };
 
-    public observe<T>(selector: (client: Client) => Observable<T>) {
+    public observe<T>(selector: (client: ReactiveClient) => Observable<T>) {
         return this.makeAggregateObserable(selector);
     }
 
     private next = () => this._clientsSubject.next(this.clients.slice());
 
-    public add(client: Client) {
+    public add(client: ReactiveClient) {
         this.clients.push(client);
         this.next();
         const d = Disposable.create(() => {
@@ -79,9 +79,7 @@ export class CombinationClientCore<Client extends { uniqueId: string; }> impleme
         this._clientDisposable.add(d);
         return d;
     }
-}
 
-export class AggregateClient<T extends Client> extends CombinationClientCore<T> implements Events.Aggregate.V2 {
     @aggregate public get autocomplete(): Observable<CombinationKey<Context<Models.AutoCompleteRequest, Models.AutoCompleteResponse[]>>[]> { throw new Error("Implemented by decorator"); }
     @aggregate public get changebuffer(): Observable<CombinationKey<Context<Models.ChangeBufferRequest, any>>[]> { throw new Error("Implemented by decorator"); }
     @aggregate public get codecheck(): Observable<CombinationKey<Context<Models.CodeCheckRequest, Models.QuickFixResponse>>[]> { throw new Error("Implemented by decorator"); }

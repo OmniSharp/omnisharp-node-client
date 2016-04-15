@@ -1,22 +1,17 @@
-import {Observable} from "rxjs";
-import {Models, Events, Context, CombinationKey} from "../omnisharp-server";
-import {Client} from "../clients/client";
-import {ObservationClientCore, CombinationClientCore} from "./composite-client-core";
-import {merge, aggregate} from "../helpers/decorators";
-
+import {merge} from "../helpers/decorators";
 import {ReplaySubject, Observable} from "rxjs";
 import {CompositeDisposable, Disposable, IDisposable} from "../disposables";
 import _ from "lodash";
 import {DriverState} from "../enums";
 import {OmnisharpClientStatus} from "../enums";
 import {RequestContext, ResponseContext, CommandContext} from "../contexts";
-import {merge, aggregate} from "../decorators";
-import * as OmniSharp from "../omnisharp-server";
+import OmniSharp, {Models, Events, Context, CombinationKey} from "../omnisharp-server";
+import {ReactiveClient} from "./reactive-client";
 
-export class ObservationClientCore<Client> implements OmniSharp.Events, IDisposable {
+export class ReactiveObservationClient implements OmniSharp.Events, OmniSharp.Events.V2, IDisposable {
     protected _disposable = new CompositeDisposable();
     private _clientDisposable = new CompositeDisposable();
-    protected _clientsSubject = new ReplaySubject<Client[]>(1);
+    protected _clientsSubject = new ReplaySubject<ReactiveClient[]>(1);
 
     @merge public get projectAdded(): Observable<OmniSharp.Models.ProjectInformationResponse> { throw new Error("Implemented by decorator"); }
     @merge public get projectChanged(): Observable<OmniSharp.Models.ProjectInformationResponse> { throw new Error("Implemented by decorator"); }
@@ -35,7 +30,7 @@ export class ObservationClientCore<Client> implements OmniSharp.Events, IDisposa
     @merge public get responses(): Observable<ResponseContext<any, any>> { throw new Error("Implemented by decorator"); }
     @merge public get errors(): Observable<CommandContext<any>> { throw new Error("Implemented by decorator"); }
 
-    constructor(private clients: Client[] = []) {
+    constructor(private clients: ReactiveClient[] = []) {
         this.next();
         this._disposable.add(this._clientDisposable);
     }
@@ -45,17 +40,17 @@ export class ObservationClientCore<Client> implements OmniSharp.Events, IDisposa
         this._disposable.dispose();
     }
 
-    protected makeMergeObserable = <T>(selector: (client: Client) => Observable<T>) => {
+    protected makeMergeObserable = <T>(selector: (client: ReactiveClient) => Observable<T>) => {
         return this._clientsSubject.switchMap(clients => Observable.merge<T>(...clients.map(selector))).share();
     };
 
-    public observe<T>(selector: (client: Client) => Observable<T>) {
+    public observe<T>(selector: (client: ReactiveClient) => Observable<T>) {
         return this.makeMergeObserable(selector);
     }
 
     private next = () => this._clientsSubject.next(this.clients.slice());
 
-    public add(client: Client) {
+    public add(client: ReactiveClient) {
         this.clients.push(client);
         this.next();
         const d = Disposable.create(() => {
@@ -65,9 +60,7 @@ export class ObservationClientCore<Client> implements OmniSharp.Events, IDisposa
         this._clientDisposable.add(d);
         return d;
     }
-}
 
-export class ObservationClient<T extends Client> extends ObservationClientCore<T> implements Events.V2 {
     @merge public get autocomplete(): Observable<Context<Models.AutoCompleteRequest, Models.AutoCompleteResponse[]>> { throw new Error("Implemented by decorator"); }
     @merge public get changebuffer(): Observable<Context<Models.ChangeBufferRequest, any>> { throw new Error("Implemented by decorator"); }
     @merge public get codecheck(): Observable<Context<Models.CodeCheckRequest, Models.QuickFixResponse>> { throw new Error("Implemented by decorator"); }
