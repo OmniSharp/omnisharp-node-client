@@ -97,7 +97,7 @@ export class RuntimeContext {
 
     private _getIdKey() {
         if (this._platform !== SupportedPlatform.Windows && this._runtime === Runtime.ClrOrMono) {
-            return `mono`;
+            return `linux-mono`;
         }
 
         let runtimeName = "netcoreapp1.0";
