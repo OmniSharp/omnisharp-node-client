@@ -220,12 +220,11 @@ export class ReactiveClient implements IReactiveDriver, IDisposable {
             .merge(this._options.concurrency);
 
         // We must wait for these commands
-        // And these commands must run in order.
         const priorityQueue = this._requestStream
             .filter(isPriorityCommand)
             .do(() => priorityRequests.next(priorityRequests.getValue() + 1))
             .map(request => this.handleResult(request, () => priorityResponses.next(priorityResponses.getValue() + 1)))
-            .merge(this._options.concurrency);
+            .concat(); // And these commands must run in order.
 
         this._disposable.add(Observable.merge(deferredQueue, normalQueue, priorityQueue).subscribe());
     }
