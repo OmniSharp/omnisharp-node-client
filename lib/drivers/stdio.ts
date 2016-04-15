@@ -159,7 +159,7 @@ export class StdioDriver implements IDriver {
                 this._runtime = ctx.runtime;
                 this._PATH = ctx.path;
                 this._runtimeContext = this._getRuntimeContext();
-                return ctx
+                return ctx;
             })
             .then((runtime) =>
                 this._runtimeContext.downloadRuntimeIfMissing()

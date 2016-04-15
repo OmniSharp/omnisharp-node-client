@@ -5,7 +5,7 @@ import _ from "lodash";
 import {DriverState} from "../enums";
 import {OmnisharpClientStatus} from "../enums";
 import {RequestContext, ResponseContext, CommandContext} from "../contexts";
-import OmniSharp, {Models, Events, Context, CombinationKey} from "../omnisharp-server";
+import OmniSharp, {Models, Context} from "../omnisharp-server";
 import {ReactiveClient} from "./reactive-client";
 
 export class ReactiveObservationClient implements OmniSharp.Events, OmniSharp.Events.V2, IDisposable {
