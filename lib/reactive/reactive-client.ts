@@ -63,12 +63,12 @@ export class ReactiveClient implements IReactiveDriver, IDisposable {
     public get projectPath() { return this._driver.projectPath; }
     public get runtime(): Runtime { return this._driver.runtime; }
 
-    public get currentState() { return this._driver.currentState; }
     private _eventsStream = new Subject<OmniSharp.Stdio.Protocol.EventPacket>();
     private _events = this._eventsStream.asObservable();
     public get events(): Observable<OmniSharp.Stdio.Protocol.EventPacket> { return this._events; }
 
-    private _stateStream = new Subject<DriverState>();
+    public get currentState() { return this._stateStream.getValue(); }
+    private _stateStream = new BehaviorSubject<DriverState>(DriverState.Disconnected);
     private _state = this._stateStream.asObservable();
     public get state(): Observable<DriverState> { return this._state; }
 
@@ -116,14 +116,15 @@ export class ReactiveClient implements IReactiveDriver, IDisposable {
             return new driverFactory(this._options);
         });
 
-        this._options = defaults(<IDriverOptions>{
+        this._options = defaults(_options, <IDriverOptions>{
             onState: bind(this._stateStream.next, this._stateStream),
             onEvent: bind(this._eventsStream.next, this._eventsStream),
             onCommand(packet) {
                 const response = new ResponseContext(new RequestContext(this._uniqueId, packet.Command, {}, {}, "command"), packet.Body);
                 this._getResponseStream(packet.Command).next(response);
             }
-        }, _options);
+        });
+
         ensureClientOptions(_options);
 
         //this._pluginManager = new PluginManager(_options.plugins);
@@ -210,23 +211,30 @@ export class ReactiveClient implements IReactiveDriver, IDisposable {
         // These are operations that should wait until after
         // we have executed all the current priority commands
         // We also defer silent commands to this queue, as they are generally for "background" work
-        const deferredQueue = pausable(this._requestStream.filter(isDeferredCommand), pauser)
-            .map(request => this.handleResult(request))
-            .merge(deferredConcurrency);
 
-        // We just pass these operations through as soon as possible
-        const normalQueue = pausable(this._requestStream.filter(isNormalCommand), pauser)
-            .map(request => this.handleResult(request))
-            .merge(this._options.concurrency);
+        this._disposable.add(
+            //deferredQueue
+            pausable(this._requestStream.filter(isDeferredCommand), pauser)
+                .map(request => this.handleResult(request))
+                .merge(deferredConcurrency)
+                .subscribe(),
 
-        // We must wait for these commands
-        const priorityQueue = this._requestStream
-            .filter(isPriorityCommand)
-            .do(() => priorityRequests.next(priorityRequests.getValue() + 1))
-            .map(request => this.handleResult(request, () => priorityResponses.next(priorityResponses.getValue() + 1)))
-            .concat(); // And these commands must run in order.
+            //normalQueue
+            // We just pass these operations through as soon as possible
+            pausable(this._requestStream.filter(isNormalCommand), pauser)
+                .map(request => this.handleResult(request))
+                .merge(this._options.concurrency)
+                .subscribe(),
 
-        this._disposable.add(Observable.merge(deferredQueue, normalQueue, priorityQueue).subscribe());
+            //priorityQueue
+            // We must wait for these commands
+            this._requestStream
+                .filter(isPriorityCommand)
+                .do(() => priorityRequests.next(priorityRequests.getValue() + 1))
+                .map(request => this.handleResult(request, () => priorityResponses.next(priorityResponses.getValue() + 1)))
+                .concat() // And these commands must run in order.
+                .subscribe()
+        );
     }
 
     private handleResult(context: RequestContext<any>, complete?: () => void): Observable<ResponseContext<any, any>> {

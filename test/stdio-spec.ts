@@ -2,7 +2,7 @@
 import {expect} from "chai";
 import {resolve} from "path";
 import {StdioDriver} from "../lib/drivers/stdio";
-import {noop} from "lodash";
+import {noop, once} from "lodash";
 
 declare const xdescribe: Function;
 
@@ -28,6 +28,7 @@ describe("Omnisharp Local - Stdio", function() {
     describe("properties", function() {
         this.timeout(60000);
         it("should implement the interface", function(done) {
+            done = once(done);
             const server = new StdioDriver({
                 projectPath: resolve(__dirname, "../"),
                 onEvent: noop,
