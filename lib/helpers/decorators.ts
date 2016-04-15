@@ -57,25 +57,24 @@ export function precondition(method: Function, ...decorators: MethodDecorator[])
     };
 }
 
-export function endpoint(version = 1) {
+export function request(decorators?: Array<MethodDecorator | number>, version = 1) {
     let format = (name: string) => name;
     if (version > 1) {
         format = (name) => `v${version}/${name}`;
     }
     return function endpoint(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
         const name = format(propertyKey);
+        const methods = _.map(decorators, (decorator: MethodDecorator) => {
+            descriptor.value = _.noop;
+            decorator(target, propertyKey, descriptor);
+            return descriptor.value;
+        });
         descriptor.value = function(request: OmniSharp.Models.Request, options: any) {
+            this._fixup(propertyKey, request, options);
+            methods.forEach(m => m.call(this, request));
             return this.request(name, request, options);
         };
         descriptor.enumerable = true;
-    };
-}
-
-export function fixup(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
-    const value = descriptor.value;
-    descriptor.value = function(request: OmniSharp.Models.Request, options: any) {
-        this._fixup(propertyKey, request, options);
-        return value.apply(this, arguments);
     };
 }
 
