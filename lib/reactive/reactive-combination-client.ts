@@ -7,10 +7,10 @@ import {aggregate} from "../helpers/decorators";
 import OmniSharp, {Context, Models, CombinationKey} from "../omnisharp-server";
 import {ReactiveClient} from "./reactive-client";
 
-export class ReactiveCombinationClient implements OmniSharp.Aggregate.Events, OmniSharp.Events.Aggregate.V2, IDisposable {
+export class ReactiveCombinationClient<TClient extends ReactiveClient> implements OmniSharp.Aggregate.Events, OmniSharp.Events.Aggregate.V2, IDisposable {
     protected _disposable = new CompositeDisposable();
     private _clientDisposable = new CompositeDisposable();
-    public _clientsSubject = new ReplaySubject<ReactiveClient[]>(1);
+    public _clientsSubject = new ReplaySubject<TClient[]>(1);
 
     @aggregate public get projectAdded(): Observable<OmniSharp.CombinationKey<OmniSharp.Models.ProjectInformationResponse>[]> { throw new Error("Implemented by decorator"); }
     @aggregate public get projectChanged(): Observable<OmniSharp.CombinationKey<OmniSharp.Models.ProjectInformationResponse>[]> { throw new Error("Implemented by decorator"); }
@@ -24,7 +24,7 @@ export class ReactiveCombinationClient implements OmniSharp.Aggregate.Events, Om
     @aggregate public get state(): Observable<OmniSharp.CombinationKey<DriverState>[]> { throw new Error("Implemented by decorator"); }
     @aggregate public get status(): Observable<OmniSharp.CombinationKey<OmnisharpClientStatus>[]> { throw new Error("Implemented by decorator"); }
 
-    constructor(private clients: ReactiveClient[] = []) {
+    constructor(private clients: TClient[] = []) {
         this.next();
         this._disposable.add(this._clientDisposable);
     }
@@ -34,7 +34,7 @@ export class ReactiveCombinationClient implements OmniSharp.Aggregate.Events, Om
         this._disposable.dispose();
     }
 
-    protected makeAggregateObserable = <T>(selector: (client: ReactiveClient) => Observable<T>) => {
+    protected makeAggregateObserable = <T>(selector: (client: TClient) => Observable<T>) => {
 
         // Caches the value, so that when the underlying clients change
         // we can start with the old value of the remaining clients
@@ -63,13 +63,13 @@ export class ReactiveCombinationClient implements OmniSharp.Aggregate.Events, Om
 
     };
 
-    public observe<T>(selector: (client: ReactiveClient) => Observable<T>) {
+    public observe<T>(selector: (client: TClient) => Observable<T>) {
         return this.makeAggregateObserable(selector);
     }
 
     private next = () => this._clientsSubject.next(this.clients.slice());
 
-    public add(client: ReactiveClient) {
+    public add(client: TClient) {
         this.clients.push(client);
         this.next();
         const d = Disposable.create(() => {

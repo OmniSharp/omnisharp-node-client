@@ -2,7 +2,7 @@ import * as OmniSharp from "../omnisharp-server";
 import {Observable, Subject, AsyncSubject, BehaviorSubject, Subscription} from "rxjs";
 import {IDisposable, CompositeDisposable} from "../disposables";
 import {keys, bind, uniqueId, each, defaults, cloneDeep} from "lodash";
-import {IReactiveDriver, IDriverOptions, OmnisharpClientStatus, OmnisharpClientOptions} from "../enums";
+import {IReactiveDriver, IDriverOptions, OmnisharpClientStatus, ReactiveClientOptions} from "../enums";
 /*import {IOmnisharpPlugin, isPluginDriver} from "../enums";*/
 import {DriverState, Runtime} from "../enums";
 import {RequestContext, ResponseContext, CommandContext} from "../contexts";
@@ -106,9 +106,9 @@ export class ReactiveClient implements IReactiveDriver, IDisposable {
     private _observe: ReactiveClientEvents;
     public get observe(): ReactiveClientEvents { return this._observe; }
 
-    private _options: OmnisharpClientOptions & IDriverOptions;
+    private _options: ReactiveClientOptions & IDriverOptions;
 
-    constructor(_options: OmnisharpClientOptions) {
+    constructor(_options: ReactiveClientOptions) {
         _options.driver = _options.driver || ((options: IDriverOptions) => {
             const item = require("../drivers/stdio");
             const driverFactory = item[keys(item)[0]];

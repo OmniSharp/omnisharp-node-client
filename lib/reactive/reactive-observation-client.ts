@@ -8,10 +8,10 @@ import {RequestContext, ResponseContext, CommandContext} from "../contexts";
 import OmniSharp, {Models, Context} from "../omnisharp-server";
 import {ReactiveClient} from "./reactive-client";
 
-export class ReactiveObservationClient implements OmniSharp.Events, OmniSharp.Events.V2, IDisposable {
+export class ReactiveObservationClient<TClient extends ReactiveClient> implements OmniSharp.Events, OmniSharp.Events.V2, IDisposable {
     protected _disposable = new CompositeDisposable();
     private _clientDisposable = new CompositeDisposable();
-    protected _clientsSubject = new ReplaySubject<ReactiveClient[]>(1);
+    protected _clientsSubject = new ReplaySubject<TClient[]>(1);
 
     @merge public get projectAdded(): Observable<OmniSharp.Models.ProjectInformationResponse> { throw new Error("Implemented by decorator"); }
     @merge public get projectChanged(): Observable<OmniSharp.Models.ProjectInformationResponse> { throw new Error("Implemented by decorator"); }
@@ -30,7 +30,7 @@ export class ReactiveObservationClient implements OmniSharp.Events, OmniSharp.Ev
     @merge public get responses(): Observable<ResponseContext<any, any>> { throw new Error("Implemented by decorator"); }
     @merge public get errors(): Observable<CommandContext<any>> { throw new Error("Implemented by decorator"); }
 
-    constructor(private clients: ReactiveClient[] = []) {
+    constructor(private clients: TClient[] = []) {
         this.next();
         this._disposable.add(this._clientDisposable);
     }
@@ -40,17 +40,17 @@ export class ReactiveObservationClient implements OmniSharp.Events, OmniSharp.Ev
         this._disposable.dispose();
     }
 
-    protected makeMergeObserable = <T>(selector: (client: ReactiveClient) => Observable<T>) => {
+    protected makeMergeObserable = <T>(selector: (client: TClient) => Observable<T>) => {
         return this._clientsSubject.switchMap(clients => Observable.merge<T>(...clients.map(selector))).share();
     };
 
-    public observe<T>(selector: (client: ReactiveClient) => Observable<T>) {
+    public observe<T>(selector: (client: TClient) => Observable<T>) {
         return this.makeMergeObserable(selector);
     }
 
     private next = () => this._clientsSubject.next(this.clients.slice());
 
-    public add(client: ReactiveClient) {
+    public add(client: TClient) {
         this.clients.push(client);
         this.next();
         const d = Disposable.create(() => {
