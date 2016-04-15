@@ -14,6 +14,12 @@ import {EventEmitter} from "events";
 import {Queue} from "../helpers/queue";
 //import {PluginManager} from "../helpers/plugin-manager";
 
+
+/////
+// NOT TESTED
+// NOT READY! :)
+/////
+
 export class AsyncEvents {
     public static request = "request";
     public static response = "response";
