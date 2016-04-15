@@ -1,17 +1,17 @@
 import * as OmniSharp from "../omnisharp-server";
 //import {Observable, Subject, AsyncSubject, BehaviorSubject, Subscription} from "rxjs";
 import {IDisposable, CompositeDisposable} from "../disposables";
-import {keys, isEqual, uniqueId, each, defaults, cloneDeep} from "lodash";
-import {IAsyncDriver, IDriverOptions, OmnisharpClientStatus, OmnisharpClientOptions} from "../enums";
+import {keys, bind, isEqual, uniqueId, each, defaults, cloneDeep} from "lodash";
+import {IAsyncDriver, IDriverOptions, OmnisharpClientStatus, AsyncClientOptions} from "../enums";
 /*import {IOmnisharpPlugin, isPluginDriver} from "../enums";*/
 import {DriverState, Runtime} from "../enums";
 import {RequestContext, ResponseContext, CommandContext} from "../contexts";
 import {serverLineNumbers, serverLineNumberArrays} from "../response-handling";
 import {ensureClientOptions} from "../options";
-import {event, reference, request, response} from "../helpers/decorators";
+import {/*event, reference, */request/*, response*/} from "../helpers/decorators";
 import * as preconditions from "../helpers/preconditions";
-import {isPriorityCommand, isNormalCommand, isDeferredCommand} from "../helpers/prioritization";
 import {EventEmitter} from "events";
+import {Queue} from "../helpers/queue";
 //import {PluginManager} from "../helpers/plugin-manager";
 
 export class AsyncEvents {
@@ -23,29 +23,12 @@ export class AsyncEvents {
     public static event = "event";
 }
 
-enum Queue {
-    Priority,
-    Normal,
-    Deferred,
-}
-
-function getQueue(context: RequestContext<any>) {
-    if (isPriorityCommand(context)) {
-        return Queue.Priority;
-    }
-    if (isNormalCommand(context)) {
-        return Queue.Normal;
-    }
-    if (isDeferredCommand(context)) {
-        return Queue.Deferred;
-    }
-}
-
 export class AsyncClient implements IAsyncDriver, IDisposable {
     public static serverLineNumbers = serverLineNumbers;
     public static serverLineNumberArrays = serverLineNumberArrays;
 
     private _emitter = new EventEmitter();
+    private _queue: Queue<PromiseLike<ResponseContext<any, any>>>;
     private _listen(event: string, callback: Function): IDisposable {
         this._emitter.addListener(AsyncEvents.event, callback);
         return { dispose: () => this._emitter.removeListener(AsyncEvents.event, callback) };
@@ -117,12 +100,12 @@ export class AsyncClient implements IAsyncDriver, IDisposable {
         return this._listen(AsyncEvents.error, callback);
     }
 
-    private _observe: ClientEventsCore;
-    public get observe(): ClientEventsCore { return this._observe; }
+    //private _observe: ClientEventsCore;
+    //public get observe(): ClientEventsCore { return this._observe; }
 
-    private _options: OmnisharpClientOptions & IDriverOptions;
+    private _options: AsyncClientOptions & IDriverOptions;
 
-    constructor(_options: OmnisharpClientOptions) {
+    constructor(_options: AsyncClientOptions) {
         _options.driver = _options.driver || ((options: IDriverOptions) => {
             const item = require("../drivers/stdio");
             const driverFactory = item[keys(item)[0]];
@@ -170,13 +153,12 @@ export class AsyncClient implements IAsyncDriver, IDisposable {
                 lastStatus = newStatus;
                 this._emitter.emit(AsyncEvents.status, lastStatus);
             }
-        }
+        };
 
         this._emitter.on(AsyncEvents.request, emitStatus);
         this._emitter.on(AsyncEvents.response, emitStatus);
-
-        this.setupRequestStreams();
-        this._observe = new ClientEventsCore(this);
+        //this._observe = new ClientEventsCore(this);
+        this._queue = new Queue<PromiseLike<ResponseContext<any, any>>>(this._options.concurrency, bind(this.handleResult, this));
 
         if (this._options.debug) {
             this._emitter.on(AsyncEvents.response, (context: ResponseContext<any, any>) => {
@@ -199,107 +181,34 @@ export class AsyncClient implements IAsyncDriver, IDisposable {
         this._disposable.dispose();
     }
 
-     /*   const priorityRequests = new BehaviorSubject(0), priorityResponses = new BehaviorSubject(0);
 
-        const pauser = Observable.combineLatest(
-            <Observable<number>><any>priorityRequests,
-            <Observable<number>><any>priorityResponses,
-            (requests, responses) => {
-                if (requests > 0 && responses === requests) {
-                    priorityRequests.next(0);
-                    priorityResponses.next(0);
-                    return true;
-                } else if (requests > 0) {
-                    return false;
-                }
-
-                return true;
-            })
-            .startWith(true)
-            .debounceTime(120)
-            .share();
-
-        // Keep deferred concurrency at a min of two, this lets us get around long running requests jamming the pipes.
-        const deferredConcurrency = Math.max(Math.floor(this._options.concurrency / 4), 2);
-
-        // These are operations that should wait until after
-        // we have executed all the current priority commands
-        // We also defer silent commands to this queue, as they are generally for "background" work
-
-        this._disposable.add(
-            //deferredQueue
-            pausable(this._requestStream.filter(isDeferredCommand), pauser)
-                .map(request => this.handleResult(request))
-                .merge(deferredConcurrency)
-                .subscribe(),
-
-            //normalQueue
-            // We just pass these operations through as soon as possible
-            pausable(this._requestStream.filter(isNormalCommand), pauser)
-                .map(request => this.handleResult(request))
-                .merge(this._options.concurrency)
-                .subscribe(),
-
-            //priorityQueue
-            // We must wait for these commands
-            this._requestStream
-                .filter(isPriorityCommand)
-                .do(() => priorityRequests.next(priorityRequests.getValue() + 1))
-                .map(request => this.handleResult(request, () => priorityResponses.next(priorityResponses.getValue() + 1)))
-                .concat() // And these commands must run in order.
-                .subscribe()
-        );
-    }*/
-
-    private _priorityQueue: RequestContext<any>[] = [];
-    private _priorityRequest: RequestContext<any>;
-    private _normalQueue: RequestContext<any>[] = [];
-    private _normalRequests: RequestContext<any>[] = [];
-    private _deferredQueue: RequestContext<any>[] = [];
-    private _deferredRequests: RequestContext<any>[] = [];
-    private _processing = false;
-
-    private _issueRequest(context: RequestContext<any>) {
-        let queue = getQueue(context);
-        if (queue === Queue.Priority) this._priorityQueue.push(context);
-        if (queue === Queue.Normal) this._normalQueue.push(context);
-        if (queue === Queue.Deferred) this._deferredQueue.push(context);
-
-        this._processRequests();
-    }
-
-    private _processRequests() {
-        if (this._processing) return;
-        // Request inflight
-        if (this._priorityRequest) return;
-    }
-
-    private handleResult(context: RequestContext<any>, complete?: () => void): Observable<ResponseContext<any, any>> {
+    private handleResult(context: RequestContext<any>, complete?: () => void): Promise<ResponseContext<any, any>> {
         // TODO: Find a way to not repeat the same commands, if there are outstanding (timed out) requests.
         // In some cases for example find usages has taken over 30 seconds, so we shouldn"t hit the server with multiple of these requests (as we slam the cpU)
-        const result = <Observable<ResponseContext<any, any>>>this._driver.request<any, any>(context.command, context.request);
-        result.subscribe((data) => {
-            this._respondToRequest(context.command, new ResponseContext(context, data));
-        }, (error) => {
-            this._emitter.emit(AsyncEvents.error, new CommandContext(context.command, error));
-            this._respondToRequest(context.command, new ResponseContext(context, null, true));
-            this._currentRequests.delete(context);
-            if (complete) {
-                complete();
-                complete = null;
-            }
-        }, () => {
-            this._currentRequests.delete(context);
-            if (complete) {
-                complete();
-                complete = null;
-            }
-        });
+        const result = this._driver.request<any, any>(context.command, context.request);
 
-        return result
-            // This timeout doesn't prevent the request from completing
-            // It simply unblocks the queue, so we can continue to process items.
-            .timeout(this._options.concurrencyTimeout, Observable.empty<ResponseContext<any, any>>());
+        const cmp = () => {
+            this._currentRequests.delete(context);
+            if (complete) {
+                complete();
+                complete = null;
+            }
+        };
+
+        return new Promise((resolve, reject) => {
+            result
+                .then((data) => {
+                    this._respondToRequest(context.command, new ResponseContext(context, data));
+                    cmp();
+                    resolve(data);
+                }, (error) => {
+                    this._emitter.emit(AsyncEvents.error, new CommandContext(context.command, error));
+                    this._respondToRequest(context.command, new ResponseContext(context, null, true));
+                    this._currentRequests.delete(context);
+                    cmp();
+                    reject(error);
+                });
+        });
     }
 
     public log(message: string, logLevel?: string) {
@@ -359,9 +268,9 @@ export class AsyncClient implements IAsyncDriver, IDisposable {
         }
 
         const context = new RequestContext(this._uniqueId, action, request, options);
-        this._requestStream.next(context);
-
-        return context.getResponse<TResponse>(<Observable<any>><any>this._responseStream);
+        return new Promise<TResponse>((resolve, reject) => {
+            this._queue.enqueue(context).then((response) => resolve(response.response), reject);
+        });
     }
 
     private _fixups: Array<(action: string, request: any, options?: OmniSharp.RequestOptions) => void> = [];
@@ -495,8 +404,9 @@ export class AsyncClient implements IAsyncDriver, IDisposable {
     public gettestcontext(request: OmniSharp.Models.TestCommandRequest, options?: OmniSharp.RequestOptions): Promise<OmniSharp.Models.GetTestCommandResponse> { throw new Error("Implemented by decorator"); }
 }
 
-export class ClientEventsCore implements OmniSharp.Events {
-    constructor(private _client: ReactiveClient) { }
+/*
+export class AsyncClientEvents implements OmniSharp.Events {
+    constructor(private _client: AsyncClient) { }
 
     public get uniqueId() { return this._client.uniqueId; }
 
@@ -553,3 +463,4 @@ export class ClientEventsCore implements OmniSharp.Events {
     @response public get runcodeaction(): Observable<OmniSharp.Context<OmniSharp.Models.V2.RunCodeActionRequest, OmniSharp.Models.V2.RunCodeActionResponse>> { throw new Error("Implemented by decorator"); }
     @response public get gettestcontext(): Observable<OmniSharp.Context<OmniSharp.Models.TestCommandRequest, OmniSharp.Models.GetTestCommandResponse>> { throw new Error("Implemented by decorator"); }
 }
+*/
