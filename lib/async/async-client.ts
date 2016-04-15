@@ -1,8 +1,8 @@
 import * as OmniSharp from "../omnisharp-server";
-import {Observable, Subject, AsyncSubject, BehaviorSubject, Subscription} from "rxjs";
+//import {Observable, Subject, AsyncSubject, BehaviorSubject, Subscription} from "rxjs";
 import {IDisposable, CompositeDisposable} from "../disposables";
-import {keys, bind, uniqueId, each, defaults, cloneDeep} from "lodash";
-import {IReactiveDriver, IDriverOptions, OmnisharpClientStatus, OmnisharpClientOptions} from "../enums";
+import {keys, isEqual, uniqueId, each, defaults, cloneDeep} from "lodash";
+import {IAsyncDriver, IDriverOptions, OmnisharpClientStatus, OmnisharpClientOptions} from "../enums";
 /*import {IOmnisharpPlugin, isPluginDriver} from "../enums";*/
 import {DriverState, Runtime} from "../enums";
 import {RequestContext, ResponseContext, CommandContext} from "../contexts";
@@ -11,47 +11,47 @@ import {ensureClientOptions} from "../options";
 import {event, reference, request, response} from "../helpers/decorators";
 import * as preconditions from "../helpers/preconditions";
 import {isPriorityCommand, isNormalCommand, isDeferredCommand} from "../helpers/prioritization";
-import {createObservable} from "../operators/create";
+import {EventEmitter} from "events";
 //import {PluginManager} from "../helpers/plugin-manager";
-//
-function pausable<T>(incomingStream: Observable<T>, pauser: Observable<boolean>) {
-    return createObservable<T>(observer => {
-        let paused: boolean;
-        let queue: any[] = [];
-        const sub = new Subscription();
 
-        sub.add(pauser.subscribe(shouldRun => {
-            paused = !shouldRun;
-
-            if (shouldRun && queue.length) {
-                each(queue, r => observer.next(r));
-                queue = [];
-            }
-        }));
-
-        sub.add(incomingStream
-            .subscribe(request => {
-                if (paused) {
-                    queue.push(request);
-                } else {
-                    observer.next(request);
-                }
-            }));
-
-        return sub;
-    });
+export class AsyncEvents {
+    public static request = "request";
+    public static response = "response";
+    public static status = "response";
+    public static state = "response";
+    public static error = "error";
+    public static event = "event";
 }
 
-export class ReactiveClient implements IReactiveDriver, IDisposable {
+enum Queue {
+    Priority,
+    Normal,
+    Deferred,
+}
+
+function getQueue(context: RequestContext<any>) {
+    if (isPriorityCommand(context)) {
+        return Queue.Priority;
+    }
+    if (isNormalCommand(context)) {
+        return Queue.Normal;
+    }
+    if (isDeferredCommand(context)) {
+        return Queue.Deferred;
+    }
+}
+
+export class AsyncClient implements IAsyncDriver, IDisposable {
     public static serverLineNumbers = serverLineNumbers;
     public static serverLineNumberArrays = serverLineNumberArrays;
 
-    private _driver: IReactiveDriver;
-    private _requestStream = new Subject<RequestContext<any>>();
-    private _responseStream = new Subject<ResponseContext<any, any>>();
-    private _responseStreams = new Map<string, Subject<ResponseContext<any, any>>>();
-    private _statusStream: Observable<OmnisharpClientStatus>;
-    private _errorStream = new Subject<CommandContext<any>>();
+    private _emitter = new EventEmitter();
+    private _listen(event: string, callback: Function): IDisposable {
+        this._emitter.addListener(AsyncEvents.event, callback);
+        return { dispose: () => this._emitter.removeListener(AsyncEvents.event, callback) };
+    }
+
+    private _driver: IAsyncDriver;
     private _uniqueId = uniqueId("client");
     protected _lowestIndexValue: number;
     private _disposable = new CompositeDisposable();
@@ -63,15 +63,6 @@ export class ReactiveClient implements IReactiveDriver, IDisposable {
     public get serverPath() { return this._driver.serverPath; }
     public get projectPath() { return this._driver.projectPath; }
     public get runtime(): Runtime { return this._driver.runtime; }
-
-    private _eventsStream = new Subject<OmniSharp.Stdio.Protocol.EventPacket>();
-    private _events = this._eventsStream.asObservable();
-    public get events(): Observable<OmniSharp.Stdio.Protocol.EventPacket> { return this._events; }
-
-    public get currentState() { return this._stateStream.getValue(); }
-    private _stateStream = new BehaviorSubject<DriverState>(DriverState.Disconnected);
-    private _state = this._stateStream.asObservable();
-    public get state(): Observable<DriverState> { return this._state; }
 
     public get outstandingRequests() { return this._currentRequests.size; }
 
@@ -98,13 +89,36 @@ export class ReactiveClient implements IReactiveDriver, IDisposable {
         return response;
     }
 
-    public get status(): Observable<OmnisharpClientStatus> { return this._statusStream; }
-    public get requests(): Observable<RequestContext<any>> { return <Observable<RequestContext<any>>><any>this._requestStream; }
-    public get responses(): Observable<ResponseContext<any, any>> { return this._responseStream; }
-    public get errors(): Observable<CommandContext<any>> { return <Observable<CommandContext<any>>><any>this._errorStream; }
 
-    private _observe: ReactiveClientEvents;
-    public get observe(): ReactiveClientEvents { return this._observe; }
+
+    public onEvent(callback: (event: OmniSharp.Stdio.Protocol.EventPacket) => void) {
+        return this._listen(AsyncEvents.event, callback);
+    }
+
+    private _currentState: DriverState = DriverState.Disconnected;
+    public get currentState() { return this._currentState; }
+    public onState(callback: (state: DriverState) => void) {
+        return this._listen(AsyncEvents.state, callback);
+    }
+
+    public onStatus(callback: (status: OmnisharpClientStatus) => void) {
+        return this._listen(AsyncEvents.status, callback);
+    }
+
+    public onRequest(callback: (request: RequestContext<any>) => void) {
+        return this._listen(AsyncEvents.request, callback);
+    }
+
+    public onResponse(callback: (response: ResponseContext<any, any>) => void) {
+        return this._listen(AsyncEvents.response, callback);
+    }
+
+    public onError(callback: (event: OmniSharp.Stdio.Protocol.EventPacket) => void) {
+        return this._listen(AsyncEvents.error, callback);
+    }
+
+    private _observe: ClientEventsCore;
+    public get observe(): ClientEventsCore { return this._observe; }
 
     private _options: OmnisharpClientOptions & IDriverOptions;
 
@@ -116,11 +130,16 @@ export class ReactiveClient implements IReactiveDriver, IDisposable {
         });
 
         this._options = defaults(_options, <IDriverOptions>{
-            onState: bind(this._stateStream.next, this._stateStream),
-            onEvent: bind(this._eventsStream.next, this._eventsStream),
+            onState: (state) => {
+                this._currentState = state;
+                this._emitter.emit(AsyncEvents.state, state);
+            },
+            onEvent: (event) => {
+                this._emitter.emit(AsyncEvents.event, event);
+            },
             onCommand: (packet) => {
                 const response = new ResponseContext(new RequestContext(this._uniqueId, packet.Command, {}, {}, "command"), packet.Body);
-                this._getResponseStream(packet.Command).next(response);
+                this._respondToRequest(packet.Command, response);
             }
         });
 
@@ -138,32 +157,30 @@ export class ReactiveClient implements IReactiveDriver, IDisposable {
 
         this._lowestIndexValue = _options.oneBasedIndices ? 1 : 0;
 
-        this._disposable.add(this._requestStream.subscribe(x => this._currentRequests.add(x)));
-
         const getStatusValues = () => <OmnisharpClientStatus>({
             state: this._driver.currentState,
             outgoingRequests: this.outstandingRequests,
             hasOutgoingRequests: this.outstandingRequests > 0
         });
 
+        let lastStatus: OmnisharpClientStatus = <any>{};
+        const emitStatus = () => {
+            const newStatus = getStatusValues();
+            if (!isEqual(getStatusValues(), lastStatus)) {
+                lastStatus = newStatus;
+                this._emitter.emit(AsyncEvents.status, lastStatus);
+            }
+        }
+
+        this._emitter.on(AsyncEvents.request, emitStatus);
+        this._emitter.on(AsyncEvents.response, emitStatus);
+
         this.setupRequestStreams();
-
-        const status = Observable.merge(
-            <Observable<any>><any>this._requestStream,
-            <Observable<any>><any>this._responseStream);
-
-        this._statusStream = status
-            .delay(10)
-            .map(getStatusValues)
-            .distinctUntilChanged()
-            .share();
-
-        this._observe = new ReactiveClientEvents(this);
+        this._observe = new ClientEventsCore(this);
 
         if (this._options.debug) {
-            this._disposable.add(this._responseStream.subscribe(context => {
-                // log our complete response time
-                this._eventsStream.next({
+            this._emitter.on(AsyncEvents.response, (context: ResponseContext<any, any>) => {
+                this._emitter.emit(AsyncEvents.event, {
                     Event: "log",
                     Body: {
                         Message: `/${context.command}  ${context.responseTime}ms (round trip)`,
@@ -172,7 +189,7 @@ export class ReactiveClient implements IReactiveDriver, IDisposable {
                     Seq: -1,
                     Type: "log"
                 });
-            }));
+            });
         }
     }
 
@@ -182,8 +199,7 @@ export class ReactiveClient implements IReactiveDriver, IDisposable {
         this._disposable.dispose();
     }
 
-    private setupRequestStreams() {
-        const priorityRequests = new BehaviorSubject(0), priorityResponses = new BehaviorSubject(0);
+     /*   const priorityRequests = new BehaviorSubject(0), priorityResponses = new BehaviorSubject(0);
 
         const pauser = Observable.combineLatest(
             <Observable<number>><any>priorityRequests,
@@ -233,18 +249,40 @@ export class ReactiveClient implements IReactiveDriver, IDisposable {
                 .concat() // And these commands must run in order.
                 .subscribe()
         );
+    }*/
+
+    private _priorityQueue: RequestContext<any>[] = [];
+    private _priorityRequest: RequestContext<any>;
+    private _normalQueue: RequestContext<any>[] = [];
+    private _normalRequests: RequestContext<any>[] = [];
+    private _deferredQueue: RequestContext<any>[] = [];
+    private _deferredRequests: RequestContext<any>[] = [];
+    private _processing = false;
+
+    private _issueRequest(context: RequestContext<any>) {
+        let queue = getQueue(context);
+        if (queue === Queue.Priority) this._priorityQueue.push(context);
+        if (queue === Queue.Normal) this._normalQueue.push(context);
+        if (queue === Queue.Deferred) this._deferredQueue.push(context);
+
+        this._processRequests();
+    }
+
+    private _processRequests() {
+        if (this._processing) return;
+        // Request inflight
+        if (this._priorityRequest) return;
     }
 
     private handleResult(context: RequestContext<any>, complete?: () => void): Observable<ResponseContext<any, any>> {
         // TODO: Find a way to not repeat the same commands, if there are outstanding (timed out) requests.
         // In some cases for example find usages has taken over 30 seconds, so we shouldn"t hit the server with multiple of these requests (as we slam the cpU)
         const result = <Observable<ResponseContext<any, any>>>this._driver.request<any, any>(context.command, context.request);
-        const responseStream = this._getResponseStream(context.command);
         result.subscribe((data) => {
-            responseStream.next(new ResponseContext(context, data));
+            this._respondToRequest(context.command, new ResponseContext(context, data));
         }, (error) => {
-            this._errorStream.next(new CommandContext(context.command, error));
-            responseStream.next(new ResponseContext(context, null, true));
+            this._emitter.emit(AsyncEvents.error, new CommandContext(context.command, error));
+            this._respondToRequest(context.command, new ResponseContext(context, null, true));
             this._currentRequests.delete(context);
             if (complete) {
                 complete();
@@ -266,7 +304,7 @@ export class ReactiveClient implements IReactiveDriver, IDisposable {
 
     public log(message: string, logLevel?: string) {
         // log our complete response time
-        this._eventsStream.next({
+        this._emitter.emit(AsyncEvents.event, {
             Event: "log",
             Body: {
                 Message: message,
@@ -303,21 +341,21 @@ export class ReactiveClient implements IReactiveDriver, IDisposable {
         this._driver.disconnect();
     }
 
-    public request<TRequest, TResponse>(action: string, request: TRequest, options?: OmniSharp.RequestOptions): Observable<TResponse> {
+    public request<TRequest, TResponse>(action: string, request: TRequest, options?: OmniSharp.RequestOptions): Promise<TResponse> {
         if (!options) options = <OmniSharp.RequestOptions>{};
         defaults(options, { oneBasedIndices: this._options.oneBasedIndices });
 
         // Handle disconnected requests
         if (this.currentState !== DriverState.Connected && this.currentState !== DriverState.Error) {
-            const response = new AsyncSubject<TResponse>();
-
-            this.state.filter(z => z === DriverState.Connected)
-                .take(1)
-                .subscribe(z => {
-                    this.request<TRequest, TResponse>(action, request, options).subscribe(x => response.next(x));
+            return new Promise<TResponse>((resolve, reject) => {
+                const disposable = this.onState(state => {
+                    if (state === DriverState.Connected) {
+                        disposable.dispose();
+                        this.request<TRequest, TResponse>(action, request, options)
+                            .then(resolve, reject);
+                    }
                 });
-
-            return <Observable<TResponse>><any>response;
+            });
         }
 
         const context = new RequestContext(this._uniqueId, action, request, options);
@@ -331,18 +369,10 @@ export class ReactiveClient implements IReactiveDriver, IDisposable {
         this._fixups.push(func);
     }
 
-    private _getResponseStream(key: string) {
+    private _respondToRequest(key: string, response: ResponseContext<any, any>) {
         key = key.toLowerCase();
-        if (!this._responseStreams.has(key)) {
-            const subject = new Subject<ResponseContext<any, any>>();
-            subject.subscribe({
-                next: bind(this._responseStream.next, this._responseStream)
-            });
-            this._responseStreams.set(key, subject);
-            return subject;
-        }
-
-        return this._responseStreams.get(key);
+        this._emitter.emit(key, response);
+        this._emitter.emit(AsyncEvents.response, response);
     }
 
     /* tslint:disable:no-unused-variable */
@@ -360,79 +390,79 @@ export class ReactiveClient implements IReactiveDriver, IDisposable {
     }*/
 
     @request(preconditions.getcodeactions, 2)
-    public getcodeactions(request: OmniSharp.Models.V2.GetCodeActionsRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.V2.GetCodeActionsResponse> { throw new Error("Implemented by decorator"); }
+    public getcodeactions(request: OmniSharp.Models.V2.GetCodeActionsRequest, options?: OmniSharp.RequestOptions): Promise<OmniSharp.Models.V2.GetCodeActionsResponse> { throw new Error("Implemented by decorator"); }
 
     @request(preconditions.runcodeaction, 2)
-    public runcodeaction(request: OmniSharp.Models.V2.RunCodeActionRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.V2.RunCodeActionResponse> { throw new Error("Implemented by decorator"); }
+    public runcodeaction(request: OmniSharp.Models.V2.RunCodeActionRequest, options?: OmniSharp.RequestOptions): Promise<OmniSharp.Models.V2.RunCodeActionResponse> { throw new Error("Implemented by decorator"); }
 
     @request(preconditions.updatebuffer)
-    public updatebuffer(request: OmniSharp.Models.UpdateBufferRequest, options?: OmniSharp.RequestOptions): Observable<any> { throw new Error("Implemented by decorator"); }
+    public updatebuffer(request: OmniSharp.Models.UpdateBufferRequest, options?: OmniSharp.RequestOptions): Promise<any> { throw new Error("Implemented by decorator"); }
 
     @request(preconditions.changebuffer)
-    public changebuffer(request: OmniSharp.Models.ChangeBufferRequest, options?: OmniSharp.RequestOptions): Observable<any> { throw new Error("Implemented by decorator"); }
+    public changebuffer(request: OmniSharp.Models.ChangeBufferRequest, options?: OmniSharp.RequestOptions): Promise<any> { throw new Error("Implemented by decorator"); }
 
     @request(preconditions.codecheck)
-    public codecheck(request: OmniSharp.Models.CodeCheckRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.QuickFixResponse> { throw new Error("Implemented by decorator"); }
+    public codecheck(request: OmniSharp.Models.CodeCheckRequest, options?: OmniSharp.RequestOptions): Promise<OmniSharp.Models.QuickFixResponse> { throw new Error("Implemented by decorator"); }
 
     @request(preconditions.formatAfterKeystroke)
-    public formatAfterKeystroke(request: OmniSharp.Models.FormatAfterKeystrokeRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.FormatRangeResponse> { throw new Error("Implemented by decorator"); }
+    public formatAfterKeystroke(request: OmniSharp.Models.FormatAfterKeystrokeRequest, options?: OmniSharp.RequestOptions): Promise<OmniSharp.Models.FormatRangeResponse> { throw new Error("Implemented by decorator"); }
 
     @request(preconditions.formatRange)
-    public formatRange(request: OmniSharp.Models.FormatRangeRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.FormatRangeResponse> { throw new Error("Implemented by decorator"); }
+    public formatRange(request: OmniSharp.Models.FormatRangeRequest, options?: OmniSharp.RequestOptions): Promise<OmniSharp.Models.FormatRangeResponse> { throw new Error("Implemented by decorator"); }
 
     @request(preconditions.codeformat)
-    public codeformat(request: OmniSharp.Models.CodeFormatRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.CodeFormatResponse> { throw new Error("Implemented by decorator"); }
+    public codeformat(request: OmniSharp.Models.CodeFormatRequest, options?: OmniSharp.RequestOptions): Promise<OmniSharp.Models.CodeFormatResponse> { throw new Error("Implemented by decorator"); }
 
     @request(preconditions.autocomplete)
-    public autocomplete(request: OmniSharp.Models.AutoCompleteRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.AutoCompleteResponse[]> { throw new Error("Implemented by decorator"); }
+    public autocomplete(request: OmniSharp.Models.AutoCompleteRequest, options?: OmniSharp.RequestOptions): Promise<OmniSharp.Models.AutoCompleteResponse[]> { throw new Error("Implemented by decorator"); }
 
     @request(preconditions.findimplementations)
-    public findimplementations(request: OmniSharp.Models.FindImplementationsRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.QuickFixResponse> { throw new Error("Implemented by decorator"); }
+    public findimplementations(request: OmniSharp.Models.FindImplementationsRequest, options?: OmniSharp.RequestOptions): Promise<OmniSharp.Models.QuickFixResponse> { throw new Error("Implemented by decorator"); }
 
     @request(preconditions.findsymbols)
-    public findsymbols(request: OmniSharp.Models.FindSymbolsRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.QuickFixResponse> { throw new Error("Implemented by decorator"); }
+    public findsymbols(request: OmniSharp.Models.FindSymbolsRequest, options?: OmniSharp.RequestOptions): Promise<OmniSharp.Models.QuickFixResponse> { throw new Error("Implemented by decorator"); }
 
     @request(preconditions.findusages)
-    public findusages(request: OmniSharp.Models.FindUsagesRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.QuickFixResponse> { throw new Error("Implemented by decorator"); }
+    public findusages(request: OmniSharp.Models.FindUsagesRequest, options?: OmniSharp.RequestOptions): Promise<OmniSharp.Models.QuickFixResponse> { throw new Error("Implemented by decorator"); }
 
     @request(preconditions.fixusings)
-    public fixusings(request: OmniSharp.Models.FixUsingsRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.FixUsingsResponse> { throw new Error("Implemented by decorator"); }
+    public fixusings(request: OmniSharp.Models.FixUsingsRequest, options?: OmniSharp.RequestOptions): Promise<OmniSharp.Models.FixUsingsResponse> { throw new Error("Implemented by decorator"); }
 
     @request(preconditions.gotodefinition)
-    public gotodefinition(request: OmniSharp.Models.GotoDefinitionRequest, options?: OmniSharp.RequestOptions): Observable<any> { throw new Error("Implemented by decorator"); }
+    public gotodefinition(request: OmniSharp.Models.GotoDefinitionRequest, options?: OmniSharp.RequestOptions): Promise<any> { throw new Error("Implemented by decorator"); }
 
     @request(preconditions.navigateup)
-    public navigateup(request: OmniSharp.Models.NavigateUpRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.NavigateResponse> { throw new Error("Implemented by decorator"); }
+    public navigateup(request: OmniSharp.Models.NavigateUpRequest, options?: OmniSharp.RequestOptions): Promise<OmniSharp.Models.NavigateResponse> { throw new Error("Implemented by decorator"); }
 
     @request(preconditions.gotofile)
-    public gotofile(request?: OmniSharp.Models.GotoFileRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.QuickFixResponse> { throw new Error("Implemented by decorator"); }
+    public gotofile(request?: OmniSharp.Models.GotoFileRequest, options?: OmniSharp.RequestOptions): Promise<OmniSharp.Models.QuickFixResponse> { throw new Error("Implemented by decorator"); }
 
     @request(preconditions.gotoregion)
-    public gotoregion(request: OmniSharp.Models.GotoRegionRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.QuickFixResponse> { throw new Error("Implemented by decorator"); }
+    public gotoregion(request: OmniSharp.Models.GotoRegionRequest, options?: OmniSharp.RequestOptions): Promise<OmniSharp.Models.QuickFixResponse> { throw new Error("Implemented by decorator"); }
 
     @request(preconditions.highlight)
-    public highlight(request: OmniSharp.Models.HighlightRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.HighlightResponse> { throw new Error("Implemented by decorator"); }
+    public highlight(request: OmniSharp.Models.HighlightRequest, options?: OmniSharp.RequestOptions): Promise<OmniSharp.Models.HighlightResponse> { throw new Error("Implemented by decorator"); }
 
     @request(preconditions.metadata)
-    public metadata(request: OmniSharp.Models.MetadataRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.MetadataResponse> { throw new Error("Implemented by decorator"); }
+    public metadata(request: OmniSharp.Models.MetadataRequest, options?: OmniSharp.RequestOptions): Promise<OmniSharp.Models.MetadataResponse> { throw new Error("Implemented by decorator"); }
 
     @request(preconditions.navigatedown)
-    public navigatedown(request: OmniSharp.Models.NavigateDownRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.NavigateResponse> { throw new Error("Implemented by decorator"); }
+    public navigatedown(request: OmniSharp.Models.NavigateDownRequest, options?: OmniSharp.RequestOptions): Promise<OmniSharp.Models.NavigateResponse> { throw new Error("Implemented by decorator"); }
 
     @request(preconditions.packagesearch)
-    public packagesearch(request: OmniSharp.Models.PackageSearchRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.PackageSearchResponse> { throw new Error("Implemented by decorator"); }
+    public packagesearch(request: OmniSharp.Models.PackageSearchRequest, options?: OmniSharp.RequestOptions): Promise<OmniSharp.Models.PackageSearchResponse> { throw new Error("Implemented by decorator"); }
 
     @request(preconditions.packagesource)
-    public packagesource(request: OmniSharp.Models.PackageSourceRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.PackageSourceResponse> { throw new Error("Implemented by decorator"); }
+    public packagesource(request: OmniSharp.Models.PackageSourceRequest, options?: OmniSharp.RequestOptions): Promise<OmniSharp.Models.PackageSourceResponse> { throw new Error("Implemented by decorator"); }
 
     @request(preconditions.packageversion)
-    public packageversion(request: OmniSharp.Models.PackageVersionRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.PackageVersionResponse> { throw new Error("Implemented by decorator"); }
+    public packageversion(request: OmniSharp.Models.PackageVersionRequest, options?: OmniSharp.RequestOptions): Promise<OmniSharp.Models.PackageVersionResponse> { throw new Error("Implemented by decorator"); }
 
     @request(preconditions.rename)
-    public rename(request: OmniSharp.Models.RenameRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.RenameResponse> { throw new Error("Implemented by decorator"); }
+    public rename(request: OmniSharp.Models.RenameRequest, options?: OmniSharp.RequestOptions): Promise<OmniSharp.Models.RenameResponse> { throw new Error("Implemented by decorator"); }
 
     @request(preconditions.signatureHelp)
-    public signatureHelp(request: OmniSharp.Models.SignatureHelpRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.SignatureHelp> { throw new Error("Implemented by decorator"); }
+    public signatureHelp(request: OmniSharp.Models.SignatureHelpRequest, options?: OmniSharp.RequestOptions): Promise<OmniSharp.Models.SignatureHelp> { throw new Error("Implemented by decorator"); }
 
     @request()
     public stopserver(request: any, options?: OmniSharp.RequestOptions) { throw new Error("Implemented by decorator"); }
@@ -444,28 +474,28 @@ export class ReactiveClient implements IReactiveDriver, IDisposable {
     public checkreadystatus(options?: OmniSharp.RequestOptions) { throw new Error("Implemented by decorator"); }
 
     @request(preconditions.currentfilemembersastree)
-    public currentfilemembersastree(request: OmniSharp.Models.MembersTreeRequest, options?: OmniSharp.RequestOptions): Observable<any> { throw new Error("Implemented by decorator"); }
+    public currentfilemembersastree(request: OmniSharp.Models.MembersTreeRequest, options?: OmniSharp.RequestOptions): Promise<any> { throw new Error("Implemented by decorator"); }
 
     @request(preconditions.currentfilemembersasflat)
-    public currentfilemembersasflat(request: OmniSharp.Models.MembersFlatRequest, options?: OmniSharp.RequestOptions): Observable<any> { throw new Error("Implemented by decorator"); }
+    public currentfilemembersasflat(request: OmniSharp.Models.MembersFlatRequest, options?: OmniSharp.RequestOptions): Promise<any> { throw new Error("Implemented by decorator"); }
 
     @request(preconditions.typelookup)
-    public typelookup(request: OmniSharp.Models.TypeLookupRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.TypeLookupResponse> { throw new Error("Implemented by decorator"); }
+    public typelookup(request: OmniSharp.Models.TypeLookupRequest, options?: OmniSharp.RequestOptions): Promise<OmniSharp.Models.TypeLookupResponse> { throw new Error("Implemented by decorator"); }
 
     @request(preconditions.filesChanged)
-    public filesChanged(request: OmniSharp.Models.Request[], options?: OmniSharp.RequestOptions): Observable<boolean> { throw new Error("Implemented by decorator"); }
+    public filesChanged(request: OmniSharp.Models.Request[], options?: OmniSharp.RequestOptions): Promise<boolean> { throw new Error("Implemented by decorator"); }
 
     @request(preconditions.projects)
-    public projects(request: OmniSharp.Models.v1.WorkspaceInformationRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.WorkspaceInformationResponse> { throw new Error("Implemented by decorator"); }
+    public projects(request: OmniSharp.Models.v1.WorkspaceInformationRequest, options?: OmniSharp.RequestOptions): Promise<OmniSharp.Models.WorkspaceInformationResponse> { throw new Error("Implemented by decorator"); }
 
     @request(preconditions.project)
-    public project(request: OmniSharp.Models.v1.ProjectInformationRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.ProjectInformationResponse> { throw new Error("Implemented by decorator"); }
+    public project(request: OmniSharp.Models.v1.ProjectInformationRequest, options?: OmniSharp.RequestOptions): Promise<OmniSharp.Models.ProjectInformationResponse> { throw new Error("Implemented by decorator"); }
 
     @request(preconditions.gettestcontext)
-    public gettestcontext(request: OmniSharp.Models.TestCommandRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.GetTestCommandResponse> { throw new Error("Implemented by decorator"); }
+    public gettestcontext(request: OmniSharp.Models.TestCommandRequest, options?: OmniSharp.RequestOptions): Promise<OmniSharp.Models.GetTestCommandResponse> { throw new Error("Implemented by decorator"); }
 }
 
-export class ReactiveClientEvents implements OmniSharp.Events {
+export class ClientEventsCore implements OmniSharp.Events {
     constructor(private _client: ReactiveClient) { }
 
     public get uniqueId() { return this._client.uniqueId; }

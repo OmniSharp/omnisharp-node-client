@@ -54,8 +54,10 @@ export interface IDriver extends IDisposable {
     runtime: Runtime;
 }
 
-export interface IAsyncDriver extends IDisposable {
+export interface IAsyncDriver extends IDriver {
     request<TRequest, TResponse>(command: string, request?: TRequest): PromiseLike<TResponse>;
+    onEvent(callback: (event: OmniSharp.Stdio.Protocol.EventPacket) => void): IDisposable;
+    onState(callback: (state: DriverState) => void): IDisposable;
 }
 
 export interface IReactiveDriver extends IDriver {
@@ -70,8 +72,7 @@ export interface IPluginDriver extends IDriver {
 
 export function isPluginDriver(driver: any): driver is IPluginDriver { return !!(<any>driver).updatePlugins; }
 
-export interface OmnisharpClientOptions extends IDriverCoreOptions {
-    driver?: (options: IDriverOptions) => IReactiveDriver;
+export interface CoreClientOptions extends IDriverCoreOptions {
     oneBasedIndices?: boolean;
     statusSampleTime?: number;
     responseSampleTime?: number;
@@ -90,6 +91,14 @@ export interface OmnisharpClientOptions extends IDriverCoreOptions {
             tabSize?: number;
         }
     };
+}
+
+export interface AsyncClientOptions extends CoreClientOptions {
+    driver?: (options: IDriverOptions) => IAsyncDriver;
+}
+
+export interface ReactiveClientOptions extends CoreClientOptions {
+    driver?: (options: IDriverOptions) => IReactiveDriver;
 }
 
 export interface IOmnisharpPlugin {
