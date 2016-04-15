@@ -1,8 +1,8 @@
 /// <reference path="./tsd.d.ts" />
 import {expect} from "chai";
-import {Driver, DriverState} from "../lib/enums";
+import {DriverState} from "../lib/enums";
 import {resolve} from "path";
-import {ClientV2 as OmnisharpClient} from "../lib/clients/client-v2";
+import {ReactiveClient as OmnisharpClient} from "../lib/reactive/reactive-client";
 import _ from "lodash";
 import {Observable} from "rxjs";
 
@@ -15,13 +15,6 @@ describe("Omnisharp Server", function() {
         });
     });
 
-    it("must construct with a specific driver", () => {
-        new OmnisharpClient({
-            driver: Driver.Stdio,
-            projectPath: process.cwd()
-        });
-    });
-
     describe("state", function() {
 
         this.timeout(60000 * 10);
@@ -29,7 +22,6 @@ describe("Omnisharp Server", function() {
 
         beforeEach((done) => {
             server = new OmnisharpClient({
-                driver: Driver.Stdio,
                 projectPath: process.cwd()
             });
 
@@ -76,7 +68,6 @@ describe("Omnisharp Server", function() {
         this.timeout(60000 * 10);
         it("should call with given omnisharp parameters", function(done) {
             const server = new OmnisharpClient({
-                driver: Driver.Stdio,
                 projectPath: resolve(__dirname, "../"),
                 logger: {
                     log: (message) => {
@@ -98,7 +89,6 @@ describe("Omnisharp Server", function() {
 
         it("should call with given omnisharp parameters (formatting)", function(done) {
             const server = new OmnisharpClient({
-                driver: Driver.Stdio,
                 projectPath: resolve(__dirname, "../"),
                 logger: {
                     log: (message) => {
