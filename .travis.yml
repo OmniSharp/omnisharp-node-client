@@ -47,9 +47,9 @@ install:
   - node --version
   - chmod +x publish.sh
   - if [ "$BREW_MONO" = "true" ]; then brew update; brew install mono; fi
-script:
   - npm install
-  - npm test
+script:
+  - travis_retry npm test
 after_success:
   - echo TRAVIS_SECURE_ENV_VARS = $TRAVIS_SECURE_ENV_VARS
   - echo TRAVIS_BRANCH = $TRAVIS_BRANCH

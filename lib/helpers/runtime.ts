@@ -113,7 +113,6 @@ export class RuntimeContext {
     }
 
     private _getOsName() {
-        console.log("key", SupportedPlatform[this._platform], supportedPlatformNames[SupportedPlatform[this._platform]]);
         return supportedPlatformNames[SupportedPlatform[this._platform]];
     }
 

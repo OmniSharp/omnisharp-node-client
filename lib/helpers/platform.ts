@@ -3,7 +3,7 @@ import {execSync} from "child_process";
 export const supportedPlatformNames: { [index: string]: string; } = {
     get None() { return ""; },
     get Windows() { return "win"; },
-    get OSX() { return "darwin"; },
+    get OSX() { return "osx"; },
     get Ubuntu() { return "ubuntu"; },
     get CentOS() { return "centos"; },
     get RHEL() { return "rhel"; },
