@@ -40,7 +40,7 @@ var win32 = "win32" === process.platform;
  * @property {string} cwd - Working directory for the command.
  */
 
-export const spawn: typeof cp.spawn = function spawn(cmd, args, opts) {
+export const spawn: typeof cp.spawn = function spawn(cmd: any, args: any, opts: any) {
     if (win32) {
         // If we couldn't find the file, likely we'll end up failing,
         // but for things like "del", cmd will do the trick.

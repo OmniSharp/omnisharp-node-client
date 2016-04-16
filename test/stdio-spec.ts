@@ -2,39 +2,43 @@
 import {expect} from "chai";
 import {resolve} from "path";
 import {StdioDriver} from "../lib/drivers/stdio";
+import {noop, once} from "lodash";
 
 declare const xdescribe: Function;
-
 
 describe("Omnisharp Local - Stdio", function() {
     it("must construct", () => {
         new StdioDriver({
-            projectPath: resolve(__dirname, "../")
+            projectPath: resolve(__dirname, "../"),
+            onEvent: noop,
+            onState: noop,
+            onCommand: noop
         });
     });
 
     it("must construct with a specific driver", () => {
         new StdioDriver({
-            projectPath: resolve(__dirname, "../")
+            projectPath: resolve(__dirname, "../"),
+            onEvent: noop,
+            onState: noop,
+            onCommand: noop
         });
     });
 
     describe("properties", function() {
         this.timeout(60000);
         it("should implement the interface", function(done) {
+            done = once(done);
             const server = new StdioDriver({
-                projectPath: resolve(__dirname, "../")
-            });
-
-            const sub = server.state.subscribe(state => {
-                expect(server.currentState).to.be.not.null;
-                expect(server.commands).to.be.not.null;
-                expect(server.events).to.be.not.null;
-                expect(server.state).to.be.not.null;
-                expect(server.outstandingRequests).to.be.not.null;
-                sub.unsubscribe();
-                server.disconnect();
-                done();
+                projectPath: resolve(__dirname, "../"),
+                onEvent: noop,
+                onState(v) {
+                    expect(server.currentState).to.be.not.null;
+                    expect(server.outstandingRequests).to.be.not.null;
+                    server.disconnect();
+                    done();
+                },
+                onCommand: noop
             });
             server.connect();
         });

@@ -1,11 +1,11 @@
 import * as OmniSharp from "../omnisharp-server";
 import {IDriver, IDriverOptions, ILogger, Runtime, IOmnisharpPlugin} from "../enums";
-import {defaults, startsWith} from "lodash";
+import {defaults, startsWith, noop} from "lodash";
 import {DriverState} from "../enums";
 import cp, {ChildProcess} from "child_process";
 import * as readline from "readline";
 import {CompositeDisposable, Disposable} from "../disposables";
-import {Observable, Subject, AsyncSubject} from "rxjs";
+import {Observable, AsyncSubject} from "rxjs";
 import {RuntimeContext, isSupportedRuntime} from "../helpers/runtime";
 
 let spawn = cp.spawn;
@@ -14,7 +14,6 @@ if (process.platform === "win32") {
 }
 
 let env: any = defaults({ ATOM_SHELL_INTERNAL_RUN_AS_NODE: "1" }, process.env);
-
 export class StdioDriver implements IDriver {
     private _seq: number;
     private _process: ChildProcess;
@@ -34,14 +33,16 @@ export class StdioDriver implements IDriver {
     private _runtimeContext: RuntimeContext;
     public id: string;
 
-    private _currentState: DriverState = DriverState.Disconnected;
-    public get currentState() { return this._currentState; }
-    public set currentState(value) { this._currentState = value; }
 
-    constructor({projectPath, serverPath, findProject, logger, timeout, additionalArguments, runtime, plugins, version}: IDriverOptions) {
+    private _onEvent: (event: OmniSharp.Stdio.Protocol.EventPacket) => void;
+    private _onCommand: (event: OmniSharp.Stdio.Protocol.ResponsePacket) => void;
+    private _onState: (state: DriverState) => void;
+
+    public currentState: DriverState = DriverState.Disconnected;
+
+    constructor({projectPath, serverPath, findProject, logger, timeout, additionalArguments, runtime, plugins, version, onEvent, onState, onCommand}: IDriverOptions) {
         this._projectPath = projectPath;
         this._findProject = findProject || false;
-        this._connectionStream.subscribe(state => this.currentState = state);
         this._logger = logger || console;
         this._serverPath = serverPath;
         this._timeout = (timeout || 60) * 1000;
@@ -49,6 +50,9 @@ export class StdioDriver implements IDriver {
         this._additionalArguments = additionalArguments;
         this._plugins = plugins;
         this._version = version;
+        this._onEvent = onEvent || noop;
+        this._onState = (state) => { if (state !== this.currentState) (onState || noop)(state);};
+        this._onCommand = onCommand || noop;
 
         this._runtimeContext = this._getRuntimeContext();
 
@@ -59,18 +63,6 @@ export class StdioDriver implements IDriver {
         }));
 
         this._disposable.add(Disposable.create(() => {
-            const iterator = this._outstandingRequests.entries();
-            let iteratee = iterator.next();
-
-            while (!iteratee.done) {
-                const [key, disposable] = iteratee.value;
-
-                this._outstandingRequests.delete(key);
-                disposable.unsubscribe();
-
-                iteratee = iterator.next();
-            }
-
             this._outstandingRequests.clear();
         }));
     }
@@ -96,18 +88,9 @@ export class StdioDriver implements IDriver {
         }
         return this._runtimeContext.location;
     }
+
     public get projectPath() { return this._projectPath; }
     public get runtime() { return this._runtime; }
-
-    private _commandStream = new Subject<OmniSharp.Stdio.Protocol.ResponsePacket>();
-    public get commands(): Observable<OmniSharp.Stdio.Protocol.ResponsePacket> { return <Observable<OmniSharp.Stdio.Protocol.ResponsePacket>><any>this._commandStream; }
-
-    private _eventStream = new Subject<OmniSharp.Stdio.Protocol.EventPacket>();
-    public get events(): Observable<OmniSharp.Stdio.Protocol.EventPacket> { return <Observable<OmniSharp.Stdio.Protocol.EventPacket>><any>this._eventStream; }
-
-    private _connectionStream = new Subject<DriverState>();
-    public get state(): Observable<DriverState> { return <Observable<DriverState>><any>this._connectionStream; }
-
     public get outstandingRequests() { return this._outstandingRequests.size; }
 
     public connect() {
@@ -115,7 +98,7 @@ export class StdioDriver implements IDriver {
             throw new Error("Driver is disposed");
 
         this._ensureRuntimeExists()
-            .subscribe({ complete: () => this._connect() });
+            .then(() => this._connect());
         /*
         Enable once we can push a new build again
         this._disposable.add(this._ensureBootstrapExists()
@@ -126,7 +109,7 @@ export class StdioDriver implements IDriver {
     private _connect() {
         this._seq = 1;
         this._outstandingRequests.clear();
-        this._connectionStream.next(DriverState.Connecting);
+        this._onState(DriverState.Connecting);
 
         let path = this.serverPath;
 
@@ -169,19 +152,20 @@ export class StdioDriver implements IDriver {
     }
 
     private _ensureRuntimeExists() {
-        this._connectionStream.next(DriverState.Downloading);
-        return Observable.fromPromise(isSupportedRuntime(this._runtimeContext)
-            .do((ctx) => {
+        this._onState(DriverState.Downloading);
+        return isSupportedRuntime(this._runtimeContext)
+            .toPromise()
+            .then((ctx) => {
                 this._runtime = ctx.runtime;
                 this._PATH = ctx.path;
                 this._runtimeContext = this._getRuntimeContext();
+                return ctx;
             })
-            .toPromise()
             .then((runtime) =>
                 this._runtimeContext.downloadRuntimeIfMissing()
-                    .do({ complete: () => { this._connectionStream.next(DriverState.Downloaded); } })
                     .toPromise()
-            ));
+                    .then(() => { this._onState(DriverState.Downloaded); })
+            );
     }
 
     /*private _ensureBootstrapExists() {
@@ -197,10 +181,10 @@ export class StdioDriver implements IDriver {
 
     private serverErr(data: any) {
         const friendlyMessage = this.parseError(data);
-        this._connectionStream.next(DriverState.Error);
+        this._onState(DriverState.Error);
         this._process = null;
 
-        this._eventStream.next({
+        this._onEvent({
             Type: "error",
             Event: "error",
             Seq: -1,
@@ -223,10 +207,10 @@ export class StdioDriver implements IDriver {
             this._process.kill("SIGTERM");
         }
         this._process = null;
-        this._connectionStream.next(DriverState.Disconnected);
+        this._onState(DriverState.Disconnected);
     }
 
-    public request<TRequest, TResponse>(command: string, request?: TRequest): Observable<TResponse> {
+    public request<TRequest, TResponse>(command: string, request?: TRequest): PromiseLike<TResponse> {
         if (!this._process) {
             return <any>Observable.throw<any>(new Error("Server is not connected, erroring out"));
         }
@@ -239,9 +223,22 @@ export class StdioDriver implements IDriver {
         };
 
         const subject = new AsyncSubject<TResponse>();
+        const response = subject
+            .asObservable()
+            .timeout(this._timeout, Observable.throw<any>("Request timed out"));
+
+        // Doing a little bit of tickery here
+        // Going to return this Observable, as if it were promise like.
+        // And we will only commit to the promise once someone calls then on it.
+        // This way another client, can cast the result to an observable, and gain cancelation
+        const promiseLike: PromiseLike<TResponse> = <any>response;
+        promiseLike.then = (fulfilled: Function, rejected: Function) => {
+            return response.toPromise().then(<any>fulfilled, <any>rejected);
+        };
+
         this._outstandingRequests.set(sequence, subject);
         this._process.stdin.write(JSON.stringify(packet) + "\n", "utf8");
-        return subject.timeout(this._timeout, Observable.throw<any>("Request timed out"));
+        return promiseLike;
     }
 
     private handleData(data: string) {
@@ -267,7 +264,6 @@ export class StdioDriver implements IDriver {
 
     private handlePacketResponse(response: OmniSharp.Stdio.Protocol.ResponsePacket) {
         if (this._outstandingRequests.has(response.Request_seq)) {
-
             const observer = this._outstandingRequests.get(response.Request_seq);
             this._outstandingRequests.delete(response.Request_seq);
             if (observer.isUnsubscribed) return;
@@ -277,10 +273,9 @@ export class StdioDriver implements IDriver {
             } else {
                 observer.error(response.Message);
             }
-
         } else {
             if (response.Success) {
-                this._commandStream.next(response);
+                this._onCommand(response);
             } else {
                 // TODO: make notification?
             }
@@ -288,15 +283,15 @@ export class StdioDriver implements IDriver {
     }
 
     private handlePacketEvent(event: OmniSharp.Stdio.Protocol.EventPacket) {
-        this._eventStream.next(event);
+        this._onEvent(event);
         if (event.Event === "started") {
-            this._connectionStream.next(DriverState.Connected);
+            this._onState(DriverState.Connected);
         }
     }
 
     private handleNonPacket(data: any) {
         const s = data.toString();
-        this._eventStream.next({
+        this._onEvent({
             Type: "unknown",
             Event: "unknown",
             Seq: -1,

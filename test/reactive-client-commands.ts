@@ -1,6 +1,6 @@
 /// <reference path="./tsd.d.ts" />
 import {expect} from "chai";
-import {ClientV2 as OmnisharpClient} from "../lib/clients/client-v2";
+import {ReactiveClient as OmnisharpClient} from "../lib/reactive/reactive-client";
 
 declare const xdescribe: Function;
 

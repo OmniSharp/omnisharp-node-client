@@ -8,6 +8,7 @@ import {createObservable} from "../operators/create";
 import "rxjs/add/operator/max";
 import "rxjs/add/operator/isEmpty";
 require("rxjs/add/observable/if");
+import {SupportedPlatform, supportedPlatformNames, supportedPlatform, getSupportedPlatform} from "./platform";
 
 const request: { get(url: string): NodeJS.ReadableStream; } = require("request");
 const defaultServerVersion = require(resolve(__dirname, "../../package.json"))["omnisharp-roslyn"];
@@ -29,7 +30,7 @@ export interface IRuntimeContext {
 
 export class RuntimeContext {
     private _runtime: Runtime;
-    private _platform: string;
+    private _platform: SupportedPlatform;
     private _arch: string;
     private _bootstrap: string;
     private _version: string;
@@ -55,7 +56,9 @@ export class RuntimeContext {
         }
 
         if (isNull(this._platform) || isUndefined(this._platform)) {
-            this._platform = process.platform;
+            this._platform = supportedPlatform;
+        } else {
+            this._platform = getSupportedPlatform(runtimeContext.platform);
         }
 
         if (isNull(this._arch) || isUndefined(this._arch)) {
@@ -93,14 +96,14 @@ export class RuntimeContext {
     public get location() { return this._location; }
 
     private _getIdKey() {
-        if (this._platform !== "win32" && this._runtime === Runtime.ClrOrMono) {
+        if (this._platform !== SupportedPlatform.Windows && this._runtime === Runtime.ClrOrMono) {
             return `linux-mono`;
         }
 
-        let runtimeName = "dnxcore50";
+        let runtimeName = "netcoreapp1.0";
         if (this._runtime === Runtime.ClrOrMono) {
-            if (this._platform === "win32") {
-                runtimeName = "dnx451";
+            if (this._platform === SupportedPlatform.Windows) {
+                runtimeName = "net451";
             } else {
                 runtimeName = "mono";
             }
@@ -110,11 +113,7 @@ export class RuntimeContext {
     }
 
     private _getOsName() {
-        if (this._platform === "win32")
-            return "win";
-        if (this._platform === "darwin")
-            return "osx";
-        return this._platform;
+        return supportedPlatformNames[SupportedPlatform[this._platform]];
     }
 
     /* tslint:disable:no-string-literal */
@@ -200,7 +199,7 @@ export class RuntimeContext {
     }
 
     private _downloadSpecificRuntime(name: string) {
-        const filename = `${name}-${this._key}.${this._platform === "win32" ? "zip" : "tar.gz"}`;
+        const filename = `${name}-${this._key}.${this._platform === SupportedPlatform.Windows ? "zip" : "tar.gz"}`;
         const destination = this._destination;
         try {
             if (!fs.existsSync(destination))
@@ -212,7 +211,7 @@ export class RuntimeContext {
 
         return Observable.defer(() => Observable.concat(
             this.downloadFile(url, path).delay(100),
-            Observable.defer(() => this._extract(this._platform === "win32", path, destination))
+            Observable.defer(() => this._extract(this._platform === SupportedPlatform.Windows, path, destination))
         )
             .do({ complete: () => { try { fs.unlinkSync(path); } catch (e) { /* */ } } })
             .subscribeOn(Scheduler.async))
@@ -256,7 +255,7 @@ export const isSupportedRuntime = memoize(function(ctx: RuntimeContext) {
     return Observable.defer(() => {
         // On windows we'll just use the clr, it's there
         // On mac / linux if we've picked CoreClr stick with that
-        if (ctx.platform === "win32" || ctx.runtime === Runtime.CoreClr) {
+        if (ctx.platform === SupportedPlatform.Windows || ctx.runtime === Runtime.CoreClr) {
             return Observable.of({ runtime: ctx.runtime, path: process.env.PATH });
         }
 

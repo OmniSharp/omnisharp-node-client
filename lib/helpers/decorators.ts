@@ -1,6 +1,7 @@
-import * as OmniSharp from "./omnisharp-server";
+import * as OmniSharp from "../omnisharp-server";
 import _ from "lodash";
-import {Subject} from "rxjs";
+import {Subject, Observable} from "rxjs";
+import {ResponseContext} from "../contexts";
 
 export function isNotNull(method: Function) {
     return function isNotNull(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
@@ -56,56 +57,54 @@ export function precondition(method: Function, ...decorators: MethodDecorator[])
     };
 }
 
-export function endpoint(version = 1) {
+export function request(decorators?: Array<MethodDecorator | number>, version = 1) {
     let format = (name: string) => name;
     if (version > 1) {
         format = (name) => `v${version}/${name}`;
     }
     return function endpoint(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
         const name = format(propertyKey);
+        const methods = _.map(decorators, (decorator: MethodDecorator) => {
+            descriptor.value = _.noop;
+            decorator(target, propertyKey, descriptor);
+            return descriptor.value;
+        });
         descriptor.value = function(request: OmniSharp.Models.Request, options: any) {
+            this._fixup(propertyKey, request, options);
+            methods.forEach(m => m.call(this, request));
             return this.request(name, request, options);
         };
         descriptor.enumerable = true;
     };
 }
 
-export function fixup(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
-    const value = descriptor.value;
-    descriptor.value = function(request: OmniSharp.Models.Request, options: any) {
-        this._fixup(propertyKey, request, options);
-        return value.apply(this, arguments);
-    };
-}
-
-export function watchCommand(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
+export function response(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
     const internalKey = `__${propertyKey}__`;
     descriptor.get = function() {
-        const instance = this._client || this;
-        if (!instance._commandWatchers.get(propertyKey)) {
-            const subject = new Subject<any>();
-            const observable = subject.share();
-
-            instance._commandWatchers.set(propertyKey.toLowerCase(), [subject, observable]);
-            this[internalKey] = observable;
+        if (!this[internalKey]) {
+            const instance = this._client || this;
+            const stream: Subject<ResponseContext<any, any>> = instance._getResponseStream(propertyKey);
+            this[internalKey] = stream.asObservable()
+                .filter(x => !x.silent)
+                .share();
         }
+
         return this[internalKey];
     };
     descriptor.enumerable = true;
 }
 
-export function watchEvent(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
+export function event(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
     const internalKey = `__${propertyKey}__`;
     const eventKey = propertyKey[0].toUpperCase() + propertyKey.substr(1);
     descriptor.get = function() {
-        const instance = this._client || this;
-        if (!instance._eventWatchers.get(eventKey)) {
-            const subject = new Subject<any>();
-            const observable = subject.share();
-
-            instance._eventWatchers.set(eventKey, [subject, observable]);
-            this[internalKey] = observable;
+        if (!this[internalKey]) {
+            const instance = this._client || this;
+            this[internalKey] = (<Observable<OmniSharp.Stdio.Protocol.EventPacket>>instance._eventsStream)
+                .filter(x => x.Event === eventKey)
+                .share();
         }
+
         return this[internalKey];
     };
     descriptor.enumerable = true;
@@ -141,26 +140,3 @@ export function reference(target: Object, propertyKey: string, descriptor: Typed
     descriptor.get = function() { return this._client[propertyKey]; };
 }
 
-export function inheritProperties(source: any, dest: any) {
-    _.each(_.keys(source.prototype), key => {
-        const descriptor = Object.getOwnPropertyDescriptor(source.prototype, key);
-        const isDefined = !!_.has(dest.prototype, key);
-        if (descriptor && !isDefined) {
-            if (_.has(descriptor, "value") || _.has(descriptor, "writable")) {
-                Object.defineProperty(dest.prototype, key, {
-                    configurable: descriptor.configurable,
-                    enumerable: descriptor.enumerable,
-                    value: descriptor.value,
-                    writable: descriptor.writable,
-                });
-            } else {
-                Object.defineProperty(dest.prototype, key, {
-                    configurable: descriptor.configurable,
-                    enumerable: descriptor.enumerable,
-                    get: descriptor.get,
-                    set: descriptor.set
-                });
-            }
-        }
-    });
-}

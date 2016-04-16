@@ -3,12 +3,6 @@ import {IDisposable} from "./disposables";
 import {Observable} from "rxjs";
 import {RequestContext, ResponseContext, CommandContext} from "./contexts";
 
-export enum Driver {
-    Http,
-    Stdio,
-    //TODO: Websocket,
-}
-
 export enum DriverState {
     Disconnected,
     Downloading,
@@ -25,16 +19,12 @@ export enum Runtime {
     CoreClr
 }
 
-export interface IStaticDriver {
-    new (options: IDriverOptions): IDriver;
-}
-
 export interface ILogger {
     log(...values: any[]): void;
     error(...values: any[]): void;
 }
 
-export interface IDriverOptions {
+export interface IDriverCoreOptions {
     projectPath: string;
     remote?: boolean;
     debug?: boolean; // Start the debug server? (Run from source, to attach with a debug host like VS)
@@ -48,18 +38,32 @@ export interface IDriverOptions {
     version?: string;
 }
 
+export interface IDriverOptions extends IDriverCoreOptions {
+    onEvent: (event: OmniSharp.Stdio.Protocol.EventPacket) => void;
+    onCommand: (event: OmniSharp.Stdio.Protocol.ResponsePacket) => void;
+    onState: (state: DriverState) => void;
+}
+
 export interface IDriver extends IDisposable {
     id: string;
     connect(): void;
     currentState: DriverState;
-    events: Observable<OmniSharp.Stdio.Protocol.EventPacket>;
-    commands: Observable<OmniSharp.Stdio.Protocol.ResponsePacket>;
-    state: Observable<DriverState>;
     disconnect(): void;
     serverPath: string;
     projectPath: string;
     runtime: Runtime;
+}
+
+export interface IAsyncDriver extends IDriver {
+    request<TRequest, TResponse>(command: string, request?: TRequest): PromiseLike<TResponse>;
+    onEvent(callback: (event: OmniSharp.Stdio.Protocol.EventPacket) => void): IDisposable;
+    onState(callback: (state: DriverState) => void): IDisposable;
+}
+
+export interface IReactiveDriver extends IDriver {
     request<TRequest, TResponse>(command: string, request?: TRequest): Observable<TResponse>;
+    events: Observable<OmniSharp.Stdio.Protocol.EventPacket>;
+    state: Observable<DriverState>;
 }
 
 export interface IPluginDriver extends IDriver {
@@ -68,8 +72,7 @@ export interface IPluginDriver extends IDriver {
 
 export function isPluginDriver(driver: any): driver is IPluginDriver { return !!(<any>driver).updatePlugins; }
 
-export interface OmnisharpClientOptions extends IDriverOptions {
-    driver?: Driver;
+export interface CoreClientOptions extends IDriverCoreOptions {
     oneBasedIndices?: boolean;
     statusSampleTime?: number;
     responseSampleTime?: number;
@@ -88,6 +91,14 @@ export interface OmnisharpClientOptions extends IDriverOptions {
             tabSize?: number;
         }
     };
+}
+
+export interface AsyncClientOptions extends CoreClientOptions {
+    driver?: (options: IDriverOptions) => IAsyncDriver;
+}
+
+export interface ReactiveClientOptions extends CoreClientOptions {
+    driver?: (options: IDriverOptions) => IReactiveDriver;
 }
 
 export interface IOmnisharpPlugin {

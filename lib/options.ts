@@ -1,7 +1,7 @@
 import _ from "lodash";
-import {OmnisharpClientOptions} from "./enums";
+import {CoreClientOptions} from "./enums";
 
-export function ensureClientOptions(options: OmnisharpClientOptions) {
+export function ensureClientOptions(options: CoreClientOptions) {
     if (options.statusSampleTime) options.statusSampleTime = 500;
     if (options.responseSampleTime) options.responseSampleTime = 100;
     if (options.concurrency) options.concurrency = 4;
