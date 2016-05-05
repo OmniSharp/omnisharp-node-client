@@ -39,7 +39,7 @@
     "rimraf": "^2.5.2",
     "rxjs": "^5.0.0-beta.4",
     "strip-bom": "^2.0.0",
-    "yargs": "^4.2.0"
+    "yargs": "^4.7.0"
   },
   "devDependencies": {
     "babel-plugin-transform-es2015-modules-commonjs": "^6.7.7",
