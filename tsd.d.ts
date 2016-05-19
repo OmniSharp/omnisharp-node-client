@@ -1,6 +1,6 @@
-/// <reference path="typings/main/ambient/chai/index.d.ts" />
-/// <reference path="typings/main/ambient/node/index.d.ts" />
-/// <reference path="typings/main/definitions/lodash/index.d.ts" />
+/// <reference path="typings/globals/node/index.d.ts" />
+/// <reference path="typings/modules/chai/index.d.ts" />
+/// <reference path="typings/modules/lodash/index.d.ts" />
 
 declare module chai {
     interface Assert {

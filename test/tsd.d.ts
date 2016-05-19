@@ -1,1 +1,1 @@
-/// <reference path="../typings/main/ambient/mocha/index.d.ts" />
+/// <reference path="../typings/globals/mocha/index.d.ts" />
