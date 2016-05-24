@@ -47,7 +47,7 @@ install:
   - node --version
   - chmod +x publish.sh
   - if [ "$BREW_MONO" = "true" ]; then brew update; brew install mono; fi
-  - npm install
+  - travis_retry npm install
 script:
   - travis_retry npm test
 after_success:
