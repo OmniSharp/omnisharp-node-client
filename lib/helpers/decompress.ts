@@ -2,20 +2,12 @@ export interface IDecompressOptions {
     mode?: string;
     strip?: number;
 }
-export interface IDecompress {
-    new (options: IDecompressOptions): IDecompress;
-    src(fileOrFiles: string | Buffer | string[]): IDecompress;
-    dest(path: string): IDecompress;
-    use(plugin: any): IDecompress;
-    run(cb: Function): void;
-}
-export interface IDecompressStatic {
-    new (options: IDecompressOptions): IDecompress;
-    tar(options: IDecompressOptions): any;
-    tarbz2(options: IDecompressOptions): any;
-    targz(options: IDecompressOptions): any;
-    zip(options: IDecompressOptions): any;
-}
+import _ from "lodash";
 /* tslint:disable:variable-name */
-export const Decompress: IDecompressStatic = require("decompress");
+const d = require("decompress");
 /* tslint:enable:variable-name */
+export function decompress(input: string, output?: string, options?: IDecompressOptions): Promise<string[]> {
+    return d(input, output, _.assign(options, {
+        plugins: [require("decompress-targz")(), require("decompress-unzip")()]
+    }));
+}

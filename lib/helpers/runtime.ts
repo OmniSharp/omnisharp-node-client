@@ -3,7 +3,7 @@ import {resolve, join, delimiter} from "path";
 import * as fs from "fs";
 import {ILogger, Runtime} from "../enums";
 import {find, delay, bind, memoize, assignWith, isNull, isUndefined, toLower} from "lodash";
-import {Decompress} from "./decompress";
+import {decompress} from "./decompress";
 import {createObservable} from "../operators/create";
 import "rxjs/add/operator/max";
 import "rxjs/add/operator/isEmpty";
@@ -233,21 +233,8 @@ export class RuntimeContext {
     }
 
     private _extract(win32: boolean, path: string, dest: string) {
-        return createObservable<void>((observer) => {
-            this._logger.log(`Extracting ${path}`);
-            console.log(path, dest);
-            new Decompress({ mode: "755" })
-                .src(path)
-                .dest(dest)
-                .run((err: any, files: any) => {
-                    if (err) {
-                        observer.error(err);
-                        return;
-                    }
-                    this._logger.log(`Finished extracting ${path}`);
-                    observer.complete();
-                });
-        });
+        this._logger.log(`Extracting ${path}`);
+        return decompress(path, dest, { mode: "755" });
     }
 }
 
