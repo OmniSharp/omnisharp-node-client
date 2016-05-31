@@ -14,6 +14,10 @@ export module Models {
         PreprocessorKeyword = 9,
         ExcludedCode = 10
     }
+    export interface SyntaxFeature {
+        Name: string;
+        Data: string;
+    }
     export interface AutoCompleteRequest extends Models.Request {
         WordToComplete?: string;
         WantDocumentationForEveryCompletionResult?: boolean;
@@ -82,6 +86,13 @@ export module Models {
         Text: string;
         Projects: string[];
     }
+    export interface DiagnosticMessage {
+        Results: Models.DiagnosticResult[];
+    }
+    export interface DiagnosticResult {
+        FilePath: string;
+        Diagnostics: Models.DiagnosticLocation[];
+    }
     export interface ErrorMessage {
         Text: string;
         FileName: string;
@@ -90,14 +101,23 @@ export module Models {
     }
     export interface EventTypes {
     }
+    export interface FileCloseRequest extends Models.Request {
+    }
+    export interface FileCloseResponse {
+    }
     export interface FileMemberElement {
         ChildNodes: Models.FileMemberElement[];
         Location: Models.QuickFix;
         Kind: string;
+        Features: Models.SyntaxFeature[];
         Projects: string[];
     }
     export interface FileMemberTree {
         TopLevelTypeDefinitions: Models.FileMemberElement[];
+    }
+    export interface FileOpenRequest extends Models.Request {
+    }
+    export interface FileOpenResponse {
     }
     export interface FilesChangedRequest {
     }
@@ -460,6 +480,8 @@ export module Api {
         autocomplete(request: Models.AutoCompleteRequest, options?: RequestOptions): Observable<Models.AutoCompleteResponse[]>;
         // 'changebuffer'
         changebuffer(request: Models.ChangeBufferRequest, options?: RequestOptions): Observable<any>;
+        // 'close'
+        close(request: Models.FileCloseRequest, options?: RequestOptions): Observable<Models.FileCloseResponse>;
         // 'codecheck'
         codecheck(request: Models.CodeCheckRequest, options?: RequestOptions): Observable<Models.QuickFixResponse>;
         // 'codeformat'
@@ -500,6 +522,8 @@ export module Api {
         navigatedown(request: Models.NavigateDownRequest, options?: RequestOptions): Observable<Models.NavigateResponse>;
         // 'navigateup'
         navigateup(request: Models.NavigateUpRequest, options?: RequestOptions): Observable<Models.NavigateResponse>;
+        // 'open'
+        open(request: Models.FileOpenRequest, options?: RequestOptions): Observable<Models.FileOpenResponse>;
         // 'packagesearch'
         packagesearch(request: Models.PackageSearchRequest, options?: RequestOptions): Observable<Models.PackageSearchResponse>;
         // 'packagesource'
@@ -527,6 +551,8 @@ export module Api {
         autocomplete(request: Models.AutoCompleteRequest, options?: RequestOptions): Observable<Models.AutoCompleteResponse[]>;
         // 'changebuffer'
         changebuffer(request: Models.ChangeBufferRequest, options?: RequestOptions): Observable<any>;
+        // 'close'
+        close(request: Models.FileCloseRequest, options?: RequestOptions): Observable<Models.FileCloseResponse>;
         // 'codecheck'
         codecheck(request: Models.CodeCheckRequest, options?: RequestOptions): Observable<Models.QuickFixResponse>;
         // 'codeformat'
@@ -567,6 +593,8 @@ export module Api {
         navigatedown(request: Models.NavigateDownRequest, options?: RequestOptions): Observable<Models.NavigateResponse>;
         // 'navigateup'
         navigateup(request: Models.NavigateUpRequest, options?: RequestOptions): Observable<Models.NavigateResponse>;
+        // 'open'
+        open(request: Models.FileOpenRequest, options?: RequestOptions): Observable<Models.FileOpenResponse>;
         // 'packagesearch'
         packagesearch(request: Models.PackageSearchRequest, options?: RequestOptions): Observable<Models.PackageSearchResponse>;
         // 'packagesource'
@@ -597,6 +625,8 @@ export module Events {
         autocomplete: Observable<Context<Models.AutoCompleteRequest, Models.AutoCompleteResponse[]>>;
         // 'changebuffer'
         changebuffer: Observable<Context<Models.ChangeBufferRequest, any>>;
+        // 'close'
+        close: Observable<Context<Models.FileCloseRequest, Models.FileCloseResponse>>;
         // 'codecheck'
         codecheck: Observable<Context<Models.CodeCheckRequest, Models.QuickFixResponse>>;
         // 'codeformat'
@@ -637,6 +667,8 @@ export module Events {
         navigatedown: Observable<Context<Models.NavigateDownRequest, Models.NavigateResponse>>;
         // 'navigateup'
         navigateup: Observable<Context<Models.NavigateUpRequest, Models.NavigateResponse>>;
+        // 'open'
+        open: Observable<Context<Models.FileOpenRequest, Models.FileOpenResponse>>;
         // 'packagesearch'
         packagesearch: Observable<Context<Models.PackageSearchRequest, Models.PackageSearchResponse>>;
         // 'packagesource'
@@ -664,6 +696,8 @@ export module Events {
         autocomplete: Observable<Context<Models.AutoCompleteRequest, Models.AutoCompleteResponse[]>>;
         // 'changebuffer'
         changebuffer: Observable<Context<Models.ChangeBufferRequest, any>>;
+        // 'close'
+        close: Observable<Context<Models.FileCloseRequest, Models.FileCloseResponse>>;
         // 'codecheck'
         codecheck: Observable<Context<Models.CodeCheckRequest, Models.QuickFixResponse>>;
         // 'codeformat'
@@ -704,6 +738,8 @@ export module Events {
         navigatedown: Observable<Context<Models.NavigateDownRequest, Models.NavigateResponse>>;
         // 'navigateup'
         navigateup: Observable<Context<Models.NavigateUpRequest, Models.NavigateResponse>>;
+        // 'open'
+        open: Observable<Context<Models.FileOpenRequest, Models.FileOpenResponse>>;
         // 'packagesearch'
         packagesearch: Observable<Context<Models.PackageSearchRequest, Models.PackageSearchResponse>>;
         // 'packagesource'
@@ -734,6 +770,8 @@ export module Events.Aggregate {
         autocomplete: Observable<CombinationKey<Context<Models.AutoCompleteRequest, Models.AutoCompleteResponse[]>>[]>;
         // 'changebuffer'
         changebuffer: Observable<CombinationKey<Context<Models.ChangeBufferRequest, any>>[]>;
+        // 'close'
+        close: Observable<CombinationKey<Context<Models.FileCloseRequest, Models.FileCloseResponse>>[]>;
         // 'codecheck'
         codecheck: Observable<CombinationKey<Context<Models.CodeCheckRequest, Models.QuickFixResponse>>[]>;
         // 'codeformat'
@@ -774,6 +812,8 @@ export module Events.Aggregate {
         navigatedown: Observable<CombinationKey<Context<Models.NavigateDownRequest, Models.NavigateResponse>>[]>;
         // 'navigateup'
         navigateup: Observable<CombinationKey<Context<Models.NavigateUpRequest, Models.NavigateResponse>>[]>;
+        // 'open'
+        open: Observable<CombinationKey<Context<Models.FileOpenRequest, Models.FileOpenResponse>>[]>;
         // 'packagesearch'
         packagesearch: Observable<CombinationKey<Context<Models.PackageSearchRequest, Models.PackageSearchResponse>>[]>;
         // 'packagesource'
@@ -801,6 +841,8 @@ export module Events.Aggregate {
         autocomplete: Observable<CombinationKey<Context<Models.AutoCompleteRequest, Models.AutoCompleteResponse[]>>[]>;
         // 'changebuffer'
         changebuffer: Observable<CombinationKey<Context<Models.ChangeBufferRequest, any>>[]>;
+        // 'close'
+        close: Observable<CombinationKey<Context<Models.FileCloseRequest, Models.FileCloseResponse>>[]>;
         // 'codecheck'
         codecheck: Observable<CombinationKey<Context<Models.CodeCheckRequest, Models.QuickFixResponse>>[]>;
         // 'codeformat'
@@ -841,6 +883,8 @@ export module Events.Aggregate {
         navigatedown: Observable<CombinationKey<Context<Models.NavigateDownRequest, Models.NavigateResponse>>[]>;
         // 'navigateup'
         navigateup: Observable<CombinationKey<Context<Models.NavigateUpRequest, Models.NavigateResponse>>[]>;
+        // 'open'
+        open: Observable<CombinationKey<Context<Models.FileOpenRequest, Models.FileOpenResponse>>[]>;
         // 'packagesearch'
         packagesearch: Observable<CombinationKey<Context<Models.PackageSearchRequest, Models.PackageSearchResponse>>[]>;
         // 'packagesource'
@@ -870,6 +914,7 @@ export module Events.Aggregate {
         projectChanged: Observable<Models.ProjectInformationResponse>;
         projectRemoved: Observable<Models.ProjectInformationResponse>;
         error: Observable<Models.ErrorMessage>;
+        diagnostic: Observable<Models.DiagnosticMessage>;
         msBuildProjectDiagnostics: Observable<Models.MSBuildProjectDiagnostics>;
         packageRestoreStarted: Observable<Models.PackageRestoreMessage>;
         packageRestoreFinished: Observable<Models.PackageRestoreMessage>;
@@ -882,6 +927,7 @@ export module Aggregate {
         projectChanged: Observable<CombinationKey<Models.ProjectInformationResponse>[]>;
         projectRemoved: Observable<CombinationKey<Models.ProjectInformationResponse>[]>;
         error: Observable<CombinationKey<Models.ErrorMessage>[]>;
+        diagnostic: Observable<CombinationKey<Models.DiagnosticMessage>[]>;
         msBuildProjectDiagnostics: Observable<CombinationKey<Models.MSBuildProjectDiagnostics>[]>;
         packageRestoreStarted: Observable<CombinationKey<Models.PackageRestoreMessage>[]>;
         packageRestoreFinished: Observable<CombinationKey<Models.PackageRestoreMessage>[]>;

@@ -42,7 +42,7 @@ function pausable<T>(incomingStream: Observable<T>, pauser: Observable<boolean>)
     });
 }
 
-export class ReactiveClient implements IReactiveDriver, IDisposable {
+export class ReactiveClient implements IReactiveDriver, IDisposable, OmniSharp.Api.V2 {
     public static serverLineNumbers = serverLineNumbers;
     public static serverLineNumberArrays = serverLineNumberArrays;
 
@@ -405,6 +405,12 @@ export class ReactiveClient implements IReactiveDriver, IDisposable {
     public navigateup(request: OmniSharp.Models.NavigateUpRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.NavigateResponse> { throw new Error("Implemented by decorator"); }
 
     @request(preconditions.gotofile)
+    public open(request?: OmniSharp.Models.FileOpenRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.FileOpenResponse> { throw new Error("Implemented by decorator"); }
+
+    @request(preconditions.gotofile)
+    public close(request?: OmniSharp.Models.FileCloseRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.FileCloseResponse> { throw new Error("Implemented by decorator"); }
+
+    @request(preconditions.gotofile)
     public gotofile(request?: OmniSharp.Models.GotoFileRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.QuickFixResponse> { throw new Error("Implemented by decorator"); }
 
     @request(preconditions.gotoregion)
@@ -470,6 +476,7 @@ export class ReactiveClientEvents implements OmniSharp.Events {
 
     public get uniqueId() { return this._client.uniqueId; }
 
+    @event public get diagnostic(): Observable<OmniSharp.Models.DiagnosticMessage> { throw new Error("Implemented by decorator"); }
     @event public get projectAdded(): Observable<OmniSharp.Models.ProjectInformationResponse> { throw new Error("Implemented by decorator"); }
     @event public get projectChanged(): Observable<OmniSharp.Models.ProjectInformationResponse> { throw new Error("Implemented by decorator"); }
     @event public get projectRemoved(): Observable<OmniSharp.Models.ProjectInformationResponse> { throw new Error("Implemented by decorator"); }

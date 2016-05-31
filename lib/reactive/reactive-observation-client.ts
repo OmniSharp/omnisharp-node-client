@@ -13,6 +13,7 @@ export class ReactiveObservationClient<TClient extends ReactiveClient> implement
     private _clientDisposable = new CompositeDisposable();
     protected _clientsSubject = new ReplaySubject<TClient[]>(1);
 
+    @merge public get diagnostic(): Observable<OmniSharp.Models.DiagnosticMessage> { throw new Error("Implemented by decorator"); }
     @merge public get projectAdded(): Observable<OmniSharp.Models.ProjectInformationResponse> { throw new Error("Implemented by decorator"); }
     @merge public get projectChanged(): Observable<OmniSharp.Models.ProjectInformationResponse> { throw new Error("Implemented by decorator"); }
     @merge public get projectRemoved(): Observable<OmniSharp.Models.ProjectInformationResponse> { throw new Error("Implemented by decorator"); }
@@ -77,6 +78,8 @@ export class ReactiveObservationClient<TClient extends ReactiveClient> implement
     @merge public get getcodeactions(): Observable<Context<Models.V2.GetCodeActionsRequest, Models.V2.GetCodeActionsResponse>> { throw new Error("Implemented by decorator"); }
     @merge public get gettestcontext(): Observable<Context<Models.TestCommandRequest, Models.GetTestCommandResponse>> { throw new Error("Implemented by decorator"); }
     @merge public get gotodefinition(): Observable<Context<Models.GotoDefinitionRequest, Models.GotoDefinitionResponse>> { throw new Error("Implemented by decorator"); }
+    @merge public get open(): Observable<Context<Models.FileOpenRequest, Models.FileOpenResponse>> { throw new Error("Implemented by decorator"); }
+    @merge public get close(): Observable<Context<Models.FileCloseRequest, Models.FileCloseResponse>> { throw new Error("Implemented by decorator"); }
     @merge public get gotofile(): Observable<Context<Models.GotoFileRequest, Models.QuickFixResponse>> { throw new Error("Implemented by decorator"); }
     @merge public get gotoregion(): Observable<Context<Models.GotoRegionRequest, Models.QuickFixResponse>> { throw new Error("Implemented by decorator"); }
     @merge public get highlight(): Observable<Context<Models.HighlightRequest, Models.HighlightResponse>> { throw new Error("Implemented by decorator"); }

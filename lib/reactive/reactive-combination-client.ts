@@ -12,6 +12,7 @@ export class ReactiveCombinationClient<TClient extends ReactiveClient> implement
     private _clientDisposable = new CompositeDisposable();
     public _clientsSubject = new ReplaySubject<TClient[]>(1);
 
+    @aggregate public get diagnostic(): Observable<OmniSharp.CombinationKey<OmniSharp.Models.DiagnosticMessage>[]> { throw new Error("Implemented by decorator"); }
     @aggregate public get projectAdded(): Observable<OmniSharp.CombinationKey<OmniSharp.Models.ProjectInformationResponse>[]> { throw new Error("Implemented by decorator"); }
     @aggregate public get projectChanged(): Observable<OmniSharp.CombinationKey<OmniSharp.Models.ProjectInformationResponse>[]> { throw new Error("Implemented by decorator"); }
     @aggregate public get projectRemoved(): Observable<OmniSharp.CombinationKey<OmniSharp.Models.ProjectInformationResponse>[]> { throw new Error("Implemented by decorator"); }
@@ -96,6 +97,8 @@ export class ReactiveCombinationClient<TClient extends ReactiveClient> implement
     @aggregate public get getcodeactions(): Observable<CombinationKey<Context<Models.V2.GetCodeActionsRequest, Models.V2.GetCodeActionsResponse>>[]> { throw new Error("Implemented by decorator"); }
     @aggregate public get gettestcontext(): Observable<CombinationKey<Context<Models.TestCommandRequest, Models.GetTestCommandResponse>>[]> { throw new Error("Implemented by decorator"); }
     @aggregate public get gotodefinition(): Observable<CombinationKey<Context<Models.GotoDefinitionRequest, Models.GotoDefinitionResponse>>[]> { throw new Error("Implemented by decorator"); }
+    @aggregate public get open(): Observable<CombinationKey<Context<Models.FileOpenRequest, Models.FileOpenResponse>>[]> { throw new Error("Implemented by decorator"); }
+    @aggregate public get close(): Observable<CombinationKey<Context<Models.FileCloseRequest, Models.FileCloseResponse>>[]> { throw new Error("Implemented by decorator"); }
     @aggregate public get gotofile(): Observable<CombinationKey<Context<Models.GotoFileRequest, Models.QuickFixResponse>>[]> { throw new Error("Implemented by decorator"); }
     @aggregate public get gotoregion(): Observable<CombinationKey<Context<Models.GotoRegionRequest, Models.QuickFixResponse>>[]> { throw new Error("Implemented by decorator"); }
     @aggregate public get highlight(): Observable<CombinationKey<Context<Models.HighlightRequest, Models.HighlightResponse>>[]> { throw new Error("Implemented by decorator"); }
