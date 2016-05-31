@@ -33,6 +33,8 @@ namespace OmniSharp.TypeScriptGeneration
                     return typeof(PackageRestoreMessage).FullName;
                 case nameof(EventTypes.UnresolvedDependencies):
                     return typeof(UnresolvedDependenciesMessage).FullName;
+                case nameof(EventTypes.Diagnostic):
+                    return typeof(DiagnosticMessage).FullName;
                 default:
                     return "any";
             }

@@ -14,7 +14,7 @@
         "OmniSharp.Stdio": "1.0.0-*"
     },
     "frameworks": {
-        "dnx451": { }
+        "net451": { }
     },
     "runtimes": {
       "win7-x64": {}

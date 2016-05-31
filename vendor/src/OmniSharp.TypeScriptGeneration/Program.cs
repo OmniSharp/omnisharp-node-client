@@ -42,7 +42,7 @@ namespace OmniSharp.TypeScriptGeneration
 declare module {OmnisharpControllerExtractor.InferNamespace(typeof(Request)).TrimEnd('.')} {{
     interface ProjectInformationResponse {{
         MsBuildProject: OmniSharp.Models.MSBuildProject;
-        DotNetProject: OmniSharp.Models.DotNetProject;
+        DotNetProject: OmniSharp.Models.DotNetProjectInformation;
     }}
 
     interface WorkspaceInformationResponse {{
