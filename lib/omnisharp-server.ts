@@ -469,7 +469,6 @@ export module ScriptCs {
     export interface RequestOptions
     {
         silent?: boolean;
-        oneBasedIndices?: boolean
     }
     export interface CombinationKey<T>
     {
@@ -963,4 +962,4 @@ export module Models {
         ScriptCs: ScriptCs.ScriptCsContext;
     }
 }
-            
+

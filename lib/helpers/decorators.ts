@@ -23,7 +23,7 @@ export function isAboveZero(method: Function) {
     return function isAboveZero(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
         const value = descriptor.value;
         descriptor.value = function (request: OmniSharp.Models.Request) {
-            const minValue = (this._options.oneBasedIndices ? 1 : 0) - 1;
+            const minValue = -1;
             const result = method(request);
             if (result === null || result === undefined) {
                 return;

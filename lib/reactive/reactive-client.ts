@@ -6,7 +6,6 @@ import {IReactiveDriver, IDriverOptions, OmnisharpClientStatus, ReactiveClientOp
 /*import {IOmnisharpPlugin, isPluginDriver} from "../enums";*/
 import {DriverState, Runtime} from "../enums";
 import {RequestContext, ResponseContext, CommandContext} from "../contexts";
-import {serverLineNumbers, serverLineNumberArrays} from "../response-handling";
 import {ensureClientOptions} from "../options";
 import {event, reference, request, response} from "../helpers/decorators";
 import * as preconditions from "../helpers/preconditions";
@@ -43,9 +42,6 @@ function pausable<T>(incomingStream: Observable<T>, pauser: Observable<boolean>)
 }
 
 export class ReactiveClient implements IReactiveDriver, IDisposable, OmniSharp.Api.V2 {
-    public static serverLineNumbers = serverLineNumbers;
-    public static serverLineNumberArrays = serverLineNumberArrays;
-
     private _driver: IReactiveDriver;
     private _requestStream = new Subject<RequestContext<any>>();
     private _responseStream = new Subject<ResponseContext<any, any>>();
@@ -53,7 +49,7 @@ export class ReactiveClient implements IReactiveDriver, IDisposable, OmniSharp.A
     private _statusStream: Observable<OmnisharpClientStatus>;
     private _errorStream = new Subject<CommandContext<any>>();
     private _uniqueId = uniqueId("client");
-    protected _lowestIndexValue: number;
+    protected _lowestIndexValue = 0;
     private _disposable = new CompositeDisposable();
     //private _pluginManager: PluginManager;
 
@@ -135,8 +131,6 @@ export class ReactiveClient implements IReactiveDriver, IDisposable, OmniSharp.A
                 driver.updatePlugins(this._pluginManager.plugins);
             }
         }));*/
-
-        this._lowestIndexValue = _options.oneBasedIndices ? 1 : 0;
 
         this._disposable.add(this._requestStream.subscribe(x => this._currentRequests.add(x)));
 
@@ -305,8 +299,6 @@ export class ReactiveClient implements IReactiveDriver, IDisposable, OmniSharp.A
 
     public request<TRequest, TResponse>(action: string, request: TRequest, options?: OmniSharp.RequestOptions): Observable<TResponse> {
         if (!options) options = <OmniSharp.RequestOptions>{};
-        defaults(options, { oneBasedIndices: this._options.oneBasedIndices });
-
         // Handle disconnected requests
         if (this.currentState !== DriverState.Connected && this.currentState !== DriverState.Error) {
             const response = new AsyncSubject<TResponse>();

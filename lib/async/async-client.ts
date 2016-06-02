@@ -6,7 +6,6 @@ import {IAsyncDriver, IDriverOptions, OmnisharpClientStatus, AsyncClientOptions}
 /*import {IOmnisharpPlugin, isPluginDriver} from "../enums";*/
 import {DriverState, Runtime} from "../enums";
 import {RequestContext, ResponseContext, CommandContext} from "../contexts";
-import {serverLineNumbers, serverLineNumberArrays} from "../response-handling";
 import {ensureClientOptions} from "../options";
 import {/*event, reference, */request/*, response*/} from "../helpers/decorators";
 import * as preconditions from "../helpers/preconditions";
@@ -30,9 +29,6 @@ export class AsyncEvents {
 }
 
 export class AsyncClient implements IAsyncDriver, IDisposable {
-    public static serverLineNumbers = serverLineNumbers;
-    public static serverLineNumberArrays = serverLineNumberArrays;
-
     private _emitter = new EventEmitter();
     private _queue: Queue<PromiseLike<ResponseContext<any, any>>>;
     private _listen(event: string, callback: Function): IDisposable {
@@ -42,7 +38,7 @@ export class AsyncClient implements IAsyncDriver, IDisposable {
 
     private _driver: IAsyncDriver;
     private _uniqueId = uniqueId("client");
-    protected _lowestIndexValue: number;
+    protected _lowestIndexValue = 0;
     private _disposable = new CompositeDisposable();
     //private _pluginManager: PluginManager;
 
@@ -143,8 +139,6 @@ export class AsyncClient implements IAsyncDriver, IDisposable {
                 driver.updatePlugins(this._pluginManager.plugins);
             }
         }));*/
-
-        this._lowestIndexValue = _options.oneBasedIndices ? 1 : 0;
 
         const getStatusValues = () => <OmnisharpClientStatus>({
             state: this._driver.currentState,
@@ -258,8 +252,6 @@ export class AsyncClient implements IAsyncDriver, IDisposable {
 
     public request<TRequest, TResponse>(action: string, request: TRequest, options?: OmniSharp.RequestOptions): Promise<TResponse> {
         if (!options) options = <OmniSharp.RequestOptions>{};
-        defaults(options, { oneBasedIndices: this._options.oneBasedIndices });
-
         // Handle disconnected requests
         if (this.currentState !== DriverState.Connected && this.currentState !== DriverState.Error) {
             return new Promise<TResponse>((resolve, reject) => {
