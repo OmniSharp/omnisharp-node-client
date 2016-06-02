@@ -61,7 +61,7 @@ export function request(decorators?: Array<MethodDecorator | number>) {
     return function endpoint(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
         const version = OmniSharp.Api.getVersion(propertyKey);
         let format = (name: string) => name;
-        if (version === "v1") {
+        if (version !== "v1") {
             format = (name) => `${version}/${name}`;
         }
 
