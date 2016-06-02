@@ -90,8 +90,8 @@ export module Models {
         Results: Models.DiagnosticResult[];
     }
     export interface DiagnosticResult {
-        FilePath: string;
-        Diagnostics: Models.DiagnosticLocation[];
+        FileName: string;
+        QuickFixes: Models.DiagnosticLocation[];
     }
     export interface ErrorMessage {
         Text: string;
@@ -354,6 +354,10 @@ export module Models.V2 {
         Identifier: string;
         Name: string;
     }
+    export interface CodeCheckRequest extends Models.Request {
+    }
+    export interface CodeCheckResponse {
+    }
     export interface GetCodeActionsRequest extends Models.Request {
         Selection?: Models.V2.Range;
     }
@@ -554,7 +558,7 @@ export module Api {
         // 'close'
         close(request: Models.FileCloseRequest, options?: RequestOptions): Observable<Models.FileCloseResponse>;
         // 'codecheck'
-        codecheck(request: Models.CodeCheckRequest, options?: RequestOptions): Observable<Models.QuickFixResponse>;
+        codecheck(request: Models.V2.CodeCheckRequest, options?: RequestOptions): Observable<Models.V2.CodeCheckResponse>;
         // 'codeformat'
         codeformat(request: Models.CodeFormatRequest, options?: RequestOptions): Observable<Models.CodeFormatResponse>;
         // 'currentfilemembersasflat'
@@ -699,7 +703,7 @@ export module Events {
         // 'close'
         close: Observable<Context<Models.FileCloseRequest, Models.FileCloseResponse>>;
         // 'codecheck'
-        codecheck: Observable<Context<Models.CodeCheckRequest, Models.QuickFixResponse>>;
+        codecheck: Observable<Context<Models.V2.CodeCheckRequest, Models.V2.CodeCheckResponse>>;
         // 'codeformat'
         codeformat: Observable<Context<Models.CodeFormatRequest, Models.CodeFormatResponse>>;
         // 'currentfilemembersasflat'
@@ -844,7 +848,7 @@ export module Events.Aggregate {
         // 'close'
         close: Observable<CombinationKey<Context<Models.FileCloseRequest, Models.FileCloseResponse>>[]>;
         // 'codecheck'
-        codecheck: Observable<CombinationKey<Context<Models.CodeCheckRequest, Models.QuickFixResponse>>[]>;
+        codecheck: Observable<CombinationKey<Context<Models.V2.CodeCheckRequest, Models.V2.CodeCheckResponse>>[]>;
         // 'codeformat'
         codeformat: Observable<CombinationKey<Context<Models.CodeFormatRequest, Models.CodeFormatResponse>>[]>;
         // 'currentfilemembersasflat'

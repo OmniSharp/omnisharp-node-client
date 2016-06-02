@@ -102,6 +102,7 @@ export function event(target: Object, propertyKey: string, descriptor: TypedProp
             const instance = this._client || this;
             this[internalKey] = (<Observable<OmniSharp.Stdio.Protocol.EventPacket>>instance._eventsStream)
                 .filter(x => x.Event === eventKey)
+                .map(x => x.Body)
                 .share();
         }
 
