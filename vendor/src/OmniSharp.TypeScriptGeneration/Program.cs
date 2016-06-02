@@ -65,14 +65,18 @@ declare module {OmnisharpControllerExtractor.InferNamespace(typeof(Request)).Tri
             var lines = result.Split('\n');
             var opens = 0;
 
-            for (var i = 0; i < lines.Length; i++) {
-                if (lines[i].Contains('{')) {
+            for (var i = 0; i < lines.Length; i++)
+            {
+                if (lines[i].Contains('{'))
+                {
                     opens++;
                 }
-                    if (lines[i].Contains('}')) {
-                        opens--;
-                    }
-                if (opens < 0 && lines[i].TrimEnd().Length == 1) {
+                if (lines[i].Contains('}'))
+                {
+                    opens--;
+                }
+                if (opens < 0 && lines[i].TrimEnd().Length == 1)
+                {
                     lines[i] = string.Empty;
                     opens = 0;
                 }
@@ -85,6 +89,48 @@ declare module {OmnisharpControllerExtractor.InferNamespace(typeof(Request)).Tri
             if (!string.IsNullOrWhiteSpace(path))
             {
                 File.WriteAllText(Path.Combine(path, "lib", "omnisharp-server.ts"), result);
+
+                var augmentationMethods = OmnisharpAugmentationExtractor.GetAugmentationMethods().ToArray();
+
+                foreach (var item in augmentationMethods)
+                {
+                    File.WriteAllText(Path.Combine(path, "lib", item.Type, "method", item.Name + "-" + item.Version + ".ts"), item.Value);
+                }
+
+                var augmentationEvents = OmnisharpAugmentationExtractor.GetAugmentationEvents().ToArray();
+
+                foreach (var item in augmentationEvents)
+                {
+                    File.WriteAllText(Path.Combine(path, "lib", item.Type, "response", item.Name + "-" + item.Version + ".ts"), item.Value);
+                }
+
+                var augmentationServerEvents = OmnisharpAugmentationExtractor.GetAugmentationServerEvents().ToArray();
+
+                foreach (var item in augmentationServerEvents)
+                {
+                    File.WriteAllText(Path.Combine(path, "lib", item.Type, "event", item.Name + ".ts"), item.Value);
+                }
+
+                var latestMethods = augmentationMethods.GroupBy(x => x.Name + x.Type)
+                    .SelectMany(x => x.Where(z => z.VersionNumber == x.Max(c => c.VersionNumber)));
+                var latestEvents = augmentationMethods.GroupBy(x => x.Name + x.Type)
+                    .SelectMany(x => x.Where(z => z.VersionNumber == x.Max(c => c.VersionNumber)));
+                var serverEvents = augmentationServerEvents;
+
+                var augmentationValues = latestMethods.Where(x => x.Type == "reactive").Select(x => $"import \"./method/{x.Name}-{x.Version}\";\n");
+                augmentationValues = augmentationValues.Concat(
+                    latestEvents.Select(x => $"import \"./response/{x.Name}-{x.Version}\";\n")
+                );
+
+                var reativeAugmentationValues = augmentationValues.Concat(
+                    serverEvents.Select(x => $"import \"./event/{x.Name}\";\n")
+                );
+
+                File.WriteAllText(Path.Combine(path, "lib", "reactive", "reactive-client.ts"),
+                    "export * from \"./reactive-client\";\nimport \"./reference/reference-events\";\n" + string.Join("", reativeAugmentationValues.Distinct()));
+
+                File.WriteAllText(Path.Combine(path, "lib", "async", "async-client.ts"),
+                    "export * from \"./async-client\";\n" + string.Join("", augmentationValues.Distinct()));
             }
             else
             {
@@ -95,7 +141,7 @@ declare module {OmnisharpControllerExtractor.InferNamespace(typeof(Request)).Tri
 
         private static IEnumerable<Type> GetApplicableTypes()
         {
-            var allTypes = new [] {
+            var allTypes = new[] {
                 typeof(OmniSharp.Startup).Assembly,
                 typeof(OmniSharp.Models.Request).Assembly,
                 typeof(OmniSharp.DotNet.Models.DotNetFramework).Assembly,
@@ -111,7 +157,8 @@ declare module {OmnisharpControllerExtractor.InferNamespace(typeof(Request)).Tri
 
             var models = allTypes
                 .Where(z => z.IsPublic && z.FullName.Contains("Models."))
-                .Select(x => {
+                .Select(x =>
+                {
                     Console.WriteLine(x.FullName);
                     return x;
                 })
@@ -120,14 +167,15 @@ declare module {OmnisharpControllerExtractor.InferNamespace(typeof(Request)).Tri
 
             var stdioProtocol = allTypes
                 .Where(z => z.IsPublic && z.FullName.StartsWith(OmnisharpControllerExtractor.InferNamespace(typeof(Packet)), StringComparison.Ordinal))
-                .Select(x => {
+                .Select(x =>
+                {
                     Console.WriteLine(x.FullName);
                     return x;
                 });
 
             var scriptCs = typeof(OmniSharp.ScriptCs.ScriptCsContext);
 
-            return models.Union(stdioProtocol).Union(new[] {typeof(OmniSharp.ScriptCs.ScriptCsContext)}).ToArray();
+            return models.Union(stdioProtocol).Union(new[] { typeof(OmniSharp.ScriptCs.ScriptCsContext) }).ToArray();
         }
     }
 }

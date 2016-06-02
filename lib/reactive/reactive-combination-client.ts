@@ -5,25 +5,12 @@ import {DriverState} from "../enums";
 import {OmnisharpClientStatus} from "../enums";
 import {aggregate} from "../helpers/decorators";
 import OmniSharp, {Context, Models, CombinationKey} from "../omnisharp-server";
-import {ReactiveClient} from "./reactive-client";
+import {ReactiveClient} from "./reactive-client-base";
 
-export class ReactiveCombinationClient<TClient extends ReactiveClient> implements OmniSharp.Aggregate.Events, OmniSharp.Events.Aggregate.V2, IDisposable {
+export class ReactiveCombinationClient<TClient extends ReactiveClient> implements IDisposable {
     protected _disposable = new CompositeDisposable();
     private _clientDisposable = new CompositeDisposable();
     public _clientsSubject = new ReplaySubject<TClient[]>(1);
-
-    @aggregate public get diagnostic(): Observable<OmniSharp.CombinationKey<OmniSharp.Models.DiagnosticMessage>[]> { throw new Error("Implemented by decorator"); }
-    @aggregate public get projectAdded(): Observable<OmniSharp.CombinationKey<OmniSharp.Models.ProjectInformationResponse>[]> { throw new Error("Implemented by decorator"); }
-    @aggregate public get projectChanged(): Observable<OmniSharp.CombinationKey<OmniSharp.Models.ProjectInformationResponse>[]> { throw new Error("Implemented by decorator"); }
-    @aggregate public get projectRemoved(): Observable<OmniSharp.CombinationKey<OmniSharp.Models.ProjectInformationResponse>[]> { throw new Error("Implemented by decorator"); }
-    @aggregate public get error(): Observable<OmniSharp.CombinationKey<OmniSharp.Models.ErrorMessage>[]> { throw new Error("Implemented by decorator"); }
-    @aggregate public get msBuildProjectDiagnostics(): Observable<OmniSharp.CombinationKey<OmniSharp.Models.MSBuildProjectDiagnostics>[]> { throw new Error("Implemented by decorator"); }
-    @aggregate public get packageRestoreStarted(): Observable<OmniSharp.CombinationKey<OmniSharp.Models.PackageRestoreMessage>[]> { throw new Error("Implemented by decorator"); }
-    @aggregate public get packageRestoreFinished(): Observable<OmniSharp.CombinationKey<OmniSharp.Models.PackageRestoreMessage>[]> { throw new Error("Implemented by decorator"); }
-    @aggregate public get unresolvedDependencies(): Observable<OmniSharp.CombinationKey<OmniSharp.Models.UnresolvedDependenciesMessage>[]> { throw new Error("Implemented by decorator"); }
-
-    @aggregate public get state(): Observable<OmniSharp.CombinationKey<DriverState>[]> { throw new Error("Implemented by decorator"); }
-    @aggregate public get status(): Observable<OmniSharp.CombinationKey<OmnisharpClientStatus>[]> { throw new Error("Implemented by decorator"); }
 
     constructor(private clients: TClient[] = []) {
         this.next();

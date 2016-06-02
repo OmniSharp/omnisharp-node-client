@@ -483,6 +483,8 @@ export module Api {
         autocomplete(request: Models.AutoCompleteRequest, options?: RequestOptions): Observable<Models.AutoCompleteResponse[]>;
         // 'changebuffer'
         changebuffer(request: Models.ChangeBufferRequest, options?: RequestOptions): Observable<any>;
+        checkalivestatus(options?: RequestOptions): Observable<boolean>;
+        checkreadystatus(options?: RequestOptions): Observable<boolean>;
         // 'close'
         close(request: Models.FileCloseRequest, options?: RequestOptions): Observable<Models.FileCloseResponse>;
         // 'codecheck'
@@ -543,6 +545,7 @@ export module Api {
         runcodeaction(request: Models.RunCodeActionRequest, options?: RequestOptions): Observable<Models.RunCodeActionResponse>;
         // 'signatureHelp'
         signatureHelp(request: Models.SignatureHelpRequest, options?: RequestOptions): Observable<Models.SignatureHelp>;
+        stopserver(options?: RequestOptions): Observable<boolean>;
         // 'typelookup'
         typelookup(request: Models.TypeLookupRequest, options?: RequestOptions): Observable<Models.TypeLookupResponse>;
         // 'updatebuffer'
@@ -554,6 +557,8 @@ export module Api {
         autocomplete(request: Models.AutoCompleteRequest, options?: RequestOptions): Observable<Models.AutoCompleteResponse[]>;
         // 'changebuffer'
         changebuffer(request: Models.ChangeBufferRequest, options?: RequestOptions): Observable<any>;
+        checkalivestatus(options?: RequestOptions): Observable<boolean>;
+        checkreadystatus(options?: RequestOptions): Observable<boolean>;
         // 'close'
         close(request: Models.FileCloseRequest, options?: RequestOptions): Observable<Models.FileCloseResponse>;
         // 'codecheck'
@@ -614,6 +619,7 @@ export module Api {
         runcodeaction(request: Models.V2.RunCodeActionRequest, options?: RequestOptions): Observable<Models.V2.RunCodeActionResponse>;
         // 'signatureHelp'
         signatureHelp(request: Models.SignatureHelpRequest, options?: RequestOptions): Observable<Models.SignatureHelp>;
+        stopserver(options?: RequestOptions): Observable<boolean>;
         // 'typelookup'
         typelookup(request: Models.TypeLookupRequest, options?: RequestOptions): Observable<Models.TypeLookupResponse>;
         // 'updatebuffer'
@@ -640,6 +646,8 @@ export module Events {
         autocomplete: Observable<Context<Models.AutoCompleteRequest, Models.AutoCompleteResponse[]>>;
         // 'changebuffer'
         changebuffer: Observable<Context<Models.ChangeBufferRequest, any>>;
+        checkalivestatus: Observable<Context<any, boolean>>;
+        checkreadystatus: Observable<Context<any, boolean>>;
         // 'close'
         close: Observable<Context<Models.FileCloseRequest, Models.FileCloseResponse>>;
         // 'codecheck'
@@ -700,6 +708,7 @@ export module Events {
         runcodeaction: Observable<Context<Models.RunCodeActionRequest, Models.RunCodeActionResponse>>;
         // 'signatureHelp'
         signatureHelp: Observable<Context<Models.SignatureHelpRequest, Models.SignatureHelp>>;
+        stopserver: Observable<Context<any, boolean>>;
         // 'typelookup'
         typelookup: Observable<Context<Models.TypeLookupRequest, Models.TypeLookupResponse>>;
         // 'updatebuffer'
@@ -711,6 +720,8 @@ export module Events {
         autocomplete: Observable<Context<Models.AutoCompleteRequest, Models.AutoCompleteResponse[]>>;
         // 'changebuffer'
         changebuffer: Observable<Context<Models.ChangeBufferRequest, any>>;
+        checkalivestatus: Observable<Context<any, boolean>>;
+        checkreadystatus: Observable<Context<any, boolean>>;
         // 'close'
         close: Observable<Context<Models.FileCloseRequest, Models.FileCloseResponse>>;
         // 'codecheck'
@@ -771,6 +782,7 @@ export module Events {
         runcodeaction: Observable<Context<Models.V2.RunCodeActionRequest, Models.V2.RunCodeActionResponse>>;
         // 'signatureHelp'
         signatureHelp: Observable<Context<Models.SignatureHelpRequest, Models.SignatureHelp>>;
+        stopserver: Observable<Context<any, boolean>>;
         // 'typelookup'
         typelookup: Observable<Context<Models.TypeLookupRequest, Models.TypeLookupResponse>>;
         // 'updatebuffer'
@@ -785,6 +797,8 @@ export module Events.Aggregate {
         autocomplete: Observable<CombinationKey<Context<Models.AutoCompleteRequest, Models.AutoCompleteResponse[]>>[]>;
         // 'changebuffer'
         changebuffer: Observable<CombinationKey<Context<Models.ChangeBufferRequest, any>>[]>;
+        checkalivestatus: Observable<CombinationKey<Context<any, boolean>>>;
+        checkreadystatus: Observable<CombinationKey<Context<any, boolean>>>;
         // 'close'
         close: Observable<CombinationKey<Context<Models.FileCloseRequest, Models.FileCloseResponse>>[]>;
         // 'codecheck'
@@ -845,6 +859,7 @@ export module Events.Aggregate {
         runcodeaction: Observable<CombinationKey<Context<Models.RunCodeActionRequest, Models.RunCodeActionResponse>>[]>;
         // 'signatureHelp'
         signatureHelp: Observable<CombinationKey<Context<Models.SignatureHelpRequest, Models.SignatureHelp>>[]>;
+        stopserver: Observable<CombinationKey<Context<any, boolean>>>;
         // 'typelookup'
         typelookup: Observable<CombinationKey<Context<Models.TypeLookupRequest, Models.TypeLookupResponse>>[]>;
         // 'updatebuffer'
@@ -856,6 +871,8 @@ export module Events.Aggregate {
         autocomplete: Observable<CombinationKey<Context<Models.AutoCompleteRequest, Models.AutoCompleteResponse[]>>[]>;
         // 'changebuffer'
         changebuffer: Observable<CombinationKey<Context<Models.ChangeBufferRequest, any>>[]>;
+        checkalivestatus: Observable<CombinationKey<Context<any, boolean>>>;
+        checkreadystatus: Observable<CombinationKey<Context<any, boolean>>>;
         // 'close'
         close: Observable<CombinationKey<Context<Models.FileCloseRequest, Models.FileCloseResponse>>[]>;
         // 'codecheck'
@@ -916,6 +933,7 @@ export module Events.Aggregate {
         runcodeaction: Observable<CombinationKey<Context<Models.V2.RunCodeActionRequest, Models.V2.RunCodeActionResponse>>[]>;
         // 'signatureHelp'
         signatureHelp: Observable<CombinationKey<Context<Models.SignatureHelpRequest, Models.SignatureHelp>>[]>;
+        stopserver: Observable<CombinationKey<Context<any, boolean>>>;
         // 'typelookup'
         typelookup: Observable<CombinationKey<Context<Models.TypeLookupRequest, Models.TypeLookupResponse>>[]>;
         // 'updatebuffer'
@@ -962,4 +980,4 @@ export module Models {
         ScriptCs: ScriptCs.ScriptCsContext;
     }
 }
-
+            

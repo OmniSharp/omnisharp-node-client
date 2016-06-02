@@ -57,30 +57,37 @@ export function precondition(method: Function, ...decorators: MethodDecorator[])
     };
 }
 
-export function request(decorators?: Array<MethodDecorator | number>) {
-    return function endpoint(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
-        const version = OmniSharp.Api.getVersion(propertyKey);
-        let format = (name: string) => name;
-        if (version !== "v1") {
-            format = (name) => `${version}/${name}`;
-        }
+export function request(target: Object, propertyKey: string, decorators?: Array<MethodDecorator | number>) {
+    const descriptor: TypedPropertyDescriptor<any> = {};
+    const version = OmniSharp.Api.getVersion(propertyKey);
+    let format = (name: string) => name;
+    if (version !== "v1") {
+        format = (name) => `${version}/${name}`;
+    }
 
-        const name = format(propertyKey);
-        const methods = _.map(decorators, (decorator: MethodDecorator) => {
-            descriptor.value = _.noop;
-            decorator(target, propertyKey, descriptor);
-            return descriptor.value;
-        });
-        descriptor.value = function (request: OmniSharp.Models.Request, options: any) {
-            this._fixup(propertyKey, request, options);
-            methods.forEach(m => m.call(this, request));
-            return this.request(name, request, options);
-        };
-        descriptor.enumerable = true;
+    const name = format(propertyKey);
+    const methods = _.map(decorators, (decorator: MethodDecorator) => {
+        descriptor.value = _.noop;
+        decorator(target, propertyKey, descriptor);
+        return descriptor.value;
+    });
+    descriptor.value = function (request: OmniSharp.Models.Request, options: any) {
+        if ((<any>request).silent) {
+            options = request;
+            request = {};
+        }
+        request = request || {};
+
+        this._fixup(propertyKey, request, options);
+        methods.forEach(m => m.call(this, request));
+        return this.request(name, request, options);
     };
+    descriptor.enumerable = true;
+    Object.defineProperty(target, propertyKey, descriptor);
 }
 
-export function response(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
+export function response(target: Object, propertyKey: string) {
+    const descriptor: TypedPropertyDescriptor<any> = {};
     const internalKey = `__${propertyKey}__`;
     descriptor.get = function () {
         if (!this[internalKey]) {
@@ -94,9 +101,11 @@ export function response(target: Object, propertyKey: string, descriptor: TypedP
         return this[internalKey];
     };
     descriptor.enumerable = true;
+    Object.defineProperty(target, propertyKey, descriptor);
 }
 
-export function event(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
+export function event(target: Object, propertyKey: string) {
+    const descriptor: TypedPropertyDescriptor<any> = {};
     const internalKey = `__${propertyKey}__`;
     const eventKey = propertyKey[0].toUpperCase() + propertyKey.substr(1);
     descriptor.get = function () {
@@ -111,9 +120,11 @@ export function event(target: Object, propertyKey: string, descriptor: TypedProp
         return this[internalKey];
     };
     descriptor.enumerable = true;
+    Object.defineProperty(target, propertyKey, descriptor);
 }
 
-export function merge(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
+export function merge(target: Object, propertyKey: string) {
+    const descriptor: TypedPropertyDescriptor<any> = {};
     const internalKey = `__${propertyKey}__`;
     const method = (c: any) => c.observe[propertyKey] || c[propertyKey];
     descriptor.get = function () {
@@ -124,9 +135,11 @@ export function merge(target: Object, propertyKey: string, descriptor: TypedProp
         return this[internalKey];
     };
     descriptor.enumerable = true;
+    Object.defineProperty(target, propertyKey, descriptor);
 }
 
-export function aggregate(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
+export function aggregate(target: Object, propertyKey: string) {
+    const descriptor: TypedPropertyDescriptor<any> = {};
     const internalKey = `__${propertyKey}__`;
     const method = (c: any) => c.observe[propertyKey] || c[propertyKey];
     descriptor.get = function () {
@@ -137,9 +150,12 @@ export function aggregate(target: Object, propertyKey: string, descriptor: Typed
         return this[internalKey];
     };
     descriptor.enumerable = true;
+    Object.defineProperty(target, propertyKey, descriptor);
 }
 
-export function reference(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
+export function reference(target: Object, propertyKey: string) {
+    const descriptor: TypedPropertyDescriptor<any> = {};
     descriptor.get = function () { return this._client[propertyKey]; };
+    Object.defineProperty(target, propertyKey, descriptor);
 }
 
