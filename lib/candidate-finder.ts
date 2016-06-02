@@ -1,11 +1,8 @@
 import _ from "lodash";
 import {ILogger} from "./enums";
 import {join, dirname, sep, normalize} from "path";
-import {Observable, Scheduler, Subscription} from "rxjs";
+import {Observable, Scheduler} from "rxjs";
 import "rxjs/add/operator/distinctKey";
-import {CompositeDisposable} from "./disposables";
-import {createObservable} from "./operators/create";
-import {readFileSync} from "fs";
 const glob: (file: string[], options?: any) => Promise<string[]> = require("globby");
 
 export interface Options {
@@ -13,32 +10,6 @@ export interface Options {
     projectFilesToSearch?: string[];
     sourceFilesToSearch?: string[];
     solutionIndependentSourceFilesToSearch?: string[];
-}
-
-export function ifEmpty<T>(observable: Observable<T>, other: Observable<T>) {
-    return createObservable<T>(observer => {
-        let hasValue = false;
-        const cd = new CompositeDisposable();
-        cd.add(observable.subscribe(
-            value => {
-                hasValue = true;
-                observer.next(value);
-            },
-            e => observer.error(e),
-            () => {
-                if (!hasValue) {
-                    cd.add(other.subscribe(
-                        value => observer.next(value),
-                        e => observer.error(e),
-                        () => observer.complete()
-                    ));
-                } else {
-                    observer.complete();
-                }
-            }
-        ));
-        return new Subscription(() => cd.dispose());
-    });
 }
 
 export class Candidate {
@@ -59,7 +30,7 @@ export class Candidate {
     }
 }
 
-export const findCandidates = (function() {
+export const findCandidates = (function () {
     function realFindCandidates(location: string, logger: ILogger, options: Options = {}) {
         location = _.trimEnd(location, sep);
 
@@ -68,27 +39,41 @@ export const findCandidates = (function() {
         const sourceFilesToSearch = options.sourceFilesToSearch || (options.sourceFilesToSearch = ["*.cs"]);
         const solutionIndependentSourceFilesToSearch = options.solutionIndependentSourceFilesToSearch || (options.solutionIndependentSourceFilesToSearch = ["*.csx"]);
 
-        const solutionsOrProjects = searchForCandidates(location, solutionFilesToSearch, projectFilesToSearch, logger)
+        const solutionsOrProjects = searchForCandidates(location, solutionFilesToSearch, logger)
             .toArray()
-            .flatMap(result => result.length ? Observable.from(result) : searchForCandidates(location, projectFilesToSearch, [], logger))
+            .flatMap(result => {
+                if (result.length) {
+                    return Observable.from(result);
+                }
+                return searchForCandidates(location, projectFilesToSearch, logger);
+            })
             .toArray()
             .map(squashCandidates);
 
-        const independentSourceFiles = searchForCandidates(location, solutionIndependentSourceFilesToSearch, [], logger)
+        const independentSourceFiles = searchForCandidates(location, solutionIndependentSourceFilesToSearch, logger)
             .toArray();
 
         const baseFiles = Observable.concat(solutionsOrProjects, independentSourceFiles)
             .flatMap(x => x);
 
-        const sourceFiles = searchForCandidates(location, sourceFilesToSearch, [], logger);
+        const sourceFiles = searchForCandidates(location, sourceFilesToSearch, logger);
 
         const predicate = (path: string) => _.some(solutionFilesToSearch.concat(projectFilesToSearch), pattern => _.endsWith(path, _.trimStart(pattern, "*")));
 
-        return ifEmpty(baseFiles, sourceFiles)
+        let hasFiles = false;
+        return baseFiles
+            .do(() => hasFiles = true)
+            .concat(Observable.defer(() => {
+                if (hasFiles) {
+                    return Observable.empty<string>();
+                }
+                return sourceFiles;
+            }))
             .map(file => new Candidate(file, predicate))
             .distinctKey("path")
             .toArray()
-            .do(candidates => logger.log(`Omni Project Candidates: Found ${candidates}`));
+            .do(candidates => logger.log(`Omni Project Candidates: Found ${candidates}`))
+            .share();
     }
 
     function findCandidates(location: string, logger: ILogger, options: Options = {}) {
@@ -112,13 +97,13 @@ function getMinCandidate(candidates: string[]) {
     return _.minBy(_.map(candidates, normalize), z => z.split(sep).length).split(sep).length;
 }
 
-function searchForCandidates(location: string, filesToSearch: string[], projectFilesToSearch: string[], logger: ILogger) {
+function searchForCandidates(location: string, filesToSearch: string[], logger: ILogger) {
     let locations = location.split(sep);
     locations = locations.map((loc, index) => {
         return _.take(locations, locations.length - index).join(sep);
     });
 
-    locations = locations.slice(0, Math.min(5, locations.length));
+    locations = locations.slice(0, Math.min(10, locations.length));
 
     const rootObservable = Observable.from(locations)
         .subscribeOn(Scheduler.queue)
@@ -126,7 +111,7 @@ function searchForCandidates(location: string, filesToSearch: string[], projectF
             loc,
             files: filesToSearch.map(fileName => join(loc, fileName))
         }))
-        .flatMap(function({loc, files}) {
+        .flatMap(function ({loc, files}) {
             logger.log(`Omni Project Candidates: Searching ${loc} for ${filesToSearch}`);
 
             return Observable.from<string>(files)
@@ -147,20 +132,14 @@ function searchForCandidates(location: string, filesToSearch: string[], projectF
                             }
                         }
                     }
-
-                    if (_.some(x, file => _.endsWith(file, ".sln"))) {
-                        return x.filter(file => {
-                            const content = readFileSync(file).toString();
-                            return _.some(projectFilesToSearch, path => content.indexOf(_.trimStart(path, "*")) > -1);
-                        });
-                    }
                     return x;
                 });
         })
         .filter(z => z.length > 0)
         .defaultIfEmpty([])
         .first()
-        .flatMap(z => z);
+        .flatMap(z => z)
+        .share();
 
     return rootObservable;
 }
