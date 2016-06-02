@@ -621,6 +621,18 @@ export module Api {
         updatebuffer(request: Models.UpdateBufferRequest, options?: RequestOptions): Observable<any>;
     }
 
+    export function getVersion(name: string): "v1" | "v2" {
+        if ("codecheck" === name.toLowerCase()) {
+            return "v2";
+        }
+        if ("getcodeactions" === name.toLowerCase()) {
+            return "v2";
+        }
+        if ("runcodeaction" === name.toLowerCase()) {
+            return "v2";
+        }
+        return "v1";
+    }
 }
 export module Events {
 

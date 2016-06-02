@@ -32,6 +32,7 @@ namespace OmniSharp.TypeScriptGeneration
             var aggregateEventStrings = GetAggregateEvents().GroupBy(z => z.Version).ToDictionary(z => z.Key, z => z.GroupBy(x => x.ActionName).ToArray());
 
             var keys = methodStrings.Keys;
+
             yield return $"declare module {nameof(OmniSharp)} {{\n{ContextInterface}{RequestOptionsInterface}{CombinationKeyInterface}}}";
 
             yield return $"declare module {nameof(OmniSharp)}.Api {{\n";
@@ -50,6 +51,28 @@ namespace OmniSharp.TypeScriptGeneration
                 var methods = "        " + string.Join("\n        ", results) + "\n";
                 yield return $"    interface {key.ToUpper()} {{\n{methods}    }}\n";
             }
+
+            var allVersions = methodStrings.SelectMany(x => x.Value).SelectMany(x => x).Select(x => x.Version)
+                .Distinct().Select(x => $"\"{x}\"");
+
+            yield return $"    export function getVersion(name: string): {string.Join(" | ", allVersions)} {{";
+            foreach (var method in methodStrings.Where(x => x.Key != "v1"))
+            {
+                var items = method.Value
+                    .SelectMany(x => x)
+                    .GroupBy(x => x.ActionName)
+                    .Distinct();
+
+                foreach (var key in items.Select(x => x.Key).Distinct())
+                {
+                    var item = items.First(x => x.Key == key).First();
+                    yield return $"        if (\"{item.ActionName.ToLower()}\" === name.toLowerCase()) {{";
+                    yield return $"            return \"{item.Version.ToLower()}\";";
+                    yield return $"        }}";
+                }
+            }
+            yield return $"        return \"v1\";";
+            yield return $"    }}";
 
             yield return $"}}";
 

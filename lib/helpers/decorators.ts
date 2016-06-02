@@ -6,7 +6,7 @@ import {ResponseContext} from "../contexts";
 export function isNotNull(method: Function) {
     return function isNotNull(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
         const value = descriptor.value;
-        descriptor.value = function(request: OmniSharp.Models.Request) {
+        descriptor.value = function (request: OmniSharp.Models.Request) {
             const result = method(request);
             if (result === null || result === undefined) {
                 const match = method.toString().match(/function \(request\) { return (.*?); }/);
@@ -22,7 +22,7 @@ export function isNotNull(method: Function) {
 export function isAboveZero(method: Function) {
     return function isAboveZero(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
         const value = descriptor.value;
-        descriptor.value = function(request: OmniSharp.Models.Request) {
+        descriptor.value = function (request: OmniSharp.Models.Request) {
             const minValue = (this._options.oneBasedIndices ? 1 : 0) - 1;
             const result = method(request);
             if (result === null || result === undefined) {
@@ -48,7 +48,7 @@ export function precondition(method: Function, ...decorators: MethodDecorator[])
             return descriptor.value;
         });
 
-        descriptor.value = function(request: OmniSharp.Models.Request) {
+        descriptor.value = function (request: OmniSharp.Models.Request) {
             if (method(request)) {
                 methods.forEach(m => m.call(this, request));
             }
@@ -57,19 +57,21 @@ export function precondition(method: Function, ...decorators: MethodDecorator[])
     };
 }
 
-export function request(decorators?: Array<MethodDecorator | number>, version = 1) {
-    let format = (name: string) => name;
-    if (version > 1) {
-        format = (name) => `v${version}/${name}`;
-    }
+export function request(decorators?: Array<MethodDecorator | number>) {
     return function endpoint(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
+        const version = OmniSharp.Api.getVersion(propertyKey);
+        let format = (name: string) => name;
+        if (version === "v1") {
+            format = (name) => `${version}/${name}`;
+        }
+
         const name = format(propertyKey);
         const methods = _.map(decorators, (decorator: MethodDecorator) => {
             descriptor.value = _.noop;
             decorator(target, propertyKey, descriptor);
             return descriptor.value;
         });
-        descriptor.value = function(request: OmniSharp.Models.Request, options: any) {
+        descriptor.value = function (request: OmniSharp.Models.Request, options: any) {
             this._fixup(propertyKey, request, options);
             methods.forEach(m => m.call(this, request));
             return this.request(name, request, options);
@@ -80,7 +82,7 @@ export function request(decorators?: Array<MethodDecorator | number>, version = 
 
 export function response(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
     const internalKey = `__${propertyKey}__`;
-    descriptor.get = function() {
+    descriptor.get = function () {
         if (!this[internalKey]) {
             const instance = this._client || this;
             const stream: Subject<ResponseContext<any, any>> = instance._getResponseStream(propertyKey);
@@ -97,7 +99,7 @@ export function response(target: Object, propertyKey: string, descriptor: TypedP
 export function event(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
     const internalKey = `__${propertyKey}__`;
     const eventKey = propertyKey[0].toUpperCase() + propertyKey.substr(1);
-    descriptor.get = function() {
+    descriptor.get = function () {
         if (!this[internalKey]) {
             const instance = this._client || this;
             this[internalKey] = (<Observable<OmniSharp.Stdio.Protocol.EventPacket>>instance._eventsStream)
@@ -114,7 +116,7 @@ export function event(target: Object, propertyKey: string, descriptor: TypedProp
 export function merge(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
     const internalKey = `__${propertyKey}__`;
     const method = (c: any) => c.observe[propertyKey] || c[propertyKey];
-    descriptor.get = function() {
+    descriptor.get = function () {
         if (!this[internalKey]) {
             const value = this.makeMergeObserable(method);
             this[internalKey] = value;
@@ -127,7 +129,7 @@ export function merge(target: Object, propertyKey: string, descriptor: TypedProp
 export function aggregate(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
     const internalKey = `__${propertyKey}__`;
     const method = (c: any) => c.observe[propertyKey] || c[propertyKey];
-    descriptor.get = function() {
+    descriptor.get = function () {
         if (!this[internalKey]) {
             const value = this.makeAggregateObserable(method);
             this[internalKey] = value;
@@ -138,6 +140,6 @@ export function aggregate(target: Object, propertyKey: string, descriptor: Typed
 }
 
 export function reference(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
-    descriptor.get = function() { return this._client[propertyKey]; };
+    descriptor.get = function () { return this._client[propertyKey]; };
 }
 

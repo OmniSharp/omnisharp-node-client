@@ -304,10 +304,10 @@ export class AsyncClient implements IAsyncDriver, IDisposable {
         this._pluginManager.remove(plugin);
     }*/
 
-    @request(preconditions.getcodeactions, 2)
+    @request(preconditions.getcodeactions)
     public getcodeactions(request: OmniSharp.Models.V2.GetCodeActionsRequest, options?: OmniSharp.RequestOptions): Promise<OmniSharp.Models.V2.GetCodeActionsResponse> { throw new Error("Implemented by decorator"); }
 
-    @request(preconditions.runcodeaction, 2)
+    @request(preconditions.runcodeaction)
     public runcodeaction(request: OmniSharp.Models.V2.RunCodeActionRequest, options?: OmniSharp.RequestOptions): Promise<OmniSharp.Models.V2.RunCodeActionResponse> { throw new Error("Implemented by decorator"); }
 
     @request(preconditions.updatebuffer)
