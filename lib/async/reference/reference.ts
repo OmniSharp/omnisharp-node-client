@@ -1,6 +1,5 @@
 import * as OmniSharp from "../../omnisharp-server";
-import {AsyncClient} from "../async-client-base";
-import * as preconditions from "../../helpers/preconditions";
+import "../async-client-base";
 
 declare module "../async-client-base" {
     interface AsyncClient {

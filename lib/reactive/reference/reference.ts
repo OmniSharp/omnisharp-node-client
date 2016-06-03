@@ -1,7 +1,6 @@
 import * as OmniSharp from "../../omnisharp-server";
 import {Observable} from "rxjs";
-import {ReactiveClient} from "../reactive-client-base";
-import * as preconditions from "../../helpers/preconditions";
+import "../reactive-client-base";
 
 declare module "../reactive-client-base" {
     interface ReactiveClient {

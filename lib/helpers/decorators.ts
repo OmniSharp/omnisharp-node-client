@@ -8,8 +8,7 @@ export function getInternalKey(path: string) {
 }
 
 export function getInternalValue(context: any, path: string) {
-    const instance = context._client || context;
-    return instance[getInternalKey(path)];
+    return context[getInternalKey(path)];
 }
 
 export function setEventOrResponse(context: any, path: string) {
@@ -18,16 +17,26 @@ export function setEventOrResponse(context: any, path: string) {
     const internalKey = getInternalKey(path);
     if (isEvent) {
         const eventKey = path[0].toUpperCase() + path.substr(1);
-        instance[internalKey] = (<Observable<OmniSharp.Stdio.Protocol.EventPacket>>instance._eventsStream)
+        context[internalKey] = (<Observable<OmniSharp.Stdio.Protocol.EventPacket>>instance._eventsStream)
             .filter(x => x.Event === eventKey)
             .map(x => x.Body)
             .share();
     } else {
         const stream: Subject<ResponseContext<any, any>> = instance._getResponseStream(path);
-        instance[internalKey] = stream.asObservable()
+        context[internalKey] = stream.asObservable()
             .filter(x => !x.silent);
     }
-    return instance[internalKey];
+    return context[internalKey];
+}
+
+export function setMergeOrAggregate(context: any, path: string) {
+    const internalKey = getInternalKey(path);
+    const method = (c: any) => c.observe[path] || c[path];
+    if (!context[internalKey]) {
+        const value = context.makeObservable(method);
+        context[internalKey] = value;
+    }
+    return context[internalKey];
 }
 
 export function request(target: Object, propertyKey: string) {
@@ -39,7 +48,7 @@ export function request(target: Object, propertyKey: string) {
     }
 
     const name = format(propertyKey);
-    descriptor.value = function (request: OmniSharp.Models.Request, options: any) {
+    descriptor.value = function(request: OmniSharp.Models.Request, options: any) {
         if ((<any>request).silent) {
             options = request;
             request = {};
@@ -56,7 +65,7 @@ export function request(target: Object, propertyKey: string) {
 export function response(target: Object, propertyKey: string, path: string) {
     const descriptor: TypedPropertyDescriptor<any> = {};
     const internalKey = getInternalKey(path);
-    descriptor.get = function () {
+    descriptor.get = function() {
         if (!this[internalKey]) {
             setEventOrResponse(this, path);
         }
@@ -70,7 +79,7 @@ export function response(target: Object, propertyKey: string, path: string) {
 export function event(target: Object, path: string) {
     const descriptor: TypedPropertyDescriptor<any> = {};
     const internalKey = getInternalKey(path);
-    descriptor.get = function () {
+    descriptor.get = function() {
         if (!this[internalKey]) {
             setEventOrResponse(this, path);
         }
@@ -81,28 +90,13 @@ export function event(target: Object, path: string) {
     Object.defineProperty(target, path, descriptor);
 }
 
-export function merge(target: Object, propertyKey: string, path: string) {
+export function makeObservable(target: Object, propertyKey: string, path: string) {
     const descriptor: TypedPropertyDescriptor<any> = {};
     const internalKey = getInternalKey(path);
     const method = (c: any) => c.observe[propertyKey] || c[propertyKey];
-    descriptor.get = function () {
+    descriptor.get = function() {
         if (!this[internalKey]) {
-            const value = this.makeMergeObserable(method);
-            this[internalKey] = value;
-        }
-        return this[internalKey];
-    };
-    descriptor.enumerable = true;
-    Object.defineProperty(target, propertyKey, descriptor);
-}
-
-export function aggregate(target: Object, propertyKey: string, path: string) {
-    const descriptor: TypedPropertyDescriptor<any> = {};
-    const internalKey = getInternalKey(path);
-    const method = (c: any) => c.observe[propertyKey] || c[propertyKey];
-    descriptor.get = function () {
-        if (!this[internalKey]) {
-            const value = this.makeAggregateObserable(method);
+            const value = this.makeObservable(method);
             this[internalKey] = value;
         }
         return this[internalKey];
@@ -113,7 +107,7 @@ export function aggregate(target: Object, propertyKey: string, path: string) {
 
 export function reference(target: Object, propertyKey: string, path: string) {
     const descriptor: TypedPropertyDescriptor<any> = {};
-    descriptor.get = function () { return this._client[propertyKey]; };
+    descriptor.get = function() { return this._client[propertyKey]; };
     Object.defineProperty(target, propertyKey, descriptor);
 }
 

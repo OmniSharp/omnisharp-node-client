@@ -90,21 +90,30 @@ declare module {OmnisharpControllerExtractor.InferNamespace(typeof(Request)).Tri
             {
                 File.WriteAllText(Path.Combine(path, "lib", "omnisharp-server.ts"), result);
 
-                var augmentationMethods = OmnisharpAugmentationExtractor.GetAugmentationMethods().ToArray();
+                var augmentationMethods = OmnisharpAugmentationExtractor.GetAugmentationMethods()
+                    .GroupBy(x => x.Name + x.Type)
+                    .SelectMany(x => x.Where(z => z.VersionNumber == x.Max(c => c.VersionNumber)))
+                    .ToArray();
 
                 foreach (var item in augmentationMethods)
                 {
-                    File.WriteAllText(Path.Combine(path, "lib", item.Type, "method", item.Name + "-" + item.Version + ".ts"), item.Value);
+                    File.WriteAllText(Path.Combine(path, "lib", item.Type, "method", item.Name + ".ts"), item.Value);
                 }
 
-                var augmentationEvents = OmnisharpAugmentationExtractor.GetAugmentationEvents().ToArray();
+                var augmentationEvents = OmnisharpAugmentationExtractor.GetAugmentationEvents()
+                    .GroupBy(x => x.Name + x.Type)
+                    .SelectMany(x => x.Where(z => z.VersionNumber == x.Max(c => c.VersionNumber)))
+                    .ToArray();
 
                 foreach (var item in augmentationEvents)
                 {
-                    File.WriteAllText(Path.Combine(path, "lib", item.Type, "response", item.Name + "-" + item.Version + ".ts"), item.Value);
+                    File.WriteAllText(Path.Combine(path, "lib", item.Type, "response", item.Name + ".ts"), item.Value);
                 }
 
-                var augmentationServerEvents = OmnisharpAugmentationExtractor.GetAugmentationServerEvents().ToArray();
+                var augmentationServerEvents = OmnisharpAugmentationExtractor.GetAugmentationServerEvents()
+                    .GroupBy(x => x.Name + x.Type)
+                    .SelectMany(x => x.Where(z => z.VersionNumber == x.Max(c => c.VersionNumber)))
+                    .ToArray();
 
                 foreach (var item in augmentationServerEvents)
                 {
@@ -132,26 +141,23 @@ declare module {OmnisharpControllerExtractor.InferNamespace(typeof(Request)).Tri
                     File.WriteAllText(Path.Combine(path, "lib", item.Key, "reference", "server-events.ts"), item.Value);
                 }
 
-                var latestMethods = augmentationMethods.GroupBy(x => x.Name + x.Type)
-                    .SelectMany(x => x.Where(z => z.VersionNumber == x.Max(c => c.VersionNumber)));
-                var latestEvents = augmentationMethods.GroupBy(x => x.Name + x.Type)
-                    .SelectMany(x => x.Where(z => z.VersionNumber == x.Max(c => c.VersionNumber)));
+                var latestMethods = augmentationMethods;
+                var latestEvents = augmentationMethods;
                 var serverEvents = augmentationServerEvents;
 
-                var augmentationValues = latestMethods.Where(x => x.Type == "reactive").Select(x => $"import \"./method/{x.Name}-{x.Version}\";\n");
+                var augmentationValues = latestMethods.Where(x => x.Type == "reactive").Select(x => $"import \"./method/{x.Name}\";\n");
                 augmentationValues = augmentationValues.Concat(
-                    latestEvents.Select(x => $"import \"./response/{x.Name}-{x.Version}\";\n")
+                    latestEvents.Select(x => $"import \"./response/{x.Name}\";\n")
                 );
 
                 var reativeAugmentationValues = augmentationValues.Concat(
                     serverEvents.Select(x => $"import \"./event/{x.Name}\";\n")
                 );
 
-                File.WriteAllText(Path.Combine(path, "lib", "reactive", "reactive-client.ts"),
-                    "export * from \"./reactive-client\";\nimport \"./reference/reference-events\";\n" + string.Join("", reativeAugmentationValues.Distinct()));
-
-                File.WriteAllText(Path.Combine(path, "lib", "async", "async-client.ts"),
-                    "export * from \"./async-client\";\n" + string.Join("", augmentationValues.Distinct()));
+                File.WriteAllText(Path.Combine(path, "lib", "latest.ts"),
+                    "export * from \"./reactive/reactive-client\";\n" + string.Join("", reativeAugmentationValues.Select(x => x.Replace("./", "./reactive/")).Distinct()) +
+                    "export * from \"./async/async-client\";\n" + string.Join("", augmentationValues.Select(x => x.Replace("./", "./async/")).Distinct())
+                    );
             }
             else
             {

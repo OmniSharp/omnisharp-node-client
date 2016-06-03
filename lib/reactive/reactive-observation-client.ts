@@ -2,6 +2,7 @@ import {ReplaySubject, Observable} from "rxjs";
 import {CompositeDisposable, Disposable, IDisposable} from "../disposables";
 import _ from "lodash";
 import {ReactiveClient} from "./reactive-client-base";
+import {setMergeOrAggregate, getInternalKey} from "../helpers/decorators";
 
 export class ReactiveObservationClient<TClient extends ReactiveClient> implements IDisposable {
     protected _disposable = new CompositeDisposable();
@@ -18,12 +19,21 @@ export class ReactiveObservationClient<TClient extends ReactiveClient> implement
         this._disposable.dispose();
     }
 
-    protected makeMergeObserable = <T>(selector: (client: TClient) => Observable<T>) => {
+    protected makeObservable = <T>(selector: (client: TClient) => Observable<T>) => {
         return this._clientsSubject.switchMap(clients => Observable.merge<T>(...clients.map(selector))).share();
     };
 
-    public observe<T>(selector: (client: TClient) => Observable<T>) {
-        return this.makeMergeObserable(selector);
+    public listenTo<T>(selector: (client: TClient) => Observable<T>) {
+        return this.makeObservable(selector);
+    }
+
+    public listen<T>(selector: string) {
+        const key = getInternalKey(selector);
+        let value = this[key];
+        if (!value) {
+            return setMergeOrAggregate(this, selector);
+        }
+        return value;
     }
 
     private next = () => this._clientsSubject.next(this.clients.slice());

@@ -1,11 +1,8 @@
 import {ReplaySubject, Observable} from "rxjs";
 import {CompositeDisposable, Disposable, IDisposable} from "../disposables";
 import _ from "lodash";
-import {DriverState} from "../enums";
-import {OmnisharpClientStatus} from "../enums";
-import {aggregate} from "../helpers/decorators";
-import OmniSharp, {Context, Models, CombinationKey} from "../omnisharp-server";
 import {ReactiveClient} from "./reactive-client-base";
+import {setMergeOrAggregate, getInternalKey} from "../helpers/decorators";
 
 export class ReactiveCombinationClient<TClient extends ReactiveClient> implements IDisposable {
     protected _disposable = new CompositeDisposable();
@@ -22,7 +19,7 @@ export class ReactiveCombinationClient<TClient extends ReactiveClient> implement
         this._disposable.dispose();
     }
 
-    protected makeAggregateObserable = <T>(selector: (client: TClient) => Observable<T>) => {
+    protected makeObservable = <T>(selector: (client: TClient) => Observable<T>) => {
 
         // Caches the value, so that when the underlying clients change
         // we can start with the old value of the remaining clients
@@ -48,11 +45,19 @@ export class ReactiveCombinationClient<TClient extends ReactiveClient> implement
             );
         }).share();
         /* tslint:enable:no-string-literal */
-
     };
 
-    public observe<T>(selector: (client: TClient) => Observable<T>) {
-        return this.makeAggregateObserable(selector);
+    public listenTo<T>(selector: (client: TClient) => Observable<T>) {
+        return this.makeObservable(selector);
+    }
+
+    public listen<T>(selector: string) {
+        const key = getInternalKey(selector);
+        let value = this[key];
+        if (!value) {
+            return setMergeOrAggregate(this, selector);
+        }
+        return value;
     }
 
     private next = () => this._clientsSubject.next(this.clients.slice());
@@ -67,39 +72,4 @@ export class ReactiveCombinationClient<TClient extends ReactiveClient> implement
         this._clientDisposable.add(d);
         return d;
     }
-
-    @aggregate public get autocomplete(): Observable<CombinationKey<Context<Models.AutoCompleteRequest, Models.AutoCompleteResponse[]>>[]> { throw new Error("Implemented by decorator"); }
-    @aggregate public get changebuffer(): Observable<CombinationKey<Context<Models.ChangeBufferRequest, any>>[]> { throw new Error("Implemented by decorator"); }
-    @aggregate public get codecheck(): Observable<CombinationKey<Context<Models.CodeCheckRequest, Models.QuickFixResponse>>[]> { throw new Error("Implemented by decorator"); }
-    @aggregate public get codeformat(): Observable<CombinationKey<Context<Models.CodeFormatRequest, Models.CodeFormatResponse>>[]> { throw new Error("Implemented by decorator"); }
-    @aggregate public get currentfilemembersasflat(): Observable<CombinationKey<Context<Models.MembersFlatRequest, Models.QuickFix[]>>[]> { throw new Error("Implemented by decorator"); }
-    @aggregate public get currentfilemembersastree(): Observable<CombinationKey<Context<Models.MembersTreeRequest, Models.FileMemberTree>>[]> { throw new Error("Implemented by decorator"); }
-    @aggregate public get filesChanged(): Observable<CombinationKey<Context<Models.Request[], Models.FilesChangedResponse>>[]> { throw new Error("Implemented by decorator"); }
-    @aggregate public get findimplementations(): Observable<CombinationKey<Context<Models.FindImplementationsRequest, Models.QuickFixResponse>>[]> { throw new Error("Implemented by decorator"); }
-    @aggregate public get findsymbols(): Observable<CombinationKey<Context<Models.FindSymbolsRequest, Models.QuickFixResponse>>[]> { throw new Error("Implemented by decorator"); }
-    @aggregate public get findusages(): Observable<CombinationKey<Context<Models.FindUsagesRequest, Models.QuickFixResponse>>[]> { throw new Error("Implemented by decorator"); }
-    @aggregate public get fixusings(): Observable<CombinationKey<Context<Models.FixUsingsRequest, Models.FixUsingsResponse>>[]> { throw new Error("Implemented by decorator"); }
-    @aggregate public get formatAfterKeystroke(): Observable<CombinationKey<Context<Models.FormatAfterKeystrokeRequest, Models.FormatRangeResponse>>[]> { throw new Error("Implemented by decorator"); }
-    @aggregate public get formatRange(): Observable<CombinationKey<Context<Models.FormatRangeRequest, Models.FormatRangeResponse>>[]> { throw new Error("Implemented by decorator"); }
-    @aggregate public get getcodeactions(): Observable<CombinationKey<Context<Models.V2.GetCodeActionsRequest, Models.V2.GetCodeActionsResponse>>[]> { throw new Error("Implemented by decorator"); }
-    @aggregate public get gettestcontext(): Observable<CombinationKey<Context<Models.TestCommandRequest, Models.GetTestCommandResponse>>[]> { throw new Error("Implemented by decorator"); }
-    @aggregate public get gotodefinition(): Observable<CombinationKey<Context<Models.GotoDefinitionRequest, Models.GotoDefinitionResponse>>[]> { throw new Error("Implemented by decorator"); }
-    @aggregate public get open(): Observable<CombinationKey<Context<Models.FileOpenRequest, Models.FileOpenResponse>>[]> { throw new Error("Implemented by decorator"); }
-    @aggregate public get close(): Observable<CombinationKey<Context<Models.FileCloseRequest, Models.FileCloseResponse>>[]> { throw new Error("Implemented by decorator"); }
-    @aggregate public get gotofile(): Observable<CombinationKey<Context<Models.GotoFileRequest, Models.QuickFixResponse>>[]> { throw new Error("Implemented by decorator"); }
-    @aggregate public get gotoregion(): Observable<CombinationKey<Context<Models.GotoRegionRequest, Models.QuickFixResponse>>[]> { throw new Error("Implemented by decorator"); }
-    @aggregate public get highlight(): Observable<CombinationKey<Context<Models.HighlightRequest, Models.HighlightResponse>>[]> { throw new Error("Implemented by decorator"); }
-    @aggregate public get metadata(): Observable<CombinationKey<Context<Models.MetadataRequest, Models.MetadataResponse>>[]> { throw new Error("Implemented by decorator"); }
-    @aggregate public get navigatedown(): Observable<CombinationKey<Context<Models.NavigateDownRequest, Models.NavigateResponse>>[]> { throw new Error("Implemented by decorator"); }
-    @aggregate public get navigateup(): Observable<CombinationKey<Context<Models.NavigateUpRequest, Models.NavigateResponse>>[]> { throw new Error("Implemented by decorator"); }
-    @aggregate public get packagesearch(): Observable<CombinationKey<Context<Models.PackageSearchRequest, Models.PackageSearchResponse>>[]> { throw new Error("Implemented by decorator"); }
-    @aggregate public get packagesource(): Observable<CombinationKey<Context<Models.PackageSourceRequest, Models.PackageSourceResponse>>[]> { throw new Error("Implemented by decorator"); }
-    @aggregate public get packageversion(): Observable<CombinationKey<Context<Models.PackageVersionRequest, Models.PackageVersionResponse>>[]> { throw new Error("Implemented by decorator"); }
-    @aggregate public get project(): Observable<CombinationKey<Context<Models.v1.ProjectInformationRequest, Models.ProjectInformationResponse>>[]> { throw new Error("Implemented by decorator"); }
-    @aggregate public get projects(): Observable<CombinationKey<Context<Models.v1.WorkspaceInformationRequest, Models.WorkspaceInformationResponse>>[]> { throw new Error("Implemented by decorator"); }
-    @aggregate public get rename(): Observable<CombinationKey<Context<Models.RenameRequest, Models.RenameResponse>>[]> { throw new Error("Implemented by decorator"); }
-    @aggregate public get runcodeaction(): Observable<CombinationKey<Context<Models.V2.RunCodeActionRequest, Models.V2.RunCodeActionResponse>>[]> { throw new Error("Implemented by decorator"); }
-    @aggregate public get signatureHelp(): Observable<CombinationKey<Context<Models.SignatureHelpRequest, Models.SignatureHelp>>[]> { throw new Error("Implemented by decorator"); }
-    @aggregate public get typelookup(): Observable<CombinationKey<Context<Models.TypeLookupRequest, Models.TypeLookupResponse>>[]> { throw new Error("Implemented by decorator"); }
-    @aggregate public get updatebuffer(): Observable<CombinationKey<Context<Models.UpdateBufferRequest, any>>[]> { throw new Error("Implemented by decorator"); }
 }
