@@ -8,6 +8,8 @@ import {RequestContext, ResponseContext, CommandContext} from "../contexts";
 import {ensureClientOptions} from "../options";
 import {isPriorityCommand, isNormalCommand, isDeferredCommand} from "../helpers/prioritization";
 import {createObservable} from "../operators/create";
+import {preconditions} from "../helpers/preconditions";
+import {setEventOrResponse, getInternalKey, getInternalValue} from "../helpers/decorators";
 
 function pausable<T>(incomingStream: Observable<T>, pauser: Observable<boolean>) {
     return createObservable<T>(observer => {
@@ -294,6 +296,9 @@ export class ReactiveClient implements IReactiveDriver, IDisposable {
     }
 
     public request<TRequest, TResponse>(action: string, request: TRequest, options?: OmniSharp.RequestOptions): Observable<TResponse> {
+        let conditions = preconditions[action]
+        if (conditions) { each(conditions, x => x(request)); }
+
         if (!options) options = <OmniSharp.RequestOptions>{};
         // Handle disconnected requests
         if (this.currentState !== DriverState.Connected && this.currentState !== DriverState.Error) {
@@ -352,4 +357,12 @@ export class ReactiveClientEvents implements OmniSharp.Events {
     constructor(private _client: ReactiveClient) { }
 
     public get uniqueId() { return this._client.uniqueId; }
+
+    public observe(key: string): Observable<any> {
+        const value = getInternalValue(this, key);
+        if (!value) {
+            return setEventOrResponse(this, key);
+        }
+        return value;
+    }
 }

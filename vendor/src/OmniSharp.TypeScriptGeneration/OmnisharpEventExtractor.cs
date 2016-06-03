@@ -46,6 +46,7 @@ namespace OmniSharp.TypeScriptGeneration
         {
             public string Name { get; set; }
             public string Value { get; set; }
+            public string ReturnType { get; set; }
         }
 
         public static IEnumerable<EventItem> GetEvents()
@@ -58,6 +59,7 @@ namespace OmniSharp.TypeScriptGeneration
                 yield return new EventItem()
                 {
                     Name = eventName,
+                    ReturnType = GetEventReturnType(property.Name),
                     Value = $"{eventName}: Observable<{GetEventReturnType(property.Name)}>;"
                 };
             }
@@ -73,6 +75,7 @@ namespace OmniSharp.TypeScriptGeneration
                 yield return new EventItem()
                 {
                     Name = eventName,
+                    ReturnType = GetEventReturnType(property.Name),
                     Value = $"{eventName}: Observable<CombinationKey<{GetEventReturnType(property.Name)}>[]>;"
                 };
             }

@@ -7,22 +7,22 @@ import {ReactiveObservationClient} from "../reactive-observation-client";
 import {ReactiveCombinationClient} from "../reactive-combination-client";
 import {reference, merge, aggregate} from "../../helpers/decorators";
 
-reference(ReactiveClientEvents.prototype, "events");
-reference(ReactiveClientEvents.prototype, "commands");
-reference(ReactiveClientEvents.prototype, "state");
-reference(ReactiveClientEvents.prototype, "status");
-reference(ReactiveClientEvents.prototype, "requests");
-reference(ReactiveClientEvents.prototype, "responses");
-reference(ReactiveClientEvents.prototype, "errors");
-merge(ReactiveObservationClient.prototype, "events");
-merge(ReactiveObservationClient.prototype, "commands");
-merge(ReactiveObservationClient.prototype, "state");
-merge(ReactiveObservationClient.prototype, "status");
-merge(ReactiveObservationClient.prototype, "requests");
-merge(ReactiveObservationClient.prototype, "responses");
-merge(ReactiveObservationClient.prototype, "errors");
-aggregate(ReactiveCombinationClient.prototype, "state");
-aggregate(ReactiveCombinationClient.prototype, "status");
+reference(ReactiveClientEvents.prototype, "events", "reference-events");
+reference(ReactiveClientEvents.prototype, "commands", "reference-commands");
+reference(ReactiveClientEvents.prototype, "state", "reference-state");
+reference(ReactiveClientEvents.prototype, "status", "reference-status");
+reference(ReactiveClientEvents.prototype, "requests", "reference-requests");
+reference(ReactiveClientEvents.prototype, "responses", "reference-responses");
+reference(ReactiveClientEvents.prototype, "errors", "reference-errors");
+merge(ReactiveObservationClient.prototype, "events", "reference-events");
+merge(ReactiveObservationClient.prototype, "commands", "reference-commands");
+merge(ReactiveObservationClient.prototype, "state", "reference-state");
+merge(ReactiveObservationClient.prototype, "status", "reference-status");
+merge(ReactiveObservationClient.prototype, "requests", "reference-requests");
+merge(ReactiveObservationClient.prototype, "responses", "reference-responses");
+merge(ReactiveObservationClient.prototype, "errors", "reference-errors");
+aggregate(ReactiveCombinationClient.prototype, "state", "reference-state");
+aggregate(ReactiveCombinationClient.prototype, "status", "reference-status");
 
 declare module "../reactive-client-base" {
     interface ReactiveClientEvents {

@@ -1,7 +1,48 @@
-import {isNotNull, isAboveZero, precondition} from "./decorators";
+import * as OmniSharp from "../omnisharp-server";
+import _ from "lodash";
 
-// OmniSharp.Models.V2.GetCodeActionsRequest
-export const getcodeactions: MethodDecorator[] = [
+export type PreconditionMethod = ((request: any) => void);
+
+function isNotNull(method: Function) {
+    return function (request: OmniSharp.Models.Request) {
+        const result = method(request);
+        if (result === null || result === undefined) {
+            const match = method.toString().match(/function \(request\) { return (.*?); }/);
+            const methodText = match && match[1] || method.toString();
+            const errorText = `${methodText}  must not be null.`;
+            throw new Error(errorText);
+        }
+    };
+}
+
+function isAboveZero(method: Function) {
+    return function (request: OmniSharp.Models.Request) {
+        const minValue = -1;
+        const result = method(request);
+        if (result === null || result === undefined) {
+            return;
+        }
+        if (result <= minValue) {
+            const match = method.toString().match(/function \(request\) { return (.*?); }/);
+            const methodText = match && match[1] || method.toString();
+            const errorText = `${methodText} must be greater than or equal to ${minValue + 1}.`;
+            throw new Error(errorText);
+        }
+    };
+}
+
+function precondition(method: Function, ...decorators: PreconditionMethod[]) {
+    return function (request: OmniSharp.Models.Request) {
+        _.each(decorators, decorator => {
+            decorator(request);
+        });
+    };
+}
+
+export const preconditions: { [index: string]: PreconditionMethod[] } = {};
+
+
+preconditions["/v2/getcodeactions"] = [
     isNotNull((request: any) => request.FileName),
     precondition((request: any) => !request.Selection,
         isNotNull((request: any) => request.Line),
@@ -19,7 +60,7 @@ export const getcodeactions: MethodDecorator[] = [
         isAboveZero((request: any) => request.Selection.End.Column))
 ];
 
-export const runcodeaction: MethodDecorator[] = [
+preconditions["/v2/runcodeaction"] = [
     isNotNull((request: any) => request.FileName),
     isNotNull((request: any) => request.Identifier),
     precondition((request: any) => !request.Selection,
@@ -39,13 +80,13 @@ export const runcodeaction: MethodDecorator[] = [
 ];
 
 // OmniSharp.Models.UpdateBufferRequest
-export const updatebuffer: MethodDecorator[] = [
+preconditions["/updatebuffer"] = [
     isNotNull((request: any) => request.FileName),
     isNotNull((request: any) => request.Buffer)
 ];
 
 // OmniSharp.Models.ChangeBufferRequest
-export const changebuffer: MethodDecorator[] = [
+preconditions["/changebuffer"] = [
     isNotNull((request: any) => request.FileName),
     isNotNull((request: any) => request.NewText),
     isNotNull((request: any) => request.StartLine),
@@ -58,14 +99,8 @@ export const changebuffer: MethodDecorator[] = [
     isAboveZero((request: any) => request.EndColumn)
 ];
 
-// OmniSharp.Models.CodeCheckRequest
-export const codecheck: MethodDecorator[] = [
-
-
-];
-
 // OmniSharp.Models.FormatAfterKeystrokeRequest
-export const formatAfterKeystroke: MethodDecorator[] = [
+preconditions["/formatafterkeystroke"] = [
     isNotNull((request: any) => request.FileName),
     isNotNull((request: any) => request.Line),
     isAboveZero((request: any) => request.Line),
@@ -75,7 +110,7 @@ export const formatAfterKeystroke: MethodDecorator[] = [
 ];
 
 // OmniSharp.Models.FormatRangeRequest
-export const formatRange: MethodDecorator[] = [
+preconditions["/formatrange"] = [
     isNotNull((request: any) => request.FileName),
     isNotNull((request: any) => request.Line),
     isAboveZero((request: any) => request.Line),
@@ -88,12 +123,12 @@ export const formatRange: MethodDecorator[] = [
 ];
 
 // OmniSharp.Models.CodeFormatRequest
-export const codeformat: MethodDecorator[] = [
+preconditions["/codeformat"] = [
     isNotNull((request: any) => request.FileName)
 ];
 
 // OmniSharp.Models.AutoCompleteRequest
-export const autocomplete: MethodDecorator[] = [
+preconditions["/autocomplete"] = [
     isNotNull((request: any) => request.FileName),
     isNotNull((request: any) => request.Line),
     isAboveZero((request: any) => request.Line),
@@ -103,7 +138,7 @@ export const autocomplete: MethodDecorator[] = [
 ];
 
 // OmniSharp.Models.FindImplementationsRequest
-export const findimplementations: MethodDecorator[] = [
+preconditions["/findimplementations"] = [
     isNotNull((request: any) => request.FileName),
     isNotNull((request: any) => request.Line),
     isAboveZero((request: any) => request.Line),
@@ -112,12 +147,12 @@ export const findimplementations: MethodDecorator[] = [
 ];
 
 // OmniSharp.Models.FindSymbolsRequest
-export const findsymbols: MethodDecorator[] = [
+preconditions["/findsymbols"] = [
     isNotNull((request: any) => request.Filter)
 ];
 
 // OmniSharp.Models.FindUsagesRequest
-export const findusages: MethodDecorator[] = [
+preconditions["/findusages"] = [
     isNotNull((request: any) => request.FileName),
     isNotNull((request: any) => request.Line),
     isAboveZero((request: any) => request.Line),
@@ -126,12 +161,12 @@ export const findusages: MethodDecorator[] = [
 ];
 
 // OmniSharp.Models.FixUsingsRequest
-export const fixusings: MethodDecorator[] = [
+preconditions["/fixusings"] = [
     isNotNull((request: any) => request.FileName)
 ];
 
 // OmniSharp.Models.GotoDefinitionRequest
-export const gotodefinition: MethodDecorator[] = [
+preconditions["/gotodefinition"] = [
     isNotNull((request: any) => request.FileName),
     isNotNull((request: any) => request.Line),
     isAboveZero((request: any) => request.Line),
@@ -140,7 +175,7 @@ export const gotodefinition: MethodDecorator[] = [
 ];
 
 // OmniSharp.Models.NavigateUpRequest
-export const navigateup: MethodDecorator[] = [
+preconditions["/navigateup"] = [
     isNotNull((request: any) => request.FileName),
     isNotNull((request: any) => request.Line),
     isAboveZero((request: any) => request.Line),
@@ -149,28 +184,28 @@ export const navigateup: MethodDecorator[] = [
 ];
 
 // OmniSharp.Models.GotoFileRequest
-export const gotofile: MethodDecorator[] = [
+preconditions["/gotofile"] = [
     isNotNull((request: any) => request.FileName)
 ];
 
 // OmniSharp.Models.GotoRegionRequest
-export const gotoregion: MethodDecorator[] = [
+preconditions["/gotoregion"] = [
     isNotNull((request: any) => request.FileName)
 ];
 
 // OmniSharp.Models.HighlightRequest
-export const highlight: MethodDecorator[] = [
+preconditions["/highlight"] = [
     isNotNull((request: any) => request.FileName)
 ];
 
 // OmniSharp.Models.MetadataRequest
-export const metadata: MethodDecorator[] = [
+preconditions["/metadata"] = [
     isNotNull((request: any) => request.AssemblyName),
     isNotNull((request: any) => request.TypeName)
 ];
 
 // OmniSharp.Models.NavigateDownRequest
-export const navigatedown: MethodDecorator[] = [
+preconditions["/navigatedown"] = [
     isNotNull((request: any) => request.FileName),
     isNotNull((request: any) => request.Line),
     isAboveZero((request: any) => request.Line),
@@ -179,24 +214,24 @@ export const navigatedown: MethodDecorator[] = [
 ];
 
 // OmniSharp.Models.PackageSearchRequest
-export const packagesearch: MethodDecorator[] = [
+preconditions["/packagesearch"] = [
     isNotNull((request: any) => request.ProjectPath),
     isNotNull((request: any) => request.Search)
 ];
 
 // OmniSharp.Models.PackageSourceRequest
-export const packagesource: MethodDecorator[] = [
+preconditions["/packagesource"] = [
     isNotNull((request: any) => request.ProjectPath)
 ];
 
 // OmniSharp.Models.PackageVersionRequest
-export const packageversion: MethodDecorator[] = [
+preconditions["/packageversion"] = [
     isNotNull((request: any) => request.ProjectPath),
     isNotNull((request: any) => request.Id)
 ];
 
 // OmniSharp.Models.RenameRequest
-export const rename: MethodDecorator[] = [
+preconditions["/rename"] = [
     isNotNull((request: any) => request.FileName),
     isNotNull((request: any) => request.Line),
     isAboveZero((request: any) => request.Line),
@@ -206,7 +241,7 @@ export const rename: MethodDecorator[] = [
 ];
 
 // OmniSharp.Models.SignatureHelpRequest
-export const signatureHelp: MethodDecorator[] = [
+preconditions["/signaturehelp"] = [
     isNotNull((request: any) => request.FileName),
     isNotNull((request: any) => request.Line),
     isAboveZero((request: any) => request.Line),
@@ -215,17 +250,17 @@ export const signatureHelp: MethodDecorator[] = [
 ];
 
 // OmniSharp.Models.MembersTreeRequest
-export const currentfilemembersastree: MethodDecorator[] = [
+preconditions["/currentfilemembersastree"] = [
     isNotNull((request: any) => request.FileName)
 ];
 
 // OmniSharp.Models.MembersFlatRequest
-export const currentfilemembersasflat: MethodDecorator[] = [
+preconditions["/currentfilemembersasflat"] = [
     isNotNull((request: any) => request.FileName)
 ];
 
 // OmniSharp.Models.TypeLookupRequest
-export const typelookup: MethodDecorator[] = [
+preconditions["/typelookup"] = [
     isNotNull((request: any) => request.FileName),
     isNotNull((request: any) => request.Line),
     isAboveZero((request: any) => request.Line),
@@ -234,23 +269,17 @@ export const typelookup: MethodDecorator[] = [
 ];
 
 // OmniSharp.Models.Request[]
-export const filesChanged: MethodDecorator[] = [
+preconditions["/fileschanged"] = [
     isNotNull((request: any) => request)
 ];
 
-// OmniSharp.Models.v1.WorkspaceInformationRequest
-export const projects: MethodDecorator[] = [
-
-
-];
-
 // OmniSharp.Models.v1.ProjectInformationRequest
-export const project: MethodDecorator[] = [
+preconditions["/project"] = [
     isNotNull((request: any) => request.FileName)
 ];
 
 // OmniSharp.Models.TestCommandRequest
-export const gettestcontext: MethodDecorator[] = [
+preconditions["/gettestcontext"] = [
     isNotNull((request: any) => request.FileName),
     isNotNull((request: any) => request.Line),
     isAboveZero((request: any) => request.Line),

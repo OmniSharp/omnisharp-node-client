@@ -111,6 +111,27 @@ declare module {OmnisharpControllerExtractor.InferNamespace(typeof(Request)).Tri
                     File.WriteAllText(Path.Combine(path, "lib", item.Type, "event", item.Name + ".ts"), item.Value);
                 }
 
+                var referenceAugmentationMethods = OmnisharpAugmentationExtractor.GetReferenceAugmentationMethods().ToArray();
+
+                foreach (var item in referenceAugmentationMethods)
+                {
+                    File.WriteAllText(Path.Combine(path, "lib", item.Key, "reference", "reference.ts"), item.Value);
+                }
+
+                var referenceAugmentationEvents = OmnisharpAugmentationExtractor.GetReferenceAugmentationEvents().ToArray();
+
+                foreach (var item in referenceAugmentationEvents)
+                {
+                    File.WriteAllText(Path.Combine(path, "lib", item.Key, "reference", "events.ts"), item.Value);
+                }
+
+                var referenceAugmentationServerEvents = OmnisharpAugmentationExtractor.GetReferenceAugmentationServerEvents().ToArray();
+
+                foreach (var item in referenceAugmentationServerEvents)
+                {
+                    File.WriteAllText(Path.Combine(path, "lib", item.Key, "reference", "server-events.ts"), item.Value);
+                }
+
                 var latestMethods = augmentationMethods.GroupBy(x => x.Name + x.Type)
                     .SelectMany(x => x.Where(z => z.VersionNumber == x.Max(c => c.VersionNumber)));
                 var latestEvents = augmentationMethods.GroupBy(x => x.Name + x.Type)
