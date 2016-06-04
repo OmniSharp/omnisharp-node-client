@@ -64,9 +64,9 @@ namespace OmniSharp.TypeScriptGeneration
                 var @event = item.@event;
                 var aggregateEvent = item.aggregateEvent;
 
-                clientEvents.Add($"        listen(path: \"/{@event.Path}\"): Observable<OmniSharp.Context<{(@event.RequestType == "void" ? "any" : @event.RequestType)}, {@event.ReturnType}>>;\n");
-                observationEvents.Add($"        listen(path: \"/{@event.Path}\"): Observable<OmniSharp.Context<{(@event.RequestType == "void" ? "any" : @event.RequestType)}, {@event.ReturnType}>>;\n");
-                aggregateEvents.Add($"        listen(path: \"/{@event.Path}\"): Observable<OmniSharp.CombinationKey<OmniSharp.Context<{(aggregateEvent.RequestType == "void" ? "any" : aggregateEvent.RequestType)}, {aggregateEvent.ReturnType}>>[]>;\n");
+                clientEvents.Add($"    listen(path: \"/{@event.Path}\"): Observable<OmniSharp.Context<{(@event.RequestType == "void" ? "any" : @event.RequestType)}, {@event.ReturnType}>>;\n");
+                observationEvents.Add($"    listen(path: \"/{@event.Path}\"): Observable<OmniSharp.Context<{(@event.RequestType == "void" ? "any" : @event.RequestType)}, {@event.ReturnType}>>;\n");
+                aggregateEvents.Add($"    listen(path: \"/{@event.Path}\"): Observable<OmniSharp.CombinationKey<OmniSharp.Context<{(aggregateEvent.RequestType == "void" ? "any" : aggregateEvent.RequestType)}, {aggregateEvent.ReturnType}>>[]>;\n");
 
             }
 
@@ -75,9 +75,9 @@ namespace OmniSharp.TypeScriptGeneration
             {
                 var @event = item.@event;
                 var aggregateEvent = item.aggregateEvent;
-                clientEvents.Add($"        listen(path: \"{@event.Name}\"): Observable<{@event.ReturnType}>;\n");
-                observationEvents.Add($"        listen(path: \"{@event.Name}\"): Observable<{@event.ReturnType}>;\n");
-                aggregateEvents.Add($"        listen(path: \"{aggregateEvent.Name}\"): Observable<OmniSharp.CombinationKey<{aggregateEvent.ReturnType}>[]>;\n");
+                clientEvents.Add($"    listen(path: \"{@event.Name}\"): Observable<{@event.ReturnType}>;\n");
+                observationEvents.Add($"    listen(path: \"{@event.Name}\"): Observable<{@event.ReturnType}>;\n");
+                aggregateEvents.Add($"    listen(path: \"{aggregateEvent.Name}\"): Observable<OmniSharp.CombinationKey<{aggregateEvent.ReturnType}>[]>;\n");
             }
 
             var v = $@"{string.Join("\n", methods.Select(x => $"request(ReactiveClient.prototype, \"{x.ActionName}\");"))}
@@ -89,11 +89,11 @@ export interface ReactiveClient {{
         .Select(method => {
             if (method.RequestType == "void")
                 {
-                    return $"    request(path: \"/{method.Path}\", options?: OmniSharp.RequestOptions): Observable<{method.ReturnType}>;";
+                    return $"request(path: \"/{method.Path}\", options?: OmniSharp.RequestOptions): Observable<{method.ReturnType}>;";
                 }
                 else
                 {
-                    return $"    request(path: \"/{method.Path}\", request: {method.RequestType}, options?: OmniSharp.RequestOptions): Observable<{method.ReturnType}>;";
+                    return $"request(path: \"/{method.Path}\", request: {method.RequestType}, options?: OmniSharp.RequestOptions): Observable<{method.ReturnType}>;";
                 }
         }))}
 }}
@@ -101,7 +101,7 @@ export interface ReactiveClient {{
 export interface ReactiveClientEvents {{
     {string.Join("\n    ", events.Select(x => $"/*readonly*/ {x.@event.Value.Replace("<Context<", "<OmniSharp.Context<")}"))}
     {string.Join("\n    ", serverEvents.Select(x => $"/*readonly*/ {x.@event.Value.Replace("<Context<", "<OmniSharp.Context<")}"))}
-{string.Join("", clientEvents)}    }}
+{string.Join("", clientEvents)}
 }}
 ";
 
@@ -111,9 +111,9 @@ export interface ReactiveClientEvents {{
 {string.Join("\n", serverEvents.Select(x => $"makeObservable(ReactiveObservationClient.prototype, \"{x.@event.Name}\", \"{x.@event.Name}\");"))}
 
 export interface ReactiveObservationClient {{
-    {string.Join("\n        ", events.Select(x => $"/*readonly*/ {x.@event.Value.Replace("<Context<", "<OmniSharp.Context<")}"))}
-    {string.Join("\n        ", serverEvents.Select(x => $"/*readonly*/ {x.@event.Value.Replace("<Context<", "<OmniSharp.Context<")}"))}
-{string.Join("", observationEvents)}    }}
+    {string.Join("\n    ", events.Select(x => $"/*readonly*/ {x.@event.Value.Replace("<Context<", "<OmniSharp.Context<")}"))}
+    {string.Join("\n    ", serverEvents.Select(x => $"/*readonly*/ {x.@event.Value.Replace("<Context<", "<OmniSharp.Context<")}"))}
+{string.Join("", observationEvents)}
 }}
 ";
 
@@ -123,9 +123,9 @@ export interface ReactiveObservationClient {{
 {string.Join("\n", serverEvents.Select(x => $"makeObservable(ReactiveCombinationClient.prototype, \"{x.@event.Name}\", \"{x.@event.Name}\");"))}
 
 export interface ReactiveCombinationClient {{
-    {string.Join("\n        ", events.Select(x => $"/*readonly*/ {x.@aggregateEvent.Value.Replace("<CombinationKey<", "<OmniSharp.CombinationKey<").Replace("<Context<", "<OmniSharp.Context<")}"))}
-    {string.Join("\n        ", serverEvents.Select(x => $"/*readonly*/ {x.@aggregateEvent.Value.Replace("<CombinationKey<", "<OmniSharp.CombinationKey<").Replace("<Context<", "<OmniSharp.Context<")}"))}
-{string.Join("", aggregateEvents)}    }}
+    {string.Join("\n    ", events.Select(x => $"/*readonly*/ {x.@aggregateEvent.Value.Replace("<CombinationKey<", "<OmniSharp.CombinationKey<").Replace("<Context<", "<OmniSharp.Context<")}"))}
+    {string.Join("\n    ", serverEvents.Select(x => $"/*readonly*/ {x.@aggregateEvent.Value.Replace("<CombinationKey<", "<OmniSharp.CombinationKey<").Replace("<Context<", "<OmniSharp.Context<")}"))}
+{string.Join("", aggregateEvents)}
 }}
 ";
 
@@ -139,11 +139,11 @@ export interface AsyncClient {{
         .Select(method => {
             if (method.RequestType == "void")
                 {
-                    return $"        request(path: \"/{method.Path}\", options?: OmniSharp.RequestOptions): Promise<{method.ReturnType}>;\n";
+                    return $"request(path: \"/{method.Path}\", options?: OmniSharp.RequestOptions): Promise<{method.ReturnType}>;";
                 }
                 else
                 {
-                    return $"        request(path: \"/{method.Path}\", request: {method.RequestType}, options?: OmniSharp.RequestOptions): Promise<{method.ReturnType}>;\n";
+                    return $"request(path: \"/{method.Path}\", request: {method.RequestType}, options?: OmniSharp.RequestOptions): Promise<{method.ReturnType}>;";
                 }
         }))}
 }}
