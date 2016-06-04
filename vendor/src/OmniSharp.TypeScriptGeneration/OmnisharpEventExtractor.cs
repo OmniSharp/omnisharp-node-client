@@ -12,14 +12,16 @@ namespace OmniSharp.TypeScriptGeneration
     {
         public static string GetInterface()
         {
-            var methods = "        " + string.Join("\n        ", GetEvents()) + "\n";
-            var aggregateMethods = "        " + string.Join("\n        ", GetAggregateEvents()) + "\n";
+            var methods = "        " + string.Join("\n        ", GetEvents().Select(x => x.Value)) + "\n";
+            var aggregateMethods = "        " + string.Join("\n        ", GetAggregateEvents().Select(x => x.Value)) + "\n";
 
             return $"declare module {nameof(OmniSharp)} {{\n    interface Events {{\n{methods}    }}\n}}\ndeclare module {nameof(OmniSharp)}.Aggregate {{\n    interface Events {{\n{aggregateMethods}    }}\n}}";
         }
 
-        private static string GetEventReturnType(string propertyName) {
-            switch (propertyName) {
+        private static string GetEventReturnType(string propertyName)
+        {
+            switch (propertyName)
+            {
                 case nameof(EventTypes.ProjectAdded):
                 case nameof(EventTypes.ProjectChanged):
                 case nameof(EventTypes.ProjectRemoved):
@@ -33,30 +35,49 @@ namespace OmniSharp.TypeScriptGeneration
                     return typeof(PackageRestoreMessage).FullName;
                 case nameof(EventTypes.UnresolvedDependencies):
                     return typeof(UnresolvedDependenciesMessage).FullName;
+                case nameof(EventTypes.Diagnostic):
+                    return typeof(DiagnosticMessage).FullName;
                 default:
                     return "any";
             }
         }
 
-        private static IEnumerable<string> GetEvents()
+        public class EventItem
+        {
+            public string Name { get; set; }
+            public string Value { get; set; }
+            public string ReturnType { get; set; }
+        }
+
+        public static IEnumerable<EventItem> GetEvents()
         {
             var properties = typeof(EventTypes).GetFields(BindingFlags.Static | BindingFlags.Public);
 
             foreach (var property in properties)
             {
                 var eventName = property.Name.ToLowerInvariant()[0] + property.Name.Substring(1);
-                yield return $"{eventName}: Observable<{GetEventReturnType(property.Name)}>;";
+                yield return new EventItem()
+                {
+                    Name = eventName,
+                    ReturnType = GetEventReturnType(property.Name),
+                    Value = $"{eventName}: Observable<{GetEventReturnType(property.Name)}>;"
+                };
             }
         }
 
-        private static IEnumerable<string> GetAggregateEvents()
+        public static IEnumerable<EventItem> GetAggregateEvents()
         {
             var properties = typeof(EventTypes).GetFields(BindingFlags.Static | BindingFlags.Public);
 
             foreach (var property in properties)
             {
                 var eventName = property.Name.ToLowerInvariant()[0] + property.Name.Substring(1);
-                yield return $"{eventName}: Observable<CombinationKey<{GetEventReturnType(property.Name)}>[]>;";
+                yield return new EventItem()
+                {
+                    Name = eventName,
+                    ReturnType = GetEventReturnType(property.Name),
+                    Value = $"{eventName}: Observable<CombinationKey<{GetEventReturnType(property.Name)}>[]>;"
+                };
             }
         }
     }

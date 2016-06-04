@@ -73,7 +73,6 @@ export interface IPluginDriver extends IDriver {
 export function isPluginDriver(driver: any): driver is IPluginDriver { return !!(<any>driver).updatePlugins; }
 
 export interface CoreClientOptions extends IDriverCoreOptions {
-    oneBasedIndices?: boolean;
     statusSampleTime?: number;
     responseSampleTime?: number;
     concurrency?: number;

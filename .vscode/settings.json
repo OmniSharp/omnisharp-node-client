@@ -9,5 +9,6 @@
     "**/test/**/**.js": true,
     "**/typings": true,
     "**/.DS_Store": true
-  }
+  },
+  "typescript.tsdk": "./node_modules/typescript/lib"
 }

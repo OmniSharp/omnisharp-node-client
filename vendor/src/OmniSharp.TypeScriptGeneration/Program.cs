@@ -42,7 +42,7 @@ namespace OmniSharp.TypeScriptGeneration
 declare module {OmnisharpControllerExtractor.InferNamespace(typeof(Request)).TrimEnd('.')} {{
     interface ProjectInformationResponse {{
         MsBuildProject: OmniSharp.Models.MSBuildProject;
-        DotNetProject: OmniSharp.Models.DotNetProject;
+        DotNetProject: OmniSharp.Models.DotNetProjectInformation;
     }}
 
     interface WorkspaceInformationResponse {{
@@ -65,14 +65,18 @@ declare module {OmnisharpControllerExtractor.InferNamespace(typeof(Request)).Tri
             var lines = result.Split('\n');
             var opens = 0;
 
-            for (var i = 0; i < lines.Length; i++) {
-                if (lines[i].Contains('{')) {
+            for (var i = 0; i < lines.Length; i++)
+            {
+                if (lines[i].Contains('{'))
+                {
                     opens++;
                 }
-                    if (lines[i].Contains('}')) {
-                        opens--;
-                    }
-                if (opens < 0 && lines[i].TrimEnd().Length == 1) {
+                if (lines[i].Contains('}'))
+                {
+                    opens--;
+                }
+                if (opens < 0 && lines[i].TrimEnd().Length == 1)
+                {
                     lines[i] = string.Empty;
                     opens = 0;
                 }
@@ -85,6 +89,14 @@ declare module {OmnisharpControllerExtractor.InferNamespace(typeof(Request)).Tri
             if (!string.IsNullOrWhiteSpace(path))
             {
                 File.WriteAllText(Path.Combine(path, "lib", "omnisharp-server.ts"), result);
+                foreach (var item in OmnisharpAugmentationExtractor.GetAugmentationMethods())
+                {
+                    var p = Path.Combine(path, "lib", item.Key, item.Value.Item1);
+                    var contents = File.ReadAllText(p);
+                    contents = contents.Substring(0, contents.IndexOf("// <#GENERATED />"));
+                    contents += "// <#GENERATED />\n" + item.Value.Item2;
+                    File.WriteAllText(p, contents);
+                }
             }
             else
             {
@@ -95,7 +107,7 @@ declare module {OmnisharpControllerExtractor.InferNamespace(typeof(Request)).Tri
 
         private static IEnumerable<Type> GetApplicableTypes()
         {
-            var allTypes = new [] {
+            var allTypes = new[] {
                 typeof(OmniSharp.Startup).Assembly,
                 typeof(OmniSharp.Models.Request).Assembly,
                 typeof(OmniSharp.DotNet.Models.DotNetFramework).Assembly,
@@ -111,7 +123,8 @@ declare module {OmnisharpControllerExtractor.InferNamespace(typeof(Request)).Tri
 
             var models = allTypes
                 .Where(z => z.IsPublic && z.FullName.Contains("Models."))
-                .Select(x => {
+                .Select(x =>
+                {
                     Console.WriteLine(x.FullName);
                     return x;
                 })
@@ -120,14 +133,15 @@ declare module {OmnisharpControllerExtractor.InferNamespace(typeof(Request)).Tri
 
             var stdioProtocol = allTypes
                 .Where(z => z.IsPublic && z.FullName.StartsWith(OmnisharpControllerExtractor.InferNamespace(typeof(Packet)), StringComparison.Ordinal))
-                .Select(x => {
+                .Select(x =>
+                {
                     Console.WriteLine(x.FullName);
                     return x;
                 });
 
             var scriptCs = typeof(OmniSharp.ScriptCs.ScriptCsContext);
 
-            return models.Union(stdioProtocol).Union(new[] {typeof(OmniSharp.ScriptCs.ScriptCsContext)}).ToArray();
+            return models.Union(stdioProtocol).Union(new[] { typeof(OmniSharp.ScriptCs.ScriptCsContext) }).ToArray();
         }
     }
 }

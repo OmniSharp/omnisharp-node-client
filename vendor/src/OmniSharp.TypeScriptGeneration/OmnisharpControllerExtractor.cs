@@ -13,16 +13,24 @@ namespace OmniSharp.TypeScriptGeneration
     {
         public class ItemVersion
         {
-            public ItemVersion(string version, string actionName, string value)
+            public ItemVersion(int versionNumber, string version, string actionName, string path, string requestType, string returnType, string value)
             {
                 Version = version;
                 Value = value;
                 ActionName = actionName;
+                VersionNumber = versionNumber;
+                RequestType = requestType;
+                ReturnType = returnType;
+                Path = path;
             }
 
             public string Version { get; set; }
+            public int VersionNumber { get; set; }
             public string ActionName { get; set; }
             public string Value { get; set; }
+            public string Path { get; set; }
+            public string RequestType { get; set; }
+            public string ReturnType { get; set; }
         }
 
         public static IEnumerable<string> GetInterface()
@@ -32,6 +40,7 @@ namespace OmniSharp.TypeScriptGeneration
             var aggregateEventStrings = GetAggregateEvents().GroupBy(z => z.Version).ToDictionary(z => z.Key, z => z.GroupBy(x => x.ActionName).ToArray());
 
             var keys = methodStrings.Keys;
+
             yield return $"declare module {nameof(OmniSharp)} {{\n{ContextInterface}{RequestOptionsInterface}{CombinationKeyInterface}}}";
 
             yield return $"declare module {nameof(OmniSharp)}.Api {{\n";
@@ -50,6 +59,28 @@ namespace OmniSharp.TypeScriptGeneration
                 var methods = "        " + string.Join("\n        ", results) + "\n";
                 yield return $"    interface {key.ToUpper()} {{\n{methods}    }}\n";
             }
+
+            var allVersions = methodStrings.SelectMany(x => x.Value).SelectMany(x => x).Select(x => x.Version)
+                .Distinct().Select(x => $"\"{x}\"");
+
+            yield return $"    export function getVersion(name: string): {string.Join(" | ", allVersions)} {{";
+            foreach (var method in methodStrings.Where(x => x.Key != "v1"))
+            {
+                var items = method.Value
+                    .SelectMany(x => x)
+                    .GroupBy(x => x.ActionName)
+                    .Distinct();
+
+                foreach (var key in items.Select(x => x.Key).Distinct())
+                {
+                    var item = items.First(x => x.Key == key).First();
+                    yield return $"        if (\"{item.ActionName.ToLower()}\" === name.toLowerCase()) {{";
+                    yield return $"            return \"{item.Version.ToLower()}\";";
+                    yield return $"        }}";
+                }
+            }
+            yield return $"        return \"v1\";";
+            yield return $"    }}";
 
             yield return $"}}";
 
@@ -93,15 +124,16 @@ namespace OmniSharp.TypeScriptGeneration
         }
 
         private static string ContextInterface = "    interface Context<TRequest, TResponse>\n    {\n        request: TRequest;\n        response: TResponse;\n    }\n";
-        private static string RequestOptionsInterface = "    interface RequestOptions\n    {\n        silent?: boolean;\n        oneBasedIndices?: boolean\n    }\n";
+        private static string RequestOptionsInterface = "    interface RequestOptions\n    {\n        silent?: boolean;\n    }\n";
         private static string CombinationKeyInterface = "    interface CombinationKey<T>\n    {\n        key: string;\n        value: T;\n    }\n";
 
-        private static IEnumerable<ItemVersion> GetMethods()
+        public static IEnumerable<ItemVersion> GetMethods()
         {
             var methods = GetControllerMethods().ToArray();
             foreach (var method in methods)
             {
                 var actionName = method.Action;
+                var versionNumber = GetVersionNumber(actionName);
                 var version = GetVersion(ref actionName);
                 var requestType = method.RequestType;
                 if (method.RequestArray)
@@ -111,24 +143,29 @@ namespace OmniSharp.TypeScriptGeneration
                 if (method.ReturnArray)
                     returnType += "[]";
 
-                yield return new ItemVersion(version, actionName, $"// '{actionName}'");
+                yield return new ItemVersion(versionNumber, version, actionName, method.Action, null, null, $"// '{actionName}'");
                 if (method.RequestType != null)
                 {
-                    yield return new ItemVersion(version, actionName, $"{actionName}(request: {requestType}, options?: RequestOptions): Observable<{returnType}>;");
+                    yield return new ItemVersion(versionNumber, version, actionName, method.Action, requestType, returnType, $"{actionName}(request: {requestType}, options?: RequestOptions): Observable<{returnType}>;");
                 }
                 else
                 {
-                    yield return new ItemVersion(version, actionName, $"{actionName}(): Observable<{returnType}, options?: RequestOptions>;");
+                    yield return new ItemVersion(versionNumber, version, actionName, method.Action, requestType, returnType, $"{actionName}(): Observable<{returnType}, options?: RequestOptions>;");
                 }
             }
+
+            yield return new ItemVersion(1, "v1", "checkalivestatus", "checkalivestatus", "void", "boolean", $"checkalivestatus(options?: RequestOptions): Observable<boolean>;");
+            yield return new ItemVersion(1, "v1", "checkreadystatus", "checkreadystatus", "void", "boolean", $"checkreadystatus(options?: RequestOptions): Observable<boolean>;");
+            yield return new ItemVersion(1, "v1", "stopserver", "stopserver", "void", "boolean", $"stopserver(options?: RequestOptions): Observable<boolean>;");
         }
 
-        private static IEnumerable<ItemVersion> GetEvents()
+        public static IEnumerable<ItemVersion> GetEvents()
         {
             var methods = GetControllerMethods().ToArray();
             foreach (var method in methods)
             {
                 var actionName = method.Action;
+                var versionNumber = GetVersionNumber(actionName);
                 var version = GetVersion(ref actionName);
                 var observeName = actionName;
 
@@ -140,24 +177,29 @@ namespace OmniSharp.TypeScriptGeneration
                 if (method.ReturnArray)
                     returnType += "[]";
 
-                yield return new ItemVersion(version, actionName, $"// '{actionName}'");
+                yield return new ItemVersion(versionNumber, version, actionName, method.Action, null, null, $"// '{actionName}'");
                 if (method.RequestType != null)
                 {
-                    yield return new ItemVersion(version, actionName, $"{observeName}: Observable<Context<{requestType}, {returnType}>>;");
+                    yield return new ItemVersion(versionNumber, version, actionName, method.Action, requestType, returnType, $"{observeName}: Observable<Context<{requestType}, {returnType}>>;");
                 }
                 else
                 {
-                    yield return new ItemVersion(version, actionName, $"{observeName}: Observable<{returnType}>;");
+                    yield return new ItemVersion(versionNumber, version, actionName, method.Action, requestType, returnType, $"{observeName}: Observable<{returnType}>;");
                 }
             }
+
+            yield return new ItemVersion(1, "v1", "checkalivestatus", "checkalivestatus", "void", "boolean", $"checkalivestatus: Observable<Context<any, boolean>>;");
+            yield return new ItemVersion(1, "v1", "checkreadystatus", "checkreadystatus", "void", "boolean", $"checkreadystatus: Observable<Context<any, boolean>>;");
+            yield return new ItemVersion(1, "v1", "stopserver", "stopserver", "void", "boolean", $"stopserver: Observable<Context<any, boolean>>;");
         }
 
-        private static IEnumerable<ItemVersion> GetAggregateEvents()
+        public static IEnumerable<ItemVersion> GetAggregateEvents()
         {
             var methods = GetControllerMethods().ToArray();
             foreach (var method in methods)
             {
                 var actionName = method.Action;
+                var versionNumber = GetVersionNumber(actionName);
                 var version = GetVersion(ref actionName);
                 var observeName = actionName;
 
@@ -169,16 +211,20 @@ namespace OmniSharp.TypeScriptGeneration
                 if (method.ReturnArray)
                     returnType += "[]";
 
-                yield return new ItemVersion(version, actionName, $"// '{actionName}'");
+                yield return new ItemVersion(versionNumber, version, actionName, method.Action, null, null, $"// '{actionName}'");
                 if (method.RequestType != null)
                 {
-                    yield return new ItemVersion(version, actionName, $"{observeName}: Observable<CombinationKey<Context<{requestType}, {returnType}>>[]>;");
+                    yield return new ItemVersion(versionNumber, version, actionName, method.Action, requestType, returnType, $"{observeName}: Observable<CombinationKey<Context<{requestType}, {returnType}>>[]>;");
                 }
                 else
                 {
-                    yield return new ItemVersion(version, actionName, $"{observeName}: Observable<CombinationKey<{returnType}>[]>;");
+                    yield return new ItemVersion(versionNumber, version, actionName, method.Action, requestType, returnType, $"{observeName}: Observable<CombinationKey<{returnType}>[]>;");
                 }
             }
+
+            yield return new ItemVersion(1, "v1", "checkalivestatus", "checkalivestatus", "void", "boolean", $"checkalivestatus: Observable<CombinationKey<Context<any, boolean>>>;");
+            yield return new ItemVersion(1, "v1", "checkreadystatus", "checkreadystatus", "void", "boolean", $"checkreadystatus: Observable<CombinationKey<Context<any, boolean>>>;");
+            yield return new ItemVersion(1, "v1", "stopserver", "stopserver", "void", "boolean", $"stopserver: Observable<CombinationKey<Context<any, boolean>>>;");
         }
 
         private static string GetVersion(ref string actionName)
@@ -192,7 +238,17 @@ namespace OmniSharp.TypeScriptGeneration
             return "v1";
         }
 
-        class MethodResult
+        private static int GetVersionNumber(string actionName)
+        {
+            if (actionName.Contains("/"))
+            {
+                var s = actionName.Split('/');
+                return int.Parse(s[0].Trim('v'));
+            }
+            return 1;
+        }
+
+        public class MethodResult
         {
             public string Action { get; set; }
             public string RequestType { get; set; }
@@ -203,7 +259,12 @@ namespace OmniSharp.TypeScriptGeneration
 
         private static IEnumerable<MethodResult> GetControllerMethods()
         {
-            var types = typeof(Request).Assembly.GetTypes()
+            var assemblies = new[] {
+                 typeof(OmniSharp.DotNet.DotNetProjectSystem),
+                typeof(OmniSharp.DotNetTest.Models.GetTestStartInfoRequest),
+                typeof(Request)
+             };
+            var types = assemblies.SelectMany(x => x.Assembly.GetTypes())
                 .Where(z => z.GetTypeInfo().GetCustomAttributes<OmniSharpEndpointAttribute>().Any());
 
             foreach (var type in types.Where(z => z.IsPublic))

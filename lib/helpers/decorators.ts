@@ -3,140 +3,111 @@ import _ from "lodash";
 import {Subject, Observable} from "rxjs";
 import {ResponseContext} from "../contexts";
 
-export function isNotNull(method: Function) {
-    return function isNotNull(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
-        const value = descriptor.value;
-        descriptor.value = function(request: OmniSharp.Models.Request) {
-            const result = method(request);
-            if (result === null || result === undefined) {
-                const match = method.toString().match(/function \(request\) { return (.*?); }/);
-                const methodText = match && match[1] || method.toString();
-                const errorText = `${methodText}  must not be null.`;
-                throw new Error(errorText);
-            }
-            return value.apply(this, arguments);
-        };
-    };
+export function getInternalKey(path: string) {
+    return `__${path}__`.toLowerCase();
 }
 
-export function isAboveZero(method: Function) {
-    return function isAboveZero(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
-        const value = descriptor.value;
-        descriptor.value = function(request: OmniSharp.Models.Request) {
-            const minValue = (this._options.oneBasedIndices ? 1 : 0) - 1;
-            const result = method(request);
-            if (result === null || result === undefined) {
-                return;
-            }
-            if (result <= minValue) {
-                const match = method.toString().match(/function \(request\) { return (.*?); }/);
-                const methodText = match && match[1] || method.toString();
-                const errorText = `${methodText} must be greater than or equal to ${minValue + 1}.`;
-                throw new Error(errorText);
-            }
-            return value.apply(this, arguments);
-        };
-    };
+export function getInternalValue(context: any, path: string) {
+    return context[getInternalKey(path)];
 }
 
-export function precondition(method: Function, ...decorators: MethodDecorator[]) {
-    return function precondition(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
-        const originalValue = descriptor.value;
-        const methods = _.map(decorators, decorator => {
-            descriptor.value = _.noop;
-            decorator(target, propertyKey, descriptor);
-            return descriptor.value;
-        });
-
-        descriptor.value = function(request: OmniSharp.Models.Request) {
-            if (method(request)) {
-                methods.forEach(m => m.call(this, request));
-            }
-            return originalValue.apply(this, arguments);
-        };
-    };
-}
-
-export function request(decorators?: Array<MethodDecorator | number>, version = 1) {
-    let format = (name: string) => name;
-    if (version > 1) {
-        format = (name) => `v${version}/${name}`;
+export function setEventOrResponse(context: any, path: string) {
+    const instance = context._client || context;
+    const isEvent = !_.startsWith(path, "/");
+    const internalKey = getInternalKey(path);
+    if (isEvent) {
+        const eventKey = path[0].toUpperCase() + path.substr(1);
+        context[internalKey] = (<Observable<OmniSharp.Stdio.Protocol.EventPacket>>instance._eventsStream)
+            .filter(x => x.Event === eventKey)
+            .map(x => x.Body)
+            .share();
+    } else {
+        const stream: Subject<ResponseContext<any, any>> = instance._getResponseStream(path);
+        context[internalKey] = stream.asObservable()
+            .filter(x => !x.silent);
     }
-    return function endpoint(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
-        const name = format(propertyKey);
-        const methods = _.map(decorators, (decorator: MethodDecorator) => {
-            descriptor.value = _.noop;
-            decorator(target, propertyKey, descriptor);
-            return descriptor.value;
-        });
-        descriptor.value = function(request: OmniSharp.Models.Request, options: any) {
-            this._fixup(propertyKey, request, options);
-            methods.forEach(m => m.call(this, request));
-            return this.request(name, request, options);
-        };
-        descriptor.enumerable = true;
-    };
+    return context[internalKey];
 }
 
-export function response(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
-    const internalKey = `__${propertyKey}__`;
+export function setMergeOrAggregate(context: any, path: string) {
+    const internalKey = getInternalKey(path);
+    const method = (c: any) => c.observe[path] || c[path];
+    if (!context[internalKey]) {
+        const value = context.makeObservable(method);
+        context[internalKey] = value;
+    }
+    return context[internalKey];
+}
+
+export function request(target: Object, propertyKey: string) {
+    const descriptor: TypedPropertyDescriptor<any> = {};
+    const version = OmniSharp.Api.getVersion(propertyKey);
+    let format = (name: string) => `/${name}`;
+    if (version !== "v1") {
+        format = (name) => `/${version}/${name}`;
+    }
+
+    const name = format(propertyKey);
+    descriptor.value = function(request: OmniSharp.Models.Request, options: any) {
+        if (request && (<any>request).silent) {
+            options = request;
+            request = {};
+        }
+        options = options || {};
+
+        this._fixup(propertyKey, request, options);
+        return this.request(name, request, options);
+    };
+    descriptor.enumerable = true;
+    Object.defineProperty(target, propertyKey, descriptor);
+}
+
+export function response(target: Object, propertyKey: string, path: string) {
+    const descriptor: TypedPropertyDescriptor<any> = {};
+    const internalKey = getInternalKey(path);
     descriptor.get = function() {
         if (!this[internalKey]) {
-            const instance = this._client || this;
-            const stream: Subject<ResponseContext<any, any>> = instance._getResponseStream(propertyKey);
-            this[internalKey] = stream.asObservable()
-                .filter(x => !x.silent)
-                .share();
+            setEventOrResponse(this, path);
         }
 
         return this[internalKey];
     };
     descriptor.enumerable = true;
+    Object.defineProperty(target, propertyKey, descriptor);
 }
 
-export function event(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
-    const internalKey = `__${propertyKey}__`;
-    const eventKey = propertyKey[0].toUpperCase() + propertyKey.substr(1);
+export function event(target: Object, path: string) {
+    const descriptor: TypedPropertyDescriptor<any> = {};
+    const internalKey = getInternalKey(path);
     descriptor.get = function() {
         if (!this[internalKey]) {
-            const instance = this._client || this;
-            this[internalKey] = (<Observable<OmniSharp.Stdio.Protocol.EventPacket>>instance._eventsStream)
-                .filter(x => x.Event === eventKey)
-                .share();
+            setEventOrResponse(this, path);
         }
 
         return this[internalKey];
     };
     descriptor.enumerable = true;
+    Object.defineProperty(target, path, descriptor);
 }
 
-export function merge(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
-    const internalKey = `__${propertyKey}__`;
+export function makeObservable(target: Object, propertyKey: string, path: string) {
+    const descriptor: TypedPropertyDescriptor<any> = {};
+    const internalKey = getInternalKey(path);
     const method = (c: any) => c.observe[propertyKey] || c[propertyKey];
     descriptor.get = function() {
         if (!this[internalKey]) {
-            const value = this.makeMergeObserable(method);
+            const value = this.makeObservable(method);
             this[internalKey] = value;
         }
         return this[internalKey];
     };
     descriptor.enumerable = true;
+    Object.defineProperty(target, propertyKey, descriptor);
 }
 
-export function aggregate(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
-    const internalKey = `__${propertyKey}__`;
-    const method = (c: any) => c.observe[propertyKey] || c[propertyKey];
-    descriptor.get = function() {
-        if (!this[internalKey]) {
-            const value = this.makeAggregateObserable(method);
-            this[internalKey] = value;
-        }
-        return this[internalKey];
-    };
-    descriptor.enumerable = true;
-}
-
-export function reference(target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
+export function reference(target: Object, propertyKey: string, path: string) {
+    const descriptor: TypedPropertyDescriptor<any> = {};
     descriptor.get = function() { return this._client[propertyKey]; };
+    Object.defineProperty(target, propertyKey, descriptor);
 }
 

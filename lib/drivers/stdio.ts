@@ -1,6 +1,6 @@
 import * as OmniSharp from "../omnisharp-server";
 import {IDriver, IDriverOptions, ILogger, Runtime, IOmnisharpPlugin} from "../enums";
-import {defaults, startsWith, noop} from "lodash";
+import {defaults, startsWith, noop, trimStart} from "lodash";
 import {DriverState} from "../enums";
 import cp, {ChildProcess} from "child_process";
 import * as readline from "readline";
@@ -119,7 +119,7 @@ export class StdioDriver implements IDriver {
 
         env.PATH = this._PATH || env.PATH;
 
-        const serverArguments: any[] = ["--stdio", "-s", this._projectPath, "--hostPID", process.pid].concat(this._additionalArguments || []);
+        const serverArguments: any[] = ["--stdio", "--zero-based-indices", "-s", this._projectPath, "--hostPID", process.pid].concat(this._additionalArguments || []);
 
         if (startsWith(path, "mono ")) {
             serverArguments.unshift(path.substr(5));
@@ -216,8 +216,9 @@ export class StdioDriver implements IDriver {
         }
 
         const sequence = this._seq++;
+        console.log(command, trimStart(command, "/"));
         const packet: OmniSharp.Stdio.Protocol.RequestPacket = {
-            Command: command,
+            Command: trimStart(command, "/"),
             Seq: sequence,
             Arguments: request
         };

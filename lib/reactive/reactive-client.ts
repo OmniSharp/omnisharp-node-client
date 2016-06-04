@@ -3,17 +3,14 @@ import {Observable, Subject, AsyncSubject, BehaviorSubject, Subscription} from "
 import {IDisposable, CompositeDisposable} from "../disposables";
 import {keys, bind, uniqueId, each, defaults, cloneDeep} from "lodash";
 import {IReactiveDriver, IDriverOptions, OmnisharpClientStatus, ReactiveClientOptions} from "../enums";
-/*import {IOmnisharpPlugin, isPluginDriver} from "../enums";*/
 import {DriverState, Runtime} from "../enums";
 import {RequestContext, ResponseContext, CommandContext} from "../contexts";
-import {serverLineNumbers, serverLineNumberArrays} from "../response-handling";
 import {ensureClientOptions} from "../options";
-import {event, reference, request, response} from "../helpers/decorators";
-import * as preconditions from "../helpers/preconditions";
 import {isPriorityCommand, isNormalCommand, isDeferredCommand} from "../helpers/prioritization";
 import {createObservable} from "../operators/create";
-//import {PluginManager} from "../helpers/plugin-manager";
-//
+import {getPreconditions} from "../helpers/preconditions";
+import {reference, setEventOrResponse, getInternalValue, request, response} from "../helpers/decorators";
+
 function pausable<T>(incomingStream: Observable<T>, pauser: Observable<boolean>) {
     return createObservable<T>(observer => {
         let paused: boolean;
@@ -43,9 +40,6 @@ function pausable<T>(incomingStream: Observable<T>, pauser: Observable<boolean>)
 }
 
 export class ReactiveClient implements IReactiveDriver, IDisposable {
-    public static serverLineNumbers = serverLineNumbers;
-    public static serverLineNumberArrays = serverLineNumberArrays;
-
     private _driver: IReactiveDriver;
     private _requestStream = new Subject<RequestContext<any>>();
     private _responseStream = new Subject<ResponseContext<any, any>>();
@@ -53,7 +47,7 @@ export class ReactiveClient implements IReactiveDriver, IDisposable {
     private _statusStream: Observable<OmnisharpClientStatus>;
     private _errorStream = new Subject<CommandContext<any>>();
     private _uniqueId = uniqueId("client");
-    protected _lowestIndexValue: number;
+    protected _lowestIndexValue = 0;
     private _disposable = new CompositeDisposable();
     //private _pluginManager: PluginManager;
 
@@ -135,8 +129,6 @@ export class ReactiveClient implements IReactiveDriver, IDisposable {
                 driver.updatePlugins(this._pluginManager.plugins);
             }
         }));*/
-
-        this._lowestIndexValue = _options.oneBasedIndices ? 1 : 0;
 
         this._disposable.add(this._requestStream.subscribe(x => this._currentRequests.add(x)));
 
@@ -304,9 +296,10 @@ export class ReactiveClient implements IReactiveDriver, IDisposable {
     }
 
     public request<TRequest, TResponse>(action: string, request: TRequest, options?: OmniSharp.RequestOptions): Observable<TResponse> {
-        if (!options) options = <OmniSharp.RequestOptions>{};
-        defaults(options, { oneBasedIndices: this._options.oneBasedIndices });
+        let conditions = getPreconditions(action);
+        if (conditions) { each(conditions, x => x(request)); }
 
+        if (!options) options = <OmniSharp.RequestOptions>{};
         // Handle disconnected requests
         if (this.currentState !== DriverState.Connected && this.currentState !== DriverState.Error) {
             const response = new AsyncSubject<TResponse>();
@@ -358,168 +351,303 @@ export class ReactiveClient implements IReactiveDriver, IDisposable {
     public removePlugin(plugin: IOmnisharpPlugin) {
         this._pluginManager.remove(plugin);
     }*/
-
-    @request(preconditions.getcodeactions, 2)
-    public getcodeactions(request: OmniSharp.Models.V2.GetCodeActionsRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.V2.GetCodeActionsResponse> { throw new Error("Implemented by decorator"); }
-
-    @request(preconditions.runcodeaction, 2)
-    public runcodeaction(request: OmniSharp.Models.V2.RunCodeActionRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.V2.RunCodeActionResponse> { throw new Error("Implemented by decorator"); }
-
-    @request(preconditions.updatebuffer)
-    public updatebuffer(request: OmniSharp.Models.UpdateBufferRequest, options?: OmniSharp.RequestOptions): Observable<any> { throw new Error("Implemented by decorator"); }
-
-    @request(preconditions.changebuffer)
-    public changebuffer(request: OmniSharp.Models.ChangeBufferRequest, options?: OmniSharp.RequestOptions): Observable<any> { throw new Error("Implemented by decorator"); }
-
-    @request(preconditions.codecheck)
-    public codecheck(request: OmniSharp.Models.CodeCheckRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.QuickFixResponse> { throw new Error("Implemented by decorator"); }
-
-    @request(preconditions.formatAfterKeystroke)
-    public formatAfterKeystroke(request: OmniSharp.Models.FormatAfterKeystrokeRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.FormatRangeResponse> { throw new Error("Implemented by decorator"); }
-
-    @request(preconditions.formatRange)
-    public formatRange(request: OmniSharp.Models.FormatRangeRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.FormatRangeResponse> { throw new Error("Implemented by decorator"); }
-
-    @request(preconditions.codeformat)
-    public codeformat(request: OmniSharp.Models.CodeFormatRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.CodeFormatResponse> { throw new Error("Implemented by decorator"); }
-
-    @request(preconditions.autocomplete)
-    public autocomplete(request: OmniSharp.Models.AutoCompleteRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.AutoCompleteResponse[]> { throw new Error("Implemented by decorator"); }
-
-    @request(preconditions.findimplementations)
-    public findimplementations(request: OmniSharp.Models.FindImplementationsRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.QuickFixResponse> { throw new Error("Implemented by decorator"); }
-
-    @request(preconditions.findsymbols)
-    public findsymbols(request: OmniSharp.Models.FindSymbolsRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.QuickFixResponse> { throw new Error("Implemented by decorator"); }
-
-    @request(preconditions.findusages)
-    public findusages(request: OmniSharp.Models.FindUsagesRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.QuickFixResponse> { throw new Error("Implemented by decorator"); }
-
-    @request(preconditions.fixusings)
-    public fixusings(request: OmniSharp.Models.FixUsingsRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.FixUsingsResponse> { throw new Error("Implemented by decorator"); }
-
-    @request(preconditions.gotodefinition)
-    public gotodefinition(request: OmniSharp.Models.GotoDefinitionRequest, options?: OmniSharp.RequestOptions): Observable<any> { throw new Error("Implemented by decorator"); }
-
-    @request(preconditions.navigateup)
-    public navigateup(request: OmniSharp.Models.NavigateUpRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.NavigateResponse> { throw new Error("Implemented by decorator"); }
-
-    @request(preconditions.gotofile)
-    public gotofile(request?: OmniSharp.Models.GotoFileRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.QuickFixResponse> { throw new Error("Implemented by decorator"); }
-
-    @request(preconditions.gotoregion)
-    public gotoregion(request: OmniSharp.Models.GotoRegionRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.QuickFixResponse> { throw new Error("Implemented by decorator"); }
-
-    @request(preconditions.highlight)
-    public highlight(request: OmniSharp.Models.HighlightRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.HighlightResponse> { throw new Error("Implemented by decorator"); }
-
-    @request(preconditions.metadata)
-    public metadata(request: OmniSharp.Models.MetadataRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.MetadataResponse> { throw new Error("Implemented by decorator"); }
-
-    @request(preconditions.navigatedown)
-    public navigatedown(request: OmniSharp.Models.NavigateDownRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.NavigateResponse> { throw new Error("Implemented by decorator"); }
-
-    @request(preconditions.packagesearch)
-    public packagesearch(request: OmniSharp.Models.PackageSearchRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.PackageSearchResponse> { throw new Error("Implemented by decorator"); }
-
-    @request(preconditions.packagesource)
-    public packagesource(request: OmniSharp.Models.PackageSourceRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.PackageSourceResponse> { throw new Error("Implemented by decorator"); }
-
-    @request(preconditions.packageversion)
-    public packageversion(request: OmniSharp.Models.PackageVersionRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.PackageVersionResponse> { throw new Error("Implemented by decorator"); }
-
-    @request(preconditions.rename)
-    public rename(request: OmniSharp.Models.RenameRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.RenameResponse> { throw new Error("Implemented by decorator"); }
-
-    @request(preconditions.signatureHelp)
-    public signatureHelp(request: OmniSharp.Models.SignatureHelpRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.SignatureHelp> { throw new Error("Implemented by decorator"); }
-
-    @request()
-    public stopserver(request: any, options?: OmniSharp.RequestOptions) { throw new Error("Implemented by decorator"); }
-
-    @request()
-    public checkalivestatus(options?: OmniSharp.RequestOptions) { throw new Error("Implemented by decorator"); }
-
-    @request()
-    public checkreadystatus(options?: OmniSharp.RequestOptions) { throw new Error("Implemented by decorator"); }
-
-    @request(preconditions.currentfilemembersastree)
-    public currentfilemembersastree(request: OmniSharp.Models.MembersTreeRequest, options?: OmniSharp.RequestOptions): Observable<any> { throw new Error("Implemented by decorator"); }
-
-    @request(preconditions.currentfilemembersasflat)
-    public currentfilemembersasflat(request: OmniSharp.Models.MembersFlatRequest, options?: OmniSharp.RequestOptions): Observable<any> { throw new Error("Implemented by decorator"); }
-
-    @request(preconditions.typelookup)
-    public typelookup(request: OmniSharp.Models.TypeLookupRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.TypeLookupResponse> { throw new Error("Implemented by decorator"); }
-
-    @request(preconditions.filesChanged)
-    public filesChanged(request: OmniSharp.Models.Request[], options?: OmniSharp.RequestOptions): Observable<boolean> { throw new Error("Implemented by decorator"); }
-
-    @request(preconditions.projects)
-    public projects(request: OmniSharp.Models.v1.WorkspaceInformationRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.WorkspaceInformationResponse> { throw new Error("Implemented by decorator"); }
-
-    @request(preconditions.project)
-    public project(request: OmniSharp.Models.v1.ProjectInformationRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.ProjectInformationResponse> { throw new Error("Implemented by decorator"); }
-
-    @request(preconditions.gettestcontext)
-    public gettestcontext(request: OmniSharp.Models.TestCommandRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.GetTestCommandResponse> { throw new Error("Implemented by decorator"); }
 }
 
-export class ReactiveClientEvents implements OmniSharp.Events {
+export class ReactiveClientEvents {
     constructor(private _client: ReactiveClient) { }
 
     public get uniqueId() { return this._client.uniqueId; }
 
-    @event public get projectAdded(): Observable<OmniSharp.Models.ProjectInformationResponse> { throw new Error("Implemented by decorator"); }
-    @event public get projectChanged(): Observable<OmniSharp.Models.ProjectInformationResponse> { throw new Error("Implemented by decorator"); }
-    @event public get projectRemoved(): Observable<OmniSharp.Models.ProjectInformationResponse> { throw new Error("Implemented by decorator"); }
-    @event public get error(): Observable<OmniSharp.Models.ErrorMessage> { throw new Error("Implemented by decorator"); }
-    @event public get msBuildProjectDiagnostics(): Observable<OmniSharp.Models.MSBuildProjectDiagnostics> { throw new Error("Implemented by decorator"); }
-    @event public get packageRestoreStarted(): Observable<OmniSharp.Models.PackageRestoreMessage> { throw new Error("Implemented by decorator"); }
-    @event public get packageRestoreFinished(): Observable<OmniSharp.Models.PackageRestoreMessage> { throw new Error("Implemented by decorator"); }
-    @event public get unresolvedDependencies(): Observable<OmniSharp.Models.UnresolvedDependenciesMessage> { throw new Error("Implemented by decorator"); }
+    public listen(key: string): Observable<any> {
+        const value = getInternalValue(this, key);
+        if (!value) {
+            return setEventOrResponse(this, key);
+        }
+        return value;
+    }
+}
 
-    @reference public get events(): Observable<OmniSharp.Stdio.Protocol.EventPacket> { throw new Error("Implemented by decorator"); }
-    @reference public get commands(): Observable<OmniSharp.Stdio.Protocol.ResponsePacket> { throw new Error("Implemented by decorator"); }
-    @reference public get state(): Observable<DriverState> { throw new Error("Implemented by decorator"); }
-    @reference public get status(): Observable<OmnisharpClientStatus> { throw new Error("Implemented by decorator"); }
-    @reference public get requests(): Observable<RequestContext<any>> { throw new Error("Implemented by decorator"); }
-    @reference public get responses(): Observable<ResponseContext<any, any>> { throw new Error("Implemented by decorator"); }
-    @reference public get errors(): Observable<CommandContext<any>> { throw new Error("Implemented by decorator"); }
+reference(ReactiveClientEvents.prototype, "events", "events");
+reference(ReactiveClientEvents.prototype, "commands", "commands");
+reference(ReactiveClientEvents.prototype, "state", "state");
+reference(ReactiveClientEvents.prototype, "status", "status");
+reference(ReactiveClientEvents.prototype, "requests", "requests");
+reference(ReactiveClientEvents.prototype, "responses", "responses");
+reference(ReactiveClientEvents.prototype, "errors", "errors");
 
-    @response public get updatebuffer(): Observable<OmniSharp.Context<OmniSharp.Models.UpdateBufferRequest, any>> { throw new Error("Implemented by decorator"); }
-    @response public get changebuffer(): Observable<OmniSharp.Context<OmniSharp.Models.ChangeBufferRequest, any>> { throw new Error("Implemented by decorator"); }
-    @response public get codecheck(): Observable<OmniSharp.Context<OmniSharp.Models.CodeCheckRequest, OmniSharp.Models.QuickFixResponse>> { throw new Error("Implemented by decorator"); }
-    @response public get formatAfterKeystroke(): Observable<OmniSharp.Context<OmniSharp.Models.FormatAfterKeystrokeRequest, OmniSharp.Models.FormatRangeResponse>> { throw new Error("Implemented by decorator"); }
-    @response public get formatRange(): Observable<OmniSharp.Context<OmniSharp.Models.FormatRangeRequest, OmniSharp.Models.FormatRangeResponse>> { throw new Error("Implemented by decorator"); }
-    @response public get codeformat(): Observable<OmniSharp.Context<OmniSharp.Models.CodeFormatRequest, OmniSharp.Models.CodeFormatResponse>> { throw new Error("Implemented by decorator"); }
-    @response public get autocomplete(): Observable<OmniSharp.Context<OmniSharp.Models.AutoCompleteRequest, OmniSharp.Models.AutoCompleteResponse[]>> { throw new Error("Implemented by decorator"); }
-    @response public get findimplementations(): Observable<OmniSharp.Context<OmniSharp.Models.FindImplementationsRequest, OmniSharp.Models.QuickFixResponse>> { throw new Error("Implemented by decorator"); }
-    @response public get findsymbols(): Observable<OmniSharp.Context<OmniSharp.Models.FindSymbolsRequest, OmniSharp.Models.QuickFixResponse>> { throw new Error("Implemented by decorator"); }
-    @response public get findusages(): Observable<OmniSharp.Context<OmniSharp.Models.FindUsagesRequest, OmniSharp.Models.QuickFixResponse>> { throw new Error("Implemented by decorator"); }
-    @response public get fixusings(): Observable<OmniSharp.Context<OmniSharp.Models.FixUsingsRequest, OmniSharp.Models.FixUsingsResponse>> { throw new Error("Implemented by decorator"); }
-    @response public get gotodefinition(): Observable<OmniSharp.Context<OmniSharp.Models.GotoDefinitionRequest, OmniSharp.Models.GotoDefinitionResponse>> { throw new Error("Implemented by decorator"); }
-    @response public get gotofile(): Observable<OmniSharp.Context<OmniSharp.Models.GotoFileRequest, OmniSharp.Models.QuickFixResponse>> { throw new Error("Implemented by decorator"); }
-    @response public get gotoregion(): Observable<OmniSharp.Context<OmniSharp.Models.GotoRegionRequest, OmniSharp.Models.QuickFixResponse>> { throw new Error("Implemented by decorator"); }
-    @response public get highlight(): Observable<OmniSharp.Context<OmniSharp.Models.HighlightRequest, OmniSharp.Models.HighlightResponse>> { throw new Error("Implemented by decorator"); }
-    @response public get metadata(): Observable<OmniSharp.Context<OmniSharp.Models.MetadataRequest, OmniSharp.Models.MetadataResponse>> { throw new Error("Implemented by decorator"); }
-    @response public get navigateup(): Observable<OmniSharp.Context<OmniSharp.Models.NavigateUpRequest, OmniSharp.Models.NavigateResponse>> { throw new Error("Implemented by decorator"); }
-    @response public get navigatedown(): Observable<OmniSharp.Context<OmniSharp.Models.NavigateDownRequest, OmniSharp.Models.NavigateResponse>> { throw new Error("Implemented by decorator"); }
-    @response public get packagesearch(): Observable<OmniSharp.Context<OmniSharp.Models.PackageSearchRequest, OmniSharp.Models.PackageSearchResponse>> { throw new Error("Implemented by decorator"); }
-    @response public get packagesource(): Observable<OmniSharp.Context<OmniSharp.Models.PackageSourceRequest, OmniSharp.Models.PackageSourceResponse>> { throw new Error("Implemented by decorator"); }
-    @response public get packageversion(): Observable<OmniSharp.Context<OmniSharp.Models.PackageVersionRequest, OmniSharp.Models.PackageVersionResponse>> { throw new Error("Implemented by decorator"); }
-    @response public get rename(): Observable<OmniSharp.Context<OmniSharp.Models.RenameRequest, OmniSharp.Models.RenameResponse>> { throw new Error("Implemented by decorator"); }
-    @response public get signatureHelp(): Observable<OmniSharp.Context<OmniSharp.Models.SignatureHelpRequest, OmniSharp.Models.SignatureHelp>> { throw new Error("Implemented by decorator"); }
-    @response public get stopserver(): Observable<OmniSharp.Context<any, boolean>> { throw new Error("Implemented by decorator"); }
-    @response public get checkalivestatus(): Observable<OmniSharp.Context<any, boolean>> { throw new Error("Implemented by decorator"); }
-    @response public get checkreadystatus(): Observable<OmniSharp.Context<any, boolean>> { throw new Error("Implemented by decorator"); }
-    @response public get currentfilemembersastree(): Observable<OmniSharp.Context<OmniSharp.Models.MembersTreeRequest, OmniSharp.Models.FileMemberTree>> { throw new Error("Implemented by decorator"); }
-    @response public get currentfilemembersasflat(): Observable<OmniSharp.Context<OmniSharp.Models.MembersFlatRequest, OmniSharp.Models.QuickFix[]>> { throw new Error("Implemented by decorator"); }
-    @response public get typelookup(): Observable<OmniSharp.Context<OmniSharp.Models.TypeLookupRequest, OmniSharp.Models.TypeLookupResponse>> { throw new Error("Implemented by decorator"); }
-    @response public get filesChanged(): Observable<OmniSharp.Context<OmniSharp.Models.Request[], boolean>> { throw new Error("Implemented by decorator"); }
-    @response public get projects(): Observable<OmniSharp.Context<OmniSharp.Models.v1.WorkspaceInformationRequest, OmniSharp.Models.WorkspaceInformationResponse>> { throw new Error("Implemented by decorator"); }
-    @response public get project(): Observable<OmniSharp.Context<OmniSharp.Models.v1.ProjectInformationRequest, OmniSharp.Models.ProjectInformationResponse>> { throw new Error("Implemented by decorator"); }
-    @response public get getcodeactions(): Observable<OmniSharp.Context<OmniSharp.Models.V2.GetCodeActionsRequest, OmniSharp.Models.V2.GetCodeActionsResponse>> { throw new Error("Implemented by decorator"); }
-    @response public get runcodeaction(): Observable<OmniSharp.Context<OmniSharp.Models.V2.RunCodeActionRequest, OmniSharp.Models.V2.RunCodeActionResponse>> { throw new Error("Implemented by decorator"); }
-    @response public get gettestcontext(): Observable<OmniSharp.Context<OmniSharp.Models.TestCommandRequest, OmniSharp.Models.GetTestCommandResponse>> { throw new Error("Implemented by decorator"); }
+export interface ReactiveClientEvents {
+    /*readonly*/ events: Observable<OmniSharp.Stdio.Protocol.EventPacket>;
+    /*readonly*/ commands: Observable<OmniSharp.Stdio.Protocol.ResponsePacket>;
+    /*readonly*/ state: Observable<DriverState>;
+    /*readonly*/ status: Observable<OmnisharpClientStatus>;
+    /*readonly*/ requests: Observable<RequestContext<any>>;
+    /*readonly*/ responses: Observable<ResponseContext<any, any>>;
+    /*readonly*/ errors: Observable<CommandContext<any>>;
+}
+
+// <#GENERATED />
+request(ReactiveClient.prototype, "getteststartinfo");
+request(ReactiveClient.prototype, "runtest");
+request(ReactiveClient.prototype, "autocomplete");
+request(ReactiveClient.prototype, "changebuffer");
+request(ReactiveClient.prototype, "codecheck");
+request(ReactiveClient.prototype, "codeformat");
+request(ReactiveClient.prototype, "close");
+request(ReactiveClient.prototype, "open");
+request(ReactiveClient.prototype, "filesChanged");
+request(ReactiveClient.prototype, "findimplementations");
+request(ReactiveClient.prototype, "findsymbols");
+request(ReactiveClient.prototype, "findusages");
+request(ReactiveClient.prototype, "fixusings");
+request(ReactiveClient.prototype, "formatAfterKeystroke");
+request(ReactiveClient.prototype, "formatRange");
+request(ReactiveClient.prototype, "getcodeactions");
+request(ReactiveClient.prototype, "gotodefinition");
+request(ReactiveClient.prototype, "gotofile");
+request(ReactiveClient.prototype, "gotoregion");
+request(ReactiveClient.prototype, "highlight");
+request(ReactiveClient.prototype, "currentfilemembersasflat");
+request(ReactiveClient.prototype, "currentfilemembersastree");
+request(ReactiveClient.prototype, "metadata");
+request(ReactiveClient.prototype, "navigatedown");
+request(ReactiveClient.prototype, "navigateup");
+request(ReactiveClient.prototype, "packagesearch");
+request(ReactiveClient.prototype, "packagesource");
+request(ReactiveClient.prototype, "packageversion");
+request(ReactiveClient.prototype, "rename");
+request(ReactiveClient.prototype, "runcodeaction");
+request(ReactiveClient.prototype, "signatureHelp");
+request(ReactiveClient.prototype, "gettestcontext");
+request(ReactiveClient.prototype, "typelookup");
+request(ReactiveClient.prototype, "updatebuffer");
+request(ReactiveClient.prototype, "project");
+request(ReactiveClient.prototype, "projects");
+request(ReactiveClient.prototype, "checkalivestatus");
+request(ReactiveClient.prototype, "checkreadystatus");
+request(ReactiveClient.prototype, "stopserver");
+response(ReactiveClientEvents.prototype, "getteststartinfo", "/v2/getteststartinfo");
+response(ReactiveClientEvents.prototype, "runtest", "/v2/runtest");
+response(ReactiveClientEvents.prototype, "autocomplete", "/autocomplete");
+response(ReactiveClientEvents.prototype, "changebuffer", "/changebuffer");
+response(ReactiveClientEvents.prototype, "codecheck", "/v2/codecheck");
+response(ReactiveClientEvents.prototype, "codeformat", "/codeformat");
+response(ReactiveClientEvents.prototype, "close", "/close");
+response(ReactiveClientEvents.prototype, "open", "/open");
+response(ReactiveClientEvents.prototype, "filesChanged", "/filesChanged");
+response(ReactiveClientEvents.prototype, "findimplementations", "/findimplementations");
+response(ReactiveClientEvents.prototype, "findsymbols", "/findsymbols");
+response(ReactiveClientEvents.prototype, "findusages", "/findusages");
+response(ReactiveClientEvents.prototype, "fixusings", "/fixusings");
+response(ReactiveClientEvents.prototype, "formatAfterKeystroke", "/formatAfterKeystroke");
+response(ReactiveClientEvents.prototype, "formatRange", "/formatRange");
+response(ReactiveClientEvents.prototype, "getcodeactions", "/v2/getcodeactions");
+response(ReactiveClientEvents.prototype, "gotodefinition", "/gotodefinition");
+response(ReactiveClientEvents.prototype, "gotofile", "/gotofile");
+response(ReactiveClientEvents.prototype, "gotoregion", "/gotoregion");
+response(ReactiveClientEvents.prototype, "highlight", "/highlight");
+response(ReactiveClientEvents.prototype, "currentfilemembersasflat", "/currentfilemembersasflat");
+response(ReactiveClientEvents.prototype, "currentfilemembersastree", "/currentfilemembersastree");
+response(ReactiveClientEvents.prototype, "metadata", "/metadata");
+response(ReactiveClientEvents.prototype, "navigatedown", "/navigatedown");
+response(ReactiveClientEvents.prototype, "navigateup", "/navigateup");
+response(ReactiveClientEvents.prototype, "packagesearch", "/packagesearch");
+response(ReactiveClientEvents.prototype, "packagesource", "/packagesource");
+response(ReactiveClientEvents.prototype, "packageversion", "/packageversion");
+response(ReactiveClientEvents.prototype, "rename", "/rename");
+response(ReactiveClientEvents.prototype, "runcodeaction", "/v2/runcodeaction");
+response(ReactiveClientEvents.prototype, "signatureHelp", "/signatureHelp");
+response(ReactiveClientEvents.prototype, "gettestcontext", "/gettestcontext");
+response(ReactiveClientEvents.prototype, "typelookup", "/typelookup");
+response(ReactiveClientEvents.prototype, "updatebuffer", "/updatebuffer");
+response(ReactiveClientEvents.prototype, "project", "/project");
+response(ReactiveClientEvents.prototype, "projects", "/projects");
+response(ReactiveClientEvents.prototype, "checkalivestatus", "/checkalivestatus");
+response(ReactiveClientEvents.prototype, "checkreadystatus", "/checkreadystatus");
+response(ReactiveClientEvents.prototype, "stopserver", "/stopserver");
+
+export interface ReactiveClient {
+    getteststartinfo(request: any, options?: OmniSharp.RequestOptions): Observable<any>;
+    runtest(request: any, options?: OmniSharp.RequestOptions): Observable<any>;
+    autocomplete(request: OmniSharp.Models.AutoCompleteRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.AutoCompleteResponse[]>;
+    changebuffer(request: OmniSharp.Models.ChangeBufferRequest, options?: OmniSharp.RequestOptions): Observable<any>;
+    codecheck(request: OmniSharp.Models.V2.CodeCheckRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.V2.CodeCheckResponse>;
+    codeformat(request: OmniSharp.Models.CodeFormatRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.CodeFormatResponse>;
+    close(request: OmniSharp.Models.FileCloseRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.FileCloseResponse>;
+    open(request: OmniSharp.Models.FileOpenRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.FileOpenResponse>;
+    filesChanged(request: OmniSharp.Models.Request[], options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.FilesChangedResponse>;
+    findimplementations(request: OmniSharp.Models.FindImplementationsRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.QuickFixResponse>;
+    findsymbols(request: OmniSharp.Models.FindSymbolsRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.QuickFixResponse>;
+    findusages(request: OmniSharp.Models.FindUsagesRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.QuickFixResponse>;
+    fixusings(request: OmniSharp.Models.FixUsingsRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.FixUsingsResponse>;
+    formatAfterKeystroke(request: OmniSharp.Models.FormatAfterKeystrokeRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.FormatRangeResponse>;
+    formatRange(request: OmniSharp.Models.FormatRangeRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.FormatRangeResponse>;
+    getcodeactions(request: OmniSharp.Models.V2.GetCodeActionsRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.V2.GetCodeActionsResponse>;
+    gotodefinition(request: OmniSharp.Models.GotoDefinitionRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.GotoDefinitionResponse>;
+    gotofile(request: OmniSharp.Models.GotoFileRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.QuickFixResponse>;
+    gotoregion(request: OmniSharp.Models.GotoRegionRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.QuickFixResponse>;
+    highlight(request: OmniSharp.Models.HighlightRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.HighlightResponse>;
+    currentfilemembersasflat(request: OmniSharp.Models.MembersFlatRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.QuickFix[]>;
+    currentfilemembersastree(request: OmniSharp.Models.MembersTreeRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.FileMemberTree>;
+    metadata(request: OmniSharp.Models.MetadataRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.MetadataResponse>;
+    navigatedown(request: OmniSharp.Models.NavigateDownRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.NavigateResponse>;
+    navigateup(request: OmniSharp.Models.NavigateUpRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.NavigateResponse>;
+    packagesearch(request: OmniSharp.Models.PackageSearchRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.PackageSearchResponse>;
+    packagesource(request: OmniSharp.Models.PackageSourceRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.PackageSourceResponse>;
+    packageversion(request: OmniSharp.Models.PackageVersionRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.PackageVersionResponse>;
+    rename(request: OmniSharp.Models.RenameRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.RenameResponse>;
+    runcodeaction(request: OmniSharp.Models.V2.RunCodeActionRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.V2.RunCodeActionResponse>;
+    signatureHelp(request: OmniSharp.Models.SignatureHelpRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.SignatureHelp>;
+    gettestcontext(request: OmniSharp.Models.TestCommandRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.GetTestCommandResponse>;
+    typelookup(request: OmniSharp.Models.TypeLookupRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.TypeLookupResponse>;
+    updatebuffer(request: OmniSharp.Models.UpdateBufferRequest, options?: OmniSharp.RequestOptions): Observable<any>;
+    project(request: OmniSharp.Models.v1.ProjectInformationRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.ProjectInformationResponse>;
+    projects(request: OmniSharp.Models.v1.WorkspaceInformationRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.WorkspaceInformationResponse>;
+    checkalivestatus(options?: OmniSharp.RequestOptions): Observable<boolean>;
+    checkreadystatus(options?: OmniSharp.RequestOptions): Observable<boolean>;
+    stopserver(options?: OmniSharp.RequestOptions): Observable<boolean>;
+    request(path: "/v2/getteststartinfo", request: any, options?: OmniSharp.RequestOptions): Observable<any>;
+    request(path: "/v2/runtest", request: any, options?: OmniSharp.RequestOptions): Observable<any>;
+    request(path: "/autocomplete", request: OmniSharp.Models.AutoCompleteRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.AutoCompleteResponse[]>;
+    request(path: "/changebuffer", request: OmniSharp.Models.ChangeBufferRequest, options?: OmniSharp.RequestOptions): Observable<any>;
+    request(path: "/codecheck", request: OmniSharp.Models.CodeCheckRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.QuickFixResponse>;
+    request(path: "/codeformat", request: OmniSharp.Models.CodeFormatRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.CodeFormatResponse>;
+    request(path: "/close", request: OmniSharp.Models.FileCloseRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.FileCloseResponse>;
+    request(path: "/open", request: OmniSharp.Models.FileOpenRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.FileOpenResponse>;
+    request(path: "/filesChanged", request: OmniSharp.Models.Request[], options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.FilesChangedResponse>;
+    request(path: "/findimplementations", request: OmniSharp.Models.FindImplementationsRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.QuickFixResponse>;
+    request(path: "/findsymbols", request: OmniSharp.Models.FindSymbolsRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.QuickFixResponse>;
+    request(path: "/findusages", request: OmniSharp.Models.FindUsagesRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.QuickFixResponse>;
+    request(path: "/fixusings", request: OmniSharp.Models.FixUsingsRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.FixUsingsResponse>;
+    request(path: "/formatAfterKeystroke", request: OmniSharp.Models.FormatAfterKeystrokeRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.FormatRangeResponse>;
+    request(path: "/formatRange", request: OmniSharp.Models.FormatRangeRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.FormatRangeResponse>;
+    request(path: "/getcodeactions", request: OmniSharp.Models.GetCodeActionRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.GetCodeActionsResponse>;
+    request(path: "/gotodefinition", request: OmniSharp.Models.GotoDefinitionRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.GotoDefinitionResponse>;
+    request(path: "/gotofile", request: OmniSharp.Models.GotoFileRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.QuickFixResponse>;
+    request(path: "/gotoregion", request: OmniSharp.Models.GotoRegionRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.QuickFixResponse>;
+    request(path: "/highlight", request: OmniSharp.Models.HighlightRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.HighlightResponse>;
+    request(path: "/currentfilemembersasflat", request: OmniSharp.Models.MembersFlatRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.QuickFix[]>;
+    request(path: "/currentfilemembersastree", request: OmniSharp.Models.MembersTreeRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.FileMemberTree>;
+    request(path: "/metadata", request: OmniSharp.Models.MetadataRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.MetadataResponse>;
+    request(path: "/navigatedown", request: OmniSharp.Models.NavigateDownRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.NavigateResponse>;
+    request(path: "/navigateup", request: OmniSharp.Models.NavigateUpRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.NavigateResponse>;
+    request(path: "/packagesearch", request: OmniSharp.Models.PackageSearchRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.PackageSearchResponse>;
+    request(path: "/packagesource", request: OmniSharp.Models.PackageSourceRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.PackageSourceResponse>;
+    request(path: "/packageversion", request: OmniSharp.Models.PackageVersionRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.PackageVersionResponse>;
+    request(path: "/rename", request: OmniSharp.Models.RenameRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.RenameResponse>;
+    request(path: "/runcodeaction", request: OmniSharp.Models.RunCodeActionRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.RunCodeActionResponse>;
+    request(path: "/signatureHelp", request: OmniSharp.Models.SignatureHelpRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.SignatureHelp>;
+    request(path: "/gettestcontext", request: OmniSharp.Models.TestCommandRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.GetTestCommandResponse>;
+    request(path: "/typelookup", request: OmniSharp.Models.TypeLookupRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.TypeLookupResponse>;
+    request(path: "/updatebuffer", request: OmniSharp.Models.UpdateBufferRequest, options?: OmniSharp.RequestOptions): Observable<any>;
+    request(path: "/v2/codecheck", request: OmniSharp.Models.V2.CodeCheckRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.V2.CodeCheckResponse>;
+    request(path: "/v2/getcodeactions", request: OmniSharp.Models.V2.GetCodeActionsRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.V2.GetCodeActionsResponse>;
+    request(path: "/v2/runcodeaction", request: OmniSharp.Models.V2.RunCodeActionRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.V2.RunCodeActionResponse>;
+    request(path: "/project", request: OmniSharp.Models.v1.ProjectInformationRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.ProjectInformationResponse>;
+    request(path: "/projects", request: OmniSharp.Models.v1.WorkspaceInformationRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.WorkspaceInformationResponse>;
+    request(path: "/checkalivestatus", options?: OmniSharp.RequestOptions): Observable<boolean>;
+    request(path: "/checkreadystatus", options?: OmniSharp.RequestOptions): Observable<boolean>;
+    request(path: "/stopserver", options?: OmniSharp.RequestOptions): Observable<boolean>;
+}
+
+export interface ReactiveClientEvents {
+    /*readonly*/ getteststartinfo: Observable<OmniSharp.Context<any, any>>;
+    /*readonly*/ runtest: Observable<OmniSharp.Context<any, any>>;
+    /*readonly*/ autocomplete: Observable<OmniSharp.Context<OmniSharp.Models.AutoCompleteRequest, OmniSharp.Models.AutoCompleteResponse[]>>;
+    /*readonly*/ changebuffer: Observable<OmniSharp.Context<OmniSharp.Models.ChangeBufferRequest, any>>;
+    /*readonly*/ codecheck: Observable<OmniSharp.Context<OmniSharp.Models.V2.CodeCheckRequest, OmniSharp.Models.V2.CodeCheckResponse>>;
+    /*readonly*/ codeformat: Observable<OmniSharp.Context<OmniSharp.Models.CodeFormatRequest, OmniSharp.Models.CodeFormatResponse>>;
+    /*readonly*/ close: Observable<OmniSharp.Context<OmniSharp.Models.FileCloseRequest, OmniSharp.Models.FileCloseResponse>>;
+    /*readonly*/ open: Observable<OmniSharp.Context<OmniSharp.Models.FileOpenRequest, OmniSharp.Models.FileOpenResponse>>;
+    /*readonly*/ filesChanged: Observable<OmniSharp.Context<OmniSharp.Models.Request[], OmniSharp.Models.FilesChangedResponse>>;
+    /*readonly*/ findimplementations: Observable<OmniSharp.Context<OmniSharp.Models.FindImplementationsRequest, OmniSharp.Models.QuickFixResponse>>;
+    /*readonly*/ findsymbols: Observable<OmniSharp.Context<OmniSharp.Models.FindSymbolsRequest, OmniSharp.Models.QuickFixResponse>>;
+    /*readonly*/ findusages: Observable<OmniSharp.Context<OmniSharp.Models.FindUsagesRequest, OmniSharp.Models.QuickFixResponse>>;
+    /*readonly*/ fixusings: Observable<OmniSharp.Context<OmniSharp.Models.FixUsingsRequest, OmniSharp.Models.FixUsingsResponse>>;
+    /*readonly*/ formatAfterKeystroke: Observable<OmniSharp.Context<OmniSharp.Models.FormatAfterKeystrokeRequest, OmniSharp.Models.FormatRangeResponse>>;
+    /*readonly*/ formatRange: Observable<OmniSharp.Context<OmniSharp.Models.FormatRangeRequest, OmniSharp.Models.FormatRangeResponse>>;
+    /*readonly*/ getcodeactions: Observable<OmniSharp.Context<OmniSharp.Models.V2.GetCodeActionsRequest, OmniSharp.Models.V2.GetCodeActionsResponse>>;
+    /*readonly*/ gotodefinition: Observable<OmniSharp.Context<OmniSharp.Models.GotoDefinitionRequest, OmniSharp.Models.GotoDefinitionResponse>>;
+    /*readonly*/ gotofile: Observable<OmniSharp.Context<OmniSharp.Models.GotoFileRequest, OmniSharp.Models.QuickFixResponse>>;
+    /*readonly*/ gotoregion: Observable<OmniSharp.Context<OmniSharp.Models.GotoRegionRequest, OmniSharp.Models.QuickFixResponse>>;
+    /*readonly*/ highlight: Observable<OmniSharp.Context<OmniSharp.Models.HighlightRequest, OmniSharp.Models.HighlightResponse>>;
+    /*readonly*/ currentfilemembersasflat: Observable<OmniSharp.Context<OmniSharp.Models.MembersFlatRequest, OmniSharp.Models.QuickFix[]>>;
+    /*readonly*/ currentfilemembersastree: Observable<OmniSharp.Context<OmniSharp.Models.MembersTreeRequest, OmniSharp.Models.FileMemberTree>>;
+    /*readonly*/ metadata: Observable<OmniSharp.Context<OmniSharp.Models.MetadataRequest, OmniSharp.Models.MetadataResponse>>;
+    /*readonly*/ navigatedown: Observable<OmniSharp.Context<OmniSharp.Models.NavigateDownRequest, OmniSharp.Models.NavigateResponse>>;
+    /*readonly*/ navigateup: Observable<OmniSharp.Context<OmniSharp.Models.NavigateUpRequest, OmniSharp.Models.NavigateResponse>>;
+    /*readonly*/ packagesearch: Observable<OmniSharp.Context<OmniSharp.Models.PackageSearchRequest, OmniSharp.Models.PackageSearchResponse>>;
+    /*readonly*/ packagesource: Observable<OmniSharp.Context<OmniSharp.Models.PackageSourceRequest, OmniSharp.Models.PackageSourceResponse>>;
+    /*readonly*/ packageversion: Observable<OmniSharp.Context<OmniSharp.Models.PackageVersionRequest, OmniSharp.Models.PackageVersionResponse>>;
+    /*readonly*/ rename: Observable<OmniSharp.Context<OmniSharp.Models.RenameRequest, OmniSharp.Models.RenameResponse>>;
+    /*readonly*/ runcodeaction: Observable<OmniSharp.Context<OmniSharp.Models.V2.RunCodeActionRequest, OmniSharp.Models.V2.RunCodeActionResponse>>;
+    /*readonly*/ signatureHelp: Observable<OmniSharp.Context<OmniSharp.Models.SignatureHelpRequest, OmniSharp.Models.SignatureHelp>>;
+    /*readonly*/ gettestcontext: Observable<OmniSharp.Context<OmniSharp.Models.TestCommandRequest, OmniSharp.Models.GetTestCommandResponse>>;
+    /*readonly*/ typelookup: Observable<OmniSharp.Context<OmniSharp.Models.TypeLookupRequest, OmniSharp.Models.TypeLookupResponse>>;
+    /*readonly*/ updatebuffer: Observable<OmniSharp.Context<OmniSharp.Models.UpdateBufferRequest, any>>;
+    /*readonly*/ project: Observable<OmniSharp.Context<OmniSharp.Models.v1.ProjectInformationRequest, OmniSharp.Models.ProjectInformationResponse>>;
+    /*readonly*/ projects: Observable<OmniSharp.Context<OmniSharp.Models.v1.WorkspaceInformationRequest, OmniSharp.Models.WorkspaceInformationResponse>>;
+    /*readonly*/ checkalivestatus: Observable<OmniSharp.Context<any, boolean>>;
+    /*readonly*/ checkreadystatus: Observable<OmniSharp.Context<any, boolean>>;
+    /*readonly*/ stopserver: Observable<OmniSharp.Context<any, boolean>>;
+    /*readonly*/ projectAdded: Observable<OmniSharp.Models.ProjectInformationResponse>;
+    /*readonly*/ projectChanged: Observable<OmniSharp.Models.ProjectInformationResponse>;
+    /*readonly*/ projectRemoved: Observable<OmniSharp.Models.ProjectInformationResponse>;
+    /*readonly*/ error: Observable<OmniSharp.Models.ErrorMessage>;
+    /*readonly*/ diagnostic: Observable<OmniSharp.Models.DiagnosticMessage>;
+    /*readonly*/ msBuildProjectDiagnostics: Observable<OmniSharp.Models.MSBuildProjectDiagnostics>;
+    /*readonly*/ packageRestoreStarted: Observable<OmniSharp.Models.PackageRestoreMessage>;
+    /*readonly*/ packageRestoreFinished: Observable<OmniSharp.Models.PackageRestoreMessage>;
+    /*readonly*/ unresolvedDependencies: Observable<OmniSharp.Models.UnresolvedDependenciesMessage>;
+    listen(path: "/v2/getteststartinfo"): Observable<OmniSharp.Context<any, any>>;
+    listen(path: "/v2/runtest"): Observable<OmniSharp.Context<any, any>>;
+    listen(path: "/autocomplete"): Observable<OmniSharp.Context<OmniSharp.Models.AutoCompleteRequest, OmniSharp.Models.AutoCompleteResponse[]>>;
+    listen(path: "/changebuffer"): Observable<OmniSharp.Context<OmniSharp.Models.ChangeBufferRequest, any>>;
+    listen(path: "/codecheck"): Observable<OmniSharp.Context<OmniSharp.Models.CodeCheckRequest, OmniSharp.Models.QuickFixResponse>>;
+    listen(path: "/codeformat"): Observable<OmniSharp.Context<OmniSharp.Models.CodeFormatRequest, OmniSharp.Models.CodeFormatResponse>>;
+    listen(path: "/close"): Observable<OmniSharp.Context<OmniSharp.Models.FileCloseRequest, OmniSharp.Models.FileCloseResponse>>;
+    listen(path: "/open"): Observable<OmniSharp.Context<OmniSharp.Models.FileOpenRequest, OmniSharp.Models.FileOpenResponse>>;
+    listen(path: "/filesChanged"): Observable<OmniSharp.Context<OmniSharp.Models.Request[], OmniSharp.Models.FilesChangedResponse>>;
+    listen(path: "/findimplementations"): Observable<OmniSharp.Context<OmniSharp.Models.FindImplementationsRequest, OmniSharp.Models.QuickFixResponse>>;
+    listen(path: "/findsymbols"): Observable<OmniSharp.Context<OmniSharp.Models.FindSymbolsRequest, OmniSharp.Models.QuickFixResponse>>;
+    listen(path: "/findusages"): Observable<OmniSharp.Context<OmniSharp.Models.FindUsagesRequest, OmniSharp.Models.QuickFixResponse>>;
+    listen(path: "/fixusings"): Observable<OmniSharp.Context<OmniSharp.Models.FixUsingsRequest, OmniSharp.Models.FixUsingsResponse>>;
+    listen(path: "/formatAfterKeystroke"): Observable<OmniSharp.Context<OmniSharp.Models.FormatAfterKeystrokeRequest, OmniSharp.Models.FormatRangeResponse>>;
+    listen(path: "/formatRange"): Observable<OmniSharp.Context<OmniSharp.Models.FormatRangeRequest, OmniSharp.Models.FormatRangeResponse>>;
+    listen(path: "/getcodeactions"): Observable<OmniSharp.Context<OmniSharp.Models.GetCodeActionRequest, OmniSharp.Models.GetCodeActionsResponse>>;
+    listen(path: "/gotodefinition"): Observable<OmniSharp.Context<OmniSharp.Models.GotoDefinitionRequest, OmniSharp.Models.GotoDefinitionResponse>>;
+    listen(path: "/gotofile"): Observable<OmniSharp.Context<OmniSharp.Models.GotoFileRequest, OmniSharp.Models.QuickFixResponse>>;
+    listen(path: "/gotoregion"): Observable<OmniSharp.Context<OmniSharp.Models.GotoRegionRequest, OmniSharp.Models.QuickFixResponse>>;
+    listen(path: "/highlight"): Observable<OmniSharp.Context<OmniSharp.Models.HighlightRequest, OmniSharp.Models.HighlightResponse>>;
+    listen(path: "/currentfilemembersasflat"): Observable<OmniSharp.Context<OmniSharp.Models.MembersFlatRequest, OmniSharp.Models.QuickFix[]>>;
+    listen(path: "/currentfilemembersastree"): Observable<OmniSharp.Context<OmniSharp.Models.MembersTreeRequest, OmniSharp.Models.FileMemberTree>>;
+    listen(path: "/metadata"): Observable<OmniSharp.Context<OmniSharp.Models.MetadataRequest, OmniSharp.Models.MetadataResponse>>;
+    listen(path: "/navigatedown"): Observable<OmniSharp.Context<OmniSharp.Models.NavigateDownRequest, OmniSharp.Models.NavigateResponse>>;
+    listen(path: "/navigateup"): Observable<OmniSharp.Context<OmniSharp.Models.NavigateUpRequest, OmniSharp.Models.NavigateResponse>>;
+    listen(path: "/packagesearch"): Observable<OmniSharp.Context<OmniSharp.Models.PackageSearchRequest, OmniSharp.Models.PackageSearchResponse>>;
+    listen(path: "/packagesource"): Observable<OmniSharp.Context<OmniSharp.Models.PackageSourceRequest, OmniSharp.Models.PackageSourceResponse>>;
+    listen(path: "/packageversion"): Observable<OmniSharp.Context<OmniSharp.Models.PackageVersionRequest, OmniSharp.Models.PackageVersionResponse>>;
+    listen(path: "/rename"): Observable<OmniSharp.Context<OmniSharp.Models.RenameRequest, OmniSharp.Models.RenameResponse>>;
+    listen(path: "/runcodeaction"): Observable<OmniSharp.Context<OmniSharp.Models.RunCodeActionRequest, OmniSharp.Models.RunCodeActionResponse>>;
+    listen(path: "/signatureHelp"): Observable<OmniSharp.Context<OmniSharp.Models.SignatureHelpRequest, OmniSharp.Models.SignatureHelp>>;
+    listen(path: "/gettestcontext"): Observable<OmniSharp.Context<OmniSharp.Models.TestCommandRequest, OmniSharp.Models.GetTestCommandResponse>>;
+    listen(path: "/typelookup"): Observable<OmniSharp.Context<OmniSharp.Models.TypeLookupRequest, OmniSharp.Models.TypeLookupResponse>>;
+    listen(path: "/updatebuffer"): Observable<OmniSharp.Context<OmniSharp.Models.UpdateBufferRequest, any>>;
+    listen(path: "/v2/codecheck"): Observable<OmniSharp.Context<OmniSharp.Models.V2.CodeCheckRequest, OmniSharp.Models.V2.CodeCheckResponse>>;
+    listen(path: "/v2/getcodeactions"): Observable<OmniSharp.Context<OmniSharp.Models.V2.GetCodeActionsRequest, OmniSharp.Models.V2.GetCodeActionsResponse>>;
+    listen(path: "/v2/runcodeaction"): Observable<OmniSharp.Context<OmniSharp.Models.V2.RunCodeActionRequest, OmniSharp.Models.V2.RunCodeActionResponse>>;
+    listen(path: "/project"): Observable<OmniSharp.Context<OmniSharp.Models.v1.ProjectInformationRequest, OmniSharp.Models.ProjectInformationResponse>>;
+    listen(path: "/projects"): Observable<OmniSharp.Context<OmniSharp.Models.v1.WorkspaceInformationRequest, OmniSharp.Models.WorkspaceInformationResponse>>;
+    listen(path: "/checkalivestatus"): Observable<OmniSharp.Context<any, boolean>>;
+    listen(path: "/checkreadystatus"): Observable<OmniSharp.Context<any, boolean>>;
+    listen(path: "/stopserver"): Observable<OmniSharp.Context<any, boolean>>;
+    listen(path: "projectAdded"): Observable<OmniSharp.Models.ProjectInformationResponse>;
+    listen(path: "projectChanged"): Observable<OmniSharp.Models.ProjectInformationResponse>;
+    listen(path: "projectRemoved"): Observable<OmniSharp.Models.ProjectInformationResponse>;
+    listen(path: "error"): Observable<OmniSharp.Models.ErrorMessage>;
+    listen(path: "diagnostic"): Observable<OmniSharp.Models.DiagnosticMessage>;
+    listen(path: "msBuildProjectDiagnostics"): Observable<OmniSharp.Models.MSBuildProjectDiagnostics>;
+    listen(path: "packageRestoreStarted"): Observable<OmniSharp.Models.PackageRestoreMessage>;
+    listen(path: "packageRestoreFinished"): Observable<OmniSharp.Models.PackageRestoreMessage>;
+    listen(path: "unresolvedDependencies"): Observable<OmniSharp.Models.UnresolvedDependenciesMessage>;
+
 }

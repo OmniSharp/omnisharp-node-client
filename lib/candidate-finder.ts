@@ -13,6 +13,7 @@ export interface Options {
     projectFilesToSearch?: string[];
     sourceFilesToSearch?: string[];
     solutionIndependentSourceFilesToSearch?: string[];
+    maxDepth?: number;
 }
 
 export function ifEmpty<T>(observable: Observable<T>, other: Observable<T>) {
@@ -67,20 +68,21 @@ export const findCandidates = (function() {
         const projectFilesToSearch = options.projectFilesToSearch || (options.projectFilesToSearch = ["project.json", "*.csproj"]);
         const sourceFilesToSearch = options.sourceFilesToSearch || (options.sourceFilesToSearch = ["*.cs"]);
         const solutionIndependentSourceFilesToSearch = options.solutionIndependentSourceFilesToSearch || (options.solutionIndependentSourceFilesToSearch = ["*.csx"]);
+        const maxDepth = options.maxDepth || 10;
 
-        const solutionsOrProjects = searchForCandidates(location, solutionFilesToSearch, projectFilesToSearch, logger)
+        const solutionsOrProjects = searchForCandidates(location, solutionFilesToSearch, projectFilesToSearch, maxDepth, logger)
             .toArray()
-            .flatMap(result => result.length ? Observable.from(result) : searchForCandidates(location, projectFilesToSearch, [], logger))
+            .flatMap(result => result.length ? Observable.from(result) : searchForCandidates(location, projectFilesToSearch, [], maxDepth, logger))
             .toArray()
             .map(squashCandidates);
 
-        const independentSourceFiles = searchForCandidates(location, solutionIndependentSourceFilesToSearch, [], logger)
+        const independentSourceFiles = searchForCandidates(location, solutionIndependentSourceFilesToSearch, [], maxDepth, logger)
             .toArray();
 
         const baseFiles = Observable.concat(solutionsOrProjects, independentSourceFiles)
             .flatMap(x => x);
 
-        const sourceFiles = searchForCandidates(location, sourceFilesToSearch, [], logger);
+        const sourceFiles = searchForCandidates(location, sourceFilesToSearch, [], maxDepth, logger);
 
         const predicate = (path: string) => _.some(solutionFilesToSearch.concat(projectFilesToSearch), pattern => _.endsWith(path, _.trimStart(pattern, "*")));
 
@@ -112,13 +114,13 @@ function getMinCandidate(candidates: string[]) {
     return _.minBy(_.map(candidates, normalize), z => z.split(sep).length).split(sep).length;
 }
 
-function searchForCandidates(location: string, filesToSearch: string[], projectFilesToSearch: string[], logger: ILogger) {
+function searchForCandidates(location: string, filesToSearch: string[], projectFilesToSearch: string[], maxDepth: number, logger: ILogger) {
     let locations = location.split(sep);
     locations = locations.map((loc, index) => {
         return _.take(locations, locations.length - index).join(sep);
     });
 
-    locations = locations.slice(0, Math.min(5, locations.length));
+    locations = locations.slice(0, Math.min(maxDepth, locations.length));
 
     const rootObservable = Observable.from(locations)
         .subscribeOn(Scheduler.queue)
