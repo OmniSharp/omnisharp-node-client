@@ -39,8 +39,10 @@ function precondition(method: Function, ...decorators: PreconditionMethod[]) {
     };
 }
 
-export const preconditions: { [index: string]: PreconditionMethod[] } = {};
-
+const preconditions: { [index: string]: PreconditionMethod[] } = {};
+export function getPreconditions(key: string) {
+    return preconditions[key.toLocaleLowerCase()] || [];
+}
 
 preconditions["/v2/getcodeactions"] = [
     isNotNull((request: any) => request.FileName),

@@ -7,7 +7,7 @@ import {IAsyncDriver, IDriverOptions, OmnisharpClientStatus, AsyncClientOptions}
 import {DriverState, Runtime} from "../enums";
 import {RequestContext, ResponseContext, CommandContext} from "../contexts";
 import {ensureClientOptions} from "../options";
-import {preconditions} from "../helpers/preconditions";
+import {getPreconditions} from "../helpers/preconditions";
 import {EventEmitter} from "events";
 import {Queue} from "../helpers/queue";
 //import {PluginManager} from "../helpers/plugin-manager";
@@ -250,7 +250,7 @@ export class AsyncClient implements IAsyncDriver, IDisposable {
     }
 
     public request<TRequest, TResponse>(action: string, request: TRequest, options?: OmniSharp.RequestOptions): Promise<TResponse> {
-        let conditions = preconditions[action];
+        let conditions = getPreconditions(action);
         if (conditions) { each(conditions, x => x(request)); }
 
         if (!options) options = <OmniSharp.RequestOptions>{};

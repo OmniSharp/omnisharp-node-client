@@ -8,7 +8,7 @@ import {RequestContext, ResponseContext, CommandContext} from "../contexts";
 import {ensureClientOptions} from "../options";
 import {isPriorityCommand, isNormalCommand, isDeferredCommand} from "../helpers/prioritization";
 import {createObservable} from "../operators/create";
-import {preconditions} from "../helpers/preconditions";
+import {getPreconditions} from "../helpers/preconditions";
 import {reference, setEventOrResponse, getInternalValue, request, response} from "../helpers/decorators";
 
 function pausable<T>(incomingStream: Observable<T>, pauser: Observable<boolean>) {
@@ -296,7 +296,7 @@ export class ReactiveClient implements IReactiveDriver, IDisposable {
     }
 
     public request<TRequest, TResponse>(action: string, request: TRequest, options?: OmniSharp.RequestOptions): Observable<TResponse> {
-        let conditions = preconditions[action];
+        let conditions = getPreconditions(action);
         if (conditions) { each(conditions, x => x(request)); }
 
         if (!options) options = <OmniSharp.RequestOptions>{};

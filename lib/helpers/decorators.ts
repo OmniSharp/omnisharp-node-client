@@ -49,7 +49,7 @@ export function request(target: Object, propertyKey: string) {
 
     const name = format(propertyKey);
     descriptor.value = function(request: OmniSharp.Models.Request, options: any) {
-        if ((<any>request).silent) {
+        if (request && (<any>request).silent) {
             options = request;
             request = {};
         }
