@@ -90,34 +90,9 @@ declare module {OmnisharpControllerExtractor.InferNamespace(typeof(Request)).Tri
             {
                 File.WriteAllText(Path.Combine(path, "lib", "omnisharp-server.ts"), result);
 
-                var augmentationMethods = OmnisharpAugmentationExtractor.GetAugmentationMethods()
-                    .GroupBy(x => x.Name + x.Type)
-                    .SelectMany(x => x.Where(z => z.VersionNumber == x.Max(c => c.VersionNumber)))
-                    .ToArray();
-
-                foreach (var item in augmentationMethods)
+                foreach (var item in OmnisharpAugmentationExtractor.GetAugmentationMethods())
                 {
-                    File.WriteAllText(Path.Combine(path, "lib", item.Type, "method", item.Name + ".ts"), item.Value);
-                }
-
-                var augmentationEvents = OmnisharpAugmentationExtractor.GetAugmentationEvents()
-                    .GroupBy(x => x.Name + x.Type)
-                    .SelectMany(x => x.Where(z => z.VersionNumber == x.Max(c => c.VersionNumber)))
-                    .ToArray();
-
-                foreach (var item in augmentationEvents)
-                {
-                    File.WriteAllText(Path.Combine(path, "lib", item.Type, "response", item.Name + ".ts"), item.Value);
-                }
-
-                var augmentationServerEvents = OmnisharpAugmentationExtractor.GetAugmentationServerEvents()
-                    .GroupBy(x => x.Name + x.Type)
-                    .SelectMany(x => x.Where(z => z.VersionNumber == x.Max(c => c.VersionNumber)))
-                    .ToArray();
-
-                foreach (var item in augmentationServerEvents)
-                {
-                    File.WriteAllText(Path.Combine(path, "lib", item.Type, "event", item.Name + ".ts"), item.Value);
+                    File.WriteAllText(Path.Combine(path, "lib", item.Key, "reference", "latest-methods.ts"), item.Value);
                 }
 
                 var referenceAugmentationMethods = OmnisharpAugmentationExtractor.GetReferenceAugmentationMethods().ToArray();
@@ -140,24 +115,6 @@ declare module {OmnisharpControllerExtractor.InferNamespace(typeof(Request)).Tri
                 {
                     File.WriteAllText(Path.Combine(path, "lib", item.Key, "reference", "server-events.ts"), item.Value);
                 }
-
-                var latestMethods = augmentationMethods;
-                var latestEvents = augmentationMethods;
-                var serverEvents = augmentationServerEvents;
-
-                var augmentationValues = latestMethods.Where(x => x.Type == "reactive").Select(x => $"import \"./method/{x.Name}\";\n");
-                augmentationValues = augmentationValues.Concat(
-                    latestEvents.Select(x => $"import \"./response/{x.Name}\";\n")
-                );
-
-                var reativeAugmentationValues = augmentationValues.Concat(
-                    serverEvents.Select(x => $"import \"./event/{x.Name}\";\n")
-                );
-
-                File.WriteAllText(Path.Combine(path, "lib", "latest.ts"),
-                    "export * from \"./reactive/reactive-client\";\n" + string.Join("", reativeAugmentationValues.Select(x => x.Replace("./", "./reactive/")).Distinct()) +
-                    "export * from \"./async/async-client\";\n" + string.Join("", augmentationValues.Select(x => x.Replace("./", "./async/")).Distinct())
-                    );
             }
             else
             {

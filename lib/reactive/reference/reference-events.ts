@@ -26,7 +26,14 @@ makeObservable(ReactiveCombinationClient.prototype, "state", "state");
 makeObservable(ReactiveCombinationClient.prototype, "status", "status");
 
 declare module "../reactive-client-base" {
-    interface ReactiveClientEvents extends OmniSharp.Events {
+    interface ReactiveClientEvents {
+        /*readonly*/ events: Observable<OmniSharp.Stdio.Protocol.EventPacket>;
+        /*readonly*/ commands: Observable<OmniSharp.Stdio.Protocol.ResponsePacket>;
+        /*readonly*/ state: Observable<DriverState>;
+        /*readonly*/ status: Observable<OmnisharpClientStatus>;
+        /*readonly*/ requests: Observable<RequestContext<any>>;
+        /*readonly*/ responses: Observable<ResponseContext<any, any>>;
+        /*readonly*/ errors: Observable<CommandContext<any>>;
         listen(path: "events"): Observable<OmniSharp.Stdio.Protocol.EventPacket>;
         listen(path: "commands"): Observable<OmniSharp.Stdio.Protocol.ResponsePacket>;
         listen(path: "state"): Observable<DriverState>;

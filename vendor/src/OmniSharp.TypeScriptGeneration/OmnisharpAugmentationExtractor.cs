@@ -30,56 +30,79 @@ namespace OmniSharp.TypeScriptGeneration
 
     public class OmnisharpAugmentationExtractor
     {
-        public static IEnumerable<AugmentationResult> GetAugmentationMethods()
+        public static IEnumerable<KeyValuePair<string, string>> GetAugmentationMethods()
         {
-            foreach (var method in OmnisharpControllerExtractor.GetMethods())
-            {
-                var v = $@"import * as OmniSharp from ""../../omnisharp-server"";
-import {{Observable}} from ""rxjs"";
-import {{ReactiveClient}} from ""../reactive-client-base"";
-import {{request}} from ""../../helpers/decorators"";
+            var methods = OmnisharpControllerExtractor.GetMethods()
+                .Where(x => x.RequestType != null)
+                .GroupBy(x => x.ActionName)
+                .SelectMany(x => { var max = x.Max(z => z.VersionNumber); return x.Where(z => max == z.VersionNumber); })
+                .ToArray();
+            var events = OmnisharpControllerExtractor.GetEvents()
+                .Where(x => x.RequestType != null)
+                .GroupBy(x => x.ActionName)
+                .SelectMany(x => { var max = x.Max(z => z.VersionNumber); return x.Where(z => max == z.VersionNumber); })
+                .Join(
+                    OmnisharpControllerExtractor.GetAggregateEvents()
+                        .Where(x => x.RequestType != null)
+                        .GroupBy(x => x.ActionName)
+                        .SelectMany(x => { var max = x.Max(z => z.VersionNumber); return x.Where(z => max == z.VersionNumber); }),
+                    x => x.ActionName,
+                    x => x.ActionName,
+                    (@event, aggregateEvent) => new { @event, aggregateEvent });
 
-request(ReactiveClient.prototype, ""{method.ActionName}"");
+            var v = $@"import * as OmniSharp from ""../../omnisharp-server"";
+import {{Observable}} from ""rxjs"";
+import {{ReactiveClient, ReactiveClientEvents}} from ""../reactive-client-base"";
+import {{ReactiveObservationClient}} from ""../reactive-observation-client"";
+import {{ReactiveCombinationClient}} from ""../reactive-combination-client"";
+import {{request, response, makeObservable}} from ""../../helpers/decorators"";
+
+{string.Join("\n", methods.Select(x => $"request(ReactiveClient.prototype, \"{x.ActionName}\");"))}
+{string.Join("\n", events.Select(x => $"response(ReactiveClientEvents.prototype, \"{x.@event.ActionName}\", \"/{x.@event.Path}\");"))}
+{string.Join("\n", events.Select(x => $"makeObservable(ReactiveObservationClient.prototype, \"{x.@event.ActionName}\", \"/{x.@event.Path}\");"))}
+{string.Join("\n", events.Select(x => $"makeObservable(ReactiveCombinationClient.prototype, \"{x.@event.ActionName}\", \"/{x.@event.Path}\");"))}
 
 declare module ""../reactive-client-base"" {{
     interface ReactiveClient {{
-        {method.Value.Replace(": RequestOptions", ": OmniSharp.RequestOptions")}
+        {string.Join("\n        ", methods.Select(x => x.Value.Replace(": RequestOptions", ": OmniSharp.RequestOptions")))}
+    }}
+}}
+
+declare module ""../reactive-client-base"" {{
+    interface ReactiveClientEvents {{
+        {string.Join("\n        ", events.Select(x => $"/*readonly*/ {x.@event.Value.Replace("<Context<", "<OmniSharp.Context<")}"))}
+    }}
+}}
+
+declare module ""../reactive-observation-client"" {{
+    interface ReactiveObservationClient {{
+        {string.Join("\n        ", events.Select(x => $"/*readonly*/ {x.@event.Value.Replace("<Context<", "<OmniSharp.Context<")}"))}
+    }}
+}}
+
+declare module ""../reactive-combination-client"" {{
+    interface ReactiveCombinationClient {{
+        {string.Join("\n        ", events.Select(x => $"/*readonly*/ {x.@aggregateEvent.Value.Replace("<CombinationKey<", "<OmniSharp.CombinationKey<").Replace("<Context<", "<OmniSharp.Context<")}"))}
     }}
 }}
 ";
 
-                yield return new AugmentationResult()
-                {
-                    Name = method.ActionName,
-                    Type = "reactive",
-                    Value = v,
-                    Version = method.Version,
-                    VersionNumber = method.VersionNumber
-                };
+            yield return new KeyValuePair<string, string>("reactive", v);
 
-
-                v = $@"import * as OmniSharp from ""../../omnisharp-server"";
+            v = $@"import * as OmniSharp from ""../../omnisharp-server"";
 import {{AsyncClient}} from ""../async-client-base"";
 import {{request}} from ""../../helpers/decorators"";
 
-request(AsyncClient.prototype, ""{method.ActionName}"");
+{string.Join("\n", methods.Select(x => $"request(AsyncClient.prototype, \"{x.ActionName}\");"))}
 
 declare module ""../async-client-base"" {{
     interface AsyncClient {{
-        {method.Value.Replace(": RequestOptions", ": OmniSharp.RequestOptions").Replace("Observable<", "Promise<")}
+        {string.Join("\n        ", methods.Select(x => x.Value.Replace(": RequestOptions", ": OmniSharp.RequestOptions").Replace("Observable<", "Promise<")))}
     }}
 }}
 ";
 
-                yield return new AugmentationResult()
-                {
-                    Name = method.ActionName,
-                    Type = "async",
-                    Value = v,
-                    Version = method.Version,
-                    VersionNumber = method.VersionNumber
-                };
-            }
+            yield return new KeyValuePair<string, string>("async", v);
         }
 
         public static IEnumerable<KeyValuePair<string, string>> GetReferenceAugmentationMethods()
@@ -131,54 +154,6 @@ declare module ""../async-client-base"" {{
 }}
 ";
             yield return new KeyValuePair<string, string>("async", v);
-        }
-
-        public static IEnumerable<AugmentationResult> GetAugmentationEvents()
-        {
-            foreach (var item in OmnisharpControllerExtractor.GetEvents()
-                .Join(OmnisharpControllerExtractor.GetAggregateEvents(), x => x.ActionName, x => x.ActionName, (@event, aggregateEvent) => new { @event, aggregateEvent }))
-            {
-                var @event = item.@event;
-                var aggregateEvent = item.aggregateEvent;
-                var v = $@"import * as OmniSharp from ""../../omnisharp-server"";
-import {{Observable}} from ""rxjs"";
-import {{ReactiveClientEvents}} from ""../reactive-client-base"";
-import {{ReactiveObservationClient}} from ""../reactive-observation-client"";
-import {{ReactiveCombinationClient}} from ""../reactive-combination-client"";
-import {{response, makeObservable}} from ""../../helpers/decorators"";
-
-response(ReactiveClientEvents.prototype, ""{@event.ActionName}"", ""/{@event.Path}"");
-makeObservable(ReactiveObservationClient.prototype, ""{@event.ActionName}"", ""/{@event.Path}"");
-makeObservable(ReactiveCombinationClient.prototype, ""{@event.ActionName}"", ""/{@event.Path}"");
-
-declare module ""../reactive-client-base"" {{
-    interface ReactiveClientEvents {{
-        /*readonly*/ {@event.Value.Replace("<Context<", "<OmniSharp.Context<")}
-    }}
-}}
-
-declare module ""../reactive-observation-client"" {{
-    interface ReactiveObservationClient {{
-        /*readonly*/ {@event.Value.Replace("<Context<", "<OmniSharp.Context<")}
-    }}
-}}
-
-declare module ""../reactive-combination-client"" {{
-    interface ReactiveCombinationClient {{
-        /*readonly*/ {aggregateEvent.Value.Replace("<CombinationKey<", "<OmniSharp.CombinationKey<").Replace("<Context<", "<OmniSharp.Context<")}
-    }}
-}}
-
-";
-                yield return new AugmentationResult()
-                {
-                    Name = @event.ActionName,
-                    Type = "reactive",
-                    Value = v,
-                    Version = @event.Version,
-                    VersionNumber = @event.VersionNumber
-                };
-            }
         }
 
         public static IEnumerable<KeyValuePair<string, string>> GetReferenceAugmentationEvents()
@@ -245,17 +220,20 @@ makeObservable(ReactiveCombinationClient.prototype, ""{@event.Name}"", ""{@event
 
 declare module ""../reactive-client-base"" {{
     interface ReactiveClientEvents {{
-        /*readonly*/ {@event.Value}    }}
+        /*readonly*/ {@event.Value}
+    }}
 }}
 
 declare module ""../reactive-observation-client"" {{
     interface ReactiveObservationClient {{
-        /*readonly*/ {@event.Value}    }}
+        /*readonly*/ {@event.Value}
+    }}
 }}
 
 declare module ""../reactive-combination-client"" {{
     interface ReactiveCombinationClient {{
-        /*readonly*/ {aggregateEvent.Value.Replace("<CombinationKey<", "<OmniSharp.CombinationKey<")}    }}
+        /*readonly*/ {aggregateEvent.Value.Replace("<CombinationKey<", "<OmniSharp.CombinationKey<")}
+    }}
 }}
 ";
                 yield return new AugmentationResult()
