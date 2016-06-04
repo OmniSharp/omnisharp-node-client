@@ -26,6 +26,7 @@
   "typings": "lib/omnisharp-client.d.ts",
   "scripts": {
     "prepublish": "typings install && gulp npm-prepublish",
+    "do-test": "gulp && npm run test",
     "test": "mocha"
   },
   "author": "",

@@ -4,7 +4,7 @@ import {Subject, Observable} from "rxjs";
 import {ResponseContext} from "../contexts";
 
 export function getInternalKey(path: string) {
-    return `__${path}__`;
+    return `__${path}__`.toLowerCase();
 }
 
 export function getInternalValue(context: any, path: string) {
@@ -13,7 +13,7 @@ export function getInternalValue(context: any, path: string) {
 
 export function setEventOrResponse(context: any, path: string) {
     const instance = context._client || context;
-    const isEvent = _.startsWith(path, "/");
+    const isEvent = !_.startsWith(path, "/");
     const internalKey = getInternalKey(path);
     if (isEvent) {
         const eventKey = path[0].toUpperCase() + path.substr(1);
@@ -53,7 +53,7 @@ export function request(target: Object, propertyKey: string) {
             options = request;
             request = {};
         }
-        request = request || {};
+        options = options || {};
 
         this._fixup(propertyKey, request, options);
         return this.request(name, request, options);

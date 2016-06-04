@@ -40,7 +40,7 @@ var metadataDel = {
 // Simply take TS code and strip anything not javascript
 // Does not do any compile time checking.
 function tsTranspile() {
-    return ctx.through.obj(function(file, enc, cb) {
+    return ctx.through.obj(function (file, enc, cb) {
         if (file.isNull()) {
             cb(null, file);
             return;
@@ -65,71 +65,77 @@ function tsTranspile() {
     });
 }
 
-gulp.task('typescript', ['clean'], function() {
-    var args = ['--declaration', '-p', path.resolve(__dirname.toString())];
-    var compile = new Promise(function(resolve, reject) {
-        var tsc = spawn(path.resolve(__dirname + '/node_modules/.bin/tsc' + (win32 && '.cmd' || '')), args);
-        tsc.stdout.pipe(process.stdout);
-        tsc.stderr.pipe(process.stderr);
-        tsc.on('close', function(code) {
-            resolve();
-        });
-    });
+gulp.task('typescript', ['clean'], function () {
+    // var args = ['-p', path.resolve(__dirname.toString())];
+    // var compile = new Promise(function(resolve, reject) {
+    //     var tsc = spawn(path.resolve(__dirname + '/node_modules/.bin/tsc' + (win32 && '.cmd' || '')), args);
+    //     tsc.stdout.pipe(process.stdout);
+    //     tsc.stderr.pipe(process.stderr);
+    //     tsc.on('close', function(code) {
+    //         resolve();
+    //     });
+    // });
 
-    return compile;
+    // return compile;
 });
 
-gulp.task('tslint', [], function() {
+gulp.task('tslint', [], function () {
     return gulp.src(metadata.lib)
         .pipe(ctx.tslint())
         .pipe(ctx.tslint.report('prose'));
 });
 
-gulp.task('typescript-babel', ['tslint', 'typescript'], function() {
-    return tsProject.src()
+gulp.task('typescript-babel', ['tslint', 'typescript'], function () {
+    var tsResult = tsProject.src()
         //.pipe(ctx.tslint())
         //.pipe(ctx.tslint.report('prose'))
         .pipe(ctx.sourcemaps.init())
-        .pipe(ctx.ts(tsProject))
-        .pipe(ctx.babel())
-        .pipe(ctx.sourcemaps.write())
-        .pipe(gulp.dest('.'));
+        .pipe(ctx.ts(tsProject));
+
+    return merge(
+        tsResult.dts
+            .pipe(gulp.dest('.')),
+        tsResult.js
+            .pipe(ctx.babel())
+            .pipe(ctx.sourcemaps.write())
+            .pipe(gulp.dest('.'))
+    );
 });
 
 gulp.task('clean', ['clean:lib', 'clean:test']);
 
-gulp.task('clean:lib', function(done) {
+gulp.task('clean:lib', function (done) {
     var items = metadata.lib
-    ctx.del(metadataDel.lib).then(function(paths) {
-        _.each(paths, function(path) {
+    ctx.del(metadataDel.lib).then(function (paths) {
+        _.each(paths, function (path) {
             gutil.log(gutil.colors.red('Deleted ') + gutil.colors.magenta(path.replace(__dirname, '').substring(1)));
         });
         done();
     });
 });
 
-gulp.task('clean:test', function(done) {
-    ctx.del(metadataDel.test).then(function(paths) {
-        _.each(paths, function(path) {
+gulp.task('clean:test', function (done) {
+    ctx.del(metadataDel.test).then(function (paths) {
+        _.each(paths, function (path) {
             gutil.log(gutil.colors.red('Deleted ') + gutil.colors.magenta(path.replace(__dirname, '').substring(1)));
         });
         done();
     });
 });
 
-gulp.task('watch', function() {
+gulp.task('watch', function () {
     // Watch is not installed by default if you want to use it
     //  you need to install manually but don't save it as it causes CI issues.
     const watch = require('gulp-watch');
     // Auto restart watch when gulpfile is changed.
-    const p = spawn(gulpPath, ['file-watch'], {stdio: 'inherit'});
-    return watch('gulpfile.js', function() {
+    const p = spawn(gulpPath, ['file-watch'], { stdio: 'inherit' });
+    return watch('gulpfile.js', function () {
         p.kill();
-        p = spawn(gulpPath, ['file-watch'], {stdio: 'inherit'});
+        p = spawn(gulpPath, ['file-watch'], { stdio: 'inherit' });
     });
 });
 
-gulp.task('file-watch', function() {
+gulp.task('file-watch', function () {
     // Watch is not installed by default if you want to use it
     //  you need to install manually but don't save it as it causes CI issues.
     const watch = require('gulp-watch');

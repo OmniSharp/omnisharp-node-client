@@ -17,13 +17,18 @@ describe("Omnisharp Server", function() {
 
     describe("state", function() {
 
-        this.timeout(60000 * 10);
+        this.timeout(10000);
+        //this.timeout(60000 * 10);
+        //this.timeout(60000 * 10);
         let server: OmnisharpClient;
 
         beforeEach((done) => {
             server = new OmnisharpClient({
                 projectPath: process.cwd()
             });
+
+            server.requests.subscribe(x => console.log('requests', x));
+            server.responses.subscribe(x => console.log('responses', x));
 
             const sub = server.state.startWith(server.currentState).filter(state => state === DriverState.Connected).subscribe(state => {
                 sub.unsubscribe();
@@ -38,7 +43,21 @@ describe("Omnisharp Server", function() {
             return Observable.timer(1000).toPromise();
         });
 
-        it("must respond to all requests", function(done) {
+        it("must respond to all requests (string)", function(done) {
+            let count = 4;
+            server.observe.checkalivestatus.subscribe((data) => {
+                count--;
+                if (!count)
+                    done();
+            });
+
+            server.request("/checkalivestatus");
+            server.request("/checkalivestatus");
+            server.request("/checkalivestatus");
+            server.request("/checkalivestatus");
+        });
+
+        it("must respond to all requests (method)", function(done) {
             let count = 4;
             server.observe.checkalivestatus.subscribe((data) => {
                 count--;
