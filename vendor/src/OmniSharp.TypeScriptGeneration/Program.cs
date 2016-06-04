@@ -89,31 +89,13 @@ declare module {OmnisharpControllerExtractor.InferNamespace(typeof(Request)).Tri
             if (!string.IsNullOrWhiteSpace(path))
             {
                 File.WriteAllText(Path.Combine(path, "lib", "omnisharp-server.ts"), result);
-
                 foreach (var item in OmnisharpAugmentationExtractor.GetAugmentationMethods())
                 {
-                    File.WriteAllText(Path.Combine(path, "lib", item.Key, "reference", "latest-methods.ts"), item.Value);
-                }
-
-                var referenceAugmentationMethods = OmnisharpAugmentationExtractor.GetReferenceAugmentationMethods().ToArray();
-
-                foreach (var item in referenceAugmentationMethods)
-                {
-                    File.WriteAllText(Path.Combine(path, "lib", item.Key, "reference", "reference.ts"), item.Value);
-                }
-
-                var referenceAugmentationEvents = OmnisharpAugmentationExtractor.GetReferenceAugmentationEvents().ToArray();
-
-                foreach (var item in referenceAugmentationEvents)
-                {
-                    File.WriteAllText(Path.Combine(path, "lib", item.Key, "reference", "events.ts"), item.Value);
-                }
-
-                var referenceAugmentationServerEvents = OmnisharpAugmentationExtractor.GetReferenceAugmentationServerEvents().ToArray();
-
-                foreach (var item in referenceAugmentationServerEvents)
-                {
-                    File.WriteAllText(Path.Combine(path, "lib", item.Key, "reference", "server-events.ts"), item.Value);
+                    var p = Path.Combine(path, "lib", item.Key, item.Value.Item1);
+                    var contents = File.ReadAllText(p);
+                    contents = contents.Substring(0, contents.IndexOf("// <#GENERATED />"));
+                    contents += "// <#GENERATED />\n" + item.Value.Item2;
+                    File.WriteAllText(p, contents);
                 }
             }
             else

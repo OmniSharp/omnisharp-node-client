@@ -5,6 +5,8 @@ import {ReactiveObservationClient} from "../reactive-observation-client";
 import {ReactiveCombinationClient} from "../reactive-combination-client";
 import {request, response, makeObservable} from "../../helpers/decorators";
 
+request(ReactiveClient.prototype, "getteststartinfo");
+request(ReactiveClient.prototype, "runtest");
 request(ReactiveClient.prototype, "autocomplete");
 request(ReactiveClient.prototype, "changebuffer");
 request(ReactiveClient.prototype, "codecheck");
@@ -42,6 +44,8 @@ request(ReactiveClient.prototype, "projects");
 request(ReactiveClient.prototype, "checkalivestatus");
 request(ReactiveClient.prototype, "checkreadystatus");
 request(ReactiveClient.prototype, "stopserver");
+response(ReactiveClientEvents.prototype, "getteststartinfo", "/v2/getteststartinfo");
+response(ReactiveClientEvents.prototype, "runtest", "/v2/runtest");
 response(ReactiveClientEvents.prototype, "autocomplete", "/autocomplete");
 response(ReactiveClientEvents.prototype, "changebuffer", "/changebuffer");
 response(ReactiveClientEvents.prototype, "codecheck", "/v2/codecheck");
@@ -79,6 +83,17 @@ response(ReactiveClientEvents.prototype, "projects", "/projects");
 response(ReactiveClientEvents.prototype, "checkalivestatus", "/checkalivestatus");
 response(ReactiveClientEvents.prototype, "checkreadystatus", "/checkreadystatus");
 response(ReactiveClientEvents.prototype, "stopserver", "/stopserver");
+event(ReactiveClientEvents.prototype, "projectAdded");
+event(ReactiveClientEvents.prototype, "projectChanged");
+event(ReactiveClientEvents.prototype, "projectRemoved");
+event(ReactiveClientEvents.prototype, "error");
+event(ReactiveClientEvents.prototype, "diagnostic");
+event(ReactiveClientEvents.prototype, "msBuildProjectDiagnostics");
+event(ReactiveClientEvents.prototype, "packageRestoreStarted");
+event(ReactiveClientEvents.prototype, "packageRestoreFinished");
+event(ReactiveClientEvents.prototype, "unresolvedDependencies");
+makeObservable(ReactiveObservationClient.prototype, "getteststartinfo", "/v2/getteststartinfo");
+makeObservable(ReactiveObservationClient.prototype, "runtest", "/v2/runtest");
 makeObservable(ReactiveObservationClient.prototype, "autocomplete", "/autocomplete");
 makeObservable(ReactiveObservationClient.prototype, "changebuffer", "/changebuffer");
 makeObservable(ReactiveObservationClient.prototype, "codecheck", "/v2/codecheck");
@@ -116,6 +131,17 @@ makeObservable(ReactiveObservationClient.prototype, "projects", "/projects");
 makeObservable(ReactiveObservationClient.prototype, "checkalivestatus", "/checkalivestatus");
 makeObservable(ReactiveObservationClient.prototype, "checkreadystatus", "/checkreadystatus");
 makeObservable(ReactiveObservationClient.prototype, "stopserver", "/stopserver");
+makeObservable(ReactiveObservationClient.prototype, "projectAdded", "projectAdded");
+makeObservable(ReactiveObservationClient.prototype, "projectChanged", "projectChanged");
+makeObservable(ReactiveObservationClient.prototype, "projectRemoved", "projectRemoved");
+makeObservable(ReactiveObservationClient.prototype, "error", "error");
+makeObservable(ReactiveObservationClient.prototype, "diagnostic", "diagnostic");
+makeObservable(ReactiveObservationClient.prototype, "msBuildProjectDiagnostics", "msBuildProjectDiagnostics");
+makeObservable(ReactiveObservationClient.prototype, "packageRestoreStarted", "packageRestoreStarted");
+makeObservable(ReactiveObservationClient.prototype, "packageRestoreFinished", "packageRestoreFinished");
+makeObservable(ReactiveObservationClient.prototype, "unresolvedDependencies", "unresolvedDependencies");
+makeObservable(ReactiveCombinationClient.prototype, "getteststartinfo", "/v2/getteststartinfo");
+makeObservable(ReactiveCombinationClient.prototype, "runtest", "/v2/runtest");
 makeObservable(ReactiveCombinationClient.prototype, "autocomplete", "/autocomplete");
 makeObservable(ReactiveCombinationClient.prototype, "changebuffer", "/changebuffer");
 makeObservable(ReactiveCombinationClient.prototype, "codecheck", "/v2/codecheck");
@@ -153,9 +179,20 @@ makeObservable(ReactiveCombinationClient.prototype, "projects", "/projects");
 makeObservable(ReactiveCombinationClient.prototype, "checkalivestatus", "/checkalivestatus");
 makeObservable(ReactiveCombinationClient.prototype, "checkreadystatus", "/checkreadystatus");
 makeObservable(ReactiveCombinationClient.prototype, "stopserver", "/stopserver");
+makeObservable(ReactiveCombinationClient.prototype, "projectAdded", "projectAdded");
+makeObservable(ReactiveCombinationClient.prototype, "projectChanged", "projectChanged");
+makeObservable(ReactiveCombinationClient.prototype, "projectRemoved", "projectRemoved");
+makeObservable(ReactiveCombinationClient.prototype, "error", "error");
+makeObservable(ReactiveCombinationClient.prototype, "diagnostic", "diagnostic");
+makeObservable(ReactiveCombinationClient.prototype, "msBuildProjectDiagnostics", "msBuildProjectDiagnostics");
+makeObservable(ReactiveCombinationClient.prototype, "packageRestoreStarted", "packageRestoreStarted");
+makeObservable(ReactiveCombinationClient.prototype, "packageRestoreFinished", "packageRestoreFinished");
+makeObservable(ReactiveCombinationClient.prototype, "unresolvedDependencies", "unresolvedDependencies");
 
 declare module "../reactive-client-base" {
     interface ReactiveClient {
+        getteststartinfo(request: any, options?: OmniSharp.RequestOptions): Observable<any>;
+        runtest(request: any, options?: OmniSharp.RequestOptions): Observable<any>;
         autocomplete(request: OmniSharp.Models.AutoCompleteRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.AutoCompleteResponse[]>;
         changebuffer(request: OmniSharp.Models.ChangeBufferRequest, options?: OmniSharp.RequestOptions): Observable<any>;
         codecheck(request: OmniSharp.Models.V2.CodeCheckRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.V2.CodeCheckResponse>;
@@ -198,6 +235,8 @@ declare module "../reactive-client-base" {
 
 declare module "../reactive-client-base" {
     interface ReactiveClientEvents {
+        /*readonly*/ getteststartinfo: Observable<OmniSharp.Context<any, any>>;
+        /*readonly*/ runtest: Observable<OmniSharp.Context<any, any>>;
         /*readonly*/ autocomplete: Observable<OmniSharp.Context<OmniSharp.Models.AutoCompleteRequest, OmniSharp.Models.AutoCompleteResponse[]>>;
         /*readonly*/ changebuffer: Observable<OmniSharp.Context<OmniSharp.Models.ChangeBufferRequest, any>>;
         /*readonly*/ codecheck: Observable<OmniSharp.Context<OmniSharp.Models.V2.CodeCheckRequest, OmniSharp.Models.V2.CodeCheckResponse>>;
@@ -235,11 +274,22 @@ declare module "../reactive-client-base" {
         /*readonly*/ checkalivestatus: Observable<OmniSharp.Context<any, boolean>>;
         /*readonly*/ checkreadystatus: Observable<OmniSharp.Context<any, boolean>>;
         /*readonly*/ stopserver: Observable<OmniSharp.Context<any, boolean>>;
+        /*readonly*/ projectAdded: Observable<OmniSharp.Models.ProjectInformationResponse>;
+        /*readonly*/ projectChanged: Observable<OmniSharp.Models.ProjectInformationResponse>;
+        /*readonly*/ projectRemoved: Observable<OmniSharp.Models.ProjectInformationResponse>;
+        /*readonly*/ error: Observable<OmniSharp.Models.ErrorMessage>;
+        /*readonly*/ diagnostic: Observable<OmniSharp.Models.DiagnosticMessage>;
+        /*readonly*/ msBuildProjectDiagnostics: Observable<OmniSharp.Models.MSBuildProjectDiagnostics>;
+        /*readonly*/ packageRestoreStarted: Observable<OmniSharp.Models.PackageRestoreMessage>;
+        /*readonly*/ packageRestoreFinished: Observable<OmniSharp.Models.PackageRestoreMessage>;
+        /*readonly*/ unresolvedDependencies: Observable<OmniSharp.Models.UnresolvedDependenciesMessage>;
     }
 }
 
 declare module "../reactive-observation-client" {
     interface ReactiveObservationClient {
+        /*readonly*/ getteststartinfo: Observable<OmniSharp.Context<any, any>>;
+        /*readonly*/ runtest: Observable<OmniSharp.Context<any, any>>;
         /*readonly*/ autocomplete: Observable<OmniSharp.Context<OmniSharp.Models.AutoCompleteRequest, OmniSharp.Models.AutoCompleteResponse[]>>;
         /*readonly*/ changebuffer: Observable<OmniSharp.Context<OmniSharp.Models.ChangeBufferRequest, any>>;
         /*readonly*/ codecheck: Observable<OmniSharp.Context<OmniSharp.Models.V2.CodeCheckRequest, OmniSharp.Models.V2.CodeCheckResponse>>;
@@ -277,11 +327,22 @@ declare module "../reactive-observation-client" {
         /*readonly*/ checkalivestatus: Observable<OmniSharp.Context<any, boolean>>;
         /*readonly*/ checkreadystatus: Observable<OmniSharp.Context<any, boolean>>;
         /*readonly*/ stopserver: Observable<OmniSharp.Context<any, boolean>>;
+        /*readonly*/ projectAdded: Observable<OmniSharp.Models.ProjectInformationResponse>;
+        /*readonly*/ projectChanged: Observable<OmniSharp.Models.ProjectInformationResponse>;
+        /*readonly*/ projectRemoved: Observable<OmniSharp.Models.ProjectInformationResponse>;
+        /*readonly*/ error: Observable<OmniSharp.Models.ErrorMessage>;
+        /*readonly*/ diagnostic: Observable<OmniSharp.Models.DiagnosticMessage>;
+        /*readonly*/ msBuildProjectDiagnostics: Observable<OmniSharp.Models.MSBuildProjectDiagnostics>;
+        /*readonly*/ packageRestoreStarted: Observable<OmniSharp.Models.PackageRestoreMessage>;
+        /*readonly*/ packageRestoreFinished: Observable<OmniSharp.Models.PackageRestoreMessage>;
+        /*readonly*/ unresolvedDependencies: Observable<OmniSharp.Models.UnresolvedDependenciesMessage>;
     }
 }
 
 declare module "../reactive-combination-client" {
     interface ReactiveCombinationClient {
+        /*readonly*/ getteststartinfo: Observable<OmniSharp.CombinationKey<OmniSharp.Context<any, any>>[]>;
+        /*readonly*/ runtest: Observable<OmniSharp.CombinationKey<OmniSharp.Context<any, any>>[]>;
         /*readonly*/ autocomplete: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.AutoCompleteRequest, OmniSharp.Models.AutoCompleteResponse[]>>[]>;
         /*readonly*/ changebuffer: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.ChangeBufferRequest, any>>[]>;
         /*readonly*/ codecheck: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.V2.CodeCheckRequest, OmniSharp.Models.V2.CodeCheckResponse>>[]>;
@@ -319,5 +380,14 @@ declare module "../reactive-combination-client" {
         /*readonly*/ checkalivestatus: Observable<OmniSharp.CombinationKey<OmniSharp.Context<any, boolean>>>;
         /*readonly*/ checkreadystatus: Observable<OmniSharp.CombinationKey<OmniSharp.Context<any, boolean>>>;
         /*readonly*/ stopserver: Observable<OmniSharp.CombinationKey<OmniSharp.Context<any, boolean>>>;
+        /*readonly*/ projectAdded: Observable<OmniSharp.CombinationKey<OmniSharp.Models.ProjectInformationResponse>[]>;
+        /*readonly*/ projectChanged: Observable<OmniSharp.CombinationKey<OmniSharp.Models.ProjectInformationResponse>[]>;
+        /*readonly*/ projectRemoved: Observable<OmniSharp.CombinationKey<OmniSharp.Models.ProjectInformationResponse>[]>;
+        /*readonly*/ error: Observable<OmniSharp.CombinationKey<OmniSharp.Models.ErrorMessage>[]>;
+        /*readonly*/ diagnostic: Observable<OmniSharp.CombinationKey<OmniSharp.Models.DiagnosticMessage>[]>;
+        /*readonly*/ msBuildProjectDiagnostics: Observable<OmniSharp.CombinationKey<OmniSharp.Models.MSBuildProjectDiagnostics>[]>;
+        /*readonly*/ packageRestoreStarted: Observable<OmniSharp.CombinationKey<OmniSharp.Models.PackageRestoreMessage>[]>;
+        /*readonly*/ packageRestoreFinished: Observable<OmniSharp.CombinationKey<OmniSharp.Models.PackageRestoreMessage>[]>;
+        /*readonly*/ unresolvedDependencies: Observable<OmniSharp.CombinationKey<OmniSharp.Models.UnresolvedDependenciesMessage>[]>;
     }
 }

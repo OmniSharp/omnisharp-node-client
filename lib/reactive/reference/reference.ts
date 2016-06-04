@@ -4,6 +4,8 @@ import "../reactive-client-base";
 
 declare module "../reactive-client-base" {
     interface ReactiveClient {
+        request(path: "/v2/getteststartinfo", request: any, options?: OmniSharp.RequestOptions): Observable<any>;
+        request(path: "/v2/runtest", request: any, options?: OmniSharp.RequestOptions): Observable<any>;
         request(path: "/autocomplete", request: OmniSharp.Models.AutoCompleteRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.AutoCompleteResponse[]>;
         request(path: "/changebuffer", request: OmniSharp.Models.ChangeBufferRequest, options?: OmniSharp.RequestOptions): Observable<any>;
         request(path: "/codecheck", request: OmniSharp.Models.CodeCheckRequest, options?: OmniSharp.RequestOptions): Observable<OmniSharp.Models.QuickFixResponse>;

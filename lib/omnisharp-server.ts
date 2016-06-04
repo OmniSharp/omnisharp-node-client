@@ -478,6 +478,19 @@ export module ScriptCs {
 
 export module Api {
 
+    export interface V2 {
+        // 'codecheck'
+        codecheck(request: Models.V2.CodeCheckRequest, options?: RequestOptions): Observable<Models.V2.CodeCheckResponse>;
+        // 'getcodeactions'
+        getcodeactions(request: Models.V2.GetCodeActionsRequest, options?: RequestOptions): Observable<Models.V2.GetCodeActionsResponse>;
+        // 'getteststartinfo'
+        getteststartinfo(request: any, options?: RequestOptions): Observable<any>;
+        // 'runcodeaction'
+        runcodeaction(request: Models.V2.RunCodeActionRequest, options?: RequestOptions): Observable<Models.V2.RunCodeActionResponse>;
+        // 'runtest'
+        runtest(request: any, options?: RequestOptions): Observable<any>;
+    }
+
     export interface V1 {
         // 'autocomplete'
         autocomplete(request: Models.AutoCompleteRequest, options?: RequestOptions): Observable<Models.AutoCompleteResponse[]>;
@@ -513,6 +526,8 @@ export module Api {
         getcodeactions(request: Models.GetCodeActionRequest, options?: RequestOptions): Observable<Models.GetCodeActionsResponse>;
         // 'gettestcontext'
         gettestcontext(request: Models.TestCommandRequest, options?: RequestOptions): Observable<Models.GetTestCommandResponse>;
+        // 'getteststartinfo'
+        getteststartinfo(request: any, options?: RequestOptions): Observable<any>;
         // 'gotodefinition'
         gotodefinition(request: Models.GotoDefinitionRequest, options?: RequestOptions): Observable<Models.GotoDefinitionResponse>;
         // 'gotofile'
@@ -543,6 +558,8 @@ export module Api {
         rename(request: Models.RenameRequest, options?: RequestOptions): Observable<Models.RenameResponse>;
         // 'runcodeaction'
         runcodeaction(request: Models.RunCodeActionRequest, options?: RequestOptions): Observable<Models.RunCodeActionResponse>;
+        // 'runtest'
+        runtest(request: any, options?: RequestOptions): Observable<any>;
         // 'signatureHelp'
         signatureHelp(request: Models.SignatureHelpRequest, options?: RequestOptions): Observable<Models.SignatureHelp>;
         stopserver(options?: RequestOptions): Observable<boolean>;
@@ -552,81 +569,13 @@ export module Api {
         updatebuffer(request: Models.UpdateBufferRequest, options?: RequestOptions): Observable<any>;
     }
 
-    export interface V2 {
-        // 'autocomplete'
-        autocomplete(request: Models.AutoCompleteRequest, options?: RequestOptions): Observable<Models.AutoCompleteResponse[]>;
-        // 'changebuffer'
-        changebuffer(request: Models.ChangeBufferRequest, options?: RequestOptions): Observable<any>;
-        checkalivestatus(options?: RequestOptions): Observable<boolean>;
-        checkreadystatus(options?: RequestOptions): Observable<boolean>;
-        // 'close'
-        close(request: Models.FileCloseRequest, options?: RequestOptions): Observable<Models.FileCloseResponse>;
-        // 'codecheck'
-        codecheck(request: Models.V2.CodeCheckRequest, options?: RequestOptions): Observable<Models.V2.CodeCheckResponse>;
-        // 'codeformat'
-        codeformat(request: Models.CodeFormatRequest, options?: RequestOptions): Observable<Models.CodeFormatResponse>;
-        // 'currentfilemembersasflat'
-        currentfilemembersasflat(request: Models.MembersFlatRequest, options?: RequestOptions): Observable<Models.QuickFix[]>;
-        // 'currentfilemembersastree'
-        currentfilemembersastree(request: Models.MembersTreeRequest, options?: RequestOptions): Observable<Models.FileMemberTree>;
-        // 'filesChanged'
-        filesChanged(request: Models.Request[], options?: RequestOptions): Observable<Models.FilesChangedResponse>;
-        // 'findimplementations'
-        findimplementations(request: Models.FindImplementationsRequest, options?: RequestOptions): Observable<Models.QuickFixResponse>;
-        // 'findsymbols'
-        findsymbols(request: Models.FindSymbolsRequest, options?: RequestOptions): Observable<Models.QuickFixResponse>;
-        // 'findusages'
-        findusages(request: Models.FindUsagesRequest, options?: RequestOptions): Observable<Models.QuickFixResponse>;
-        // 'fixusings'
-        fixusings(request: Models.FixUsingsRequest, options?: RequestOptions): Observable<Models.FixUsingsResponse>;
-        // 'formatAfterKeystroke'
-        formatAfterKeystroke(request: Models.FormatAfterKeystrokeRequest, options?: RequestOptions): Observable<Models.FormatRangeResponse>;
-        // 'formatRange'
-        formatRange(request: Models.FormatRangeRequest, options?: RequestOptions): Observable<Models.FormatRangeResponse>;
-        // 'getcodeactions'
-        getcodeactions(request: Models.V2.GetCodeActionsRequest, options?: RequestOptions): Observable<Models.V2.GetCodeActionsResponse>;
-        // 'gettestcontext'
-        gettestcontext(request: Models.TestCommandRequest, options?: RequestOptions): Observable<Models.GetTestCommandResponse>;
-        // 'gotodefinition'
-        gotodefinition(request: Models.GotoDefinitionRequest, options?: RequestOptions): Observable<Models.GotoDefinitionResponse>;
-        // 'gotofile'
-        gotofile(request: Models.GotoFileRequest, options?: RequestOptions): Observable<Models.QuickFixResponse>;
-        // 'gotoregion'
-        gotoregion(request: Models.GotoRegionRequest, options?: RequestOptions): Observable<Models.QuickFixResponse>;
-        // 'highlight'
-        highlight(request: Models.HighlightRequest, options?: RequestOptions): Observable<Models.HighlightResponse>;
-        // 'metadata'
-        metadata(request: Models.MetadataRequest, options?: RequestOptions): Observable<Models.MetadataResponse>;
-        // 'navigatedown'
-        navigatedown(request: Models.NavigateDownRequest, options?: RequestOptions): Observable<Models.NavigateResponse>;
-        // 'navigateup'
-        navigateup(request: Models.NavigateUpRequest, options?: RequestOptions): Observable<Models.NavigateResponse>;
-        // 'open'
-        open(request: Models.FileOpenRequest, options?: RequestOptions): Observable<Models.FileOpenResponse>;
-        // 'packagesearch'
-        packagesearch(request: Models.PackageSearchRequest, options?: RequestOptions): Observable<Models.PackageSearchResponse>;
-        // 'packagesource'
-        packagesource(request: Models.PackageSourceRequest, options?: RequestOptions): Observable<Models.PackageSourceResponse>;
-        // 'packageversion'
-        packageversion(request: Models.PackageVersionRequest, options?: RequestOptions): Observable<Models.PackageVersionResponse>;
-        // 'project'
-        project(request: Models.v1.ProjectInformationRequest, options?: RequestOptions): Observable<Models.ProjectInformationResponse>;
-        // 'projects'
-        projects(request: Models.v1.WorkspaceInformationRequest, options?: RequestOptions): Observable<Models.WorkspaceInformationResponse>;
-        // 'rename'
-        rename(request: Models.RenameRequest, options?: RequestOptions): Observable<Models.RenameResponse>;
-        // 'runcodeaction'
-        runcodeaction(request: Models.V2.RunCodeActionRequest, options?: RequestOptions): Observable<Models.V2.RunCodeActionResponse>;
-        // 'signatureHelp'
-        signatureHelp(request: Models.SignatureHelpRequest, options?: RequestOptions): Observable<Models.SignatureHelp>;
-        stopserver(options?: RequestOptions): Observable<boolean>;
-        // 'typelookup'
-        typelookup(request: Models.TypeLookupRequest, options?: RequestOptions): Observable<Models.TypeLookupResponse>;
-        // 'updatebuffer'
-        updatebuffer(request: Models.UpdateBufferRequest, options?: RequestOptions): Observable<any>;
-    }
-
-    export function getVersion(name: string): "v1" | "v2" {
+    export function getVersion(name: string): "v2" | "v1" {
+        if ("getteststartinfo" === name.toLowerCase()) {
+            return "v2";
+        }
+        if ("runtest" === name.toLowerCase()) {
+            return "v2";
+        }
         if ("codecheck" === name.toLowerCase()) {
             return "v2";
         }
@@ -640,6 +589,19 @@ export module Api {
     }
 }
 export module Events {
+
+    export interface V2 {
+        // 'codecheck'
+        codecheck: Observable<Context<Models.V2.CodeCheckRequest, Models.V2.CodeCheckResponse>>;
+        // 'getcodeactions'
+        getcodeactions: Observable<Context<Models.V2.GetCodeActionsRequest, Models.V2.GetCodeActionsResponse>>;
+        // 'getteststartinfo'
+        getteststartinfo: Observable<Context<any, any>>;
+        // 'runcodeaction'
+        runcodeaction: Observable<Context<Models.V2.RunCodeActionRequest, Models.V2.RunCodeActionResponse>>;
+        // 'runtest'
+        runtest: Observable<Context<any, any>>;
+    }
 
     export interface V1 {
         // 'autocomplete'
@@ -676,6 +638,8 @@ export module Events {
         getcodeactions: Observable<Context<Models.GetCodeActionRequest, Models.GetCodeActionsResponse>>;
         // 'gettestcontext'
         gettestcontext: Observable<Context<Models.TestCommandRequest, Models.GetTestCommandResponse>>;
+        // 'getteststartinfo'
+        getteststartinfo: Observable<Context<any, any>>;
         // 'gotodefinition'
         gotodefinition: Observable<Context<Models.GotoDefinitionRequest, Models.GotoDefinitionResponse>>;
         // 'gotofile'
@@ -706,80 +670,8 @@ export module Events {
         rename: Observable<Context<Models.RenameRequest, Models.RenameResponse>>;
         // 'runcodeaction'
         runcodeaction: Observable<Context<Models.RunCodeActionRequest, Models.RunCodeActionResponse>>;
-        // 'signatureHelp'
-        signatureHelp: Observable<Context<Models.SignatureHelpRequest, Models.SignatureHelp>>;
-        stopserver: Observable<Context<any, boolean>>;
-        // 'typelookup'
-        typelookup: Observable<Context<Models.TypeLookupRequest, Models.TypeLookupResponse>>;
-        // 'updatebuffer'
-        updatebuffer: Observable<Context<Models.UpdateBufferRequest, any>>;
-    }
-
-    export interface V2 {
-        // 'autocomplete'
-        autocomplete: Observable<Context<Models.AutoCompleteRequest, Models.AutoCompleteResponse[]>>;
-        // 'changebuffer'
-        changebuffer: Observable<Context<Models.ChangeBufferRequest, any>>;
-        checkalivestatus: Observable<Context<any, boolean>>;
-        checkreadystatus: Observable<Context<any, boolean>>;
-        // 'close'
-        close: Observable<Context<Models.FileCloseRequest, Models.FileCloseResponse>>;
-        // 'codecheck'
-        codecheck: Observable<Context<Models.V2.CodeCheckRequest, Models.V2.CodeCheckResponse>>;
-        // 'codeformat'
-        codeformat: Observable<Context<Models.CodeFormatRequest, Models.CodeFormatResponse>>;
-        // 'currentfilemembersasflat'
-        currentfilemembersasflat: Observable<Context<Models.MembersFlatRequest, Models.QuickFix[]>>;
-        // 'currentfilemembersastree'
-        currentfilemembersastree: Observable<Context<Models.MembersTreeRequest, Models.FileMemberTree>>;
-        // 'filesChanged'
-        filesChanged: Observable<Context<Models.Request[], Models.FilesChangedResponse>>;
-        // 'findimplementations'
-        findimplementations: Observable<Context<Models.FindImplementationsRequest, Models.QuickFixResponse>>;
-        // 'findsymbols'
-        findsymbols: Observable<Context<Models.FindSymbolsRequest, Models.QuickFixResponse>>;
-        // 'findusages'
-        findusages: Observable<Context<Models.FindUsagesRequest, Models.QuickFixResponse>>;
-        // 'fixusings'
-        fixusings: Observable<Context<Models.FixUsingsRequest, Models.FixUsingsResponse>>;
-        // 'formatAfterKeystroke'
-        formatAfterKeystroke: Observable<Context<Models.FormatAfterKeystrokeRequest, Models.FormatRangeResponse>>;
-        // 'formatRange'
-        formatRange: Observable<Context<Models.FormatRangeRequest, Models.FormatRangeResponse>>;
-        // 'getcodeactions'
-        getcodeactions: Observable<Context<Models.V2.GetCodeActionsRequest, Models.V2.GetCodeActionsResponse>>;
-        // 'gettestcontext'
-        gettestcontext: Observable<Context<Models.TestCommandRequest, Models.GetTestCommandResponse>>;
-        // 'gotodefinition'
-        gotodefinition: Observable<Context<Models.GotoDefinitionRequest, Models.GotoDefinitionResponse>>;
-        // 'gotofile'
-        gotofile: Observable<Context<Models.GotoFileRequest, Models.QuickFixResponse>>;
-        // 'gotoregion'
-        gotoregion: Observable<Context<Models.GotoRegionRequest, Models.QuickFixResponse>>;
-        // 'highlight'
-        highlight: Observable<Context<Models.HighlightRequest, Models.HighlightResponse>>;
-        // 'metadata'
-        metadata: Observable<Context<Models.MetadataRequest, Models.MetadataResponse>>;
-        // 'navigatedown'
-        navigatedown: Observable<Context<Models.NavigateDownRequest, Models.NavigateResponse>>;
-        // 'navigateup'
-        navigateup: Observable<Context<Models.NavigateUpRequest, Models.NavigateResponse>>;
-        // 'open'
-        open: Observable<Context<Models.FileOpenRequest, Models.FileOpenResponse>>;
-        // 'packagesearch'
-        packagesearch: Observable<Context<Models.PackageSearchRequest, Models.PackageSearchResponse>>;
-        // 'packagesource'
-        packagesource: Observable<Context<Models.PackageSourceRequest, Models.PackageSourceResponse>>;
-        // 'packageversion'
-        packageversion: Observable<Context<Models.PackageVersionRequest, Models.PackageVersionResponse>>;
-        // 'project'
-        project: Observable<Context<Models.v1.ProjectInformationRequest, Models.ProjectInformationResponse>>;
-        // 'projects'
-        projects: Observable<Context<Models.v1.WorkspaceInformationRequest, Models.WorkspaceInformationResponse>>;
-        // 'rename'
-        rename: Observable<Context<Models.RenameRequest, Models.RenameResponse>>;
-        // 'runcodeaction'
-        runcodeaction: Observable<Context<Models.V2.RunCodeActionRequest, Models.V2.RunCodeActionResponse>>;
+        // 'runtest'
+        runtest: Observable<Context<any, any>>;
         // 'signatureHelp'
         signatureHelp: Observable<Context<Models.SignatureHelpRequest, Models.SignatureHelp>>;
         stopserver: Observable<Context<any, boolean>>;
@@ -791,6 +683,19 @@ export module Events {
 
 }
 export module Events.Aggregate {
+
+    export interface V2 {
+        // 'codecheck'
+        codecheck: Observable<CombinationKey<Context<Models.V2.CodeCheckRequest, Models.V2.CodeCheckResponse>>[]>;
+        // 'getcodeactions'
+        getcodeactions: Observable<CombinationKey<Context<Models.V2.GetCodeActionsRequest, Models.V2.GetCodeActionsResponse>>[]>;
+        // 'getteststartinfo'
+        getteststartinfo: Observable<CombinationKey<Context<any, any>>[]>;
+        // 'runcodeaction'
+        runcodeaction: Observable<CombinationKey<Context<Models.V2.RunCodeActionRequest, Models.V2.RunCodeActionResponse>>[]>;
+        // 'runtest'
+        runtest: Observable<CombinationKey<Context<any, any>>[]>;
+    }
 
     export interface V1 {
         // 'autocomplete'
@@ -827,6 +732,8 @@ export module Events.Aggregate {
         getcodeactions: Observable<CombinationKey<Context<Models.GetCodeActionRequest, Models.GetCodeActionsResponse>>[]>;
         // 'gettestcontext'
         gettestcontext: Observable<CombinationKey<Context<Models.TestCommandRequest, Models.GetTestCommandResponse>>[]>;
+        // 'getteststartinfo'
+        getteststartinfo: Observable<CombinationKey<Context<any, any>>[]>;
         // 'gotodefinition'
         gotodefinition: Observable<CombinationKey<Context<Models.GotoDefinitionRequest, Models.GotoDefinitionResponse>>[]>;
         // 'gotofile'
@@ -857,80 +764,8 @@ export module Events.Aggregate {
         rename: Observable<CombinationKey<Context<Models.RenameRequest, Models.RenameResponse>>[]>;
         // 'runcodeaction'
         runcodeaction: Observable<CombinationKey<Context<Models.RunCodeActionRequest, Models.RunCodeActionResponse>>[]>;
-        // 'signatureHelp'
-        signatureHelp: Observable<CombinationKey<Context<Models.SignatureHelpRequest, Models.SignatureHelp>>[]>;
-        stopserver: Observable<CombinationKey<Context<any, boolean>>>;
-        // 'typelookup'
-        typelookup: Observable<CombinationKey<Context<Models.TypeLookupRequest, Models.TypeLookupResponse>>[]>;
-        // 'updatebuffer'
-        updatebuffer: Observable<CombinationKey<Context<Models.UpdateBufferRequest, any>>[]>;
-    }
-
-    export interface V2 {
-        // 'autocomplete'
-        autocomplete: Observable<CombinationKey<Context<Models.AutoCompleteRequest, Models.AutoCompleteResponse[]>>[]>;
-        // 'changebuffer'
-        changebuffer: Observable<CombinationKey<Context<Models.ChangeBufferRequest, any>>[]>;
-        checkalivestatus: Observable<CombinationKey<Context<any, boolean>>>;
-        checkreadystatus: Observable<CombinationKey<Context<any, boolean>>>;
-        // 'close'
-        close: Observable<CombinationKey<Context<Models.FileCloseRequest, Models.FileCloseResponse>>[]>;
-        // 'codecheck'
-        codecheck: Observable<CombinationKey<Context<Models.V2.CodeCheckRequest, Models.V2.CodeCheckResponse>>[]>;
-        // 'codeformat'
-        codeformat: Observable<CombinationKey<Context<Models.CodeFormatRequest, Models.CodeFormatResponse>>[]>;
-        // 'currentfilemembersasflat'
-        currentfilemembersasflat: Observable<CombinationKey<Context<Models.MembersFlatRequest, Models.QuickFix[]>>[]>;
-        // 'currentfilemembersastree'
-        currentfilemembersastree: Observable<CombinationKey<Context<Models.MembersTreeRequest, Models.FileMemberTree>>[]>;
-        // 'filesChanged'
-        filesChanged: Observable<CombinationKey<Context<Models.Request[], Models.FilesChangedResponse>>[]>;
-        // 'findimplementations'
-        findimplementations: Observable<CombinationKey<Context<Models.FindImplementationsRequest, Models.QuickFixResponse>>[]>;
-        // 'findsymbols'
-        findsymbols: Observable<CombinationKey<Context<Models.FindSymbolsRequest, Models.QuickFixResponse>>[]>;
-        // 'findusages'
-        findusages: Observable<CombinationKey<Context<Models.FindUsagesRequest, Models.QuickFixResponse>>[]>;
-        // 'fixusings'
-        fixusings: Observable<CombinationKey<Context<Models.FixUsingsRequest, Models.FixUsingsResponse>>[]>;
-        // 'formatAfterKeystroke'
-        formatAfterKeystroke: Observable<CombinationKey<Context<Models.FormatAfterKeystrokeRequest, Models.FormatRangeResponse>>[]>;
-        // 'formatRange'
-        formatRange: Observable<CombinationKey<Context<Models.FormatRangeRequest, Models.FormatRangeResponse>>[]>;
-        // 'getcodeactions'
-        getcodeactions: Observable<CombinationKey<Context<Models.V2.GetCodeActionsRequest, Models.V2.GetCodeActionsResponse>>[]>;
-        // 'gettestcontext'
-        gettestcontext: Observable<CombinationKey<Context<Models.TestCommandRequest, Models.GetTestCommandResponse>>[]>;
-        // 'gotodefinition'
-        gotodefinition: Observable<CombinationKey<Context<Models.GotoDefinitionRequest, Models.GotoDefinitionResponse>>[]>;
-        // 'gotofile'
-        gotofile: Observable<CombinationKey<Context<Models.GotoFileRequest, Models.QuickFixResponse>>[]>;
-        // 'gotoregion'
-        gotoregion: Observable<CombinationKey<Context<Models.GotoRegionRequest, Models.QuickFixResponse>>[]>;
-        // 'highlight'
-        highlight: Observable<CombinationKey<Context<Models.HighlightRequest, Models.HighlightResponse>>[]>;
-        // 'metadata'
-        metadata: Observable<CombinationKey<Context<Models.MetadataRequest, Models.MetadataResponse>>[]>;
-        // 'navigatedown'
-        navigatedown: Observable<CombinationKey<Context<Models.NavigateDownRequest, Models.NavigateResponse>>[]>;
-        // 'navigateup'
-        navigateup: Observable<CombinationKey<Context<Models.NavigateUpRequest, Models.NavigateResponse>>[]>;
-        // 'open'
-        open: Observable<CombinationKey<Context<Models.FileOpenRequest, Models.FileOpenResponse>>[]>;
-        // 'packagesearch'
-        packagesearch: Observable<CombinationKey<Context<Models.PackageSearchRequest, Models.PackageSearchResponse>>[]>;
-        // 'packagesource'
-        packagesource: Observable<CombinationKey<Context<Models.PackageSourceRequest, Models.PackageSourceResponse>>[]>;
-        // 'packageversion'
-        packageversion: Observable<CombinationKey<Context<Models.PackageVersionRequest, Models.PackageVersionResponse>>[]>;
-        // 'project'
-        project: Observable<CombinationKey<Context<Models.v1.ProjectInformationRequest, Models.ProjectInformationResponse>>[]>;
-        // 'projects'
-        projects: Observable<CombinationKey<Context<Models.v1.WorkspaceInformationRequest, Models.WorkspaceInformationResponse>>[]>;
-        // 'rename'
-        rename: Observable<CombinationKey<Context<Models.RenameRequest, Models.RenameResponse>>[]>;
-        // 'runcodeaction'
-        runcodeaction: Observable<CombinationKey<Context<Models.V2.RunCodeActionRequest, Models.V2.RunCodeActionResponse>>[]>;
+        // 'runtest'
+        runtest: Observable<CombinationKey<Context<any, any>>[]>;
         // 'signatureHelp'
         signatureHelp: Observable<CombinationKey<Context<Models.SignatureHelpRequest, Models.SignatureHelp>>[]>;
         stopserver: Observable<CombinationKey<Context<any, boolean>>>;

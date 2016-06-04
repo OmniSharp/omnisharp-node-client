@@ -2,6 +2,8 @@ import * as OmniSharp from "../../omnisharp-server";
 import {AsyncClient} from "../async-client-base";
 import {request} from "../../helpers/decorators";
 
+request(AsyncClient.prototype, "getteststartinfo");
+request(AsyncClient.prototype, "runtest");
 request(AsyncClient.prototype, "autocomplete");
 request(AsyncClient.prototype, "changebuffer");
 request(AsyncClient.prototype, "codecheck");
@@ -42,6 +44,8 @@ request(AsyncClient.prototype, "stopserver");
 
 declare module "../async-client-base" {
     interface AsyncClient {
+        getteststartinfo(request: any, options?: OmniSharp.RequestOptions): Promise<any>;
+        runtest(request: any, options?: OmniSharp.RequestOptions): Promise<any>;
         autocomplete(request: OmniSharp.Models.AutoCompleteRequest, options?: OmniSharp.RequestOptions): Promise<OmniSharp.Models.AutoCompleteResponse[]>;
         changebuffer(request: OmniSharp.Models.ChangeBufferRequest, options?: OmniSharp.RequestOptions): Promise<any>;
         codecheck(request: OmniSharp.Models.V2.CodeCheckRequest, options?: OmniSharp.RequestOptions): Promise<OmniSharp.Models.V2.CodeCheckResponse>;

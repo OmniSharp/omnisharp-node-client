@@ -9,7 +9,7 @@ import {ensureClientOptions} from "../options";
 import {isPriorityCommand, isNormalCommand, isDeferredCommand} from "../helpers/prioritization";
 import {createObservable} from "../operators/create";
 import {preconditions} from "../helpers/preconditions";
-import {setEventOrResponse, getInternalValue} from "../helpers/decorators";
+import {reference, setEventOrResponse, getInternalValue} from "../helpers/decorators";
 
 function pausable<T>(incomingStream: Observable<T>, pauser: Observable<boolean>) {
     return createObservable<T>(observer => {
@@ -366,3 +366,23 @@ export class ReactiveClientEvents {
         return value;
     }
 }
+
+reference(ReactiveClientEvents.prototype, "events", "events");
+reference(ReactiveClientEvents.prototype, "commands", "commands");
+reference(ReactiveClientEvents.prototype, "state", "state");
+reference(ReactiveClientEvents.prototype, "status", "status");
+reference(ReactiveClientEvents.prototype, "requests", "requests");
+reference(ReactiveClientEvents.prototype, "responses", "responses");
+reference(ReactiveClientEvents.prototype, "errors", "errors");
+
+export interface ReactiveClientEvents {
+    /*readonly*/ events: Observable<OmniSharp.Stdio.Protocol.EventPacket>;
+    /*readonly*/ commands: Observable<OmniSharp.Stdio.Protocol.ResponsePacket>;
+    /*readonly*/ state: Observable<DriverState>;
+    /*readonly*/ status: Observable<OmnisharpClientStatus>;
+    /*readonly*/ requests: Observable<RequestContext<any>>;
+    /*readonly*/ responses: Observable<ResponseContext<any, any>>;
+    /*readonly*/ errors: Observable<CommandContext<any>>;
+}
+
+// <#GENERATED />

@@ -73,3 +73,13 @@ export class ReactiveCombinationClient<TClient extends ReactiveClient> implement
         return d;
     }
 }
+
+makeObservable(ReactiveCombinationClient.prototype, "state", "state");
+makeObservable(ReactiveCombinationClient.prototype, "status", "status");
+
+export interface ReactiveCombinationClient {
+    /*readonly*/ responses: Observable<OmniSharp.CombinationKey<DriverState>[]>;
+    /*readonly*/ errors: Observable<OmniSharp.CombinationKey<OmnisharpClientStatus>[]>;
+}
+
+// <#GENERATED />

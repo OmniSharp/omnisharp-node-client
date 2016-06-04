@@ -6,6 +6,8 @@ import "../reactive-combination-client";
 
 declare module "../reactive-client-base" {
     interface ReactiveClientEvents {
+        listen(path: "/v2/getteststartinfo"): Observable<OmniSharp.Context<any, any>>;
+        listen(path: "/v2/runtest"): Observable<OmniSharp.Context<any, any>>;
         listen(path: "/autocomplete"): Observable<OmniSharp.Context<OmniSharp.Models.AutoCompleteRequest, OmniSharp.Models.AutoCompleteResponse[]>>;
         listen(path: "/changebuffer"): Observable<OmniSharp.Context<OmniSharp.Models.ChangeBufferRequest, any>>;
         listen(path: "/codecheck"): Observable<OmniSharp.Context<OmniSharp.Models.CodeCheckRequest, OmniSharp.Models.QuickFixResponse>>;
@@ -51,6 +53,8 @@ declare module "../reactive-client-base" {
 
 declare module "../reactive-observation-client" {
     interface ReactiveObservationClient {
+        listen(path: "/v2/getteststartinfo"): Observable<OmniSharp.Context<any, any>>;
+        listen(path: "/v2/runtest"): Observable<OmniSharp.Context<any, any>>;
         listen(path: "/autocomplete"): Observable<OmniSharp.Context<OmniSharp.Models.AutoCompleteRequest, OmniSharp.Models.AutoCompleteResponse[]>>;
         listen(path: "/changebuffer"): Observable<OmniSharp.Context<OmniSharp.Models.ChangeBufferRequest, any>>;
         listen(path: "/codecheck"): Observable<OmniSharp.Context<OmniSharp.Models.CodeCheckRequest, OmniSharp.Models.QuickFixResponse>>;
@@ -96,6 +100,8 @@ declare module "../reactive-observation-client" {
 
 declare module "../reactive-combination-client" {
     interface ReactiveCombinationClient {
+        listen(path: "/v2/getteststartinfo"): Observable<OmniSharp.CombinationKey<OmniSharp.Context<any, any>>[]>;
+        listen(path: "/v2/runtest"): Observable<OmniSharp.CombinationKey<OmniSharp.Context<any, any>>[]>;
         listen(path: "/autocomplete"): Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.AutoCompleteRequest, OmniSharp.Models.AutoCompleteResponse[]>>[]>;
         listen(path: "/changebuffer"): Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.ChangeBufferRequest, any>>[]>;
         listen(path: "/codecheck"): Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.CodeCheckRequest, OmniSharp.Models.QuickFixResponse>>[]>;

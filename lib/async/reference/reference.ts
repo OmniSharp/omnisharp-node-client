@@ -3,6 +3,8 @@ import "../async-client-base";
 
 declare module "../async-client-base" {
     interface AsyncClient {
+        request(path: "/v2/getteststartinfo", request: any, options?: OmniSharp.RequestOptions): Promise<any>;
+        request(path: "/v2/runtest", request: any, options?: OmniSharp.RequestOptions): Promise<any>;
         request(path: "/autocomplete", request: OmniSharp.Models.AutoCompleteRequest, options?: OmniSharp.RequestOptions): Promise<OmniSharp.Models.AutoCompleteResponse[]>;
         request(path: "/changebuffer", request: OmniSharp.Models.ChangeBufferRequest, options?: OmniSharp.RequestOptions): Promise<any>;
         request(path: "/codecheck", request: OmniSharp.Models.CodeCheckRequest, options?: OmniSharp.RequestOptions): Promise<OmniSharp.Models.QuickFixResponse>;

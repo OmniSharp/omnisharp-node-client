@@ -259,7 +259,12 @@ namespace OmniSharp.TypeScriptGeneration
 
         private static IEnumerable<MethodResult> GetControllerMethods()
         {
-            var types = typeof(Request).Assembly.GetTypes()
+            var assemblies = new[] {
+                 typeof(OmniSharp.DotNet.DotNetProjectSystem),
+                typeof(OmniSharp.DotNetTest.Models.GetTestStartInfoRequest),
+                typeof(Request)
+             };
+            var types = assemblies.SelectMany(x => x.Assembly.GetTypes())
                 .Where(z => z.GetTypeInfo().GetCustomAttributes<OmniSharpEndpointAttribute>().Any());
 
             foreach (var type in types.Where(z => z.IsPublic))

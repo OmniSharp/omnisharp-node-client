@@ -49,3 +49,23 @@ export class ReactiveObservationClient<TClient extends ReactiveClient> implement
         return d;
     }
 }
+
+makeObservable(ReactiveObservationClient.prototype, "events", "events");
+makeObservable(ReactiveObservationClient.prototype, "commands", "commands");
+makeObservable(ReactiveObservationClient.prototype, "state", "state");
+makeObservable(ReactiveObservationClient.prototype, "status", "status");
+makeObservable(ReactiveObservationClient.prototype, "requests", "requests");
+makeObservable(ReactiveObservationClient.prototype, "responses", "responses");
+makeObservable(ReactiveObservationClient.prototype, "errors", "errors");
+
+export interface ReactiveObservationClient {
+    /*readonly*/ events: Observable<OmniSharp.Stdio.Protocol.EventPacket>;
+    /*readonly*/ commands: Observable<OmniSharp.Stdio.Protocol.ResponsePacket>;
+    /*readonly*/ state: Observable<DriverState>;
+    /*readonly*/ status: Observable<OmnisharpClientStatus>;
+    /*readonly*/ requests: Observable<RequestContext<any>>;
+    /*readonly*/ responses: Observable<ResponseContext<any, any>>;
+    /*readonly*/ errors: Observable<CommandContext<any>>;
+}
+
+// <#GENERATED />

@@ -359,3 +359,5 @@ export class AsyncClientEvents implements OmniSharp.Events {
     @response public get gettestcontext(): Observable<OmniSharp.Context<OmniSharp.Models.TestCommandRequest, OmniSharp.Models.GetTestCommandResponse>> { throw new Error("Implemented by decorator"); }
 }
 */
+
+// <#GENERATED />
