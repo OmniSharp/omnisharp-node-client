@@ -79,9 +79,9 @@ export class ReactiveCombinationClient<TClient extends ReactiveClient> implement
 makeObservable(ReactiveCombinationClient.prototype, "state", "state");
 makeObservable(ReactiveCombinationClient.prototype, "status", "status");
 
-export interface ReactiveCombinationClient {
-    /*readonly*/ responses: Observable<OmniSharp.CombinationKey<DriverState>[]>;
-    /*readonly*/ errors: Observable<OmniSharp.CombinationKey<OmnisharpClientStatus>[]>;
+export interface ReactiveCombinationClient extends OmniSharp.Aggregate.Events, OmniSharp.Events.Aggregate.V2 {
+    /*readonly*/ state: Observable<OmniSharp.CombinationKey<DriverState>[]>;
+    /*readonly*/ status: Observable<OmniSharp.CombinationKey<OmnisharpClientStatus>[]>;
 }
 
 // <#GENERATED />
@@ -133,106 +133,3 @@ makeObservable(ReactiveCombinationClient.prototype, "msBuildProjectDiagnostics",
 makeObservable(ReactiveCombinationClient.prototype, "packageRestoreStarted", "packageRestoreStarted");
 makeObservable(ReactiveCombinationClient.prototype, "packageRestoreFinished", "packageRestoreFinished");
 makeObservable(ReactiveCombinationClient.prototype, "unresolvedDependencies", "unresolvedDependencies");
-
-export interface ReactiveCombinationClient {
-    /*readonly*/ getteststartinfo: Observable<OmniSharp.CombinationKey<OmniSharp.Context<any, any>>[]>;
-    /*readonly*/ runtest: Observable<OmniSharp.CombinationKey<OmniSharp.Context<any, any>>[]>;
-    /*readonly*/ autocomplete: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.AutoCompleteRequest, OmniSharp.Models.AutoCompleteResponse[]>>[]>;
-    /*readonly*/ changebuffer: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.ChangeBufferRequest, any>>[]>;
-    /*readonly*/ codecheck: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.V2.CodeCheckRequest, OmniSharp.Models.V2.CodeCheckResponse>>[]>;
-    /*readonly*/ codeformat: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.CodeFormatRequest, OmniSharp.Models.CodeFormatResponse>>[]>;
-    /*readonly*/ close: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.FileCloseRequest, OmniSharp.Models.FileCloseResponse>>[]>;
-    /*readonly*/ open: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.FileOpenRequest, OmniSharp.Models.FileOpenResponse>>[]>;
-    /*readonly*/ filesChanged: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.Request[], OmniSharp.Models.FilesChangedResponse>>[]>;
-    /*readonly*/ findimplementations: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.FindImplementationsRequest, OmniSharp.Models.QuickFixResponse>>[]>;
-    /*readonly*/ findsymbols: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.FindSymbolsRequest, OmniSharp.Models.QuickFixResponse>>[]>;
-    /*readonly*/ findusages: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.FindUsagesRequest, OmniSharp.Models.QuickFixResponse>>[]>;
-    /*readonly*/ fixusings: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.FixUsingsRequest, OmniSharp.Models.FixUsingsResponse>>[]>;
-    /*readonly*/ formatAfterKeystroke: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.FormatAfterKeystrokeRequest, OmniSharp.Models.FormatRangeResponse>>[]>;
-    /*readonly*/ formatRange: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.FormatRangeRequest, OmniSharp.Models.FormatRangeResponse>>[]>;
-    /*readonly*/ getcodeactions: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.V2.GetCodeActionsRequest, OmniSharp.Models.V2.GetCodeActionsResponse>>[]>;
-    /*readonly*/ gotodefinition: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.GotoDefinitionRequest, OmniSharp.Models.GotoDefinitionResponse>>[]>;
-    /*readonly*/ gotofile: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.GotoFileRequest, OmniSharp.Models.QuickFixResponse>>[]>;
-    /*readonly*/ gotoregion: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.GotoRegionRequest, OmniSharp.Models.QuickFixResponse>>[]>;
-    /*readonly*/ highlight: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.HighlightRequest, OmniSharp.Models.HighlightResponse>>[]>;
-    /*readonly*/ currentfilemembersasflat: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.MembersFlatRequest, OmniSharp.Models.QuickFix[]>>[]>;
-    /*readonly*/ currentfilemembersastree: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.MembersTreeRequest, OmniSharp.Models.FileMemberTree>>[]>;
-    /*readonly*/ metadata: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.MetadataRequest, OmniSharp.Models.MetadataResponse>>[]>;
-    /*readonly*/ navigatedown: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.NavigateDownRequest, OmniSharp.Models.NavigateResponse>>[]>;
-    /*readonly*/ navigateup: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.NavigateUpRequest, OmniSharp.Models.NavigateResponse>>[]>;
-    /*readonly*/ packagesearch: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.PackageSearchRequest, OmniSharp.Models.PackageSearchResponse>>[]>;
-    /*readonly*/ packagesource: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.PackageSourceRequest, OmniSharp.Models.PackageSourceResponse>>[]>;
-    /*readonly*/ packageversion: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.PackageVersionRequest, OmniSharp.Models.PackageVersionResponse>>[]>;
-    /*readonly*/ rename: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.RenameRequest, OmniSharp.Models.RenameResponse>>[]>;
-    /*readonly*/ runcodeaction: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.V2.RunCodeActionRequest, OmniSharp.Models.V2.RunCodeActionResponse>>[]>;
-    /*readonly*/ signatureHelp: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.SignatureHelpRequest, OmniSharp.Models.SignatureHelp>>[]>;
-    /*readonly*/ gettestcontext: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.TestCommandRequest, OmniSharp.Models.GetTestCommandResponse>>[]>;
-    /*readonly*/ typelookup: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.TypeLookupRequest, OmniSharp.Models.TypeLookupResponse>>[]>;
-    /*readonly*/ updatebuffer: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.UpdateBufferRequest, any>>[]>;
-    /*readonly*/ project: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.v1.ProjectInformationRequest, OmniSharp.Models.ProjectInformationResponse>>[]>;
-    /*readonly*/ projects: Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.v1.WorkspaceInformationRequest, OmniSharp.Models.WorkspaceInformationResponse>>[]>;
-    /*readonly*/ checkalivestatus: Observable<OmniSharp.CombinationKey<OmniSharp.Context<any, boolean>>>;
-    /*readonly*/ checkreadystatus: Observable<OmniSharp.CombinationKey<OmniSharp.Context<any, boolean>>>;
-    /*readonly*/ stopserver: Observable<OmniSharp.CombinationKey<OmniSharp.Context<any, boolean>>>;
-    /*readonly*/ projectAdded: Observable<OmniSharp.CombinationKey<OmniSharp.Models.ProjectInformationResponse>[]>;
-    /*readonly*/ projectChanged: Observable<OmniSharp.CombinationKey<OmniSharp.Models.ProjectInformationResponse>[]>;
-    /*readonly*/ projectRemoved: Observable<OmniSharp.CombinationKey<OmniSharp.Models.ProjectInformationResponse>[]>;
-    /*readonly*/ error: Observable<OmniSharp.CombinationKey<OmniSharp.Models.ErrorMessage>[]>;
-    /*readonly*/ diagnostic: Observable<OmniSharp.CombinationKey<OmniSharp.Models.DiagnosticMessage>[]>;
-    /*readonly*/ msBuildProjectDiagnostics: Observable<OmniSharp.CombinationKey<OmniSharp.Models.MSBuildProjectDiagnostics>[]>;
-    /*readonly*/ packageRestoreStarted: Observable<OmniSharp.CombinationKey<OmniSharp.Models.PackageRestoreMessage>[]>;
-    /*readonly*/ packageRestoreFinished: Observable<OmniSharp.CombinationKey<OmniSharp.Models.PackageRestoreMessage>[]>;
-    /*readonly*/ unresolvedDependencies: Observable<OmniSharp.CombinationKey<OmniSharp.Models.UnresolvedDependenciesMessage>[]>;
-    listen(path: "/v2/getteststartinfo"): Observable<OmniSharp.CombinationKey<OmniSharp.Context<any, any>>[]>;
-    listen(path: "/v2/runtest"): Observable<OmniSharp.CombinationKey<OmniSharp.Context<any, any>>[]>;
-    listen(path: "/autocomplete"): Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.AutoCompleteRequest, OmniSharp.Models.AutoCompleteResponse[]>>[]>;
-    listen(path: "/changebuffer"): Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.ChangeBufferRequest, any>>[]>;
-    listen(path: "/codecheck"): Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.CodeCheckRequest, OmniSharp.Models.QuickFixResponse>>[]>;
-    listen(path: "/codeformat"): Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.CodeFormatRequest, OmniSharp.Models.CodeFormatResponse>>[]>;
-    listen(path: "/close"): Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.FileCloseRequest, OmniSharp.Models.FileCloseResponse>>[]>;
-    listen(path: "/open"): Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.FileOpenRequest, OmniSharp.Models.FileOpenResponse>>[]>;
-    listen(path: "/filesChanged"): Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.Request[], OmniSharp.Models.FilesChangedResponse>>[]>;
-    listen(path: "/findimplementations"): Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.FindImplementationsRequest, OmniSharp.Models.QuickFixResponse>>[]>;
-    listen(path: "/findsymbols"): Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.FindSymbolsRequest, OmniSharp.Models.QuickFixResponse>>[]>;
-    listen(path: "/findusages"): Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.FindUsagesRequest, OmniSharp.Models.QuickFixResponse>>[]>;
-    listen(path: "/fixusings"): Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.FixUsingsRequest, OmniSharp.Models.FixUsingsResponse>>[]>;
-    listen(path: "/formatAfterKeystroke"): Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.FormatAfterKeystrokeRequest, OmniSharp.Models.FormatRangeResponse>>[]>;
-    listen(path: "/formatRange"): Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.FormatRangeRequest, OmniSharp.Models.FormatRangeResponse>>[]>;
-    listen(path: "/getcodeactions"): Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.GetCodeActionRequest, OmniSharp.Models.GetCodeActionsResponse>>[]>;
-    listen(path: "/gotodefinition"): Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.GotoDefinitionRequest, OmniSharp.Models.GotoDefinitionResponse>>[]>;
-    listen(path: "/gotofile"): Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.GotoFileRequest, OmniSharp.Models.QuickFixResponse>>[]>;
-    listen(path: "/gotoregion"): Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.GotoRegionRequest, OmniSharp.Models.QuickFixResponse>>[]>;
-    listen(path: "/highlight"): Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.HighlightRequest, OmniSharp.Models.HighlightResponse>>[]>;
-    listen(path: "/currentfilemembersasflat"): Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.MembersFlatRequest, OmniSharp.Models.QuickFix[]>>[]>;
-    listen(path: "/currentfilemembersastree"): Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.MembersTreeRequest, OmniSharp.Models.FileMemberTree>>[]>;
-    listen(path: "/metadata"): Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.MetadataRequest, OmniSharp.Models.MetadataResponse>>[]>;
-    listen(path: "/navigatedown"): Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.NavigateDownRequest, OmniSharp.Models.NavigateResponse>>[]>;
-    listen(path: "/navigateup"): Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.NavigateUpRequest, OmniSharp.Models.NavigateResponse>>[]>;
-    listen(path: "/packagesearch"): Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.PackageSearchRequest, OmniSharp.Models.PackageSearchResponse>>[]>;
-    listen(path: "/packagesource"): Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.PackageSourceRequest, OmniSharp.Models.PackageSourceResponse>>[]>;
-    listen(path: "/packageversion"): Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.PackageVersionRequest, OmniSharp.Models.PackageVersionResponse>>[]>;
-    listen(path: "/rename"): Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.RenameRequest, OmniSharp.Models.RenameResponse>>[]>;
-    listen(path: "/runcodeaction"): Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.RunCodeActionRequest, OmniSharp.Models.RunCodeActionResponse>>[]>;
-    listen(path: "/signatureHelp"): Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.SignatureHelpRequest, OmniSharp.Models.SignatureHelp>>[]>;
-    listen(path: "/gettestcontext"): Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.TestCommandRequest, OmniSharp.Models.GetTestCommandResponse>>[]>;
-    listen(path: "/typelookup"): Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.TypeLookupRequest, OmniSharp.Models.TypeLookupResponse>>[]>;
-    listen(path: "/updatebuffer"): Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.UpdateBufferRequest, any>>[]>;
-    listen(path: "/v2/codecheck"): Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.V2.CodeCheckRequest, OmniSharp.Models.V2.CodeCheckResponse>>[]>;
-    listen(path: "/v2/getcodeactions"): Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.V2.GetCodeActionsRequest, OmniSharp.Models.V2.GetCodeActionsResponse>>[]>;
-    listen(path: "/v2/runcodeaction"): Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.V2.RunCodeActionRequest, OmniSharp.Models.V2.RunCodeActionResponse>>[]>;
-    listen(path: "/project"): Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.v1.ProjectInformationRequest, OmniSharp.Models.ProjectInformationResponse>>[]>;
-    listen(path: "/projects"): Observable<OmniSharp.CombinationKey<OmniSharp.Context<OmniSharp.Models.v1.WorkspaceInformationRequest, OmniSharp.Models.WorkspaceInformationResponse>>[]>;
-    listen(path: "/checkalivestatus"): Observable<OmniSharp.CombinationKey<OmniSharp.Context<any, boolean>>[]>;
-    listen(path: "/checkreadystatus"): Observable<OmniSharp.CombinationKey<OmniSharp.Context<any, boolean>>[]>;
-    listen(path: "/stopserver"): Observable<OmniSharp.CombinationKey<OmniSharp.Context<any, boolean>>[]>;
-    listen(path: "projectAdded"): Observable<OmniSharp.CombinationKey<OmniSharp.Models.ProjectInformationResponse>[]>;
-    listen(path: "projectChanged"): Observable<OmniSharp.CombinationKey<OmniSharp.Models.ProjectInformationResponse>[]>;
-    listen(path: "projectRemoved"): Observable<OmniSharp.CombinationKey<OmniSharp.Models.ProjectInformationResponse>[]>;
-    listen(path: "error"): Observable<OmniSharp.CombinationKey<OmniSharp.Models.ErrorMessage>[]>;
-    listen(path: "diagnostic"): Observable<OmniSharp.CombinationKey<OmniSharp.Models.DiagnosticMessage>[]>;
-    listen(path: "msBuildProjectDiagnostics"): Observable<OmniSharp.CombinationKey<OmniSharp.Models.MSBuildProjectDiagnostics>[]>;
-    listen(path: "packageRestoreStarted"): Observable<OmniSharp.CombinationKey<OmniSharp.Models.PackageRestoreMessage>[]>;
-    listen(path: "packageRestoreFinished"): Observable<OmniSharp.CombinationKey<OmniSharp.Models.PackageRestoreMessage>[]>;
-    listen(path: "unresolvedDependencies"): Observable<OmniSharp.CombinationKey<OmniSharp.Models.UnresolvedDependenciesMessage>[]>;
-
-}
