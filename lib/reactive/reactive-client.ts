@@ -395,6 +395,7 @@ request(ReactiveClient.prototype, "autocomplete");
 request(ReactiveClient.prototype, "changebuffer");
 request(ReactiveClient.prototype, "codecheck");
 request(ReactiveClient.prototype, "codeformat");
+request(ReactiveClient.prototype, "diagnostics");
 request(ReactiveClient.prototype, "close");
 request(ReactiveClient.prototype, "open");
 request(ReactiveClient.prototype, "filesChanged");
@@ -432,8 +433,9 @@ response(ReactiveClientEvents.prototype, "getteststartinfo", "/v2/getteststartin
 response(ReactiveClientEvents.prototype, "runtest", "/v2/runtest");
 response(ReactiveClientEvents.prototype, "autocomplete", "/autocomplete");
 response(ReactiveClientEvents.prototype, "changebuffer", "/changebuffer");
-response(ReactiveClientEvents.prototype, "codecheck", "/v2/codecheck");
+response(ReactiveClientEvents.prototype, "codecheck", "/codecheck");
 response(ReactiveClientEvents.prototype, "codeformat", "/codeformat");
+response(ReactiveClientEvents.prototype, "diagnostics", "/diagnostics");
 response(ReactiveClientEvents.prototype, "close", "/close");
 response(ReactiveClientEvents.prototype, "open", "/open");
 response(ReactiveClientEvents.prototype, "filesChanged", "/filesChanged");

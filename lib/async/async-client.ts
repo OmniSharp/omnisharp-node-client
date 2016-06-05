@@ -306,6 +306,7 @@ request(AsyncClient.prototype, "autocomplete");
 request(AsyncClient.prototype, "changebuffer");
 request(AsyncClient.prototype, "codecheck");
 request(AsyncClient.prototype, "codeformat");
+request(AsyncClient.prototype, "diagnostics");
 request(AsyncClient.prototype, "close");
 request(AsyncClient.prototype, "open");
 request(AsyncClient.prototype, "filesChanged");

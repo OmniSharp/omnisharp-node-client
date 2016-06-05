@@ -89,8 +89,9 @@ makeObservable(ReactiveCombinationClient.prototype, "getteststartinfo", "/v2/get
 makeObservable(ReactiveCombinationClient.prototype, "runtest", "/v2/runtest");
 makeObservable(ReactiveCombinationClient.prototype, "autocomplete", "/autocomplete");
 makeObservable(ReactiveCombinationClient.prototype, "changebuffer", "/changebuffer");
-makeObservable(ReactiveCombinationClient.prototype, "codecheck", "/v2/codecheck");
+makeObservable(ReactiveCombinationClient.prototype, "codecheck", "/codecheck");
 makeObservable(ReactiveCombinationClient.prototype, "codeformat", "/codeformat");
+makeObservable(ReactiveCombinationClient.prototype, "diagnostics", "/diagnostics");
 makeObservable(ReactiveCombinationClient.prototype, "close", "/close");
 makeObservable(ReactiveCombinationClient.prototype, "open", "/open");
 makeObservable(ReactiveCombinationClient.prototype, "filesChanged", "/filesChanged");

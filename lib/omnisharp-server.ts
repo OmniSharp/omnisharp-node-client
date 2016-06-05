@@ -93,6 +93,10 @@ export module Models {
         FileName: string;
         QuickFixes: Models.DiagnosticLocation[];
     }
+    export interface DiagnosticsRequest extends Models.Request {
+    }
+    export interface DiagnosticsResponse {
+    }
     export interface ErrorMessage {
         Text: string;
         FileName: string;
@@ -354,10 +358,6 @@ export module Models.V2 {
         Identifier: string;
         Name: string;
     }
-    export interface CodeCheckRequest extends Models.Request {
-    }
-    export interface CodeCheckResponse {
-    }
     export interface GetCodeActionsRequest extends Models.Request {
         Selection?: Models.V2.Range;
     }
@@ -487,10 +487,10 @@ export module Api {
         request(path: "/checkreadystatus", options?: RequestOptions): Observable<boolean>;
         request(path: "/close", request: Models.FileCloseRequest, options?: RequestOptions): Observable<Models.FileCloseResponse>;
         request(path: "/codecheck", request: Models.CodeCheckRequest, options?: RequestOptions): Observable<Models.QuickFixResponse>;
-        request(path: "/v2/codecheck", request: Models.V2.CodeCheckRequest, options?: RequestOptions): Observable<Models.V2.CodeCheckResponse>;
         request(path: "/codeformat", request: Models.CodeFormatRequest, options?: RequestOptions): Observable<Models.CodeFormatResponse>;
         request(path: "/currentfilemembersasflat", request: Models.MembersFlatRequest, options?: RequestOptions): Observable<Models.QuickFix[]>;
         request(path: "/currentfilemembersastree", request: Models.MembersTreeRequest, options?: RequestOptions): Observable<Models.FileMemberTree>;
+        request(path: "/diagnostics", request: Models.DiagnosticsRequest, options?: RequestOptions): Observable<Models.DiagnosticsResponse>;
         request(path: "/filesChanged", request: Models.Request[], options?: RequestOptions): Observable<Models.FilesChangedResponse>;
         request(path: "/findimplementations", request: Models.FindImplementationsRequest, options?: RequestOptions): Observable<Models.QuickFixResponse>;
         request(path: "/findsymbols", request: Models.FindSymbolsRequest, options?: RequestOptions): Observable<Models.QuickFixResponse>;
@@ -531,10 +531,11 @@ export module Api {
         checkalivestatus(options?: RequestOptions): Observable<boolean>;
         checkreadystatus(options?: RequestOptions): Observable<boolean>;
         close(request: Models.FileCloseRequest, options?: RequestOptions): Observable<Models.FileCloseResponse>;
-        codecheck(request: Models.V2.CodeCheckRequest, options?: RequestOptions): Observable<Models.V2.CodeCheckResponse>;
+        codecheck(request: Models.CodeCheckRequest, options?: RequestOptions): Observable<Models.QuickFixResponse>;
         codeformat(request: Models.CodeFormatRequest, options?: RequestOptions): Observable<Models.CodeFormatResponse>;
         currentfilemembersasflat(request: Models.MembersFlatRequest, options?: RequestOptions): Observable<Models.QuickFix[]>;
         currentfilemembersastree(request: Models.MembersTreeRequest, options?: RequestOptions): Observable<Models.FileMemberTree>;
+        diagnostics(request: Models.DiagnosticsRequest, options?: RequestOptions): Observable<Models.DiagnosticsResponse>;
         filesChanged(request: Models.Request[], options?: RequestOptions): Observable<Models.FilesChangedResponse>;
         findimplementations(request: Models.FindImplementationsRequest, options?: RequestOptions): Observable<Models.QuickFixResponse>;
         findsymbols(request: Models.FindSymbolsRequest, options?: RequestOptions): Observable<Models.QuickFixResponse>;
@@ -577,6 +578,7 @@ export module Api {
         codeformat(request: Models.CodeFormatRequest, options?: RequestOptions): Observable<Models.CodeFormatResponse>;
         currentfilemembersasflat(request: Models.MembersFlatRequest, options?: RequestOptions): Observable<Models.QuickFix[]>;
         currentfilemembersastree(request: Models.MembersTreeRequest, options?: RequestOptions): Observable<Models.FileMemberTree>;
+        diagnostics(request: Models.DiagnosticsRequest, options?: RequestOptions): Observable<Models.DiagnosticsResponse>;
         filesChanged(request: Models.Request[], options?: RequestOptions): Observable<Models.FilesChangedResponse>;
         findimplementations(request: Models.FindImplementationsRequest, options?: RequestOptions): Observable<Models.QuickFixResponse>;
         findsymbols(request: Models.FindSymbolsRequest, options?: RequestOptions): Observable<Models.QuickFixResponse>;
@@ -616,9 +618,6 @@ export module Api {
         if ("runtest" === name.toLowerCase()) {
             return "v2";
         }
-        if ("codecheck" === name.toLowerCase()) {
-            return "v2";
-        }
         if ("getcodeactions" === name.toLowerCase()) {
             return "v2";
         }
@@ -638,10 +637,10 @@ export module Events {
         listen(path: "/checkreadystatus"): Observable<Context<any, boolean>>;
         listen(path: "/close"): Observable<Context<Models.FileCloseRequest, Models.FileCloseResponse>>;
         listen(path: "/codecheck"): Observable<Context<Models.CodeCheckRequest, Models.QuickFixResponse>>;
-        listen(path: "/v2/codecheck"): Observable<Context<Models.V2.CodeCheckRequest, Models.V2.CodeCheckResponse>>;
         listen(path: "/codeformat"): Observable<Context<Models.CodeFormatRequest, Models.CodeFormatResponse>>;
         listen(path: "/currentfilemembersasflat"): Observable<Context<Models.MembersFlatRequest, Models.QuickFix[]>>;
         listen(path: "/currentfilemembersastree"): Observable<Context<Models.MembersTreeRequest, Models.FileMemberTree>>;
+        listen(path: "/diagnostics"): Observable<Context<Models.DiagnosticsRequest, Models.DiagnosticsResponse>>;
         listen(path: "/filesChanged"): Observable<Context<Models.Request[], Models.FilesChangedResponse>>;
         listen(path: "/findimplementations"): Observable<Context<Models.FindImplementationsRequest, Models.QuickFixResponse>>;
         listen(path: "/findsymbols"): Observable<Context<Models.FindSymbolsRequest, Models.QuickFixResponse>>;
@@ -682,10 +681,11 @@ export module Events {
         checkalivestatus: Observable<Context<any, boolean>>;
         checkreadystatus: Observable<Context<any, boolean>>;
         close: Observable<Context<Models.FileCloseRequest, Models.FileCloseResponse>>;
-        codecheck: Observable<Context<Models.V2.CodeCheckRequest, Models.V2.CodeCheckResponse>>;
+        codecheck: Observable<Context<Models.CodeCheckRequest, Models.QuickFixResponse>>;
         codeformat: Observable<Context<Models.CodeFormatRequest, Models.CodeFormatResponse>>;
         currentfilemembersasflat: Observable<Context<Models.MembersFlatRequest, Models.QuickFix[]>>;
         currentfilemembersastree: Observable<Context<Models.MembersTreeRequest, Models.FileMemberTree>>;
+        diagnostics: Observable<Context<Models.DiagnosticsRequest, Models.DiagnosticsResponse>>;
         filesChanged: Observable<Context<Models.Request[], Models.FilesChangedResponse>>;
         findimplementations: Observable<Context<Models.FindImplementationsRequest, Models.QuickFixResponse>>;
         findsymbols: Observable<Context<Models.FindSymbolsRequest, Models.QuickFixResponse>>;
@@ -728,6 +728,7 @@ export module Events {
         codeformat: Observable<Context<Models.CodeFormatRequest, Models.CodeFormatResponse>>;
         currentfilemembersasflat: Observable<Context<Models.MembersFlatRequest, Models.QuickFix[]>>;
         currentfilemembersastree: Observable<Context<Models.MembersTreeRequest, Models.FileMemberTree>>;
+        diagnostics: Observable<Context<Models.DiagnosticsRequest, Models.DiagnosticsResponse>>;
         filesChanged: Observable<Context<Models.Request[], Models.FilesChangedResponse>>;
         findimplementations: Observable<Context<Models.FindImplementationsRequest, Models.QuickFixResponse>>;
         findsymbols: Observable<Context<Models.FindSymbolsRequest, Models.QuickFixResponse>>;
@@ -771,10 +772,10 @@ export module Events.Aggregate {
         listen(path: "/checkreadystatus"): Observable<CombinationKey<Context<any, boolean>>>;
         listen(path: "/close"): Observable<CombinationKey<Context<Models.FileCloseRequest, Models.FileCloseResponse>>[]>;
         listen(path: "/codecheck"): Observable<CombinationKey<Context<Models.CodeCheckRequest, Models.QuickFixResponse>>[]>;
-        listen(path: "/v2/codecheck"): Observable<CombinationKey<Context<Models.V2.CodeCheckRequest, Models.V2.CodeCheckResponse>>[]>;
         listen(path: "/codeformat"): Observable<CombinationKey<Context<Models.CodeFormatRequest, Models.CodeFormatResponse>>[]>;
         listen(path: "/currentfilemembersasflat"): Observable<CombinationKey<Context<Models.MembersFlatRequest, Models.QuickFix[]>>[]>;
         listen(path: "/currentfilemembersastree"): Observable<CombinationKey<Context<Models.MembersTreeRequest, Models.FileMemberTree>>[]>;
+        listen(path: "/diagnostics"): Observable<CombinationKey<Context<Models.DiagnosticsRequest, Models.DiagnosticsResponse>>[]>;
         listen(path: "/filesChanged"): Observable<CombinationKey<Context<Models.Request[], Models.FilesChangedResponse>>[]>;
         listen(path: "/findimplementations"): Observable<CombinationKey<Context<Models.FindImplementationsRequest, Models.QuickFixResponse>>[]>;
         listen(path: "/findsymbols"): Observable<CombinationKey<Context<Models.FindSymbolsRequest, Models.QuickFixResponse>>[]>;
@@ -815,10 +816,11 @@ export module Events.Aggregate {
         checkalivestatus: Observable<CombinationKey<Context<any, boolean>>>;
         checkreadystatus: Observable<CombinationKey<Context<any, boolean>>>;
         close: Observable<CombinationKey<Context<Models.FileCloseRequest, Models.FileCloseResponse>>[]>;
-        codecheck: Observable<CombinationKey<Context<Models.V2.CodeCheckRequest, Models.V2.CodeCheckResponse>>[]>;
+        codecheck: Observable<CombinationKey<Context<Models.CodeCheckRequest, Models.QuickFixResponse>>[]>;
         codeformat: Observable<CombinationKey<Context<Models.CodeFormatRequest, Models.CodeFormatResponse>>[]>;
         currentfilemembersasflat: Observable<CombinationKey<Context<Models.MembersFlatRequest, Models.QuickFix[]>>[]>;
         currentfilemembersastree: Observable<CombinationKey<Context<Models.MembersTreeRequest, Models.FileMemberTree>>[]>;
+        diagnostics: Observable<CombinationKey<Context<Models.DiagnosticsRequest, Models.DiagnosticsResponse>>[]>;
         filesChanged: Observable<CombinationKey<Context<Models.Request[], Models.FilesChangedResponse>>[]>;
         findimplementations: Observable<CombinationKey<Context<Models.FindImplementationsRequest, Models.QuickFixResponse>>[]>;
         findsymbols: Observable<CombinationKey<Context<Models.FindSymbolsRequest, Models.QuickFixResponse>>[]>;
@@ -861,6 +863,7 @@ export module Events.Aggregate {
         codeformat: Observable<CombinationKey<Context<Models.CodeFormatRequest, Models.CodeFormatResponse>>[]>;
         currentfilemembersasflat: Observable<CombinationKey<Context<Models.MembersFlatRequest, Models.QuickFix[]>>[]>;
         currentfilemembersastree: Observable<CombinationKey<Context<Models.MembersTreeRequest, Models.FileMemberTree>>[]>;
+        diagnostics: Observable<CombinationKey<Context<Models.DiagnosticsRequest, Models.DiagnosticsResponse>>[]>;
         filesChanged: Observable<CombinationKey<Context<Models.Request[], Models.FilesChangedResponse>>[]>;
         findimplementations: Observable<CombinationKey<Context<Models.FindImplementationsRequest, Models.QuickFixResponse>>[]>;
         findsymbols: Observable<CombinationKey<Context<Models.FindSymbolsRequest, Models.QuickFixResponse>>[]>;
