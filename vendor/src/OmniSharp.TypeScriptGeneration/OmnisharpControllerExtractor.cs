@@ -13,7 +13,7 @@ namespace OmniSharp.TypeScriptGeneration
     {
         public class ItemVersion
         {
-            public ItemVersion(int versionNumber, string version, string actionName, string path, string requestType, string returnType, string value, bool stringBased = false)
+            public ItemVersion(int versionNumber, string version, string actionName, string path, string requestType, string returnType, string value)
             {
                 Version = version;
                 Value = value;
@@ -22,7 +22,6 @@ namespace OmniSharp.TypeScriptGeneration
                 RequestType = requestType;
                 ReturnType = returnType;
                 Path = path;
-                StringBased = stringBased;
             }
 
             public string Version { get; set; }
@@ -32,14 +31,13 @@ namespace OmniSharp.TypeScriptGeneration
             public string Path { get; set; }
             public string RequestType { get; set; }
             public string ReturnType { get; set; }
-            public bool StringBased {get;set;}
         }
 
         public static IEnumerable<string> GetInterface()
         {
-            var methodStrings = GetMethods().Where(x => !x.StringBased).GroupBy(z => z.Version).ToDictionary(z => z.Key, z => z.GroupBy(x => x.ActionName).ToArray());
-            var eventStrings = GetEvents().Where(x => !x.StringBased).GroupBy(z => z.Version).ToDictionary(z => z.Key, z => z.GroupBy(x => x.ActionName).ToArray());
-            var aggregateEventStrings = GetAggregateEvents().Where(x => !x.StringBased).GroupBy(z => z.Version).ToDictionary(z => z.Key, z => z.GroupBy(x => x.ActionName).ToArray());
+            var methodStrings = GetMethods().GroupBy(z => z.Version).ToDictionary(z => z.Key, z => z.GroupBy(x => x.ActionName).ToArray());
+            var eventStrings = GetEvents().GroupBy(z => z.Version).ToDictionary(z => z.Key, z => z.GroupBy(x => x.ActionName).ToArray());
+            var aggregateEventStrings = GetAggregateEvents().GroupBy(z => z.Version).ToDictionary(z => z.Key, z => z.GroupBy(x => x.ActionName).ToArray());
 
             var keys = methodStrings.Keys;
 
@@ -47,27 +45,19 @@ namespace OmniSharp.TypeScriptGeneration
 
             yield return $"declare module {nameof(OmniSharp)}.Api {{\n";
 
-            var results1 = GetMethods().Where(x => x.StringBased).OrderBy(x => x.ActionName).Select(z => z.Value);
-            var methods1 = "        request(path: string, options?: RequestOptions): Observable<any>;\n        request(path: string, request?: any, options?: RequestOptions): Observable<any>;\n        " + string.Join("\n        ", results1) + "\n";
-            yield return $"    interface Common {{\n{methods1}    }}\n";
-
             foreach (var kvp in methodStrings)
             {
                 var key = kvp.Key;
                 var items = kvp.Value.ToList();
-                foreach (var item in GetMethods().Where(x => !x.StringBased).GroupBy(x => x.ActionName))
-                {
-                    if (items.Any(x => x.Key != item.Key))
-                    {
-                        items.Add(item);
-                    }
-                }
 
-                items = items.GroupBy(x => x.Key).Select(x => x.First()).ToList();
+                foreach (var previousKey in keys.TakeWhile(z => z != key).Reverse())
+                {
+                    items.AddRange(methodStrings[previousKey].Where(x => !items.Any(z => z.Key == x.Key)));
+                }
 
                 var results = items.SelectMany(x => x).OrderBy(x => x.ActionName).Select(z => z.Value);
                 var methods = "        " + string.Join("\n        ", results) + "\n";
-                yield return $"    interface {key.ToUpper()} extends Common {{\n{methods}    }}\n";
+                yield return $"    interface {key.ToUpper()} {{\n{methods}    }}\n";
             }
 
             var allVersions = methodStrings.SelectMany(x => x.Value).SelectMany(x => x).Select(x => x.Version)
@@ -96,52 +86,34 @@ namespace OmniSharp.TypeScriptGeneration
 
             yield return $"declare module {nameof(OmniSharp)}.Events {{\n";
 
-            results1 = GetEvents().Where(x => x.StringBased).OrderBy(x => x.ActionName).Select(z => z.Value);
-            var events1 = "        listen(path: string): Observable<any>;\n        " + string.Join("\n        ", results1) + "\n";
-            yield return $"    interface Common {{\n{events1}    }}\n";
-
             foreach (var kvp in eventStrings)
             {
                 var key = kvp.Key;
                 var items = kvp.Value.ToList();
 
-                foreach (var item in GetEvents().Where(x => !x.StringBased).GroupBy(x => x.ActionName))
+                foreach (var previousKey in keys.TakeWhile(z => z != key).Reverse())
                 {
-                    if (items.Any(x => x.Key != item.Key))
-                    {
-                        items.Add(item);
-                    }
+                    items.AddRange(eventStrings[previousKey].Where(x => !items.Any(z => z.Key == x.Key)));
                 }
-
-                items = items.GroupBy(x => x.Key).Select(x => x.First()).ToList();
 
                 var results = items.SelectMany(x => x).OrderBy(x => x.ActionName).Select(z => z.Value);
                 var events = "        " + string.Join("\n        ", results) + "\n";
-                yield return $"    interface {key.ToUpper()} extends Common {{\n{events}    }}\n";
+                yield return $"    interface {key.ToUpper()} {{\n{events}    }}\n";
             }
 
             yield return $"}}";
 
             yield return $"declare module {nameof(OmniSharp)}.Events.Aggregate {{\n";
 
-            results1 = GetAggregateEvents().Where(x => x.StringBased).OrderBy(x => x.ActionName).Select(z => z.Value);
-            events1 = "        listen(path: string): Observable<any>;\n        " + string.Join("\n        ", results1) + "\n";
-            yield return $"    interface Common {{\n{events1}    }}\n";
-
             foreach (var kvp in aggregateEventStrings)
             {
                 var key = kvp.Key;
                 var items = kvp.Value.ToList();
 
-                foreach (var item in GetAggregateEvents().Where(x => !x.StringBased).GroupBy(x => x.ActionName))
+                foreach (var previousKey in keys.TakeWhile(z => z != key).Reverse())
                 {
-                    if (items.Any(x => x.Key != item.Key))
-                    {
-                        items.Add(item);
-                    }
+                    items.AddRange(aggregateEventStrings[previousKey].Where(x => !items.Any(z => z.Key == x.Key)));
                 }
-
-                items = items.GroupBy(x => x.Key).Select(x => x.First()).ToList();
 
                 var results = items.SelectMany(x => x).OrderBy(x => x.ActionName).Select(z => z.Value);
                 var events = "        " + string.Join("\n        ", results) + "\n";
@@ -171,23 +143,19 @@ namespace OmniSharp.TypeScriptGeneration
                 if (method.ReturnArray)
                     returnType += "[]";
 
+                yield return new ItemVersion(versionNumber, version, actionName, method.Action, null, null, $"// '{actionName}'");
                 if (method.RequestType != null)
                 {
-                    yield return new ItemVersion(versionNumber, version, actionName, method.Action, requestType, returnType, $"request(path: \"/{method.Action}\", request: {requestType}, options?: RequestOptions): Observable<{returnType}>;", true);
                     yield return new ItemVersion(versionNumber, version, actionName, method.Action, requestType, returnType, $"{actionName}(request: {requestType}, options?: RequestOptions): Observable<{returnType}>;");
                 }
                 else
                 {
-                    yield return new ItemVersion(versionNumber, version, actionName, method.Action, requestType, returnType, $"request(path: \"/{method.Action}\", options?: RequestOptions): Observable<{returnType}>;", true);
                     yield return new ItemVersion(versionNumber, version, actionName, method.Action, requestType, returnType, $"{actionName}(): Observable<{returnType}, options?: RequestOptions>;");
                 }
             }
 
-            yield return new ItemVersion(1, "v1", "checkalivestatus", "checkalivestatus", "void", "boolean", $"request(path: \"/checkalivestatus\", options?: RequestOptions): Observable<boolean>;", true);
             yield return new ItemVersion(1, "v1", "checkalivestatus", "checkalivestatus", "void", "boolean", $"checkalivestatus(options?: RequestOptions): Observable<boolean>;");
-            yield return new ItemVersion(1, "v1", "checkreadystatus", "checkreadystatus", "void", "boolean", $"request(path: \"/checkreadystatus\", options?: RequestOptions): Observable<boolean>;", true);
             yield return new ItemVersion(1, "v1", "checkreadystatus", "checkreadystatus", "void", "boolean", $"checkreadystatus(options?: RequestOptions): Observable<boolean>;");
-            yield return new ItemVersion(1, "v1", "stopserver", "stopserver", "void", "boolean", $"request(path: \"/stopserver\", options?: RequestOptions): Observable<boolean>;", true);
             yield return new ItemVersion(1, "v1", "stopserver", "stopserver", "void", "boolean", $"stopserver(options?: RequestOptions): Observable<boolean>;");
         }
 
@@ -209,23 +177,19 @@ namespace OmniSharp.TypeScriptGeneration
                 if (method.ReturnArray)
                     returnType += "[]";
 
+                yield return new ItemVersion(versionNumber, version, actionName, method.Action, null, null, $"// '{actionName}'");
                 if (method.RequestType != null)
                 {
-                    yield return new ItemVersion(versionNumber, version, actionName, method.Action, requestType, returnType, $"listen(path: \"/{method.Action}\"): Observable<Context<{requestType}, {returnType}>>;", true);
                     yield return new ItemVersion(versionNumber, version, actionName, method.Action, requestType, returnType, $"{observeName}: Observable<Context<{requestType}, {returnType}>>;");
                 }
                 else
                 {
-                    yield return new ItemVersion(versionNumber, version, actionName, method.Action, requestType, returnType, $"listen(path: \"/{method.Action}\"): Observable<{returnType}>;", true);
                     yield return new ItemVersion(versionNumber, version, actionName, method.Action, requestType, returnType, $"{observeName}: Observable<{returnType}>;");
                 }
             }
 
-            yield return new ItemVersion(1, "v1", "checkalivestatus", "checkalivestatus", "void", "boolean", $"listen(path: \"/checkalivestatus\"): Observable<Context<any, boolean>>;", true);
             yield return new ItemVersion(1, "v1", "checkalivestatus", "checkalivestatus", "void", "boolean", $"checkalivestatus: Observable<Context<any, boolean>>;");
-            yield return new ItemVersion(1, "v1", "checkreadystatus", "checkreadystatus", "void", "boolean", $"listen(path: \"/checkreadystatus\"): Observable<Context<any, boolean>>;", true);
             yield return new ItemVersion(1, "v1", "checkreadystatus", "checkreadystatus", "void", "boolean", $"checkreadystatus: Observable<Context<any, boolean>>;");
-            yield return new ItemVersion(1, "v1", "stopserver", "stopserver", "void", "boolean", $"listen(path: \"/stopserver\"): Observable<Context<any, boolean>>;", true);
             yield return new ItemVersion(1, "v1", "stopserver", "stopserver", "void", "boolean", $"stopserver: Observable<Context<any, boolean>>;");
         }
 
@@ -247,23 +211,19 @@ namespace OmniSharp.TypeScriptGeneration
                 if (method.ReturnArray)
                     returnType += "[]";
 
+                yield return new ItemVersion(versionNumber, version, actionName, method.Action, null, null, $"// '{actionName}'");
                 if (method.RequestType != null)
                 {
-                    yield return new ItemVersion(versionNumber, version, actionName, method.Action, requestType, returnType, $"listen(path: \"/{method.Action}\"): Observable<CombinationKey<Context<{requestType}, {returnType}>>[]>;", true);
                     yield return new ItemVersion(versionNumber, version, actionName, method.Action, requestType, returnType, $"{observeName}: Observable<CombinationKey<Context<{requestType}, {returnType}>>[]>;");
                 }
                 else
                 {
-                    yield return new ItemVersion(versionNumber, version, actionName, method.Action, requestType, returnType, $"listen(path: \"/{method.Action}\"): Observable<CombinationKey<{returnType}>[]>;", true);
                     yield return new ItemVersion(versionNumber, version, actionName, method.Action, requestType, returnType, $"{observeName}: Observable<CombinationKey<{returnType}>[]>;");
                 }
             }
 
-            yield return new ItemVersion(1, "v1", "checkalivestatus", "checkalivestatus", "void", "boolean", $"listen(path: \"/checkalivestatus\"): Observable<CombinationKey<Context<any, boolean>>>;", true);
             yield return new ItemVersion(1, "v1", "checkalivestatus", "checkalivestatus", "void", "boolean", $"checkalivestatus: Observable<CombinationKey<Context<any, boolean>>>;");
-            yield return new ItemVersion(1, "v1", "checkreadystatus", "checkreadystatus", "void", "boolean", $"listen(path: \"/checkreadystatus\"): Observable<CombinationKey<Context<any, boolean>>>;", true);
             yield return new ItemVersion(1, "v1", "checkreadystatus", "checkreadystatus", "void", "boolean", $"checkreadystatus: Observable<CombinationKey<Context<any, boolean>>>;");
-            yield return new ItemVersion(1, "v1", "stopserver", "stopserver", "void", "boolean", $"listen(path: \"/stopserver\"): Observable<CombinationKey<Context<any, boolean>>>;", true);
             yield return new ItemVersion(1, "v1", "stopserver", "stopserver", "void", "boolean", $"stopserver: Observable<CombinationKey<Context<any, boolean>>>;");
         }
 

@@ -15,7 +15,7 @@ namespace OmniSharp.TypeScriptGeneration
             var methods = "        " + string.Join("\n        ", GetEvents().Select(x => x.Value)) + "\n";
             var aggregateMethods = "        " + string.Join("\n        ", GetAggregateEvents().Select(x => x.Value)) + "\n";
 
-            return $"declare module {nameof(OmniSharp)} {{\n    interface Events {{\n        listen(path: string): Observable<any>;\n{methods}    }}\n}}\ndeclare module {nameof(OmniSharp)}.Aggregate {{\n    interface Events {{\n        listen(path: string): Observable<any>;\n{aggregateMethods}    }}\n}}";
+            return $"declare module {nameof(OmniSharp)} {{\n    interface Events {{\n{methods}    }}\n}}\ndeclare module {nameof(OmniSharp)}.Aggregate {{\n    interface Events {{\n{aggregateMethods}    }}\n}}";
         }
 
         private static string GetEventReturnType(string propertyName)
@@ -60,17 +60,6 @@ namespace OmniSharp.TypeScriptGeneration
                 {
                     Name = eventName,
                     ReturnType = GetEventReturnType(property.Name),
-                    Value = $"listen(path: \"{eventName}\"): Observable<{GetEventReturnType(property.Name)}>;"
-                };
-            }
-
-            foreach (var property in properties)
-            {
-                var eventName = property.Name.ToLowerInvariant()[0] + property.Name.Substring(1);
-                yield return new EventItem()
-                {
-                    Name = eventName,
-                    ReturnType = GetEventReturnType(property.Name),
                     Value = $"{eventName}: Observable<{GetEventReturnType(property.Name)}>;"
                 };
             }
@@ -79,17 +68,6 @@ namespace OmniSharp.TypeScriptGeneration
         public static IEnumerable<EventItem> GetAggregateEvents()
         {
             var properties = typeof(EventTypes).GetFields(BindingFlags.Static | BindingFlags.Public);
-
-            foreach (var property in properties)
-            {
-                var eventName = property.Name.ToLowerInvariant()[0] + property.Name.Substring(1);
-                yield return new EventItem()
-                {
-                    Name = eventName,
-                    ReturnType = GetEventReturnType(property.Name),
-                    Value = $"listen(path: \"{eventName}\"): Observable<CombinationKey<{GetEventReturnType(property.Name)}>[]>;"
-                };
-            }
 
             foreach (var property in properties)
             {
