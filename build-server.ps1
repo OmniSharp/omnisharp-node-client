@@ -1,4 +1,4 @@
-<#$OMNISHARP_ROSLYN_VERSION=(Get-Content package.json | ConvertFrom-Json).'omnisharp-roslyn'
+$OMNISHARP_ROSLYN_VERSION=(Get-Content package.json | ConvertFrom-Json).'omnisharp-roslyn'
 
 Remove-Item vendor/omnisharp-roslyn -Recurse -Force
 mkdir vendor/omnisharp-roslyn
@@ -11,7 +11,7 @@ $dir = (gci . -Directory)[0].FullName;
 Copy-Item $dir\* . -Recurse
 Remove-Item $dir -Recurse
 dotnet restore
-popd#>
+popd
 
 pushd vendor/src/OmniSharp.TypeScriptGeneration
 dotnet restore
