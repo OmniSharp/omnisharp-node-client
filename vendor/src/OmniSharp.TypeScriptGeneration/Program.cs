@@ -48,7 +48,7 @@ declare module {OmnisharpControllerExtractor.InferNamespace(typeof(Request)).Tri
     interface WorkspaceInformationResponse {{
         DotNet: OmniSharp.Models.DotNetWorkspaceInformation;
         MSBuild: OmniSharp.Models.MsBuildWorkspaceInformation;
-        ScriptCs: OmniSharp.ScriptCs.ScriptCsContext;
+        ScriptCs: OmniSharp.ScriptCs.ScriptCsContextModel;
     }}
 }}
             ";
@@ -111,11 +111,11 @@ declare module {OmnisharpControllerExtractor.InferNamespace(typeof(Request)).Tri
                 typeof(OmniSharp.Startup).Assembly,
                 typeof(OmniSharp.Models.Request).Assembly,
                 typeof(OmniSharp.DotNet.Models.DotNetFramework).Assembly,
-                typeof(OmniSharp.Models.MSBuildProject).Assembly,
+                //typeof(OmniSharp.Models.MSBuildProject).Assembly,
                 typeof(OmniSharp.NuGet.OmniSharpSourceRepositoryProvider).Assembly,
                 typeof(OmniSharp.Roslyn.BufferManager).Assembly,
                 typeof(OmniSharp.Roslyn.CSharp.Services.CodeActions.RoslynCodeActionProvider).Assembly,
-                typeof(OmniSharp.ScriptCs.ScriptCsContext).Assembly,
+                typeof(OmniSharp.ScriptCs.ScriptCsContextModel).Assembly,
                 typeof(OmniSharp.Stdio.StdioServer).Assembly,
             }
                 .SelectMany(x => x.GetTypes())
@@ -139,9 +139,9 @@ declare module {OmnisharpControllerExtractor.InferNamespace(typeof(Request)).Tri
                     return x;
                 });
 
-            var scriptCs = typeof(OmniSharp.ScriptCs.ScriptCsContext);
+            var scriptCs = typeof(OmniSharp.ScriptCs.ScriptCsContextModel);
 
-            return models.Union(stdioProtocol).Union(new[] { typeof(OmniSharp.ScriptCs.ScriptCsContext) }).ToArray();
+            return models.Union(stdioProtocol).Union(new[] { typeof(OmniSharp.ScriptCs.ScriptCsContextModel) }).ToArray();
         }
     }
 }

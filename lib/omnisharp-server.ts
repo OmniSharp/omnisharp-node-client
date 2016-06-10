@@ -466,7 +466,7 @@ export module Stdio.Protocol {
 export module ScriptCs {
     export interface ScriptCsContextModel {
         CsxFilesBeingProcessed: string[];
-        CsxFileProjects: { [key: string]: ; };
+        CsxFileProjects: { [key: string]: Roslyn.Models.ProjectInfoModel; };
         CsxReferences: { [key: string]: Roslyn.Models.ReferenceModel[]; };
         CsxLoadReferences: { [key: string]: Roslyn.Models.ProjectInfoModel[]; };
         CsxUsings: { [key: string]: string; };
@@ -477,28 +477,25 @@ export module ScriptCs {
     }
 }
 
-    export const enum TestCommandType {
-        All = 0,
-        Fixture = 1,
-        Single = 2
-    }
+export const enum TestCommandType {
+    All = 0,
+    Fixture = 1,
+    Single = 2
+}
 
 
 
-    export interface Context<TRequest, TResponse>
-    {
-        request: TRequest;
-        response: TResponse;
-    }
-    export interface RequestOptions
-    {
-        silent?: boolean;
-    }
-    export interface CombinationKey<T>
-    {
-        key: string;
-        value: T;
-    }
+export interface Context<TRequest, TResponse> {
+    request: TRequest;
+    response: TResponse;
+}
+export interface RequestOptions {
+    silent?: boolean;
+}
+export interface CombinationKey<T> {
+    key: string;
+    value: T;
+}
 
 export module Api {
 
@@ -922,27 +919,27 @@ export module Events.Aggregate {
 
 }
 
-    export interface Events {
-        listen(path: string): Observable<any>;
-        listen(path: "projectAdded"): Observable<Models.ProjectInformationResponse>;
-        listen(path: "projectChanged"): Observable<Models.ProjectInformationResponse>;
-        listen(path: "projectRemoved"): Observable<Models.ProjectInformationResponse>;
-        listen(path: "error"): Observable<Models.ErrorMessage>;
-        listen(path: "diagnostic"): Observable<Models.DiagnosticMessage>;
-        listen(path: "msBuildProjectDiagnostics"): Observable<Models.MSBuildProjectDiagnostics>;
-        listen(path: "packageRestoreStarted"): Observable<Models.PackageRestoreMessage>;
-        listen(path: "packageRestoreFinished"): Observable<Models.PackageRestoreMessage>;
-        listen(path: "unresolvedDependencies"): Observable<Models.UnresolvedDependenciesMessage>;
-        projectAdded: Observable<Models.ProjectInformationResponse>;
-        projectChanged: Observable<Models.ProjectInformationResponse>;
-        projectRemoved: Observable<Models.ProjectInformationResponse>;
-        error: Observable<Models.ErrorMessage>;
-        diagnostic: Observable<Models.DiagnosticMessage>;
-        msBuildProjectDiagnostics: Observable<Models.MSBuildProjectDiagnostics>;
-        packageRestoreStarted: Observable<Models.PackageRestoreMessage>;
-        packageRestoreFinished: Observable<Models.PackageRestoreMessage>;
-        unresolvedDependencies: Observable<Models.UnresolvedDependenciesMessage>;
-    }
+export interface Events {
+    listen(path: string): Observable<any>;
+    listen(path: "projectAdded"): Observable<Models.ProjectInformationResponse>;
+    listen(path: "projectChanged"): Observable<Models.ProjectInformationResponse>;
+    listen(path: "projectRemoved"): Observable<Models.ProjectInformationResponse>;
+    listen(path: "error"): Observable<Models.ErrorMessage>;
+    listen(path: "diagnostic"): Observable<Models.DiagnosticMessage>;
+    listen(path: "msBuildProjectDiagnostics"): Observable<Models.MSBuildProjectDiagnostics>;
+    listen(path: "packageRestoreStarted"): Observable<Models.PackageRestoreMessage>;
+    listen(path: "packageRestoreFinished"): Observable<Models.PackageRestoreMessage>;
+    listen(path: "unresolvedDependencies"): Observable<Models.UnresolvedDependenciesMessage>;
+    projectAdded: Observable<Models.ProjectInformationResponse>;
+    projectChanged: Observable<Models.ProjectInformationResponse>;
+    projectRemoved: Observable<Models.ProjectInformationResponse>;
+    error: Observable<Models.ErrorMessage>;
+    diagnostic: Observable<Models.DiagnosticMessage>;
+    msBuildProjectDiagnostics: Observable<Models.MSBuildProjectDiagnostics>;
+    packageRestoreStarted: Observable<Models.PackageRestoreMessage>;
+    packageRestoreFinished: Observable<Models.PackageRestoreMessage>;
+    unresolvedDependencies: Observable<Models.UnresolvedDependenciesMessage>;
+}
 
 export module Aggregate {
     export interface Events {
@@ -980,4 +977,4 @@ export module Models {
         ScriptCs: ScriptCs.ScriptCsContextModel;
     }
 }
-            
+

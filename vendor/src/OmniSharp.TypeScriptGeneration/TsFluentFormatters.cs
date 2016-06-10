@@ -21,13 +21,13 @@ namespace OmniSharp.TypeScriptGeneration
             if (propertyType.IsGenericType && (propertyType.GetGenericTypeDefinition() == typeof(IDictionary<,>) || propertyType.GetGenericTypeDefinition() == typeof(Dictionary<,>)))
             {
                 var valueType = propertyType.GetGenericArguments()[1];
-                var valueString = "";
+                var valueString = propertyType.FullName;
                 if (valueType.Name.StartsWith(nameof(IEnumerable), StringComparison.Ordinal))
                 {
                     var v2 = valueType.GetGenericArguments()[0];
                     if (v2 == typeof(string))
                     {
-                        valueString = "string";
+                        valueString = "string[]";
                     }
                     else
                     {
