@@ -98,8 +98,7 @@ preconditions["/v2/runcodeaction"] = [
 
 // OmniSharp.Models.UpdateBufferRequest
 preconditions["/updatebuffer"] = [
-    isNotNull(`FileName`),
-    isNotNull(`Buffer`)
+    isNotNull(`FileName`)
 ];
 
 // OmniSharp.Models.ChangeBufferRequest

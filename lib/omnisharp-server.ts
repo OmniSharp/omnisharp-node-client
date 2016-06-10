@@ -421,6 +421,24 @@ export module Models {
         RuntimePath: string;
     }
 }
+export module Roslyn.Models {
+    export interface ReferenceModel {
+        Id: string;
+        Display: string;
+        FullPath: string;
+        Aliases: string[];
+        Kind: string;
+    }
+    export interface ProjectInfoModel {
+        FilePath: string;
+        AssemblyName: string;
+        Name: string;
+        Language: string;
+        AnalyzerReferences: Roslyn.Models.ReferenceModel[];
+        MetadataReferences: Roslyn.Models.ReferenceModel[];
+        ProjectReferences: Roslyn.Models.ReferenceModel[];
+    }
+}
 export module Stdio.Protocol {
     export interface EventPacket extends Stdio.Protocol.Packet {
         Event: string;
