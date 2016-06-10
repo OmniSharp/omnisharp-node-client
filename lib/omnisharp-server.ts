@@ -466,10 +466,10 @@ export module Stdio.Protocol {
 export module ScriptCs {
     export interface ScriptCsContextModel {
         CsxFilesBeingProcessed: string[];
-        CsxFileProjects: System.Collections.Generic.KeyValuePair<string, Roslyn.Models.ProjectInfoModel>;
-        CsxReferences: System.Collections.Generic.KeyValuePair<string, Roslyn.Models.ReferenceModel[]>;
-        CsxLoadReferences: System.Collections.Generic.KeyValuePair<string, Roslyn.Models.ProjectInfoModel[]>;
-        CsxUsings: System.Collections.Generic.KeyValuePair<string, string[]>;
+        CsxFileProjects: { [key: string]: ; };
+        CsxReferences: { [key: string]: Roslyn.Models.ReferenceModel[]; };
+        CsxLoadReferences: { [key: string]: Roslyn.Models.ProjectInfoModel[]; };
+        CsxUsings: { [key: string]: string; };
         ScriptPacks: string[];
         CommonReferences: Roslyn.Models.ReferenceModel[];
         CommonUsings: string[];

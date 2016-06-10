@@ -12,42 +12,62 @@ namespace OmniSharp.TypeScriptGeneration
     {
         public static string FormatPropertyType(TsProperty property, string memberTypeName)
         {
-            if (property.MemberInfo.DeclaringType.GetProperty(property.MemberInfo.Name).PropertyType == typeof(IDictionary<string, string>))
+            Type propertyType = property.MemberInfo.DeclaringType.GetProperty(property.MemberInfo.Name).PropertyType;
+            if (propertyType == typeof(IDictionary<string, string>) || propertyType == typeof(Dictionary<string, string>))
             {
-                return "{ [key: string]: string }";
+                return "{ [key: string]: string; }";
             }
 
-            if (property.MemberInfo.DeclaringType.GetProperty(property.MemberInfo.Name).PropertyType == typeof(Guid))
+            if (propertyType.IsGenericType && (propertyType.GetGenericTypeDefinition() == typeof(IDictionary<,>) || propertyType.GetGenericTypeDefinition() == typeof(Dictionary<,>)))
+            {
+                var valueType = propertyType.GetGenericArguments()[1];
+                var valueString = "";
+                if (valueType.Name.StartsWith(nameof(IEnumerable), StringComparison.Ordinal))
+                {
+                    var v2 = valueType.GetGenericArguments()[0];
+                    if (v2 == typeof(string))
+                    {
+                        valueString = "string";
+                    }
+                    else
+                    {
+                        valueString = v2.FullName + "[]";
+                    }
+                }
+                return $"{{ [key: string]: {valueString}; }}";
+            }
+
+            if (propertyType == typeof(Guid))
             {
                 return "string";
             }
 
-            if (property.MemberInfo.DeclaringType.GetProperty(property.MemberInfo.Name).PropertyType == typeof(Stream))
+            if (propertyType == typeof(Stream))
             {
                 return "any";
             }
 
-            if (property.MemberInfo.DeclaringType.GetProperty(property.MemberInfo.Name).PropertyType.Name.EndsWith("[]", StringComparison.Ordinal))
+            if (propertyType.Name.EndsWith("[]", StringComparison.Ordinal))
             {
                 return memberTypeName + "[]";
             }
 
-            if (property.MemberInfo.DeclaringType.GetProperty(property.MemberInfo.Name).PropertyType.Name.StartsWith(nameof(IEnumerable), StringComparison.Ordinal))
+            if (propertyType.Name.StartsWith(nameof(IEnumerable), StringComparison.Ordinal))
             {
                 return memberTypeName + "[]";
             }
 
-            if (property.MemberInfo.DeclaringType.GetProperty(property.MemberInfo.Name).PropertyType.Name.StartsWith(nameof(IList), StringComparison.Ordinal))
+            if (propertyType.Name.StartsWith(nameof(IList), StringComparison.Ordinal))
             {
                 return memberTypeName + "[]";
             }
 
-            if (property.MemberInfo.DeclaringType.GetProperty(property.MemberInfo.Name).PropertyType.Name.StartsWith(nameof(HashSet<object>), StringComparison.Ordinal))
+            if (propertyType.Name.StartsWith(nameof(HashSet<object>), StringComparison.Ordinal))
             {
                 return memberTypeName + "[]";
             }
 
-            if (property.MemberInfo.DeclaringType.GetProperty(property.MemberInfo.Name).PropertyType.Name.StartsWith(nameof(ICollection), StringComparison.Ordinal))
+            if (propertyType.Name.StartsWith(nameof(ICollection), StringComparison.Ordinal))
             {
                 return memberTypeName + "[]";
             }
@@ -63,16 +83,18 @@ namespace OmniSharp.TypeScriptGeneration
                 return "Arguments";
             }
 
+            var declaringType = property.MemberInfo.DeclaringType;
+
             // Request type arguments are optional
             // TODO: Leverage [Required] to know what is needed and not?
-            if (!property.MemberInfo.DeclaringType.Name.Contains(nameof(Packet)) &&
-                property.MemberInfo.DeclaringType.Name.Contains(nameof(Request)))
+            if (!declaringType.Name.Contains(nameof(Packet)) &&
+                declaringType.Name.Contains(nameof(Request)))
             {
                 return $"{property.Name}?";
             }
 
-            if (property.MemberInfo.DeclaringType.Name == nameof(Packet) &&
-                property.MemberInfo.DeclaringType.GetProperty(property.MemberInfo.Name).Name == nameof(Packet.Type))
+            if (declaringType.Name == nameof(Packet) &&
+                declaringType.GetProperty(property.MemberInfo.Name).Name == nameof(Packet.Type))
             {
                 return $"{property.Name}?";
             }
