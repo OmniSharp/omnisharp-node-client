@@ -21,25 +21,9 @@ describe("Commands", function() {
                 });
             }).to.throw(/must not be null/);
         });
-        it("should throw if Buffer is null", function() {
-            expect(() => {
-                server.updatebuffer({
-                    FileName: "",
-                    Buffer: null
-                });
-            }).to.throw(/must not be null/);
-        });
-        it("should not throw of required fields are set", function() {
-            expect(() => {
-                server.updatebuffer({
-                    FileName: "",
-                    Buffer: ""
-                });
-            }).to.not.throw(/must not be null/);
-        });
     });
 
-    describe("updatebuffer", function() {
+    describe("changebuffer", function() {
         it("should throw if FileName is null", function() {
             expect(() => {
                 server.changebuffer({
