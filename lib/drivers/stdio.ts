@@ -51,7 +51,12 @@ export class StdioDriver implements IDriver {
         this._plugins = plugins;
         this._version = version;
         this._onEvent = onEvent || noop;
-        this._onState = (state) => { if (state !== this.currentState) (onState || noop)(state);};
+        this._onState = (state) => {
+            if (state !== this.currentState) {
+                (onState || noop)(state);
+                this.currentState = state;
+            }
+        };
         this._onCommand = onCommand || noop;
 
         this._runtimeContext = this._getRuntimeContext();
