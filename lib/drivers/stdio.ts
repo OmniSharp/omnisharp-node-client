@@ -1,13 +1,12 @@
 import * as OmniSharp from "../omnisharp-server";
 import {IDriver, IDriverOptions, ILogger, Runtime, IOmnisharpPlugin} from "../enums";
-import {defaults, startsWith, noop} from "lodash";
+import {defaults, startsWith, noop, trimStart} from "lodash";
 import {DriverState} from "../enums";
 import cp, {ChildProcess} from "child_process";
 import * as readline from "readline";
 import {CompositeDisposable, Disposable} from "../disposables";
-import {Observable, Observer} from "rxjs";
+import {Observable, AsyncSubject} from "rxjs";
 import {RuntimeContext, isSupportedRuntime} from "../helpers/runtime";
-import {createObservable} from "../operators/create";
 
 let spawn = cp.spawn;
 if (process.platform === "win32") {
@@ -18,7 +17,7 @@ let env: any = defaults({ ATOM_SHELL_INTERNAL_RUN_AS_NODE: "1" }, process.env);
 export class StdioDriver implements IDriver {
     private _seq: number;
     private _process: ChildProcess;
-    private _outstandingRequests = new Map<number, Observer<any>>();
+    private _outstandingRequests = new Map<number, AsyncSubject<any>>();
     private _projectPath: string;
     private _additionalArguments: string[];
     private _disposable = new CompositeDisposable();
@@ -52,7 +51,7 @@ export class StdioDriver implements IDriver {
         this._plugins = plugins;
         this._version = version;
         this._onEvent = onEvent || noop;
-        this._onState = (state) => { if (state !== this.currentState) (onState || noop)(state); };
+        this._onState = (state) => { if (state !== this.currentState) (onState || noop)(state);};
         this._onCommand = onCommand || noop;
 
         this._runtimeContext = this._getRuntimeContext();
@@ -216,27 +215,30 @@ export class StdioDriver implements IDriver {
             return <any>Observable.throw<any>(new Error("Server is not connected, erroring out"));
         }
 
-        const observable = createObservable<TResponse>(observer => {
-            const sequence = this._seq++;
-            const packet: OmniSharp.Stdio.Protocol.RequestPacket = {
-                Command: command,
-                Seq: sequence,
-                Arguments: request
-            };
+        const sequence = this._seq++;
+        console.log(command, trimStart(command, "/"));
+        const packet: OmniSharp.Stdio.Protocol.RequestPacket = {
+            Command: trimStart(command, "/"),
+            Seq: sequence,
+            Arguments: request
+        };
 
-            this._outstandingRequests.set(sequence, observer);
-            this._process.stdin.write(JSON.stringify(packet) + "\n", "utf8");
-        }).timeout(this._timeout, Observable.throw<any>("Request timed out")).cache(1);
+        const subject = new AsyncSubject<TResponse>();
+        const response = subject
+            .asObservable()
+            .timeout(this._timeout, Observable.throw<any>("Request timed out"));
 
         // Doing a little bit of tickery here
         // Going to return this Observable, as if it were promise like.
         // And we will only commit to the promise once someone calls then on it.
         // This way another client, can cast the result to an observable, and gain cancelation
-        const promiseLike: PromiseLike<TResponse> = <any>observable;
+        const promiseLike: PromiseLike<TResponse> = <any>response;
         promiseLike.then = (fulfilled: Function, rejected: Function) => {
-            return observable.toPromise().then(<any>fulfilled, <any>rejected);
+            return response.toPromise().then(<any>fulfilled, <any>rejected);
         };
 
+        this._outstandingRequests.set(sequence, subject);
+        this._process.stdin.write(JSON.stringify(packet) + "\n", "utf8");
         return promiseLike;
     }
 
