@@ -7,7 +7,10 @@ import {
     createConnection, IConnection, TextDocumentSyncKind,
     TextDocuments, TextDocument, Diagnostic, DiagnosticSeverity,
     InitializeParams, InitializeResult, TextDocumentPositionParams,
-    CompletionItem, CompletionItemKind, CodeLens
+    CompletionItem, CompletionItemKind, CodeLens, Hover, Location,
+    SignatureHelp, SignatureInformation, ParameterInformation,
+    SymbolInformation, SymbolKind, Range, Command, TextEdit,
+    WorkspaceEdit
 } from "vscode-languageserver";
 
 // Create a connection for the server. The connection uses Node's IPC as a transport
@@ -21,6 +24,36 @@ connection.onInitialize((params): InitializeResult => {
         projectPath: params.rootPath,
     });
     client.connect();
+
+
+
+    function toDiagnostic(item: Models.DiagnosticLocation) {
+        return <Diagnostic>{
+            severity: DiagnosticSeverity[item.LogLevel],
+            message: item.Text,
+            range: {
+                start: {
+                    line: item.Line,
+                    character: item.Column
+                },
+                end: {
+                    line: item.EndLine,
+                    character: item.EndColumn
+                }
+            }
+        };
+    }
+
+    client.observe.diagnostic.subscribe(({Results}) => {
+        _.each(Results, result => {
+            connection.sendDiagnostics({
+                uri: result.FileName,
+                diagnostics: _.map(result.QuickFixes, toDiagnostic)
+            });
+        });
+    });
+    // Kick code checking on.
+    client.request("/v2/codecheck", {});
 
     return {
         capabilities: {
@@ -113,12 +146,21 @@ connection.onDidCloseTextDocument(({textDocument}) => {
     });
 });
 
+connection.onDidSaveTextDocument((x) => {
+    client.updatebuffer({
+        FileName: x.textDocument.uri,
+        FromDisk: true
+    });
+});
+
 connection.onDefinition(({textDocument, position}) => {
     return client.gotodefinition({
         FileName: textDocument.uri,
         Column: position.character,
         Line: position.line
-    });
+    })
+        .map(getLocationPoint)
+        .toPromise();
 });
 
 connection.onCompletion(({textDocument, position}: TextDocumentPositionParams) => {
@@ -141,45 +183,21 @@ connection.onCompletion(({textDocument, position}: TextDocumentPositionParams) =
             kind: CompletionItemKind[value.Kind],
             sortText: value.DisplayText
         };
-    }));
+    }))
+        .toPromise();
 });
-
-function toDiagnostic(item: Models.DiagnosticLocation) {
-    return <Diagnostic>{
-        severity: DiagnosticSeverity[item.LogLevel],
-        message: item.Text,
-        range: {
-            start: {
-                line: item.Line,
-                character: item.Column
-            },
-            end: {
-                line: item.EndLine,
-                character: item.EndColumn
-            }
-        }
-    };
-}
-
-client.observe.diagnostic.subscribe(({Results}) => {
-    _.each(Results, result => {
-        connection.sendDiagnostics({
-            uri: result.FileName,
-            diagnostics: _.map(result.QuickFixes, toDiagnostic)
-        });
-    });
-});
-// Kick code checking on.
-client.request("/v2/codecheck", {});
 //connection.onCompletionResolve((x) => {});
-//connection.onDidSaveTextDocument((x) => {});
 
 connection.onHover(({textDocument, position}) => {
     return client.typelookup({
         FileName: textDocument.uri,
         Column: position.character,
         Line: position.line
-    });
+    })
+        .map(result => (<Hover>{
+            contents: result.Documentation,
+        }))
+        .toPromise();
 });
 
 connection.onSignatureHelp(({textDocument, position}) => {
@@ -187,7 +205,20 @@ connection.onSignatureHelp(({textDocument, position}) => {
         FileName: textDocument.uri,
         Column: position.character,
         Line: position.line
-    });
+    })
+        .map(result => (<SignatureHelp>{
+            activeParameter: result.ActiveParameter,
+            activeSignature: result.ActiveSignature,
+            signatures: _.map(result.Signatures, z => (<SignatureInformation>{
+                documentation: z.Documentation,
+                label: z.Label,
+                parameters: _.map(z.Parameters, param => (<ParameterInformation>{
+                    documentation: param.Documentation,
+                    label: param.Label,
+                }))
+            }))
+        }))
+        .toPromise();
 });
 
 connection.onReferences(({context, textDocument, position}) => {
@@ -196,14 +227,22 @@ connection.onReferences(({context, textDocument, position}) => {
         Column: position.character,
         Line: position.line,
         ExcludeDefinition: !context.includeDeclaration
-    });
+    })
+        .map(result => _.map(<Models.DiagnosticLocation[]>result.QuickFixes, getLocation))
+        .toPromise();
 });
 
 //connection.onDocumentHighlight((x) => {});
 //connection.onDocumentSymbol((x) => {});
 
 connection.onWorkspaceSymbol(({query}) => {
-    return client.findsymbols({ Filter: query });
+    return client.findsymbols({ Filter: query })
+        .map(results => _.map(<Models.SymbolLocation[]>results.QuickFixes, fix => (<SymbolInformation>{
+            kind: SymbolKind[fix.Kind] || SymbolKind.Variable,
+            name: fix.Text,
+            location: getLocation(fix)
+        })))
+        .toPromise();
 });
 
 connection.onCodeAction(({textDocument, range, context}) => {
@@ -219,7 +258,12 @@ connection.onCodeAction(({textDocument, range, context}) => {
                 Line: range.end.line
             }
         }
-    });
+    })
+        .map(z => _.map(z.CodeActions, action => (<Command>{
+            command: action.Identifier,
+            title: action.Name
+        })))
+        .toPromise();
 });
 
 connection.onCodeLens(({textDocument}) => {
@@ -234,19 +278,11 @@ connection.onCodeLens(({textDocument}) => {
                         Column: location.Column,
                         Line: location.Line,
                     },
-                    range: {
-                        start: {
-                            character: location.Column,
-                            line: location.Line,
-                        },
-                        end: {
-                            character: location.EndColumn,
-                            line: location.EndLine
-                        }
-                    }
+                    range: getRange(location)
                 };
             });
-        });
+        })
+        .toPromise();
 });
 
 connection.onCodeLensResolve((codeLens) => {
@@ -257,7 +293,8 @@ connection.onCodeLensResolve((codeLens) => {
                 command: ``
             };
             return codeLens;
-        });
+        })
+        .toPromise();
 });
 
 /*
@@ -276,7 +313,9 @@ connection.onDocumentRangeFormatting(({textDocument, options, range}) => {
         Line: range.start.line,
         EndColumn: range.end.character,
         EndLine: range.end.line,
-    });
+    })
+        .map(getTextEdits)
+        .toPromise();
 });
 
 connection.onDocumentOnTypeFormatting(({textDocument, options, position, ch}) => {
@@ -285,7 +324,9 @@ connection.onDocumentOnTypeFormatting(({textDocument, options, position, ch}) =>
         Character: ch,
         Line: position.line,
         Column: position.character
-    });
+    })
+        .map(getTextEdits)
+        .toPromise();
 });
 
 connection.onRenameRequest(({textDocument, position, newName}) => {
@@ -294,8 +335,55 @@ connection.onRenameRequest(({textDocument, position, newName}) => {
         Line: position.line,
         Column: position.character,
         RenameTo: newName
-    });
+    })
+        .map(item => {
+            const changes: { [uri: string]: TextEdit[]; } = {};
+            _.each(item.Changes, result => {
+                changes[result.FileName] = getTextEdits(result);
+            });
+            return { changes };
+        })
+        .toPromise();
 });
 
 // Listen on the connection
 connection.listen();
+
+
+function getRange(fix: { StartColumn: number; StartLine: number; EndColumn: number; EndLine: number; }): Range;
+function getRange(fix: { Column: number; Line: number; EndColumn: number; EndLine: number; }): Range;
+function getRange(fix: { Column: number; Line: number; StartColumn: number; StartLine: number; EndColumn: number; EndLine: number; }) {
+    return <Range>{
+        start: {
+            character: fix.Column || fix.StartColumn || 0,
+            line: fix.Line || fix.StartLine || 0
+        },
+        end: {
+            character: fix.EndColumn,
+            line: fix.EndLine
+        }
+    };
+}
+
+function getLocationPoint(fix: { Column: number; Line: number; FileName: string; }) {
+    return getLocation(_.assign(fix, { EndColumn: fix.Column, EndLine: fix.Line }));
+}
+
+function getLocation(fix: { Column: number; Line: number; EndColumn: number; EndLine: number; FileName: string; }) {
+    return <Location>{
+        uri: fix.FileName,
+        range: getRange(fix)
+    };
+}
+
+function getTextEdit(change: Models.LinePositionSpanTextChange) {
+    return <TextEdit>{
+        range: getRange(change),
+        newText: change.NewText,
+    };
+}
+
+
+function getTextEdits(response: { Changes: Models.LinePositionSpanTextChange[] }) {
+    return _.map(response.Changes, getTextEdit);
+}

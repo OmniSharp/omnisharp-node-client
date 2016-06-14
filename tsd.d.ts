@@ -7,3 +7,7 @@ declare module chai {
         isAbove(valueToCheck: number, valueToBeAbove: number, message?: string): void;
     }
 }
+
+declare interface Thenable<T> {
+    then(resolve: (value: T) => void, reject?: (error: any) => void): Thenable<T>;
+}
