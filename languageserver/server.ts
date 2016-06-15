@@ -1,6 +1,5 @@
 import {Models, ReactiveClient} from "../lib/omnisharp-client";
 import _ from "lodash";
-import {Observable} from "rxjs";
 
 import {
     IPCMessageReader, IPCMessageWriter,
@@ -9,8 +8,7 @@ import {
     InitializeParams, InitializeResult, TextDocumentPositionParams,
     CompletionItem, CompletionItemKind, CodeLens, Hover, Location,
     SignatureHelp, SignatureInformation, ParameterInformation,
-    SymbolInformation, SymbolKind, Range, Command, TextEdit,
-    WorkspaceEdit
+    SymbolInformation, SymbolKind, Range, Command, TextEdit
 } from "vscode-languageserver";
 
 // Create a connection for the server. The connection uses Node's IPC as a transport
@@ -78,7 +76,9 @@ connection.onInitialize((params): InitializeResult => {
             hoverProvider: true,
             referencesProvider: true,
             renameProvider: true,
-            signatureHelpProvider: true,
+            signatureHelpProvider: {
+                triggerCharacters: ["("]
+            },
             workspaceSymbolProvider: true
         }
     };
@@ -173,7 +173,8 @@ connection.onCompletion(({textDocument, position}: TextDocumentPositionParams) =
         WantImportableTypes: true,
         WantMethodHeader: true,
         WantReturnType: true,
-        WantSnippet: true
+        WantSnippet: true,
+        WordToComplete: ""
     }).map(x => _.map(x, value => {
         return <CompletionItem>{
             label: value.DisplayText,
@@ -349,7 +350,6 @@ connection.onRenameRequest(({textDocument, position, newName}) => {
 // Listen on the connection
 connection.listen();
 
-
 function getRange(fix: { StartColumn: number; StartLine: number; EndColumn: number; EndLine: number; }): Range;
 function getRange(fix: { Column: number; Line: number; EndColumn: number; EndLine: number; }): Range;
 function getRange(fix: { Column: number; Line: number; StartColumn: number; StartLine: number; EndColumn: number; EndLine: number; }) {
@@ -382,7 +382,6 @@ function getTextEdit(change: Models.LinePositionSpanTextChange) {
         newText: change.NewText,
     };
 }
-
 
 function getTextEdits(response: { Changes: Models.LinePositionSpanTextChange[] }) {
     return _.map(response.Changes, getTextEdit);
