@@ -1,4 +1,4 @@
-import {Models, ReactiveClient, Runtime} from "../lib/omnisharp-client";
+import {Models, ReactiveClient, Runtime, DriverState} from "../lib/omnisharp-client";
 import _ from "lodash";
 
 import {
@@ -17,7 +17,7 @@ let connection: IConnection = createConnection(new IPCMessageReader(process), ne
 // After the server has started the client sends an initilize request. The server receives
 // in the passed params the rootPath of the workspace plus the client capabilites.
 let client: ReactiveClient;
-connection.onInitialize((params): InitializeResult => {
+connection.onInitialize((params) => {
     client = new ReactiveClient({
         projectPath: params.rootPath,
         runtime: Runtime.CoreClr
@@ -54,35 +54,39 @@ connection.onInitialize((params): InitializeResult => {
     // Kick code checking on.
     client.request("/v2/codecheck", {});
 
-    return {
-        capabilities: {
-            textDocumentSync: TextDocumentSyncKind.Full,
-            // Not currently supported
-            //textDocumentSync: TextDocumentSyncKind.Incremental,
-            completionProvider: {
-                //resolveProvider: true
-            },
-            codeLensProvider: {
-                resolveProvider: true
-            },
-            definitionProvider: true,
-            codeActionProvider: true,
-            documentFormattingProvider: true,
-            documentOnTypeFormattingProvider: {
-                firstTriggerCharacter: "}",
-                moreTriggerCharacter: [";"]
-            },
-            documentRangeFormattingProvider: true,
-            //documentSymbolProvider: true,
-            hoverProvider: true,
-            referencesProvider: true,
-            renameProvider: true,
-            signatureHelpProvider: {
-                triggerCharacters: ["("]
-            },
-            workspaceSymbolProvider: true
-        }
-    };
+    return client.state
+        .filter(z => z === DriverState.Connected)
+        .take(1)
+        .map(() => ({
+            capabilities: {
+                textDocumentSync: TextDocumentSyncKind.Full,
+                // Not currently supported
+                //textDocumentSync: TextDocumentSyncKind.Incremental,
+                completionProvider: {
+                    //resolveProvider: true
+                },
+                codeLensProvider: {
+                    resolveProvider: true
+                },
+                definitionProvider: true,
+                codeActionProvider: true,
+                //documentFormattingProvider: true,
+                documentOnTypeFormattingProvider: {
+                    firstTriggerCharacter: "}",
+                    moreTriggerCharacter: [";"]
+                },
+                documentRangeFormattingProvider: true,
+                //documentSymbolProvider: true,
+                hoverProvider: true,
+                referencesProvider: true,
+                renameProvider: true,
+                signatureHelpProvider: {
+                    triggerCharacters: ["("]
+                },
+                workspaceSymbolProvider: true
+            }
+        }))
+        .toPromise();
 });
 
 connection.onExit(() => {
