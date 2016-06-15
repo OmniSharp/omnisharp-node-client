@@ -1,4 +1,4 @@
-import {Models, ReactiveClient} from "../lib/omnisharp-client";
+import {Models, ReactiveClient, Runtime} from "../lib/omnisharp-client";
 import _ from "lodash";
 
 import {
@@ -20,6 +20,7 @@ let client: ReactiveClient;
 connection.onInitialize((params): InitializeResult => {
     client = new ReactiveClient({
         projectPath: params.rootPath,
+        runtime: Runtime.CoreClr
     });
     client.connect();
 
