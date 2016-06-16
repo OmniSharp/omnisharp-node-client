@@ -9,7 +9,7 @@ import {
     CompletionItem, CompletionItemKind, CodeLens, Hover, Location,
     SignatureHelp, SignatureInformation, ParameterInformation,
     SymbolInformation, SymbolKind, Range, Command, TextEdit,
-    NotificationType
+    NotificationType, Files
 } from "vscode-languageserver";
 
 let connection: IConnection = createConnection(new StreamMessageReader(process.stdin), new StreamMessageWriter(process.stdout));
@@ -423,22 +423,14 @@ function getDiagnostic(item: Models.DiagnosticLocation) {
 }
 
 function fromUri(document: { uri: string; }) {
-    return fromUriString(document.uri);
-}
-
-function fromUriString(uri: string) {
-    uri = uri.replace("file://", "");
-    if (process.platform === "win32") {
-        uri = _.trimStart(uri, "/");
-    }
-    return decodeURIComponent(uri);
+    return Files.uriToFilePath(document.uri);
 }
 
 function toUri(result: { FileName: string; }) {
-    return toUriString(result.FileName);
+     return toUriString(result.FileName);
 }
 
-
+// TODO: this code isn't perfect
 function toUriString(path: string) {
-    return `file://${process.platform === "win32" ? "/" : ""}${path}`;
+    return `file://${process.platform === "win32" ? "/" : ""}${path.replace(":", encodeURIComponent(":"))}`;
 }
