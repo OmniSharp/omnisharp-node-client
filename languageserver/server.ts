@@ -7,6 +7,7 @@ import {
     TextDocuments, TextDocument, Diagnostic, DiagnosticSeverity,
     InitializeParams, InitializeResult, TextDocumentPositionParams,
     CompletionItem, CompletionItemKind, CodeLens, Hover, Location,
+    CompletionList,
     SignatureHelp, SignatureInformation, ParameterInformation,
     SymbolInformation, SymbolKind, Range, Command, TextEdit,
     NotificationType, Files
@@ -170,27 +171,31 @@ connection.onDefinition(({textDocument, position}) => {
 });
 
 connection.onCompletion(({textDocument, position}: TextDocumentPositionParams) => {
-    return client.autocomplete({
-        FileName: fromUri(textDocument),
-        Column: position.character,
-        Line: position.line,
-        WantDocumentationForEveryCompletionResult: true,
-        WantKind: true,
-        WantImportableTypes: true,
-        WantMethodHeader: true,
-        WantReturnType: true,
-        WantSnippet: true,
-        WordToComplete: ""
-    }).map(x => _.map(x, value => {
-        return <CompletionItem>{
-            label: value.DisplayText,
-            detail: value.Description,
-            documentation: value.MethodHeader,
-            filterText: value.CompletionText,
-            kind: CompletionItemKind[value.Kind],
-            sortText: value.DisplayText
-        };
-    }))
+    return client
+        .autocomplete({
+            FileName: fromUri(textDocument),
+            Column: position.character,
+            Line: position.line,
+            WantDocumentationForEveryCompletionResult: true,
+            WantKind: true,
+            WantImportableTypes: true,
+            WantMethodHeader: true,
+            WantReturnType: true,
+            WantSnippet: true,
+            WordToComplete: ""
+        }).map(x => _.map(x, value => {
+            return <CompletionItem>{
+                label: value.DisplayText,
+                detail: value.Description,
+                documentation: value.MethodHeader,
+                filterText: value.CompletionText,
+                kind: CompletionItemKind[value.Kind],
+                sortText: value.DisplayText
+            };
+        }))
+        .map(items => (<CompletionList>{
+            isIncomplete: false, items
+        }))
         .toPromise();
 });
 //connection.onCompletionResolve((x) => {});
@@ -427,7 +432,7 @@ function fromUri(document: { uri: string; }) {
 }
 
 function toUri(result: { FileName: string; }) {
-     return toUriString(result.FileName);
+    return toUriString(result.FileName);
 }
 
 // TODO: this code isn't perfect
