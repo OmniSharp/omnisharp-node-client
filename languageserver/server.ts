@@ -120,8 +120,7 @@ connection.onDidChangeTextDocument(({textDocument, contentChanges}) => {
             FileName: fromUri(textDocument),
             Buffer: contentChanges[0].text
         });
-    }
-    if (contentChanges.length > 0) {
+    } else if (contentChanges.length > 0) {
         // TextDocumentSyncKind.Incremental
         const changes = _.map(contentChanges, change =>
             (<Models.LinePositionSpanTextChange>{
@@ -183,7 +182,7 @@ connection.onCompletion(({textDocument, position}: TextDocumentPositionParams) =
             WantImportableTypes: true,
             WantMethodHeader: true,
             WantReturnType: true,
-            WantSnippet: true,
+            WantSnippet: false,
             WordToComplete: ""
         }).map(x => _.map(x, value => {
             return <CompletionItem>{
