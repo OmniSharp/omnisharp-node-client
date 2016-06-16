@@ -221,7 +221,6 @@ export class StdioDriver implements IDriver {
         }
 
         const sequence = this._seq++;
-        console.log(command, trimStart(command, "/"));
         const packet: OmniSharp.Stdio.Protocol.RequestPacket = {
             Command: trimStart(command, "/"),
             Seq: sequence,
