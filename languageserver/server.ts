@@ -111,8 +111,16 @@ connection.onDidChangeWatchedFiles((change) => {
 // connection.onCompletionResolve((item: CompletionItem) => {
 // });
 
-
 connection.onDidChangeTextDocument(({textDocument, contentChanges}) => {
+    // The editor itself might not support TextDocumentSyncKind.Incremental
+    // So we check to see if we're getting ranges or not.
+    if (contentChanges.length === 1 && !contentChanges[0].range) {
+        // TextDocumentSyncKind.Full
+        client.updatebuffer({
+            FileName: fromUri(textDocument),
+            Buffer: contentChanges[0].text
+        });
+    }
     if (contentChanges.length > 0) {
         // TextDocumentSyncKind.Incremental
         const changes = _.map(contentChanges, change =>
@@ -127,12 +135,6 @@ connection.onDidChangeTextDocument(({textDocument, contentChanges}) => {
         client.updatebuffer({
             FileName: fromUri(textDocument),
             Changes: changes
-        });
-    } else {
-        // TextDocumentSyncKind.Full
-        client.updatebuffer({
-            FileName: fromUri(textDocument),
-            Buffer: contentChanges[0].text
         });
     }
 });
