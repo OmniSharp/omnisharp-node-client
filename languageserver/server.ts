@@ -1,59 +1,46 @@
-import {Models, ReactiveClient} from "../lib/omnisharp-client";
+import {Models, ReactiveClient, Runtime, DriverState} from "../lib/omnisharp-client";
 import _ from "lodash";
-import {Observable} from "rxjs";
 
 import {
-    IPCMessageReader, IPCMessageWriter,
+    StreamMessageReader, StreamMessageWriter,
     createConnection, IConnection, TextDocumentSyncKind,
     TextDocuments, TextDocument, Diagnostic, DiagnosticSeverity,
     InitializeParams, InitializeResult, TextDocumentPositionParams,
     CompletionItem, CompletionItemKind, CodeLens, Hover, Location,
     SignatureHelp, SignatureInformation, ParameterInformation,
-    SymbolInformation, SymbolKind, Range, Command, TextEdit,
-    WorkspaceEdit
+    SymbolInformation, SymbolKind, Range, Command, TextEdit
 } from "vscode-languageserver";
 
-// Create a connection for the server. The connection uses Node's IPC as a transport
-let connection: IConnection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
+let connection: IConnection = createConnection(new StreamMessageReader(process.stdin), new StreamMessageWriter(process.stdout));
+
+let client: ReactiveClient;
 
 // After the server has started the client sends an initilize request. The server receives
 // in the passed params the rootPath of the workspace plus the client capabilites.
-let client: ReactiveClient;
-connection.onInitialize((params): InitializeResult => {
+connection.onInitialize((params) => {
     client = new ReactiveClient({
         projectPath: params.rootPath,
+        runtime: Runtime.CoreClr
     });
+
     client.connect();
-
-
-
-    function toDiagnostic(item: Models.DiagnosticLocation) {
-        return <Diagnostic>{
-            severity: DiagnosticSeverity[item.LogLevel],
-            message: item.Text,
-            range: {
-                start: {
-                    line: item.Line,
-                    character: item.Column
-                },
-                end: {
-                    line: item.EndLine,
-                    character: item.EndColumn
-                }
-            }
-        };
-    }
 
     client.observe.diagnostic.subscribe(({Results}) => {
         _.each(Results, result => {
             connection.sendDiagnostics({
                 uri: result.FileName,
-                diagnostics: _.map(result.QuickFixes, toDiagnostic)
+                diagnostics: _.map(result.QuickFixes, getDiagnostic)
             });
         });
     });
+
     // Kick code checking on.
     client.request("/v2/codecheck", {});
+
+    // TEMP?  Is this needed?
+    client.observe.events.subscribe(x => {
+        connection.telemetry.logEvent(x);
+    });
 
     return {
         capabilities: {
@@ -68,7 +55,7 @@ connection.onInitialize((params): InitializeResult => {
             },
             definitionProvider: true,
             codeActionProvider: true,
-            documentFormattingProvider: true,
+            //documentFormattingProvider: true,
             documentOnTypeFormattingProvider: {
                 firstTriggerCharacter: "}",
                 moreTriggerCharacter: [";"]
@@ -78,7 +65,9 @@ connection.onInitialize((params): InitializeResult => {
             hoverProvider: true,
             referencesProvider: true,
             renameProvider: true,
-            signatureHelpProvider: true,
+            signatureHelpProvider: {
+                triggerCharacters: ["("]
+            },
             workspaceSymbolProvider: true
         }
     };
@@ -106,28 +95,28 @@ connection.onDidChangeWatchedFiles((change) => {
 
 
 connection.onDidChangeTextDocument(({textDocument, contentChanges}) => {
-    // if (contentChanges.length > 0) {
-    //     // Needs a new API.
-    //     // _.map(contentChanges, change => {
-    //     //     return <Models.ChangeBufferRequest>{
-    //     //         FileName: textDocument.uri,
-    //     //         StartColumn: change.range.start,
-    //     //         StartLine: change.range.end,
-    //     //         EndColumn: change.rangeLength,
-    //     //         EndLine: change.ra
-    //     //     };
-    //     // })
-    //     // client.changebuffer({
-    //     //     FileName: textDocument.uri,
-    //     // })
-    // }
-    if (contentChanges.length > 1) {
-        throw new Error("uh oh...");
+    if (contentChanges.length > 0) {
+        // TextDocumentSyncKind.Incremental
+        const changes = _.map(contentChanges, change =>
+            (<Models.LinePositionSpanTextChange>{
+                NewText: change.text,
+                FileName: textDocument.uri,
+                StartColumn: change.range.start.character,
+                StartLine: change.range.start.line,
+                EndColumn: change.range.end.character,
+                EndLine: change.range.end.line,
+            }));
+        client.updatebuffer({
+            FileName: textDocument.uri,
+            Changes: changes
+        });
+    } else {
+        // TextDocumentSyncKind.Full
+        client.updatebuffer({
+            FileName: textDocument.uri,
+            Buffer: contentChanges[0].text
+        });
     }
-    client.updatebuffer({
-        FileName: textDocument.uri,
-        Buffer: contentChanges[0].text
-    });
 });
 
 connection.onDidOpenTextDocument(({textDocument}) => {
@@ -173,7 +162,8 @@ connection.onCompletion(({textDocument, position}: TextDocumentPositionParams) =
         WantImportableTypes: true,
         WantMethodHeader: true,
         WantReturnType: true,
-        WantSnippet: true
+        WantSnippet: true,
+        WordToComplete: ""
     }).map(x => _.map(x, value => {
         return <CompletionItem>{
             label: value.DisplayText,
@@ -349,7 +339,6 @@ connection.onRenameRequest(({textDocument, position, newName}) => {
 // Listen on the connection
 connection.listen();
 
-
 function getRange(fix: { StartColumn: number; StartLine: number; EndColumn: number; EndLine: number; }): Range;
 function getRange(fix: { Column: number; Line: number; EndColumn: number; EndLine: number; }): Range;
 function getRange(fix: { Column: number; Line: number; StartColumn: number; StartLine: number; EndColumn: number; EndLine: number; }) {
@@ -383,7 +372,23 @@ function getTextEdit(change: Models.LinePositionSpanTextChange) {
     };
 }
 
-
 function getTextEdits(response: { Changes: Models.LinePositionSpanTextChange[] }) {
     return _.map(response.Changes, getTextEdit);
+}
+
+function getDiagnostic(item: Models.DiagnosticLocation) {
+    return <Diagnostic>{
+        severity: DiagnosticSeverity[item.LogLevel],
+        message: item.Text,
+        range: {
+            start: {
+                line: item.Line,
+                character: item.Column
+            },
+            end: {
+                line: item.EndLine,
+                character: item.EndColumn
+            }
+        }
+    };
 }
