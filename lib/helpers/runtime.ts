@@ -256,7 +256,7 @@ export const isSupportedRuntime = memoize(function(ctx: RuntimeContext) {
             .take(1)
             .defaultIfEmpty({ runtime: Runtime.CoreClr, path: process.env.PATH });
     })
-        .do(ct => console.log(`Supported runtime for "${Runtime[ct.runtime]}" was: ${Runtime[ct.runtime]}`))
+        //.do(ct => console.log(`Supported runtime for "${Runtime[ct.runtime]}" was: ${Runtime[ct.runtime]}`))
         .cache(1);
 }, function({platform, arch, runtime, version}: RuntimeContext) { return `${arch}-${platform}:${Runtime[runtime]}:${version}`; });
 

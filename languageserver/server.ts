@@ -1,87 +1,94 @@
-import {Models, ReactiveClient} from "../lib/omnisharp-client";
+import {Models, ReactiveClient, Runtime, DriverState} from "../lib/omnisharp-client";
 import _ from "lodash";
-import {Observable} from "rxjs";
 
 import {
-    IPCMessageReader, IPCMessageWriter,
+    StreamMessageReader, StreamMessageWriter,
     createConnection, IConnection, TextDocumentSyncKind,
     TextDocuments, TextDocument, Diagnostic, DiagnosticSeverity,
     InitializeParams, InitializeResult, TextDocumentPositionParams,
     CompletionItem, CompletionItemKind, CodeLens, Hover, Location,
+    CompletionList,
     SignatureHelp, SignatureInformation, ParameterInformation,
     SymbolInformation, SymbolKind, Range, Command, TextEdit,
-    WorkspaceEdit
+    NotificationType, Files
 } from "vscode-languageserver";
 
-// Create a connection for the server. The connection uses Node's IPC as a transport
-let connection: IConnection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
+let connection: IConnection = createConnection(new StreamMessageReader(process.stdin), new StreamMessageWriter(process.stdout));
+
+let client: ReactiveClient;
 
 // After the server has started the client sends an initilize request. The server receives
 // in the passed params the rootPath of the workspace plus the client capabilites.
-let client: ReactiveClient;
-connection.onInitialize((params): InitializeResult => {
+connection.onInitialize((params) => {
     client = new ReactiveClient({
         projectPath: params.rootPath,
+        runtime: Runtime.CoreClr,
+        logger: {
+            log: (message) => { connection.telemetry.logEvent({ type: "log", message }); },
+            error: (message) => { connection.telemetry.logEvent({ type: "error", message }); }
+        }
     });
+
     client.connect();
-
-
-
-    function toDiagnostic(item: Models.DiagnosticLocation) {
-        return <Diagnostic>{
-            severity: DiagnosticSeverity[item.LogLevel],
-            message: item.Text,
-            range: {
-                start: {
-                    line: item.Line,
-                    character: item.Column
-                },
-                end: {
-                    line: item.EndLine,
-                    character: item.EndColumn
-                }
-            }
-        };
-    }
 
     client.observe.diagnostic.subscribe(({Results}) => {
         _.each(Results, result => {
             connection.sendDiagnostics({
-                uri: result.FileName,
-                diagnostics: _.map(result.QuickFixes, toDiagnostic)
+                uri: toUri(result),
+                diagnostics: _.map(result.QuickFixes, getDiagnostic)
             });
         });
     });
-    // Kick code checking on.
-    client.request("/v2/codecheck", {});
 
-    return {
-        capabilities: {
-            textDocumentSync: TextDocumentSyncKind.Full,
-            // Not currently supported
-            //textDocumentSync: TextDocumentSyncKind.Incremental,
-            completionProvider: {
-                //resolveProvider: true
-            },
-            codeLensProvider: {
-                resolveProvider: true
-            },
-            definitionProvider: true,
-            codeActionProvider: true,
-            documentFormattingProvider: true,
-            documentOnTypeFormattingProvider: {
-                firstTriggerCharacter: "}",
-                moreTriggerCharacter: [";"]
-            },
-            documentRangeFormattingProvider: true,
-            //documentSymbolProvider: true,
-            hoverProvider: true,
-            referencesProvider: true,
-            renameProvider: true,
-            signatureHelpProvider: true,
-            workspaceSymbolProvider: true
-        }
-    };
+    client.observe.events.subscribe(event => {
+        connection.telemetry.logEvent(event);
+    });
+
+    client.observe.requests.subscribe(event => {
+        connection.telemetry.logEvent(event);
+    });
+
+    client.observe.responses.subscribe(event => {
+        connection.telemetry.logEvent(event);
+    });
+
+    return client.state
+        .filter(x => x === DriverState.Connected)
+        .take(1)
+        .do(() => {
+            // Kick code checking on.
+            client.diagnostics({});
+        })
+        .map(() => ({
+            capabilities: {
+                //textDocumentSync: TextDocumentSyncKind.Full,
+                // Not currently supported
+                textDocumentSync: TextDocumentSyncKind.Incremental,
+                completionProvider: {
+                    //resolveProvider: true
+                },
+                codeLensProvider: {
+                    resolveProvider: true
+                },
+                definitionProvider: true,
+                codeActionProvider: true,
+                //documentFormattingProvider: true,
+                documentOnTypeFormattingProvider: {
+                    firstTriggerCharacter: "}",
+                    moreTriggerCharacter: [";"]
+                },
+                documentRangeFormattingProvider: true,
+                //documentSymbolProvider: true,
+                hoverProvider: true,
+                referencesProvider: true,
+                renameProvider: true,
+                signatureHelpProvider: {
+                    triggerCharacters: ["("]
+                },
+                workspaceSymbolProvider: true
+            }
+        }))
+        .toPromise();
 });
 
 connection.onExit(() => {
@@ -94,7 +101,7 @@ connection.onExit(() => {
 connection.onDidChangeWatchedFiles((change) => {
     _.each(change.changes, change => {
         client.updatebuffer({
-            FileName: change.uri,
+            FileName: fromUri(change),
             FromDisk: true
         });
     });
@@ -104,58 +111,59 @@ connection.onDidChangeWatchedFiles((change) => {
 // connection.onCompletionResolve((item: CompletionItem) => {
 // });
 
-
 connection.onDidChangeTextDocument(({textDocument, contentChanges}) => {
-    // if (contentChanges.length > 0) {
-    //     // Needs a new API.
-    //     // _.map(contentChanges, change => {
-    //     //     return <Models.ChangeBufferRequest>{
-    //     //         FileName: textDocument.uri,
-    //     //         StartColumn: change.range.start,
-    //     //         StartLine: change.range.end,
-    //     //         EndColumn: change.rangeLength,
-    //     //         EndLine: change.ra
-    //     //     };
-    //     // })
-    //     // client.changebuffer({
-    //     //     FileName: textDocument.uri,
-    //     // })
-    // }
-    if (contentChanges.length > 1) {
-        throw new Error("uh oh...");
+    // The editor itself might not support TextDocumentSyncKind.Incremental
+    // So we check to see if we're getting ranges or not.
+    if (contentChanges.length === 1 && !contentChanges[0].range) {
+        // TextDocumentSyncKind.Full
+        client.updatebuffer({
+            FileName: fromUri(textDocument),
+            Buffer: contentChanges[0].text
+        });
+    } else if (contentChanges.length > 0) {
+        // TextDocumentSyncKind.Incremental
+        const changes = _.map(contentChanges, change =>
+            (<Models.LinePositionSpanTextChange>{
+                NewText: change.text,
+                FileName: fromUri(textDocument),
+                StartColumn: change.range.start.character,
+                StartLine: change.range.start.line,
+                EndColumn: change.range.end.character,
+                EndLine: change.range.end.line,
+            }));
+        client.updatebuffer({
+            FileName: fromUri(textDocument),
+            Changes: changes
+        });
     }
-    client.updatebuffer({
-        FileName: textDocument.uri,
-        Buffer: contentChanges[0].text
-    });
 });
 
 connection.onDidOpenTextDocument(({textDocument}) => {
     client.open({
-        FileName: textDocument.uri
+        FileName: fromUri(textDocument)
     });
     client.updatebuffer({
-        FileName: textDocument.uri,
+        FileName: fromUri(textDocument),
         Buffer: textDocument.text
     });
 });
 
 connection.onDidCloseTextDocument(({textDocument}) => {
     client.close({
-        FileName: textDocument.uri
+        FileName: fromUri(textDocument)
     });
 });
 
-connection.onDidSaveTextDocument((x) => {
+connection.onDidSaveTextDocument(({textDocument}) => {
     client.updatebuffer({
-        FileName: x.textDocument.uri,
+        FileName: fromUri(textDocument),
         FromDisk: true
     });
 });
 
 connection.onDefinition(({textDocument, position}) => {
     return client.gotodefinition({
-        FileName: textDocument.uri,
+        FileName: fromUri(textDocument),
         Column: position.character,
         Line: position.line
     })
@@ -164,45 +172,50 @@ connection.onDefinition(({textDocument, position}) => {
 });
 
 connection.onCompletion(({textDocument, position}: TextDocumentPositionParams) => {
-    return client.autocomplete({
-        FileName: textDocument.uri,
-        Column: position.character,
-        Line: position.line,
-        WantDocumentationForEveryCompletionResult: true,
-        WantKind: true,
-        WantImportableTypes: true,
-        WantMethodHeader: true,
-        WantReturnType: true,
-        WantSnippet: true
-    }).map(x => _.map(x, value => {
-        return <CompletionItem>{
-            label: value.DisplayText,
-            detail: value.Description,
-            documentation: value.MethodHeader,
-            filterText: value.CompletionText,
-            kind: CompletionItemKind[value.Kind],
-            sortText: value.DisplayText
-        };
-    }))
+    return client
+        .autocomplete({
+            FileName: fromUri(textDocument),
+            Column: position.character,
+            Line: position.line,
+            WantDocumentationForEveryCompletionResult: true,
+            WantKind: true,
+            WantImportableTypes: true,
+            WantMethodHeader: true,
+            WantReturnType: true,
+            WantSnippet: false,
+            WordToComplete: ""
+        }).map(x => _.map(x, value => {
+            return <CompletionItem>{
+                label: value.DisplayText,
+                detail: value.Description,
+                documentation: value.MethodHeader,
+                filterText: value.CompletionText,
+                kind: CompletionItemKind[value.Kind],
+                sortText: value.DisplayText
+            };
+        }))
+        .map(items => (<CompletionList>{
+            isIncomplete: false, items
+        }))
         .toPromise();
 });
 //connection.onCompletionResolve((x) => {});
 
 connection.onHover(({textDocument, position}) => {
     return client.typelookup({
-        FileName: textDocument.uri,
+        FileName: fromUri(textDocument),
         Column: position.character,
         Line: position.line
     })
         .map(result => (<Hover>{
-            contents: result.Documentation,
+            contents: `${result.Type || ''} ${result.Documentation || ''}`,
         }))
         .toPromise();
 });
 
 connection.onSignatureHelp(({textDocument, position}) => {
     return client.signatureHelp({
-        FileName: textDocument.uri,
+        FileName: fromUri(textDocument),
         Column: position.character,
         Line: position.line
     })
@@ -223,7 +236,7 @@ connection.onSignatureHelp(({textDocument, position}) => {
 
 connection.onReferences(({context, textDocument, position}) => {
     return client.findusages({
-        FileName: textDocument.uri,
+        FileName: fromUri(textDocument),
         Column: position.character,
         Line: position.line,
         ExcludeDefinition: !context.includeDeclaration
@@ -247,7 +260,7 @@ connection.onWorkspaceSymbol(({query}) => {
 
 connection.onCodeAction(({textDocument, range, context}) => {
     return client.getcodeactions({
-        FileName: textDocument.uri,
+        FileName: fromUri(textDocument),
         Selection: {
             Start: {
                 Column: range.start.character,
@@ -268,13 +281,13 @@ connection.onCodeAction(({textDocument, range, context}) => {
 
 connection.onCodeLens(({textDocument}) => {
     return client.currentfilemembersasflat({
-        FileName: textDocument.uri
+        FileName: fromUri(textDocument)
     })
         .map(results => {
             return _.map(results, location => {
                 return <CodeLens>{
                     data: {
-                        FileName: location.FileName,
+                        FileName: toUri(location),
                         Column: location.Column,
                         Line: location.Line,
                     },
@@ -289,8 +302,9 @@ connection.onCodeLensResolve((codeLens) => {
     return client.findusages(codeLens.data)
         .map(x => {
             codeLens.command = {
+                // TODO: ...?
                 title: `References (${x.QuickFixes.length})`,
-                command: ``
+                command: `References (${x.QuickFixes.length})`
             };
             return codeLens;
         })
@@ -301,14 +315,14 @@ connection.onCodeLensResolve((codeLens) => {
 // Requires new endpoint
 connection.onDocumentFormatting(({textDocument, options}) => {
     return client.formatRange({
-        FileName: textDocument.uri,
+        FileName: getPath(textDocument),
     })
 });
 */
 
 connection.onDocumentRangeFormatting(({textDocument, options, range}) => {
     return client.formatRange({
-        FileName: textDocument.uri,
+        FileName: fromUri(textDocument),
         Column: range.start.character,
         Line: range.start.line,
         EndColumn: range.end.character,
@@ -320,7 +334,7 @@ connection.onDocumentRangeFormatting(({textDocument, options, range}) => {
 
 connection.onDocumentOnTypeFormatting(({textDocument, options, position, ch}) => {
     return client.formatAfterKeystroke({
-        FileName: textDocument.uri,
+        FileName: fromUri(textDocument),
         Character: ch,
         Line: position.line,
         Column: position.character
@@ -331,7 +345,7 @@ connection.onDocumentOnTypeFormatting(({textDocument, options, position, ch}) =>
 
 connection.onRenameRequest(({textDocument, position, newName}) => {
     return client.rename({
-        FileName: textDocument.uri,
+        FileName: fromUri(textDocument),
         Line: position.line,
         Column: position.character,
         RenameTo: newName
@@ -339,7 +353,7 @@ connection.onRenameRequest(({textDocument, position, newName}) => {
         .map(item => {
             const changes: { [uri: string]: TextEdit[]; } = {};
             _.each(item.Changes, result => {
-                changes[result.FileName] = getTextEdits(result);
+                changes[toUri(result)] = getTextEdits(result);
             });
             return { changes };
         })
@@ -348,7 +362,6 @@ connection.onRenameRequest(({textDocument, position, newName}) => {
 
 // Listen on the connection
 connection.listen();
-
 
 function getRange(fix: { StartColumn: number; StartLine: number; EndColumn: number; EndLine: number; }): Range;
 function getRange(fix: { Column: number; Line: number; EndColumn: number; EndLine: number; }): Range;
@@ -371,7 +384,7 @@ function getLocationPoint(fix: { Column: number; Line: number; FileName: string;
 
 function getLocation(fix: { Column: number; Line: number; EndColumn: number; EndLine: number; FileName: string; }) {
     return <Location>{
-        uri: fix.FileName,
+        uri: toUri(fix),
         range: getRange(fix)
     };
 }
@@ -383,7 +396,47 @@ function getTextEdit(change: Models.LinePositionSpanTextChange) {
     };
 }
 
-
 function getTextEdits(response: { Changes: Models.LinePositionSpanTextChange[] }) {
     return _.map(response.Changes, getTextEdit);
+}
+
+function getDiagnostic(item: Models.DiagnosticLocation) {
+    let sev = DiagnosticSeverity.Error;
+    if (item.LogLevel === "Warning") {
+        sev = DiagnosticSeverity.Warning;
+    }
+    if (item.LogLevel === "Hidden") {
+        sev = DiagnosticSeverity.Hint;
+    }
+    if (item.LogLevel === "Information") {
+        sev = DiagnosticSeverity.Information;
+    }
+
+    return <Diagnostic>{
+        severity: sev,
+        message: item.Text,
+        range: {
+            start: {
+                line: item.Line,
+                character: item.Column
+            },
+            end: {
+                line: item.EndLine,
+                character: item.EndColumn
+            }
+        }
+    };
+}
+
+function fromUri(document: { uri: string; }) {
+    return Files.uriToFilePath(document.uri);
+}
+
+function toUri(result: { FileName: string; }) {
+    return toUriString(result.FileName);
+}
+
+// TODO: this code isn't perfect
+function toUriString(path: string) {
+    return `file://${process.platform === "win32" ? "/" : ""}${path.replace(":", encodeURIComponent(":"))}`;
 }
