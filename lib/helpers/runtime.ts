@@ -118,11 +118,6 @@ export class RuntimeContext {
 
     /* tslint:disable:no-string-literal */
     private _getRuntimeLocation() {
-        /*if (ctx.bootstrap) {
-            const bootstrap = process.platform === "win32" ? "OmniSharp.exe" : "omnisharp.bootstrap";
-            return <string>process.env["OMNISHARP_BOOTSTRAP"] || resolve(__dirname, "../../", getRuntimeId(ctx), bootstrap);
-        }*/
-
         let path: string = process.env["OMNISHARP"];
 
         if (!path) {
@@ -142,6 +137,8 @@ export class RuntimeContext {
         let filename = join(this._destination, ".version");
 
         return exists(filename)
+            .flatMap((isCurrent) =>
+                this.findRuntime().isEmpty(), (ex, isEmpty) => ex && !isEmpty)
             .flatMap(ex => Observable.if(
                 () => ex,
                 Observable.defer(() => readFile(filename).map(content => content.toString().trim() === this._version)),
@@ -214,6 +211,10 @@ export class RuntimeContext {
             Observable.defer(() => this._extract(this._platform === SupportedPlatform.Windows, path, destination))
         )
             .do({ complete: () => { try { fs.unlinkSync(path); } catch (e) { /* */ } } })
+            .mergeMap(result =>
+                Observable.bindNodeCallback(fs.mkdir)(this._destination)
+                    .mergeMap(() => Observable.bindCallback<string, any, any>(fs.writeFile)(join(this._destination, ".version"), this._version)),
+            (result) => result)
             .subscribeOn(Scheduler.async))
             .map(() => name);
     }
@@ -238,7 +239,7 @@ export class RuntimeContext {
     }
 }
 
-export const isSupportedRuntime = memoize(function(ctx: RuntimeContext) {
+export const isSupportedRuntime = memoize(function (ctx: RuntimeContext) {
     return Observable.defer(() => {
         // On windows we'll just use the clr, it's there
         // On mac / linux if we've picked CoreClr stick with that
@@ -258,15 +259,20 @@ export const isSupportedRuntime = memoize(function(ctx: RuntimeContext) {
     })
         //.do(ct => console.log(`Supported runtime for "${Runtime[ct.runtime]}" was: ${Runtime[ct.runtime]}`))
         .cache(1);
-}, function({platform, arch, runtime, version}: RuntimeContext) { return `${arch}-${platform}:${Runtime[runtime]}:${version}`; });
+}, function ({platform, arch, runtime, version}: RuntimeContext) { return `${arch}-${platform}:${Runtime[runtime]}:${version}`; });
 
-export function findRuntimeById(runtimeId: string, location: string): Observable<string> {
+function findOmnisharpExecuable(runtimeId: string, location: string): Observable<boolean> {
     return Observable.merge(
         exists(resolve(location, runtimeId, "OmniSharp.exe")),
         exists(resolve(location, runtimeId, "OmniSharp"))
     )
         .filter(x => x)
         .take(1)
+        .share();
+}
+
+export function findRuntimeById(runtimeId: string, location: string): Observable<string> {
+    return findOmnisharpExecuable(runtimeId, location)
         .map(x => resolve(location, runtimeId))
         .share();
 }
