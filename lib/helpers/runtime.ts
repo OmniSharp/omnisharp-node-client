@@ -2,7 +2,7 @@ import {Observable, Scheduler} from "rxjs";
 import {resolve, join, delimiter} from "path";
 import * as fs from "fs";
 import {ILogger, Runtime} from "../enums";
-import {find, delay, bind, memoize, assignWith, isNull, isUndefined, toLower} from "lodash";
+import {find, bind, memoize, assignWith, isNull, isUndefined, toLower} from "lodash";
 import {decompress} from "./decompress";
 import {createObservable} from "../operators/create";
 import "rxjs/add/operator/max";
@@ -156,16 +156,8 @@ export class RuntimeContext {
                     dest = dest || defaultDest;
                     require("rimraf")(dest, (err: any) => {
                         if (err) { observer.error(err); return; }
-
-                        delay(() =>
-                            fs.mkdir(dest, (er) => {
-                                //if (er) { observer.onError(er); return; }
-                                fs.writeFile(join(dest, ".version"), this._version, (e) => {
-                                    if (e) { observer.error(e); return; }
-                                    observer.next(isCurrent);
-                                    observer.complete();
-                                });
-                            }), 500);
+                        observer.next(isCurrent);
+                        observer.complete();
                     });
                 })),
                 Observable.of(isCurrent)
