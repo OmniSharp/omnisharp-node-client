@@ -67,6 +67,7 @@ export function getSupportedPlatform(platform: string = process.platform) {
                 } else if (versionId.startsWith("16")) {
                     return SupportedPlatform.Ubuntu16;
                 }
+                break;
             case 'centos':
                 return SupportedPlatform.CentOS;
             case 'fedora':
