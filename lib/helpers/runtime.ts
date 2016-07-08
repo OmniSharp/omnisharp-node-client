@@ -2,13 +2,13 @@ import {Observable, Scheduler} from "rxjs";
 import {resolve, join, delimiter} from "path";
 import * as fs from "fs";
 import {ILogger, Runtime} from "../enums";
-import {find, delay, bind, memoize, assignWith, isNull, isUndefined, toLower} from "lodash";
+import {find, bind, memoize, assignWith, isNull, isUndefined, toLower, delay} from "lodash";
 import {decompress} from "./decompress";
 import {createObservable} from "../operators/create";
 import "rxjs/add/operator/max";
 import "rxjs/add/operator/isEmpty";
 require("rxjs/add/observable/if");
-import {SupportedPlatform, supportedPlatformNames, supportedPlatform, getSupportedPlatform} from "./platform";
+import {SupportedPlatform, supportedPlatform, getSupportedPlatform} from "./platform";
 
 const request: { get(url: string): NodeJS.ReadableStream; } = require("request");
 const defaultServerVersion = require(resolve(__dirname, "../../package.json"))["omnisharp-roslyn"];
@@ -113,16 +113,15 @@ export class RuntimeContext {
     }
 
     private _getOsName() {
-        return supportedPlatformNames[SupportedPlatform[this._platform]];
+        if (this._platform === SupportedPlatform.Windows) return "win";
+
+        const name = SupportedPlatform[this._platform];
+        if (name) return name.toLowerCase();
+        return name;
     }
 
     /* tslint:disable:no-string-literal */
     private _getRuntimeLocation() {
-        /*if (ctx.bootstrap) {
-            const bootstrap = process.platform === "win32" ? "OmniSharp.exe" : "omnisharp.bootstrap";
-            return <string>process.env["OMNISHARP_BOOTSTRAP"] || resolve(__dirname, "../../", getRuntimeId(ctx), bootstrap);
-        }*/
-
         let path: string = process.env["OMNISHARP"];
 
         if (!path) {
@@ -142,6 +141,8 @@ export class RuntimeContext {
         let filename = join(this._destination, ".version");
 
         return exists(filename)
+            .flatMap((isCurrent) =>
+                this.findRuntime().isEmpty(), (ex, isEmpty) => ex && !isEmpty)
             .flatMap(ex => Observable.if(
                 () => ex,
                 Observable.defer(() => readFile(filename).map(content => content.toString().trim() === this._version)),
@@ -159,16 +160,10 @@ export class RuntimeContext {
                     dest = dest || defaultDest;
                     require("rimraf")(dest, (err: any) => {
                         if (err) { observer.error(err); return; }
-
-                        delay(() =>
-                            fs.mkdir(dest, (er) => {
-                                //if (er) { observer.onError(er); return; }
-                                fs.writeFile(join(dest, ".version"), this._version, (e) => {
-                                    if (e) { observer.error(e); return; }
-                                    observer.next(isCurrent);
-                                    observer.complete();
-                                });
-                            }), 500);
+                        delay(() => {
+                            observer.next(isCurrent);
+                            observer.complete();
+                        }, 500);
                     });
                 })),
                 Observable.of(isCurrent)
@@ -185,7 +180,8 @@ export class RuntimeContext {
             this._downloadSpecificRuntime("omnisharp")
         ))
             .subscribeOn(Scheduler.async)
-            .toArray();
+            .toArray()
+            .concatMap(() => Observable.bindCallback<string, any, any>(fs.writeFile)(join(this._destination, ".version"), this._version), (result) => result);
     }
 
     public downloadRuntimeIfMissing() {
@@ -260,13 +256,18 @@ export const isSupportedRuntime = memoize(function(ctx: RuntimeContext) {
         .cache(1);
 }, function({platform, arch, runtime, version}: RuntimeContext) { return `${arch}-${platform}:${Runtime[runtime]}:${version}`; });
 
-export function findRuntimeById(runtimeId: string, location: string): Observable<string> {
+function findOmnisharpExecuable(runtimeId: string, location: string): Observable<boolean> {
     return Observable.merge(
         exists(resolve(location, runtimeId, "OmniSharp.exe")),
         exists(resolve(location, runtimeId, "OmniSharp"))
     )
         .filter(x => x)
         .take(1)
+        .share();
+}
+
+export function findRuntimeById(runtimeId: string, location: string): Observable<string> {
+    return findOmnisharpExecuable(runtimeId, location)
         .map(x => resolve(location, runtimeId))
         .share();
 }
