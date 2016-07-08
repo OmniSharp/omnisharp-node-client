@@ -113,6 +113,8 @@ export class RuntimeContext {
     }
 
     private _getOsName() {
+        if (this._platform === SupportedPlatform.Windows) return "win";
+        
         const name = SupportedPlatform[this._platform];
         if (name) return name.toLowerCase();
         return name;
