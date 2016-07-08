@@ -16,26 +16,23 @@ describe("Omnisharp Server", function() {
     });
 
     describe("state", function() {
-
-        this.timeout(10000);
-        //this.timeout(60000 * 10);
-        //this.timeout(60000 * 10);
+        this.timeout(60000);
         let server: OmnisharpClient;
 
-        beforeEach((done) => {
+        beforeEach(() => {
             server = new OmnisharpClient({
                 projectPath: process.cwd()
             });
 
-            server.requests.subscribe(x => console.log('requests', x));
-            server.responses.subscribe(x => console.log('responses', x));
-
-            const sub = server.state.startWith(server.currentState).filter(state => state === DriverState.Connected).subscribe(state => {
-                sub.unsubscribe();
-                done();
-            });
-
+            server.requests.subscribe(x => console.log("requests", x));
+            server.responses.subscribe(x => console.log("responses", x));
             server.connect();
+
+            return server.state
+                .startWith(server.currentState)
+                .filter(state => state === DriverState.Connected)
+                .take(1)
+                .toPromise();
         });
 
         afterEach(() => {
@@ -43,47 +40,50 @@ describe("Omnisharp Server", function() {
             return Observable.timer(1000).toPromise();
         });
 
-        it("must respond to all requests (string)", function(done) {
-            let count = 4;
-            server.observe.checkalivestatus.subscribe((data) => {
-                count--;
-                if (!count)
-                    done();
+        it("must respond to all requests (string)", function() {
+            _.defer(() => {
+                server.request("/checkalivestatus");
+                server.request("/checkalivestatus");
+                server.request("/checkalivestatus");
+                server.request("/checkalivestatus");
             });
 
-            server.request("/checkalivestatus");
-            server.request("/checkalivestatus");
-            server.request("/checkalivestatus");
-            server.request("/checkalivestatus");
+            let a = 0;
+            return server.observe.checkalivestatus
+                .do(() => console.log(++a))
+                .take(4)
+                .toPromise();
         });
 
-        it("must respond to all requests (method)", function(done) {
-            let count = 4;
-            server.observe.checkalivestatus.subscribe((data) => {
-                count--;
-                if (!count)
-                    done();
+        it("must respond to all requests (method)", function() {
+            _.defer(() => {
+                server.checkalivestatus();
+                server.checkalivestatus();
+                server.checkalivestatus();
+                server.checkalivestatus();
             });
 
-            server.checkalivestatus();
-            server.checkalivestatus();
-            server.checkalivestatus();
-            server.checkalivestatus();
+            let a = 0;
+            return server.observe.checkalivestatus
+                .do(() => console.log(++a))
+                .take(4)
+                .toPromise();
         });
 
-        it("must give status", function(done) {
-            const sub = server.status.delay(1).subscribe(status => {
-                sub.unsubscribe();
-                done();
+        it("must give status", function() {
+            _.defer(() => {
+                server.checkalivestatus();
+                server.checkalivestatus();
             });
 
-            server.checkalivestatus();
-            server.checkalivestatus();
+            return server.status
+                .delay(1)
+                .take(1)
+                .toPromise();
         });
     });
 
     describe("configuration", function() {
-
         this.timeout(60000 * 10);
         it("should call with given omnisharp parameters", function(done) {
             const server = new OmnisharpClient({

@@ -2,7 +2,7 @@ import {Observable, Scheduler} from "rxjs";
 import {resolve, join, delimiter} from "path";
 import * as fs from "fs";
 import {ILogger, Runtime} from "../enums";
-import {find, bind, memoize, assignWith, isNull, isUndefined, toLower} from "lodash";
+import {find, bind, memoize, assignWith, isNull, isUndefined, toLower, delay} from "lodash";
 import {decompress} from "./decompress";
 import {createObservable} from "../operators/create";
 import "rxjs/add/operator/max";
@@ -156,8 +156,10 @@ export class RuntimeContext {
                     dest = dest || defaultDest;
                     require("rimraf")(dest, (err: any) => {
                         if (err) { observer.error(err); return; }
-                        observer.next(isCurrent);
-                        observer.complete();
+                        delay(() => {
+                            observer.next(isCurrent);
+                            observer.complete();
+                        }, 500);
                     });
                 })),
                 Observable.of(isCurrent)
@@ -174,7 +176,8 @@ export class RuntimeContext {
             this._downloadSpecificRuntime("omnisharp")
         ))
             .subscribeOn(Scheduler.async)
-            .toArray();
+            .toArray()
+            .concatMap(() => Observable.bindCallback<string, any, any>(fs.writeFile)(join(this._destination, ".version"), this._version), (result) => result);
     }
 
     public downloadRuntimeIfMissing() {
@@ -203,10 +206,6 @@ export class RuntimeContext {
             Observable.defer(() => this._extract(this._platform === SupportedPlatform.Windows, path, destination))
         )
             .do({ complete: () => { try { fs.unlinkSync(path); } catch (e) { /* */ } } })
-            .mergeMap(result =>
-                Observable.bindNodeCallback(fs.mkdir)(this._destination)
-                    .mergeMap(() => Observable.bindCallback<string, any, any>(fs.writeFile)(join(this._destination, ".version"), this._version)),
-            (result) => result)
             .subscribeOn(Scheduler.async))
             .map(() => name);
     }
@@ -231,7 +230,7 @@ export class RuntimeContext {
     }
 }
 
-export const isSupportedRuntime = memoize(function (ctx: RuntimeContext) {
+export const isSupportedRuntime = memoize(function(ctx: RuntimeContext) {
     return Observable.defer(() => {
         // On windows we'll just use the clr, it's there
         // On mac / linux if we've picked CoreClr stick with that
@@ -251,7 +250,7 @@ export const isSupportedRuntime = memoize(function (ctx: RuntimeContext) {
     })
         //.do(ct => console.log(`Supported runtime for "${Runtime[ct.runtime]}" was: ${Runtime[ct.runtime]}`))
         .cache(1);
-}, function ({platform, arch, runtime, version}: RuntimeContext) { return `${arch}-${platform}:${Runtime[runtime]}:${version}`; });
+}, function({platform, arch, runtime, version}: RuntimeContext) { return `${arch}-${platform}:${Runtime[runtime]}:${version}`; });
 
 function findOmnisharpExecuable(runtimeId: string, location: string): Observable<boolean> {
     return Observable.merge(
