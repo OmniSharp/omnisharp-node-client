@@ -1,15 +1,5 @@
 import child_process from "child_process";
 
-export const supportedPlatformNames: { [index: string]: string; } = {
-    get None() { return ""; },
-    get Windows() { return "win"; },
-    get OSX() { return "osx"; },
-    get Ubuntu() { return "ubuntu"; },
-    get CentOS() { return "centos"; },
-    get RHEL() { return "rhel"; },
-    get Debian() { return "debian"; }
-};
-
 export enum SupportedPlatform {
     None,
     Windows,
@@ -58,30 +48,45 @@ export function getSupportedPlatform(platform: string = process.platform) {
 
         const id = getValue("ID");
 
+        console.log(lines);
+        console.log("getValue(\"ID\")", id);
+
+        let result: SupportedPlatform;
+
         switch (id) {
             case 'ubuntu':
                 const versionId = getValue("VERSION_ID");
+                console.log("getValue(\"VERSION_ID\")", versionId);
                 if (versionId.startsWith("14")) {
                     // This also works for Linux Mint
-                    return SupportedPlatform.Ubuntu14;
+                    result = SupportedPlatform.Ubuntu14;
                 } else if (versionId.startsWith("16")) {
-                    return SupportedPlatform.Ubuntu16;
+                    result =  SupportedPlatform.Ubuntu16;
                 }
                 break;
             case 'centos':
-                return SupportedPlatform.CentOS;
+                result =  SupportedPlatform.CentOS;
+                break;
             case 'fedora':
-                return SupportedPlatform.Fedora;
+                result =  SupportedPlatform.Fedora;
+                break;
             case 'opensuse':
-                return SupportedPlatform.OpenSUSE;
+                result =  SupportedPlatform.OpenSUSE;
+                break;
             case 'rehl':
-                return SupportedPlatform.RHEL;
+                result =  SupportedPlatform.RHEL;
+                break;
             case 'debian':
-                return SupportedPlatform.Debian;
+                result =  SupportedPlatform.Debian;
+                break;
             case 'ol':
                 // Oracle Linux is binary compatible with CentOS
-                return SupportedPlatform.CentOS;
+                result =  SupportedPlatform.CentOS;
+                break;
         }
+
+        console.log("getSupportedPlatform result", id, SupportedPlatform[id]);
+        return result;
     }
 
     return SupportedPlatform.None;

@@ -8,7 +8,7 @@ import {createObservable} from "../operators/create";
 import "rxjs/add/operator/max";
 import "rxjs/add/operator/isEmpty";
 require("rxjs/add/observable/if");
-import {SupportedPlatform, supportedPlatformNames, supportedPlatform, getSupportedPlatform} from "./platform";
+import {SupportedPlatform, supportedPlatform, getSupportedPlatform} from "./platform";
 
 const request: { get(url: string): NodeJS.ReadableStream; } = require("request");
 const defaultServerVersion = require(resolve(__dirname, "../../package.json"))["omnisharp-roslyn"];
@@ -113,7 +113,9 @@ export class RuntimeContext {
     }
 
     private _getOsName() {
-        return supportedPlatformNames[SupportedPlatform[this._platform]];
+        const name = SupportedPlatform[this._platform];
+        if (name) return name.toLowerCase();
+        return name;
     }
 
     /* tslint:disable:no-string-literal */

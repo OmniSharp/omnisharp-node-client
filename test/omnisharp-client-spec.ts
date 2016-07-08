@@ -48,9 +48,7 @@ describe("Omnisharp Server", function() {
                 server.request("/checkalivestatus");
             });
 
-            let a = 0;
             return server.observe.checkalivestatus
-                .do(() => console.log(++a))
                 .take(4)
                 .toPromise();
         });
@@ -63,9 +61,7 @@ describe("Omnisharp Server", function() {
                 server.checkalivestatus();
             });
 
-            let a = 0;
             return server.observe.checkalivestatus
-                .do(() => console.log(++a))
                 .take(4)
                 .toPromise();
         });
