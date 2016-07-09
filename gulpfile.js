@@ -17,11 +17,6 @@ const ctx = {
     get sourcemaps() { return require('gulp-sourcemaps'); },
     get through() { return require('through2'); },
     get del() { return require('del'); },
-    get download() { return require('gulp-download-stream'); },
-    get gunzip() { return require('gulp-gunzip'); },
-    get untar() { return require('gulp-untar'); },
-    get unzip() { return require('gulp-unzip'); },
-    get newer() { return require('gulp-newer'); },
     get package() { return require('./package.json'); }
 };
 
@@ -121,38 +116,6 @@ gulp.task('clean:test', function (done) {
         });
         done();
     });
-});
-
-gulp.task('watch', function () {
-    // Watch is not installed by default if you want to use it
-    //  you need to install manually but don't save it as it causes CI issues.
-    const watch = require('gulp-watch');
-    // Auto restart watch when gulpfile is changed.
-    const p = spawn(gulpPath, ['file-watch'], { stdio: 'inherit' });
-    return watch('gulpfile.js', function () {
-        p.kill();
-        p = spawn(gulpPath, ['file-watch'], { stdio: 'inherit' });
-    });
-});
-
-gulp.task('file-watch', function () {
-    // Watch is not installed by default if you want to use it
-    //  you need to install manually but don't save it as it causes CI issues.
-    const watch = require('gulp-watch');
-    const plumber = require('gulp-plumber');
-    const newer = require('gulp-newer');
-
-    const lib = tsTranspiler(gulp.src(metadata.lib)
-        .pipe(watch(metadata.lib))
-        .pipe(plumber())
-        .pipe(newer('./lib')), './lib')
-
-    const test = tsTranspiler(gulp.src(metadata.test)
-        .pipe(watch(metadata.test))
-        .pipe(plumber())
-        .pipe(newer('./test')), './test');
-
-    return merge(lib, test);
 });
 
 gulp.task('npm-prepublish', ['typescript-babel']);
