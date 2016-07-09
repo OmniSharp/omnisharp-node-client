@@ -55,7 +55,7 @@
     "gulp": "^3.9.1",
     "gulp-babel": "^6.1.2",
     "gulp-sourcemaps": "^1.6.0",
-    "gulp-tslint": "^5.0.0",
+    "gulp-tslint": "^6.0.1",
     "gulp-typescript": "^2.13.4",
     "gulp-util": "^3.0.7",
     "merge-stream": "^1.0.0",
