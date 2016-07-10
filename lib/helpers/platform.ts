@@ -73,7 +73,7 @@ export function getSupportedPlatform(platform: string = process.platform) {
             case 'opensuse':
                 result =  SupportedPlatform.OpenSUSE;
                 break;
-            case 'rehl':
+            case 'rhel':
                 result =  SupportedPlatform.RHEL;
                 break;
             case 'debian':
