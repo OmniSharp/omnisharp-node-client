@@ -1,21 +1,39 @@
 {
-  "externalTranspiler": {
-    "name": "babel",
-    "options": {}
-  },
   "compilerOptions": {
-    "target": "es6",
-    "module": "es6",
+    "target": "es5",
+    "lib": [
+      "es5",
+      "dom",
+      "es2015.core",
+      "es2015.collection",
+      "es2015.generator",
+      "es2015.iterable",
+      "es2015.promise",
+      "es2015.reflect",
+      "es2015.symbol",
+      "es2015.symbol.wellknown"
+    ],
+    "baseUrl": "",
+    "paths": {
+      "rxjs": [
+        "node_modules/rxjs"
+      ]
+    },
+    "module": "commonjs",
     "moduleResolution": "node",
-    "declaration": true,
-    "noImplicitAny": true,
-    "removeComments": true,
-    "noLib": false,
+    "diagnostics": true,
+    "noEmitOnError": false,
     "preserveConstEnums": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "noImplicitReturns": true,
+    "skipLibCheck": true,
+    "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "suppressImplicitAnyIndexErrors": true,
     "allowSyntheticDefaultImports": true,
-    "sourceMap": true
+    "inlineSourceMap": true,
+    "inlineSources": true,
+    "strictNullChecks": true
   },
   "compileOnSave": true,
   "formatCodeOptions": {
@@ -32,7 +50,12 @@
     "placeOpenBraceOnNewLineForFunctions": false,
     "placeOpenBraceOnNewLineForControlBlocks": false
   },
-  "exclude": ["node_modules", "vendor", "typings/browser", "typings/browser.d.ts"],
+  "exclude": [
+    "node_modules",
+    "vendor",
+    "typings/browser",
+    "typings/browser.d.ts"
+  ],
   "atom": {
     "rewriteTsconfig": false
   }

@@ -1,6 +1,6 @@
 import * as OmniSharp from "../omnisharp-server";
 import {ReplaySubject, Observable} from "rxjs";
-import {CompositeDisposable, Disposable, IDisposable} from "../disposables";
+import {CompositeDisposable, Disposable, IDisposable} from "ts-disposables";
 import _ from "lodash";
 import {ReactiveClient} from "./reactive-client";
 import {setMergeOrAggregate, getInternalKey, makeObservable} from "../helpers/decorators";
@@ -11,6 +11,7 @@ export class ReactiveObservationClient<TClient extends ReactiveClient> implement
     protected _disposable = new CompositeDisposable();
     private _clientDisposable = new CompositeDisposable();
     protected _clientsSubject = new ReplaySubject<TClient[]>(1);
+    [index: string]: any;
 
     constructor(private clients: TClient[] = []) {
         this.next();
@@ -61,7 +62,7 @@ makeObservable(ReactiveObservationClient.prototype, "requests", "requests");
 makeObservable(ReactiveObservationClient.prototype, "responses", "responses");
 makeObservable(ReactiveObservationClient.prototype, "errors", "errors");
 
-export interface ReactiveObservationClient extends OmniSharp.Events, OmniSharp.Events.V2 {
+export interface ReactiveObservationClient<TClient extends ReactiveClient> extends OmniSharp.Events, OmniSharp.Events.V2 {
     /*readonly*/ events: Observable<OmniSharp.Stdio.Protocol.EventPacket>;
     /*readonly*/ commands: Observable<OmniSharp.Stdio.Protocol.ResponsePacket>;
     /*readonly*/ state: Observable<DriverState>;

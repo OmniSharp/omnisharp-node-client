@@ -1,17 +1,17 @@
 import * as OmniSharp from "../omnisharp-server";
 //import {Observable, Subject, AsyncSubject, BehaviorSubject, Subscription} from "rxjs";
-import {IDisposable, CompositeDisposable} from "../disposables";
-import {keys, bind, isEqual, uniqueId, each, defaults, cloneDeep} from "lodash";
-import {IAsyncDriver, IDriverOptions, OmnisharpClientStatus, AsyncClientOptions} from "../enums";
+import { IDisposable, CompositeDisposable } from "ts-disposables";
+import { keys, bind, isEqual, uniqueId, each, defaults, cloneDeep } from "lodash";
+import { IAsyncDriver, IDriverOptions, OmnisharpClientStatus, AsyncClientOptions, InternalAsyncClientOptions } from "../enums";
 /*import {IOmnisharpPlugin, isPluginDriver} from "../enums";*/
-import {DriverState, Runtime} from "../enums";
-import {RequestContext, ResponseContext, CommandContext} from "../contexts";
-import {ensureClientOptions} from "../options";
-import {getPreconditions} from "../helpers/preconditions";
-import {EventEmitter} from "events";
-import {Queue} from "../helpers/queue";
+import { DriverState, Runtime } from "../enums";
+import { RequestContext, ResponseContext, CommandContext } from "../contexts";
+import { ensureClientOptions } from "../options";
+import { getPreconditions } from "../helpers/preconditions";
+import { EventEmitter } from "events";
+import { Queue } from "../helpers/queue";
 //import {PluginManager} from "../helpers/plugin-manager";
-import {request} from "../helpers/decorators";
+import { request } from "../helpers/decorators";
 
 /////
 // NOT TESTED
@@ -104,7 +104,7 @@ export class AsyncClient implements IAsyncDriver, IDisposable {
     //private _observe: ClientEventsCore;
     //public get observe(): ClientEventsCore { return this._observe; }
 
-    private _options: AsyncClientOptions & IDriverOptions;
+    private _options: InternalAsyncClientOptions & IDriverOptions;
 
     constructor(_options: AsyncClientOptions) {
         _options.driver = _options.driver || ((options: IDriverOptions) => {
@@ -113,7 +113,7 @@ export class AsyncClient implements IAsyncDriver, IDisposable {
             return new driverFactory(this._options);
         });
 
-        this._options = defaults(_options, <IDriverOptions>{
+        this._options = <any>defaults(_options, <IDriverOptions>{
             onState: (state) => {
                 this._currentState = state;
                 this._emitter.emit(AsyncEvents.state, state);
@@ -190,7 +190,6 @@ export class AsyncClient implements IAsyncDriver, IDisposable {
             this._currentRequests.delete(context);
             if (complete) {
                 complete();
-                complete = null;
             }
         };
 
@@ -257,7 +256,7 @@ export class AsyncClient implements IAsyncDriver, IDisposable {
         // Handle disconnected requests
         if (this.currentState !== DriverState.Connected && this.currentState !== DriverState.Error) {
             return new Promise<TResponse>((resolve, reject) => {
-                const disposable = this.onState(state => {
+                let disposable = this.onState(state => {
                     if (state === DriverState.Connected) {
                         disposable.dispose();
                         this.request<TRequest, TResponse>(action, request, options)

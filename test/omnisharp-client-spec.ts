@@ -15,7 +15,7 @@ describe("Omnisharp Server", function() {
         });
     });
 
-    describe("state", function() {
+    describe("state", function(this: Mocha.ITestDefinition) {
         this.timeout(60000);
         let server: OmnisharpClient;
 
@@ -79,10 +79,10 @@ describe("Omnisharp Server", function() {
         });
     });
 
-    describe("configuration", function() {
+    describe("configuration", function(this: Mocha.ITestDefinition) {
         this.timeout(60000 * 10);
         it("should call with given omnisharp parameters", function(done) {
-            const server = new OmnisharpClient({
+            let server = new OmnisharpClient({
                 projectPath: resolve(__dirname, "../"),
                 logger: {
                     log: (message) => {
@@ -103,7 +103,7 @@ describe("Omnisharp Server", function() {
         });
 
         it("should call with given omnisharp parameters (formatting)", function(done) {
-            const server = new OmnisharpClient({
+            let server = new OmnisharpClient({
                 projectPath: resolve(__dirname, "../"),
                 logger: {
                     log: (message) => {

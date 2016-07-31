@@ -1,14 +1,14 @@
-import {Observable, Scheduler} from "rxjs";
-import {resolve, join, delimiter} from "path";
+import { Observable, Scheduler } from "rxjs";
+import { resolve, join, delimiter } from "path";
 import * as fs from "fs";
-import {ILogger, Runtime} from "../enums";
-import {find, bind, memoize, assignWith, isNull, isUndefined, toLower, delay} from "lodash";
-import {decompress} from "./decompress";
-import {createObservable} from "../operators/create";
+import { ILogger, Runtime } from "../enums";
+import { find, bind, memoize, assignWith, isNull, isUndefined, toLower, delay } from "lodash";
+import { decompress } from "./decompress";
+import { createObservable } from "../operators/create";
 import "rxjs/add/operator/max";
 import "rxjs/add/operator/isEmpty";
 require("rxjs/add/observable/if");
-import {SupportedPlatform, supportedPlatform, getSupportedPlatform} from "./platform";
+import { SupportedPlatform, supportedPlatform, getSupportedPlatform } from "./platform";
 
 const request: { get(url: string): NodeJS.ReadableStream; } = require("request");
 const defaultServerVersion = require(resolve(__dirname, "../../package.json"))["omnisharp-roslyn"];
@@ -41,7 +41,7 @@ export class RuntimeContext {
     private _os: string;
     private _location: string;
 
-    constructor(runtimeContext?: IRuntimeContext, private _logger?: ILogger) {
+    constructor(runtimeContext: IRuntimeContext, private _logger?: ILogger) {
         if (!_logger) {
             this._logger = console;
         }
@@ -215,26 +215,32 @@ export class RuntimeContext {
     }
 
     public downloadFile(url: string, path: string) {
-        this._logger.log(`Downloading ${path}`);
+        if (this._logger) {
+            this._logger.log(`Downloading ${path}`);
+        }
         return createObservable<void>((observer) => {
             request.get(url)
                 .pipe(fs.createWriteStream(path))
                 .on("error", bind(observer.error, observer))
                 .on("finish", () => {
-                    this._logger.log(`Finished downloading ${path}`);
-                    observer.next(null);
+                    if (this._logger) {
+                        this._logger.log(`Finished downloading ${path}`);
+                    }
+                    observer.next(void 0);
                     observer.complete();
                 });
         });
     }
 
     private _extract(win32: boolean, path: string, dest: string) {
-        this._logger.log(`Extracting ${path}`);
+        if (this._logger) {
+            this._logger.log(`Extracting ${path}`);
+        }
         return decompress(path, dest, { mode: "755" });
     }
 }
 
-export const isSupportedRuntime = memoize(function(ctx: RuntimeContext) {
+export const isSupportedRuntime = memoize(function (ctx: RuntimeContext) {
     return Observable.defer(() => {
         // On windows we'll just use the clr, it's there
         // On mac / linux if we've picked CoreClr stick with that
@@ -254,7 +260,7 @@ export const isSupportedRuntime = memoize(function(ctx: RuntimeContext) {
     })
         //.do(ct => console.log(`Supported runtime for "${Runtime[ct.runtime]}" was: ${Runtime[ct.runtime]}`))
         .cache(1);
-}, function({platform, arch, runtime, version}: RuntimeContext) { return `${arch}-${platform}:${Runtime[runtime]}:${version}`; });
+}, function ({platform, arch, runtime, version}: RuntimeContext) { return `${arch}-${platform}:${Runtime[runtime]}:${version}`; });
 
 function findOmnisharpExecuable(runtimeId: string, location: string): Observable<boolean> {
     return Observable.merge(

@@ -9,7 +9,6 @@ export * from "./omnisharp-server";
 export * from "./reactive/reactive-client";
 export * from "./reactive/reactive-observation-client";
 export * from "./reactive/reactive-combination-client";
-export * from "./disposables";
 
 export * from "./candidate-finder";
 export * from "./enums";

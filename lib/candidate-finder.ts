@@ -3,7 +3,7 @@ import {ILogger} from "./enums";
 import {join, dirname, sep, normalize} from "path";
 import {Observable, Scheduler, Subscription} from "rxjs";
 import "rxjs/add/operator/distinctKey";
-import {CompositeDisposable} from "./disposables";
+import {CompositeDisposable} from "ts-disposables";
 import {createObservable} from "./operators/create";
 import {readFileSync} from "fs";
 const glob: (file: string[], options?: any) => Promise<string[]> = require("globby");
@@ -100,7 +100,7 @@ export const findCandidates = (function() {
 
     (<any>findCandidates).withCandidates = realFindCandidates;
 
-    return <{ (location: string, logger: ILogger, options: Options = {}): Observable<string[]>; withCandidates: typeof realFindCandidates }>findCandidates;
+    return <{ (location: string, logger: ILogger, options?: Options): Observable<string[]>; withCandidates: typeof realFindCandidates }>findCandidates;
 })();
 
 function squashCandidates(candidates: string[]) {

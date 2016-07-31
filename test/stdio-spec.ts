@@ -25,7 +25,7 @@ describe("Omnisharp Local - Stdio", function() {
         });
     });
 
-    describe("properties", function() {
+    describe("properties", function(this: Mocha.ITestDefinition) {
         this.timeout(60000);
         it("should implement the interface", function(done) {
             done = once(done);

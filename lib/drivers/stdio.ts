@@ -4,7 +4,7 @@ import {defaults, startsWith, noop, trimStart} from "lodash";
 import {DriverState} from "../enums";
 import cp, {ChildProcess} from "child_process";
 import * as readline from "readline";
-import {CompositeDisposable, Disposable} from "../disposables";
+import {CompositeDisposable, Disposable} from "ts-disposables";
 import {Observable, AsyncSubject} from "rxjs";
 import {RuntimeContext, isSupportedRuntime} from "../helpers/runtime";
 
@@ -16,19 +16,19 @@ if (process.platform === "win32") {
 let env: any = defaults({ ATOM_SHELL_INTERNAL_RUN_AS_NODE: "1" }, process.env);
 export class StdioDriver implements IDriver {
     private _seq: number;
-    private _process: ChildProcess;
+    private _process: ChildProcess | null;
     private _outstandingRequests = new Map<number, AsyncSubject<any>>();
     private _projectPath: string;
     private _additionalArguments: string[];
     private _disposable = new CompositeDisposable();
     private _plugins: IOmnisharpPlugin[];
-    private _serverPath: string;
+    private _serverPath: string | undefined;
 
     private _findProject: boolean;
     private _logger: ILogger;
     private _timeout: number;
     private _runtime: Runtime;
-    private _version: string;
+    private _version: string | undefined;
     private _PATH: string;
     private _runtimeContext: RuntimeContext;
     public id: string;
@@ -47,8 +47,8 @@ export class StdioDriver implements IDriver {
         this._serverPath = serverPath;
         this._timeout = (timeout || 60) * 1000;
         this._runtime = runtime || Runtime.ClrOrMono;
-        this._additionalArguments = additionalArguments;
-        this._plugins = plugins;
+        this._additionalArguments = additionalArguments || [];
+        this._plugins = plugins || [];
         this._version = version;
         this._onEvent = onEvent || noop;
         this._onState = (state) => {
@@ -237,9 +237,9 @@ export class StdioDriver implements IDriver {
         // And we will only commit to the promise once someone calls then on it.
         // This way another client, can cast the result to an observable, and gain cancelation
         const promiseLike: PromiseLike<TResponse> = <any>response;
-        promiseLike.then = (fulfilled: Function, rejected: Function) => {
+        promiseLike.then = <any>((fulfilled: Function, rejected: Function) => {
             return response.toPromise().then(<any>fulfilled, <any>rejected);
-        };
+        });
 
         this._outstandingRequests.set(sequence, subject);
         this._process.stdin.write(JSON.stringify(packet) + "\n", "utf8");
@@ -247,7 +247,7 @@ export class StdioDriver implements IDriver {
     }
 
     private handleData(data: string) {
-        let packet: OmniSharp.Stdio.Protocol.Packet;
+        let packet: OmniSharp.Stdio.Protocol.Packet | undefined;
         try {
             packet = JSON.parse(data.trim());
         } catch (_error) {
@@ -269,7 +269,7 @@ export class StdioDriver implements IDriver {
 
     private handlePacketResponse(response: OmniSharp.Stdio.Protocol.ResponsePacket) {
         if (this._outstandingRequests.has(response.Request_seq)) {
-            const observer = this._outstandingRequests.get(response.Request_seq);
+            const observer = this._outstandingRequests.get(response.Request_seq)!;
             this._outstandingRequests.delete(response.Request_seq);
             if (observer.isUnsubscribed) return;
             if (response.Success) {

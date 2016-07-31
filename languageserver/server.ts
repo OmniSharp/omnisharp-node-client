@@ -126,10 +126,10 @@ connection.onDidChangeTextDocument(({textDocument, contentChanges}) => {
             (<Models.LinePositionSpanTextChange>{
                 NewText: change.text,
                 FileName: fromUri(textDocument),
-                StartColumn: change.range.start.character,
-                StartLine: change.range.start.line,
-                EndColumn: change.range.end.character,
-                EndLine: change.range.end.line,
+                StartColumn: change.range!.start.character,
+                StartLine: change.range!.start.line,
+                EndColumn: change.range!.end.character,
+                EndLine: change.range!.end.line,
             }));
         client.updatebuffer({
             FileName: fromUri(textDocument),
@@ -190,7 +190,7 @@ connection.onCompletion(({textDocument, position}: TextDocumentPositionParams) =
                 detail: value.Description,
                 documentation: value.MethodHeader,
                 filterText: value.CompletionText,
-                kind: CompletionItemKind[value.Kind],
+                kind: <any>CompletionItemKind[<any>value.Kind],
                 sortText: value.DisplayText
             };
         }))
@@ -251,7 +251,7 @@ connection.onReferences(({context, textDocument, position}) => {
 connection.onWorkspaceSymbol(({query}) => {
     return client.findsymbols({ Filter: query })
         .map(results => _.map(<Models.SymbolLocation[]>results.QuickFixes, fix => (<SymbolInformation>{
-            kind: SymbolKind[fix.Kind] || SymbolKind.Variable,
+            kind: <any>SymbolKind[<any>fix.Kind] || SymbolKind.Variable,
             name: fix.Text,
             location: getLocation(fix)
         })))

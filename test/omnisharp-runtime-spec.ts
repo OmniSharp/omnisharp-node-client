@@ -23,7 +23,7 @@ describe("Omnisharp Runtime", function() {
             .toPromise();
     });
 
-    it("should download the runtimes", function() {
+    it("should download the runtimes", function(this: Mocha.ITestDefinition) {
         this.timeout(60000);
         const dir = resolve(__dirname, "fixture/rtt/default/");
         try { require("rimraf").sync(dir); } catch (e) { /* */ }
@@ -41,7 +41,7 @@ describe("Omnisharp Runtime", function() {
             .toPromise();
     });
 
-    it("should download a specific runtime", function() {
+    it("should download a specific runtime", function(this: Mocha.ITestDefinition) {
         this.timeout(60000);
         const dir = resolve(__dirname, "fixture/rtt/specific/");
         try { require("rimraf").sync(dir); } catch (e) { /* */ }
