@@ -1,4 +1,4 @@
-import _ from "lodash";
+import * as _ from "lodash";
 import {ILogger} from "./enums";
 import {join, dirname, sep, normalize} from "path";
 import {Observable, Scheduler, Subscription} from "rxjs";

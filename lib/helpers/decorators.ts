@@ -1,5 +1,5 @@
 import * as OmniSharp from "../omnisharp-server";
-import _ from "lodash";
+import * as _ from "lodash";
 import { Subject, Observable } from "rxjs";
 import { ResponseContext } from "../contexts";
 

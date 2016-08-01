@@ -2,7 +2,7 @@ import * as OmniSharp from "../omnisharp-server";
 import {IDriver, IDriverOptions, ILogger, Runtime, IOmnisharpPlugin} from "../enums";
 import {defaults, startsWith, noop, trimStart} from "lodash";
 import {DriverState} from "../enums";
-import cp, {ChildProcess} from "child_process";
+import * as cp from "child_process";
 import * as readline from "readline";
 import {CompositeDisposable, Disposable} from "ts-disposables";
 import {Observable, AsyncSubject} from "rxjs";
@@ -16,7 +16,7 @@ if (process.platform === "win32") {
 let env: any = defaults({ ATOM_SHELL_INTERNAL_RUN_AS_NODE: "1" }, process.env);
 export class StdioDriver implements IDriver {
     private _seq: number;
-    private _process: ChildProcess | null;
+    private _process: cp.ChildProcess | null;
     private _outstandingRequests = new Map<number, AsyncSubject<any>>();
     private _projectPath: string;
     private _additionalArguments: string[];

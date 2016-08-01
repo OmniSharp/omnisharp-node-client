@@ -1,4 +1,4 @@
-import _ from "lodash";
+import * as _ from "lodash";
 import {CoreClientOptions} from "./enums";
 
 export function ensureClientOptions(options: CoreClientOptions) {

@@ -1,5 +1,5 @@
 import * as OmniSharp from "../omnisharp-server";
-import _ from "lodash";
+import * as _ from "lodash";
 
 export type PreconditionMethod = ((request: any) => void);
 

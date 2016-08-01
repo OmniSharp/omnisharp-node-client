@@ -17,7 +17,7 @@
     under the License.
 */
 
-import cp from "child_process";
+import * as cp from "child_process";
 import {existsSync} from "fs";
 import {extname} from "path";
 var win32 = "win32" === process.platform;

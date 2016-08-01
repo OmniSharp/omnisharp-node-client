@@ -1,5 +1,6 @@
-import {Models, ReactiveClient, Runtime, DriverState} from "../lib/omnisharp-client";
-import _ from "lodash";
+import { Models, ReactiveClient, Runtime, DriverState } from "../lib/omnisharp-client";
+import * as _ from "lodash";
+import {Observable} from 'rxjs';
 
 import {
     StreamMessageReader, StreamMessageWriter,
@@ -14,7 +15,6 @@ import {
 } from "vscode-languageserver";
 
 let connection: IConnection = createConnection(new StreamMessageReader(process.stdin), new StreamMessageWriter(process.stdout));
-
 let client: ReactiveClient;
 
 // After the server has started the client sends an initilize request. The server receives
@@ -41,16 +41,33 @@ connection.onInitialize((params) => {
     });
 
     client.observe.events.subscribe(event => {
-        connection.telemetry.logEvent(event);
+        connection.console.info(JSON.stringify(event));
     });
 
     client.observe.requests.subscribe(event => {
-        connection.telemetry.logEvent(event);
+        connection.console.info(JSON.stringify(event));
     });
 
     client.observe.responses.subscribe(event => {
-        connection.telemetry.logEvent(event);
+        connection.console.info(JSON.stringify(event));
     });
+
+    /*
+     * Little big of magic here
+     * This will wait for the server to update all the buffers after a rename operation
+     * And then update the diagnostics for all of the buffers.
+     */
+    client.observe.rename
+        .mergeMap(rename => {
+            return client.observe.updatebuffer
+                .debounceTime(1000)
+                .take(1)
+                .mergeMap(() => {
+                    // TODO: Add a nicer way to queue many files here to omnisharp...
+                    return Observable.merge(..._.map(rename.response.Changes, item => client.diagnostics({ FileName: item.FileName })));
+                });
+        })
+        .subscribe();
 
     return client.state
         .filter(x => x === DriverState.Connected)
@@ -348,12 +365,18 @@ connection.onRenameRequest(({textDocument, position, newName}) => {
         FileName: fromUri(textDocument),
         Line: position.line,
         Column: position.character,
-        RenameTo: newName
+        RenameTo: newName,
+        ApplyTextChanges: false,
+        WantsTextChanges: true
     })
         .map(item => {
             const changes: { [uri: string]: TextEdit[]; } = {};
-            _.each(item.Changes, result => {
-                changes[toUri(result)] = getTextEdits(result);
+            _.each(_.groupBy(item.Changes, x => x.FileName), (result, key) => {
+                changes[toUriString(key)] = _.flatMap(
+                    result,
+                    item => {
+                        return _.map(item.Changes, getTextEdit);
+                    });
             });
             return { changes };
         })
@@ -363,17 +386,17 @@ connection.onRenameRequest(({textDocument, position, newName}) => {
 // Listen on the connection
 connection.listen();
 
-function getRange(fix: { StartColumn: number; StartLine: number; EndColumn: number; EndLine: number; }): Range;
-function getRange(fix: { Column: number; Line: number; EndColumn: number; EndLine: number; }): Range;
-function getRange(fix: { Column: number; Line: number; StartColumn: number; StartLine: number; EndColumn: number; EndLine: number; }) {
+function getRange(item: { StartColumn: number; StartLine: number; EndColumn: number; EndLine: number; }): Range;
+function getRange(item: { Column: number; Line: number; EndColumn: number; EndLine: number; }): Range;
+function getRange(item: { Column?: number; Line?: number; StartColumn?: number; StartLine?: number; EndColumn: number; EndLine: number; }) {
     return <Range>{
         start: {
-            character: fix.Column || fix.StartColumn || 0,
-            line: fix.Line || fix.StartLine || 0
+            character: item.Column || item.StartColumn || 0,
+            line: item.Line || item.StartLine || 0
         },
         end: {
-            character: fix.EndColumn,
-            line: fix.EndLine
+            character: item.EndColumn,
+            line: item.EndLine
         }
     };
 }
@@ -415,16 +438,7 @@ function getDiagnostic(item: Models.DiagnosticLocation) {
     return <Diagnostic>{
         severity: sev,
         message: item.Text,
-        range: {
-            start: {
-                line: item.Line,
-                character: item.Column
-            },
-            end: {
-                line: item.EndLine,
-                character: item.EndColumn
-            }
-        }
+        range: getRange(item)
     };
 }
 

@@ -2,7 +2,7 @@ export interface IDecompressOptions {
     mode?: string;
     strip?: number;
 }
-import _ from "lodash";
+import * as _ from "lodash";
 /* tslint:disable:variable-name */
 const d = require("decompress");
 /* tslint:enable:variable-name */

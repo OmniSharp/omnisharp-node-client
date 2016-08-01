@@ -3,7 +3,7 @@ import {expect} from "chai";
 import {DriverState} from "../lib/enums";
 import {resolve} from "path";
 import {ReactiveClient as OmnisharpClient} from "../lib/reactive/reactive-client";
-import _ from "lodash";
+import * as _ from "lodash";
 import {Observable} from "rxjs";
 
 declare const xdescribe: Function;

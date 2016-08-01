@@ -1,7 +1,7 @@
 import * as OmniSharp from "../omnisharp-server";
 import {ReplaySubject, Observable} from "rxjs";
 import {CompositeDisposable, Disposable, IDisposable} from "ts-disposables";
-import _ from "lodash";
+import * as _ from "lodash";
 import {ReactiveClient} from "./reactive-client";
 import {setMergeOrAggregate, getInternalKey, makeObservable} from "../helpers/decorators";
 import {DriverState, OmnisharpClientStatus} from "../enums";
