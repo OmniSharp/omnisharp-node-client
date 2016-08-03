@@ -1,6 +1,6 @@
 import { Models, ReactiveClient, Runtime, DriverState } from "../lib/omnisharp-client";
 import * as _ from "lodash";
-import {Observable} from 'rxjs';
+import { Observable } from 'rxjs';
 
 import {
     StreamMessageReader, StreamMessageWriter,
@@ -11,8 +11,10 @@ import {
     CompletionList,
     SignatureHelp, SignatureInformation, ParameterInformation,
     SymbolInformation, SymbolKind, Range, Command, TextEdit,
-    NotificationType, Files
+    NotificationType, Files, ServerCapabilities
 } from "vscode-languageserver";
+
+import { ExtendedServerCapabilities, CodeAction, CodeActionList, GetCodeActionsParams, GetCodeActionsRequest, RunCodeActionParams, RunCodeActionRequest } from './server-extended';
 
 let connection: IConnection = createConnection(new StreamMessageReader(process.stdin), new StreamMessageWriter(process.stdout));
 let client: ReactiveClient;
@@ -77,7 +79,7 @@ connection.onInitialize((params) => {
             client.diagnostics({});
         })
         .map(() => ({
-            capabilities: {
+            capabilities: <ExtendedServerCapabilities & ServerCapabilities>{
                 //textDocumentSync: TextDocumentSyncKind.Full,
                 // Not currently supported
                 textDocumentSync: TextDocumentSyncKind.Incremental,
@@ -88,7 +90,6 @@ connection.onInitialize((params) => {
                     resolveProvider: true
                 },
                 definitionProvider: true,
-                codeActionProvider: true,
                 //documentFormattingProvider: true,
                 documentOnTypeFormattingProvider: {
                     firstTriggerCharacter: "}",
@@ -102,7 +103,11 @@ connection.onInitialize((params) => {
                 signatureHelpProvider: {
                     triggerCharacters: ["("]
                 },
-                workspaceSymbolProvider: true
+                workspaceSymbolProvider: true,
+                extended: {
+                    getCodeActionsProvider: true,
+                    runCodeActionProvider: true
+                }
             }
         }))
         .toPromise();
@@ -275,27 +280,6 @@ connection.onWorkspaceSymbol(({query}) => {
         .toPromise();
 });
 
-connection.onCodeAction(({textDocument, range, context}) => {
-    return client.getcodeactions({
-        FileName: fromUri(textDocument),
-        Selection: {
-            Start: {
-                Column: range.start.character,
-                Line: range.start.line
-            },
-            End: {
-                Column: range.end.character,
-                Line: range.end.line
-            }
-        }
-    })
-        .map(z => _.map(z.CodeActions, action => (<Command>{
-            command: action.Identifier,
-            title: action.Name
-        })))
-        .toPromise();
-});
-
 connection.onCodeLens(({textDocument}) => {
     return client.currentfilemembersasflat({
         FileName: fromUri(textDocument)
@@ -369,17 +353,37 @@ connection.onRenameRequest(({textDocument, position, newName}) => {
         ApplyTextChanges: false,
         WantsTextChanges: true
     })
+        .map(toWorkspaceEdit)
+        .toPromise();
+});
+
+connection.onRequest(GetCodeActionsRequest.type, ({textDocument, range, context}) => {
+    return client.getcodeactions({
+        FileName: fromUri(textDocument),
+        Selection: fromRange(range)
+    })
         .map(item => {
-            const changes: { [uri: string]: TextEdit[]; } = {};
-            _.each(_.groupBy(item.Changes, x => x.FileName), (result, key) => {
-                changes[toUriString(key)] = _.flatMap(
-                    result,
-                    item => {
-                        return _.map(item.Changes, getTextEdit);
-                    });
+            const codeActions = _.map(item.CodeActions, codeAction => {
+                return {
+                    name: codeAction.Name,
+                    identifier: codeAction.Identifier
+                };
             });
-            return { changes };
+
+            return { codeActions };
         })
+        .toPromise();
+});
+
+connection.onRequest(RunCodeActionRequest.type, ({textDocument, range, context, identifier}) => {
+    return client.runcodeaction({
+        FileName: fromUri(textDocument),
+        Selection: fromRange(range),
+        Identifier: identifier,
+        WantsTextChanges: true,
+        ApplyTextChanges: false
+    })
+        .map(toWorkspaceEdit)
         .toPromise();
 });
 
@@ -446,8 +450,33 @@ function fromUri(document: { uri: string; }) {
     return Files.uriToFilePath(document.uri);
 }
 
+function fromRange(range: Range): Models.V2.Range {
+    return {
+        Start: {
+            Column: range.start.character,
+            Line: range.start.line
+        },
+        End: {
+            Column: range.end.character,
+            Line: range.end.line
+        }
+    };
+}
+
 function toUri(result: { FileName: string; }) {
     return toUriString(result.FileName);
+}
+
+function toWorkspaceEdit(item: { Changes: Models.ModifiedFileResponse[] }) {
+    const changes: { [uri: string]: TextEdit[]; } = {};
+    _.each(_.groupBy(item.Changes, x => x.FileName), (result, key) => {
+        changes[toUriString(key)] = _.flatMap(
+            result,
+            item => {
+                return _.map(item.Changes, getTextEdit);
+            });
+    });
+    return { changes };
 }
 
 // TODO: this code isn't perfect
