@@ -55,8 +55,5 @@
     "vendor",
     "typings/browser",
     "typings/browser.d.ts"
-  ],
-  "atom": {
-    "rewriteTsconfig": false
-  }
+  ]
 }

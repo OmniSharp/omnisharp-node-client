@@ -1,5 +1,5 @@
-import { Models, ReactiveClient, Runtime, DriverState } from "../lib/omnisharp-client";
-import * as _ from "lodash";
+import { Models, ReactiveClient, Runtime, DriverState } from '../lib/omnisharp-client';
+import * as _ from 'lodash';
 import { Observable } from 'rxjs';
 
 import {
@@ -12,7 +12,7 @@ import {
     SignatureHelp, SignatureInformation, ParameterInformation,
     SymbolInformation, SymbolKind, Range, Command, TextEdit,
     NotificationType, Files, ServerCapabilities, Position
-} from "vscode-languageserver";
+} from 'vscode-languageserver';
 
 import { ExtendedServerCapabilities, CodeAction, CodeActionList, GetCodeActionsParams, GetCodeActionsRequest, Highlight, HighlightNotification, ImplementationRequest, NavigateRequest, RunCodeActionParams, RunCodeActionRequest, PublishHighlightParams } from './server-extended';
 
@@ -37,8 +37,8 @@ connection.onInitialize((params) => {
         projectPath: params.rootPath,
         runtime: Runtime.CoreClr,
         logger: {
-            log: (message) => { connection.telemetry.logEvent({ type: "log", message }); },
-            error: (message) => { connection.telemetry.logEvent({ type: "error", message }); }
+            log: (message) => { connection.telemetry.logEvent({ type: 'log', message }); },
+            error: (message) => { connection.telemetry.logEvent({ type: 'error', message }); }
         }
     });
 
@@ -120,8 +120,8 @@ connection.onInitialize((params) => {
                 definitionProvider: true,
                 //documentFormattingProvider: true,
                 documentOnTypeFormattingProvider: {
-                    firstTriggerCharacter: "}",
-                    moreTriggerCharacter: [";"]
+                    firstTriggerCharacter: '}',
+                    moreTriggerCharacter: [';']
                 },
                 documentRangeFormattingProvider: true,
                 //documentSymbolProvider: true,
@@ -129,7 +129,7 @@ connection.onInitialize((params) => {
                 referencesProvider: true,
                 renameProvider: true,
                 signatureHelpProvider: {
-                    triggerCharacters: ["("]
+                    triggerCharacters: ['(']
                 },
                 workspaceSymbolProvider: true,
                 extended: {
@@ -238,7 +238,7 @@ connection.onCompletion(({textDocument, position}: TextDocumentPositionParams) =
             WantMethodHeader: true,
             WantReturnType: true,
             WantSnippet: false,
-            WordToComplete: ""
+            WordToComplete: ''
         }).map(x => _.map(x, value => {
             return <CompletionItem>{
                 label: value.DisplayText,
@@ -513,13 +513,13 @@ function getTextEdits(response: { Changes: Models.LinePositionSpanTextChange[] }
 
 function getDiagnostic(item: Models.DiagnosticLocation) {
     let sev = DiagnosticSeverity.Error;
-    if (item.LogLevel === "Warning") {
+    if (item.LogLevel === 'Warning') {
         sev = DiagnosticSeverity.Warning;
     }
-    if (item.LogLevel === "Hidden") {
+    if (item.LogLevel === 'Hidden') {
         sev = DiagnosticSeverity.Hint;
     }
-    if (item.LogLevel === "Information") {
+    if (item.LogLevel === 'Information') {
         sev = DiagnosticSeverity.Information;
     }
 
@@ -565,5 +565,5 @@ function toWorkspaceEdit(item: { Changes: Models.ModifiedFileResponse[] }) {
 
 // TODO: this code isn't perfect
 function toUriString(path: string) {
-    return `file://${process.platform === "win32" ? "/" : ""}${path.replace(":", encodeURIComponent(":"))}`;
+    return `file://${process.platform === 'win32' ? '/' : ''}${path.replace(':', encodeURIComponent(':'))}`;
 }
