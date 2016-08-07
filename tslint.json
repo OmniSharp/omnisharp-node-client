@@ -133,7 +133,7 @@
             "fields-first",
             "statics-first"
         ],
-        "missing-jsdoc": true,
+        "missing-jsdoc": false,
         "new-parens": true,
         "no-construct": true,
         "no-constructor-vars": true,
@@ -248,10 +248,6 @@
         /**
         * Codelyzer
         */
-        "import-destructuring-spacing": true,
-        /**
-         *   Custom Rules
-         */
-        "order-imports": true
+        "import-destructuring-spacing": true
     }
 }

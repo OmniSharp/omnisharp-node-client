@@ -1,5 +1,5 @@
-import * as OmniSharp from "../omnisharp-server";
-import * as _ from "lodash";
+import * as OmniSharp from '../omnisharp-server';
+import * as _ from 'lodash';
 
 export type PreconditionMethod = ((request: any) => void);
 
@@ -48,7 +48,7 @@ function any(...properties: string[]) {
         });
 
         if (!anyMatch) {
-            const errorText = `${properties.join(" || ")}  must not be null.`;
+            const errorText = `${properties.join(' || ')}  must not be null.`;
             throw new Error(errorText);
         }
     };
@@ -59,7 +59,7 @@ export function getPreconditions(key: string) {
     return preconditions[key.toLocaleLowerCase()] || [];
 }
 
-preconditions["/v2/getcodeactions"] = [
+preconditions['/v2/getcodeactions'] = [
     isNotNull(`FileName`),
     precondition((x: any) => !x.Selection,
         isNotNull(`Line`),
@@ -77,7 +77,7 @@ preconditions["/v2/getcodeactions"] = [
         isAboveZero(`Selection.End.Column`))
 ];
 
-preconditions["/v2/runcodeaction"] = [
+preconditions['/v2/runcodeaction'] = [
     isNotNull(`FileName`),
     isNotNull(`Identifier`),
     precondition((x: any) => !x.Selection,
@@ -97,12 +97,12 @@ preconditions["/v2/runcodeaction"] = [
 ];
 
 // OmniSharp.Models.UpdateBufferRequest
-preconditions["/updatebuffer"] = [
+preconditions['/updatebuffer'] = [
     isNotNull(`FileName`)
 ];
 
 // OmniSharp.Models.ChangeBufferRequest
-preconditions["/changebuffer"] = [
+preconditions['/changebuffer'] = [
     isNotNull(`FileName`),
     isNotNull(`NewText`),
     isNotNull(`StartLine`),
@@ -116,7 +116,7 @@ preconditions["/changebuffer"] = [
 ];
 
 // OmniSharp.Models.FormatAfterKeystrokeRequest
-preconditions["/formatafterkeystroke"] = [
+preconditions['/formatafterkeystroke'] = [
     isNotNull(`FileName`),
     isNotNull(`Line`),
     isAboveZero(`Line`),
@@ -126,7 +126,7 @@ preconditions["/formatafterkeystroke"] = [
 ];
 
 // OmniSharp.Models.FormatRangeRequest
-preconditions["/formatrange"] = [
+preconditions['/formatrange'] = [
     isNotNull(`FileName`),
     isNotNull(`Line`),
     isAboveZero(`Line`),
@@ -139,12 +139,12 @@ preconditions["/formatrange"] = [
 ];
 
 // OmniSharp.Models.CodeFormatRequest
-preconditions["/codeformat"] = [
+preconditions['/codeformat'] = [
     isNotNull(`FileName`)
 ];
 
 // OmniSharp.Models.AutoCompleteRequest
-preconditions["/autocomplete"] = [
+preconditions['/autocomplete'] = [
     isNotNull(`FileName`),
     isNotNull(`Line`),
     isAboveZero(`Line`),
@@ -154,7 +154,7 @@ preconditions["/autocomplete"] = [
 ];
 
 // OmniSharp.Models.FindImplementationsRequest
-preconditions["/findimplementations"] = [
+preconditions['/findimplementations'] = [
     isNotNull(`FileName`),
     isNotNull(`Line`),
     isAboveZero(`Line`),
@@ -163,12 +163,12 @@ preconditions["/findimplementations"] = [
 ];
 
 // OmniSharp.Models.FindSymbolsRequest
-preconditions["/findsymbols"] = [
+preconditions['/findsymbols'] = [
     isNotNull(`Filter`)
 ];
 
 // OmniSharp.Models.FindUsagesRequest
-preconditions["/findusages"] = [
+preconditions['/findusages'] = [
     isNotNull(`FileName`),
     isNotNull(`Line`),
     isAboveZero(`Line`),
@@ -177,12 +177,12 @@ preconditions["/findusages"] = [
 ];
 
 // OmniSharp.Models.FixUsingsRequest
-preconditions["/fixusings"] = [
+preconditions['/fixusings'] = [
     isNotNull(`FileName`)
 ];
 
 // OmniSharp.Models.GotoDefinitionRequest
-preconditions["/gotodefinition"] = [
+preconditions['/gotodefinition'] = [
     isNotNull(`FileName`),
     isNotNull(`Line`),
     isAboveZero(`Line`),
@@ -191,7 +191,7 @@ preconditions["/gotodefinition"] = [
 ];
 
 // OmniSharp.Models.NavigateUpRequest
-preconditions["/navigateup"] = [
+preconditions['/navigateup'] = [
     isNotNull(`FileName`),
     isNotNull(`Line`),
     isAboveZero(`Line`),
@@ -200,28 +200,28 @@ preconditions["/navigateup"] = [
 ];
 
 // OmniSharp.Models.GotoFileRequest
-preconditions["/gotofile"] = [
+preconditions['/gotofile'] = [
     isNotNull(`FileName`)
 ];
 
 // OmniSharp.Models.GotoRegionRequest
-preconditions["/gotoregion"] = [
+preconditions['/gotoregion'] = [
     isNotNull(`FileName`)
 ];
 
 // OmniSharp.Models.HighlightRequest
-preconditions["/highlight"] = [
+preconditions['/highlight'] = [
     isNotNull(`FileName`)
 ];
 
 // OmniSharp.Models.MetadataRequest
-preconditions["/metadata"] = [
+preconditions['/metadata'] = [
     isNotNull(`AssemblyName`),
     isNotNull(`TypeName`)
 ];
 
 // OmniSharp.Models.NavigateDownRequest
-preconditions["/navigatedown"] = [
+preconditions['/navigatedown'] = [
     isNotNull(`FileName`),
     isNotNull(`Line`),
     isAboveZero(`Line`),
@@ -230,24 +230,24 @@ preconditions["/navigatedown"] = [
 ];
 
 // OmniSharp.Models.PackageSearchRequest
-preconditions["/packagesearch"] = [
+preconditions['/packagesearch'] = [
     isNotNull(`ProjectPath`),
     isNotNull(`Search`)
 ];
 
 // OmniSharp.Models.PackageSourceRequest
-preconditions["/packagesource"] = [
+preconditions['/packagesource'] = [
     isNotNull(`ProjectPath`)
 ];
 
 // OmniSharp.Models.PackageVersionRequest
-preconditions["/packageversion"] = [
+preconditions['/packageversion'] = [
     isNotNull(`ProjectPath`),
     isNotNull(`Id`)
 ];
 
 // OmniSharp.Models.RenameRequest
-preconditions["/rename"] = [
+preconditions['/rename'] = [
     isNotNull(`FileName`),
     isNotNull(`Line`),
     isAboveZero(`Line`),
@@ -257,7 +257,7 @@ preconditions["/rename"] = [
 ];
 
 // OmniSharp.Models.SignatureHelpRequest
-preconditions["/signaturehelp"] = [
+preconditions['/signaturehelp'] = [
     isNotNull(`FileName`),
     isNotNull(`Line`),
     isAboveZero(`Line`),
@@ -266,12 +266,12 @@ preconditions["/signaturehelp"] = [
 ];
 
 // OmniSharp.Models.MembersTreeRequest
-preconditions["/currentfilemembersastree"] = [
+preconditions['/currentfilemembersastree'] = [
     isNotNull(`FileName`)
 ];
 
 // OmniSharp.Models.MembersTreeRequest
-preconditions["/fileschanged"] = [
+preconditions['/fileschanged'] = [
     (request: OmniSharp.Models.Request[]) => {
         if (!request) {
             const errorText = `fileschanged must not be null.`;
@@ -285,12 +285,12 @@ preconditions["/fileschanged"] = [
 ];
 
 // OmniSharp.Models.MembersFlatRequest
-preconditions["/currentfilemembersasflat"] = [
+preconditions['/currentfilemembersasflat'] = [
     isNotNull(`FileName`)
 ];
 
 // OmniSharp.Models.TypeLookupRequest
-preconditions["/typelookup"] = [
+preconditions['/typelookup'] = [
     isNotNull(`FileName`),
     isNotNull(`Line`),
     isAboveZero(`Line`),
@@ -299,12 +299,12 @@ preconditions["/typelookup"] = [
 ];
 
 // OmniSharp.Models.v1.ProjectInformationRequest
-preconditions["/project"] = [
+preconditions['/project'] = [
     isNotNull(`FileName`)
 ];
 
 // OmniSharp.Models.TestCommandRequest
-preconditions["/gettestcontext"] = [
+preconditions['/gettestcontext'] = [
     isNotNull(`FileName`),
     isNotNull(`Line`),
     isAboveZero(`Line`),

@@ -59,13 +59,13 @@ function tsTranspile() {
     });
 }
 
-gulp.task('tslint', [], function () {
-    return gulp.src(metadata.lib)
-        .pipe(ctx.tslint())
-        .pipe(ctx.tslint.report('prose'));
-});
+// gulp.task('tslint', [], function () {
+//     return gulp.src(metadata.lib)
+//         .pipe(ctx.tslint())
+//         .pipe(ctx.tslint.report('prose'));
+// });
 
-gulp.task('typescript', ['tslint', 'clean'], function () {
+gulp.task('typescript', ['clean'], function () {
     var tsResult = tsProject.src()
         //.pipe(ctx.tslint())
         //.pipe(ctx.tslint.report('prose'))

@@ -1,12 +1,12 @@
-import * as _ from "lodash";
-import {ILogger} from "./enums";
-import {join, dirname, sep, normalize} from "path";
-import {Observable, Scheduler, Subscription} from "rxjs";
-import "rxjs/add/operator/distinctKey";
-import {CompositeDisposable} from "ts-disposables";
-import {createObservable} from "./operators/create";
-import {readFileSync} from "fs";
-const glob: (file: string[], options?: any) => Promise<string[]> = require("globby");
+import * as _ from 'lodash';
+import { ILogger } from './enums';
+import { join, dirname, sep, normalize } from 'path';
+import { Observable, Scheduler, Subscription } from 'rxjs';
+import 'rxjs/add/operator/distinctKey';
+import { CompositeDisposable } from 'ts-disposables';
+import { createObservable } from './operators/create';
+import { readFileSync } from 'fs';
+const glob: (file: string[], options?: any) => Promise<string[]> = require('globby');
 
 export interface Options {
     solutionFilesToSearch?: string[];
@@ -49,7 +49,7 @@ export class Candidate {
 
     constructor(originalFile: string, predicate: (path: string) => boolean) {
         this.originalFile = originalFile = normalize(originalFile);
-        this.path = _.endsWith(originalFile, ".sln") ? originalFile : dirname(originalFile);
+        this.path = _.endsWith(originalFile, '.sln') ? originalFile : dirname(originalFile);
         this.isProject = predicate(originalFile);
 
         Object.freeze(this);
@@ -60,14 +60,14 @@ export class Candidate {
     }
 }
 
-export const findCandidates = (function() {
+export const findCandidates = (function () {
     function realFindCandidates(location: string, logger: ILogger, options: Options = {}) {
         location = _.trimEnd(location, sep);
 
-        const solutionFilesToSearch = options.solutionFilesToSearch || (options.solutionFilesToSearch = ["global.json", "*.sln"]);
-        const projectFilesToSearch = options.projectFilesToSearch || (options.projectFilesToSearch = ["project.json", "*.csproj"]);
-        const sourceFilesToSearch = options.sourceFilesToSearch || (options.sourceFilesToSearch = ["*.cs"]);
-        const solutionIndependentSourceFilesToSearch = options.solutionIndependentSourceFilesToSearch || (options.solutionIndependentSourceFilesToSearch = ["*.csx"]);
+        const solutionFilesToSearch = options.solutionFilesToSearch || (options.solutionFilesToSearch = ['global.json', '*.sln']);
+        const projectFilesToSearch = options.projectFilesToSearch || (options.projectFilesToSearch = ['project.json', '*.csproj']);
+        const sourceFilesToSearch = options.sourceFilesToSearch || (options.sourceFilesToSearch = ['*.cs']);
+        const solutionIndependentSourceFilesToSearch = options.solutionIndependentSourceFilesToSearch || (options.solutionIndependentSourceFilesToSearch = ['*.csx']);
         const maxDepth = options.maxDepth || 10;
 
         const solutionsOrProjects = searchForCandidates(location, solutionFilesToSearch, projectFilesToSearch, maxDepth, logger)
@@ -84,11 +84,11 @@ export const findCandidates = (function() {
 
         const sourceFiles = searchForCandidates(location, sourceFilesToSearch, [], maxDepth, logger);
 
-        const predicate = (path: string) => _.some(solutionFilesToSearch.concat(projectFilesToSearch), pattern => _.endsWith(path, _.trimStart(pattern, "*")));
+        const predicate = (path: string) => _.some(solutionFilesToSearch.concat(projectFilesToSearch), pattern => _.endsWith(path, _.trimStart(pattern, '*')));
 
         return ifEmpty(baseFiles, sourceFiles)
             .map(file => new Candidate(file, predicate))
-            .distinctKey("path")
+            .distinctKey('path')
             .toArray()
             .do(candidates => logger.log(`Omni Project Candidates: Found ${candidates}`));
     }
@@ -128,7 +128,7 @@ function searchForCandidates(location: string, filesToSearch: string[], projectF
             loc,
             files: filesToSearch.map(fileName => join(loc, fileName))
         }))
-        .flatMap(function({loc, files}) {
+        .flatMap(function ({loc, files}) {
             logger.log(`Omni Project Candidates: Searching ${loc} for ${filesToSearch}`);
 
             return Observable.from<string>(files)
@@ -137,10 +137,10 @@ function searchForCandidates(location: string, filesToSearch: string[], projectF
                     if (x.length > 1) {
                         // Handle the unity project case
                         // Also handle optional solutions that may also exist with the unity ones.
-                        const unitySolutionIndex = _.findIndex(x, z => _.endsWith(z, "-csharp.sln"));
+                        const unitySolutionIndex = _.findIndex(x, z => _.endsWith(z, '-csharp.sln'));
                         if (unitySolutionIndex > -1) {
                             const unitySolution = x[unitySolutionIndex];
-                            const baseSolution = unitySolution.substr(0, unitySolution.indexOf("-csharp.sln")) + ".sln";
+                            const baseSolution = unitySolution.substr(0, unitySolution.indexOf('-csharp.sln')) + '.sln';
 
                             const baseSolutionIndex = _.findIndex(x, z => z.toLowerCase() === baseSolution.toLowerCase());
                             if (baseSolutionIndex > -1) {
@@ -150,10 +150,10 @@ function searchForCandidates(location: string, filesToSearch: string[], projectF
                         }
                     }
 
-                    if (_.some(x, file => _.endsWith(file, ".sln"))) {
+                    if (_.some(x, file => _.endsWith(file, '.sln'))) {
                         return x.filter(file => {
                             const content = readFileSync(file).toString();
-                            return _.some(projectFilesToSearch, path => content.indexOf(_.trimStart(path, "*")) > -1);
+                            return _.some(projectFilesToSearch, path => content.indexOf(_.trimStart(path, '*')) > -1);
                         });
                     }
                     return x;

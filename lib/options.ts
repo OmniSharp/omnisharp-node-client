@@ -1,5 +1,5 @@
 import * as _ from "lodash";
-import {CoreClientOptions} from "./enums";
+import { CoreClientOptions } from "./enums";
 
 export function ensureClientOptions(options: CoreClientOptions) {
     if (options.statusSampleTime) options.statusSampleTime = 500;
@@ -27,11 +27,11 @@ export function flattenArguments<T extends { [index: string]: any; }>(obj: T, pr
     const result: any[] = [];
     _.each(obj, (value, key) => {
         if (_.isObject(value)) {
-            result.push(...flattenArguments(value, `${prefix ? prefix + ":" : ""}${key[0].toUpperCase() + key.substr(1) }`));
+            result.push(...flattenArguments(value, `${prefix ? prefix + ":" : ""}${key[0].toUpperCase() + key.substr(1)}`));
             return;
         }
 
-        result.push(`--${prefix ? prefix + ":" : ""}${key[0].toUpperCase() + key.substr(1) }=${value}`);
+        result.push(`--${prefix ? prefix + ":" : ""}${key[0].toUpperCase() + key.substr(1)}=${value}`);
     });
 
     return result;

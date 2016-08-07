@@ -17,10 +17,10 @@
     under the License.
 */
 
-import * as cp from "child_process";
-import {existsSync} from "fs";
-import {extname} from "path";
-var win32 = "win32" === process.platform;
+import * as cp from 'child_process';
+import {existsSync} from 'fs';
+import {extname} from 'path';
+var win32 = 'win32' === process.platform;
 
 /**
  * A windows-compatible spawn method. Succeeds for child exit code === 0.
@@ -44,17 +44,17 @@ export const spawn: typeof cp.spawn = function spawn(cmd: any, args: any, opts: 
     if (win32) {
         // If we couldn't find the file, likely we'll end up failing,
         // but for things like "del", cmd will do the trick.
-        if (extname(cmd).toLowerCase() !== ".exe" && cmd.indexOf(" ") !== -1) {
+        if (extname(cmd).toLowerCase() !== '.exe' && cmd.indexOf(' ') !== -1) {
             // We need to use /s to ensure that spaces are parsed properly with cmd spawned content
-            args = [["/s", "/c", `"${[cmd].concat(args).map(function(a) { if (/^[^"].* .*[^"]/.test(a)) return `"${a}"`; return a; }).join(" ")}"`].join(" ")];
-            cmd = "cmd";
+            args = [['/s', '/c', `"${[cmd].concat(args).map(function(a) { if (/^[^"].* .*[^"]/.test(a)) return `"${a}"`; return a; }).join(' ')}"`].join(' ')];
+            cmd = 'cmd';
         } else if (!existsSync(cmd)) { // 'echo', 'dir', 'del', etc
             // We need to use /s to ensure that spaces are parsed properly with cmd spawned content
-            args = ["/s", "/c", cmd].concat(args);
-            cmd = "cmd";
-        } else if (extname(cmd) !== ".exe") { // *.js, *.bat, etc
-            args = ["/c", cmd].concat(args);
-            cmd = "cmd";
+            args = ['/s', '/c', cmd].concat(args);
+            cmd = 'cmd';
+        } else if (extname(cmd) !== '.exe') { // *.js, *.bat, etc
+            args = ['/c', cmd].concat(args);
+            cmd = 'cmd';
         }
     }
 

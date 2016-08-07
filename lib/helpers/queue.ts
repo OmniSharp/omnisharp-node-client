@@ -1,7 +1,7 @@
-import { isPriorityCommand, isNormalCommand, isDeferredCommand } from "./prioritization";
-import { RequestContext, ResponseContext } from "../contexts";
-import { Observable, AsyncSubject } from "rxjs";
-import { pull, bind } from "lodash";
+import { isPriorityCommand, isNormalCommand, isDeferredCommand } from './prioritization';
+import { RequestContext, ResponseContext } from '../contexts';
+import { Observable, AsyncSubject } from 'rxjs';
+import { pull, bind } from 'lodash';
 
 enum QueuePriority {
     Priority,
@@ -41,7 +41,7 @@ class RequestQueue {
         let i = 0;
         const slots = this.concurrency - this.requests.length;
         do {
-            const item = this.queue.shift()!;
+            const item = this.queue.shift() !;
             this.requests.push(item);
             item.subscribe({
                 complete: () => {

@@ -1,17 +1,17 @@
-import * as OmniSharp from "../omnisharp-server";
-//import {Observable, Subject, AsyncSubject, BehaviorSubject, Subscription} from "rxjs";
-import { IDisposable, CompositeDisposable } from "ts-disposables";
-import { keys, bind, isEqual, uniqueId, each, defaults, cloneDeep } from "lodash";
-import { IAsyncDriver, IDriverOptions, OmnisharpClientStatus, AsyncClientOptions, InternalAsyncClientOptions } from "../enums";
+import * as OmniSharp from '../omnisharp-server';
+// import {Observable, Subject, AsyncSubject, BehaviorSubject, Subscription} from "rxjs";
+import { IDisposable, CompositeDisposable } from 'ts-disposables';
+import { keys, bind, isEqual, uniqueId, each, defaults, cloneDeep } from 'lodash';
+import { IAsyncDriver, IDriverOptions, OmnisharpClientStatus, AsyncClientOptions, InternalAsyncClientOptions } from '../enums';
 /*import {IOmnisharpPlugin, isPluginDriver} from "../enums";*/
-import { DriverState, Runtime } from "../enums";
-import { RequestContext, ResponseContext, CommandContext } from "../contexts";
-import { ensureClientOptions } from "../options";
-import { getPreconditions } from "../helpers/preconditions";
-import { EventEmitter } from "events";
-import { Queue } from "../helpers/queue";
-//import {PluginManager} from "../helpers/plugin-manager";
-import { request } from "../helpers/decorators";
+import { DriverState, Runtime } from '../enums';
+import { RequestContext, ResponseContext, CommandContext } from '../contexts';
+import { ensureClientOptions } from '../options';
+import { getPreconditions } from '../helpers/preconditions';
+import { EventEmitter } from 'events';
+import { Queue } from '../helpers/queue';
+// import {PluginManager} from "../helpers/plugin-manager";
+import { request } from '../helpers/decorators';
 
 /////
 // NOT TESTED
@@ -19,12 +19,12 @@ import { request } from "../helpers/decorators";
 /////
 
 export class AsyncEvents {
-    public static request = "request";
-    public static response = "response";
-    public static status = "response";
-    public static state = "response";
-    public static error = "error";
-    public static event = "event";
+    public static request = 'request';
+    public static response = 'response';
+    public static status = 'response';
+    public static state = 'response';
+    public static error = 'error';
+    public static event = 'event';
 }
 
 export class AsyncClient implements IAsyncDriver, IDisposable {
@@ -36,7 +36,7 @@ export class AsyncClient implements IAsyncDriver, IDisposable {
     }
 
     private _driver: IAsyncDriver;
-    private _uniqueId = uniqueId("client");
+    private _uniqueId = uniqueId('client');
     protected _lowestIndexValue = 0;
     private _disposable = new CompositeDisposable();
     //private _pluginManager: PluginManager;
@@ -101,14 +101,11 @@ export class AsyncClient implements IAsyncDriver, IDisposable {
         return this._listen(AsyncEvents.error, callback);
     }
 
-    //private _observe: ClientEventsCore;
-    //public get observe(): ClientEventsCore { return this._observe; }
-
     private _options: InternalAsyncClientOptions & IDriverOptions;
 
     constructor(_options: AsyncClientOptions) {
         _options.driver = _options.driver || ((options: IDriverOptions) => {
-            const item = require("../drivers/stdio");
+            const item = require('../drivers/stdio');
             const driverFactory = item[keys(item)[0]];
             return new driverFactory(this._options);
         });
@@ -122,22 +119,14 @@ export class AsyncClient implements IAsyncDriver, IDisposable {
                 this._emitter.emit(AsyncEvents.event, event);
             },
             onCommand: (packet) => {
-                const response = new ResponseContext(new RequestContext(this._uniqueId, packet.Command, {}, {}, "command"), packet.Body);
+                const response = new ResponseContext(new RequestContext(this._uniqueId, packet.Command, {}, {}, 'command'), packet.Body);
                 this._respondToRequest(packet.Command, response);
             }
         });
 
         ensureClientOptions(_options);
 
-        //this._pluginManager = new PluginManager(_options.plugins);
         this._resetDriver();
-
-        /*this._disposable.add(this._pluginManager.changed.subscribe(() => {
-            const driver = this._driver;
-            if (isPluginDriver(driver)) {
-                driver.updatePlugins(this._pluginManager.plugins);
-            }
-        }));*/
 
         const getStatusValues = () => <OmnisharpClientStatus>({
             state: this._driver.currentState,
@@ -156,19 +145,18 @@ export class AsyncClient implements IAsyncDriver, IDisposable {
 
         this._emitter.on(AsyncEvents.request, emitStatus);
         this._emitter.on(AsyncEvents.response, emitStatus);
-        //this._observe = new ClientEventsCore(this);
         this._queue = new Queue<PromiseLike<ResponseContext<any, any>>>(this._options.concurrency, bind(this.handleResult, this));
 
         if (this._options.debug) {
             this._emitter.on(AsyncEvents.response, (context: ResponseContext<any, any>) => {
                 this._emitter.emit(AsyncEvents.event, {
-                    Event: "log",
+                    Event: 'log',
                     Body: {
                         Message: `/${context.command}  ${context.responseTime}ms (round trip)`,
-                        LogLevel: "INFORMATION"
+                        LogLevel: 'INFORMATION'
                     },
                     Seq: -1,
-                    Type: "log"
+                    Type: 'log'
                 });
             });
         }
@@ -212,13 +200,13 @@ export class AsyncClient implements IAsyncDriver, IDisposable {
     public log(message: string, logLevel?: string) {
         // log our complete response time
         this._emitter.emit(AsyncEvents.event, {
-            Event: "log",
+            Event: 'log',
             Body: {
                 Message: message,
-                LogLevel: logLevel ? logLevel.toUpperCase() : "INFORMATION"
+                LogLevel: logLevel ? logLevel.toUpperCase() : 'INFORMATION'
             },
             Seq: -1,
-            Type: "log"
+            Type: 'log'
         });
     }
 
@@ -299,43 +287,43 @@ export class AsyncClient implements IAsyncDriver, IDisposable {
 }
 
 // <#GENERATED />
-request(AsyncClient.prototype, "getteststartinfo");
-request(AsyncClient.prototype, "runtest");
-request(AsyncClient.prototype, "autocomplete");
-request(AsyncClient.prototype, "changebuffer");
-request(AsyncClient.prototype, "codecheck");
-request(AsyncClient.prototype, "codeformat");
-request(AsyncClient.prototype, "diagnostics");
-request(AsyncClient.prototype, "close");
-request(AsyncClient.prototype, "open");
-request(AsyncClient.prototype, "filesChanged");
-request(AsyncClient.prototype, "findimplementations");
-request(AsyncClient.prototype, "findsymbols");
-request(AsyncClient.prototype, "findusages");
-request(AsyncClient.prototype, "fixusings");
-request(AsyncClient.prototype, "formatAfterKeystroke");
-request(AsyncClient.prototype, "formatRange");
-request(AsyncClient.prototype, "getcodeactions");
-request(AsyncClient.prototype, "gotodefinition");
-request(AsyncClient.prototype, "gotofile");
-request(AsyncClient.prototype, "gotoregion");
-request(AsyncClient.prototype, "highlight");
-request(AsyncClient.prototype, "currentfilemembersasflat");
-request(AsyncClient.prototype, "currentfilemembersastree");
-request(AsyncClient.prototype, "metadata");
-request(AsyncClient.prototype, "navigatedown");
-request(AsyncClient.prototype, "navigateup");
-request(AsyncClient.prototype, "packagesearch");
-request(AsyncClient.prototype, "packagesource");
-request(AsyncClient.prototype, "packageversion");
-request(AsyncClient.prototype, "rename");
-request(AsyncClient.prototype, "runcodeaction");
-request(AsyncClient.prototype, "signatureHelp");
-request(AsyncClient.prototype, "gettestcontext");
-request(AsyncClient.prototype, "typelookup");
-request(AsyncClient.prototype, "updatebuffer");
-request(AsyncClient.prototype, "project");
-request(AsyncClient.prototype, "projects");
-request(AsyncClient.prototype, "checkalivestatus");
-request(AsyncClient.prototype, "checkreadystatus");
-request(AsyncClient.prototype, "stopserver");
+request(AsyncClient.prototype, 'getteststartinfo');
+request(AsyncClient.prototype, 'runtest');
+request(AsyncClient.prototype, 'autocomplete');
+request(AsyncClient.prototype, 'changebuffer');
+request(AsyncClient.prototype, 'codecheck');
+request(AsyncClient.prototype, 'codeformat');
+request(AsyncClient.prototype, 'diagnostics');
+request(AsyncClient.prototype, 'close');
+request(AsyncClient.prototype, 'open');
+request(AsyncClient.prototype, 'filesChanged');
+request(AsyncClient.prototype, 'findimplementations');
+request(AsyncClient.prototype, 'findsymbols');
+request(AsyncClient.prototype, 'findusages');
+request(AsyncClient.prototype, 'fixusings');
+request(AsyncClient.prototype, 'formatAfterKeystroke');
+request(AsyncClient.prototype, 'formatRange');
+request(AsyncClient.prototype, 'getcodeactions');
+request(AsyncClient.prototype, 'gotodefinition');
+request(AsyncClient.prototype, 'gotofile');
+request(AsyncClient.prototype, 'gotoregion');
+request(AsyncClient.prototype, 'highlight');
+request(AsyncClient.prototype, 'currentfilemembersasflat');
+request(AsyncClient.prototype, 'currentfilemembersastree');
+request(AsyncClient.prototype, 'metadata');
+request(AsyncClient.prototype, 'navigatedown');
+request(AsyncClient.prototype, 'navigateup');
+request(AsyncClient.prototype, 'packagesearch');
+request(AsyncClient.prototype, 'packagesource');
+request(AsyncClient.prototype, 'packageversion');
+request(AsyncClient.prototype, 'rename');
+request(AsyncClient.prototype, 'runcodeaction');
+request(AsyncClient.prototype, 'signatureHelp');
+request(AsyncClient.prototype, 'gettestcontext');
+request(AsyncClient.prototype, 'typelookup');
+request(AsyncClient.prototype, 'updatebuffer');
+request(AsyncClient.prototype, 'project');
+request(AsyncClient.prototype, 'projects');
+request(AsyncClient.prototype, 'checkalivestatus');
+request(AsyncClient.prototype, 'checkreadystatus');
+request(AsyncClient.prototype, 'stopserver');

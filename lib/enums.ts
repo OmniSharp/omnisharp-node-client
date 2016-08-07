@@ -1,7 +1,7 @@
-import {Observable} from "rxjs";
-import {IDisposable} from "ts-disposables";
-import * as OmniSharp from "./omnisharp-server";
-import {RequestContext, ResponseContext, CommandContext} from "./contexts";
+import { Observable } from 'rxjs';
+import { IDisposable } from 'ts-disposables';
+import * as OmniSharp from './omnisharp-server';
+import { RequestContext, ResponseContext, CommandContext } from './contexts';
 
 export enum DriverState {
     Disconnected,

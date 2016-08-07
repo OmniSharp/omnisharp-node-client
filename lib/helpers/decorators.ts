@@ -1,7 +1,7 @@
-import * as OmniSharp from "../omnisharp-server";
-import * as _ from "lodash";
-import { Subject, Observable } from "rxjs";
-import { ResponseContext } from "../contexts";
+import * as OmniSharp from '../omnisharp-server';
+import * as _ from 'lodash';
+import { Subject, Observable } from 'rxjs';
+import { ResponseContext } from '../contexts';
 
 export function getInternalKey(path: string) {
     return `__${path}__`.toLowerCase();
@@ -13,7 +13,7 @@ export function getInternalValue(context: any, path: string) {
 
 export function setEventOrResponse(context: any, path: string) {
     const instance = context._client || context;
-    const isEvent = !_.startsWith(path, "/");
+    const isEvent = !_.startsWith(path, '/');
     const internalKey = getInternalKey(path);
     if (isEvent) {
         const eventKey = path[0].toUpperCase() + path.substr(1);
@@ -43,7 +43,7 @@ export function request(target: Object, propertyKey: string) {
     const descriptor: TypedPropertyDescriptor<any> = {};
     const version = OmniSharp.Api.getVersion(propertyKey);
     let format = (name: string) => `/${name}`;
-    if (version !== "v1") {
+    if (version !== 'v1') {
         format = (name) => `/${version}/${name}`;
     }
 

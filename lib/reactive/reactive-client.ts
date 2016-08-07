@@ -1,15 +1,15 @@
-import * as OmniSharp from "../omnisharp-server";
-import { Observable, Subject, AsyncSubject, BehaviorSubject, Subscription } from "rxjs";
-import { IDisposable, CompositeDisposable } from "ts-disposables";
-import { keys, bind, uniqueId, each, defaults, cloneDeep } from "lodash";
-import { IReactiveDriver, IDriverOptions, OmnisharpClientStatus, ReactiveClientOptions, InternalReactiveClientOptions } from "../enums";
-import { DriverState, Runtime } from "../enums";
-import { RequestContext, ResponseContext, CommandContext } from "../contexts";
-import { ensureClientOptions } from "../options";
-import { isPriorityCommand, isNormalCommand, isDeferredCommand } from "../helpers/prioritization";
-import { createObservable } from "../operators/create";
-import { getPreconditions } from "../helpers/preconditions";
-import { reference, setEventOrResponse, getInternalValue, request, response, event } from "../helpers/decorators";
+import * as OmniSharp from '../omnisharp-server';
+import { Observable, Subject, AsyncSubject, BehaviorSubject, Subscription } from 'rxjs';
+import { IDisposable, CompositeDisposable } from 'ts-disposables';
+import { keys, bind, uniqueId, each, defaults, cloneDeep } from 'lodash';
+import { IReactiveDriver, IDriverOptions, OmnisharpClientStatus, ReactiveClientOptions, InternalReactiveClientOptions } from '../enums';
+import { DriverState, Runtime } from '../enums';
+import { RequestContext, ResponseContext, CommandContext } from '../contexts';
+import { ensureClientOptions } from '../options';
+import { isPriorityCommand, isNormalCommand, isDeferredCommand } from '../helpers/prioritization';
+import { createObservable } from '../operators/create';
+import { getPreconditions } from '../helpers/preconditions';
+import { reference, setEventOrResponse, getInternalValue, request, response, event } from '../helpers/decorators';
 
 function pausable<T>(incomingStream: Observable<T>, pauser: Observable<boolean>) {
     return createObservable<T>(observer => {
@@ -46,7 +46,7 @@ export class ReactiveClient implements IReactiveDriver, IDisposable {
     private _responseStreams = new Map<string, Subject<ResponseContext<any, any>>>();
     private _statusStream: Observable<OmnisharpClientStatus>;
     private _errorStream = new Subject<CommandContext<any>>();
-    private _uniqueId = uniqueId("client");
+    private _uniqueId = uniqueId('client');
     protected _lowestIndexValue = 0;
     private _disposable = new CompositeDisposable();
     //private _pluginManager: PluginManager;
@@ -104,7 +104,7 @@ export class ReactiveClient implements IReactiveDriver, IDisposable {
 
     constructor(_options: ReactiveClientOptions) {
         _options.driver = _options.driver || ((options: IDriverOptions) => {
-            const item = require("../drivers/stdio");
+            const item = require('../drivers/stdio');
             const driverFactory = item[keys(item)[0]];
             return new driverFactory(this._options);
         });
@@ -114,7 +114,7 @@ export class ReactiveClient implements IReactiveDriver, IDisposable {
             onState: bind(this._stateStream.next, this._stateStream),
             onEvent: bind(this._eventsStream.next, this._eventsStream),
             onCommand: (packet) => {
-                const response = new ResponseContext(new RequestContext(this._uniqueId, packet.Command, {}, {}, "command"), packet.Body);
+                const response = new ResponseContext(new RequestContext(this._uniqueId, packet.Command, {}, {}, 'command'), packet.Body);
                 this._getResponseStream(packet.Command).next(response);
             }
         });
@@ -157,13 +157,13 @@ export class ReactiveClient implements IReactiveDriver, IDisposable {
             this._disposable.add(this._responseStream.subscribe(context => {
                 // log our complete response time
                 this._eventsStream.next({
-                    Event: "log",
+                    Event: 'log',
                     Body: {
                         Message: `/${context.command}  ${context.responseTime}ms (round trip)`,
-                        LogLevel: "INFORMATION"
+                        LogLevel: 'INFORMATION'
                     },
                     Seq: -1,
-                    Type: "log"
+                    Type: 'log'
                 });
             }));
         }
@@ -258,13 +258,13 @@ export class ReactiveClient implements IReactiveDriver, IDisposable {
     public log(message: string, logLevel?: string) {
         // log our complete response time
         this._eventsStream.next({
-            Event: "log",
+            Event: 'log',
             Body: {
                 Message: message,
-                LogLevel: logLevel ? logLevel.toUpperCase() : "INFORMATION"
+                LogLevel: logLevel ? logLevel.toUpperCase() : 'INFORMATION'
             },
             Seq: -1,
-            Type: "log"
+            Type: 'log'
         });
     }
 
@@ -368,102 +368,102 @@ export interface ReactiveClientEvents extends OmniSharp.Events.V2, OmniSharp.Eve
     /*readonly*/ errors: Observable<CommandContext<any>>;
 }
 
-reference(ReactiveClientEvents.prototype, "events", "events");
-reference(ReactiveClientEvents.prototype, "commands", "commands");
-reference(ReactiveClientEvents.prototype, "state", "state");
-reference(ReactiveClientEvents.prototype, "status", "status");
-reference(ReactiveClientEvents.prototype, "requests", "requests");
-reference(ReactiveClientEvents.prototype, "responses", "responses");
-reference(ReactiveClientEvents.prototype, "errors", "errors");
+reference(ReactiveClientEvents.prototype, 'events', 'events');
+reference(ReactiveClientEvents.prototype, 'commands', 'commands');
+reference(ReactiveClientEvents.prototype, 'state', 'state');
+reference(ReactiveClientEvents.prototype, 'status', 'status');
+reference(ReactiveClientEvents.prototype, 'requests', 'requests');
+reference(ReactiveClientEvents.prototype, 'responses', 'responses');
+reference(ReactiveClientEvents.prototype, 'errors', 'errors');
 
 
 // <#GENERATED />
-request(ReactiveClient.prototype, "getteststartinfo");
-request(ReactiveClient.prototype, "runtest");
-request(ReactiveClient.prototype, "autocomplete");
-request(ReactiveClient.prototype, "changebuffer");
-request(ReactiveClient.prototype, "codecheck");
-request(ReactiveClient.prototype, "codeformat");
-request(ReactiveClient.prototype, "diagnostics");
-request(ReactiveClient.prototype, "close");
-request(ReactiveClient.prototype, "open");
-request(ReactiveClient.prototype, "filesChanged");
-request(ReactiveClient.prototype, "findimplementations");
-request(ReactiveClient.prototype, "findsymbols");
-request(ReactiveClient.prototype, "findusages");
-request(ReactiveClient.prototype, "fixusings");
-request(ReactiveClient.prototype, "formatAfterKeystroke");
-request(ReactiveClient.prototype, "formatRange");
-request(ReactiveClient.prototype, "getcodeactions");
-request(ReactiveClient.prototype, "gotodefinition");
-request(ReactiveClient.prototype, "gotofile");
-request(ReactiveClient.prototype, "gotoregion");
-request(ReactiveClient.prototype, "highlight");
-request(ReactiveClient.prototype, "currentfilemembersasflat");
-request(ReactiveClient.prototype, "currentfilemembersastree");
-request(ReactiveClient.prototype, "metadata");
-request(ReactiveClient.prototype, "navigatedown");
-request(ReactiveClient.prototype, "navigateup");
-request(ReactiveClient.prototype, "packagesearch");
-request(ReactiveClient.prototype, "packagesource");
-request(ReactiveClient.prototype, "packageversion");
-request(ReactiveClient.prototype, "rename");
-request(ReactiveClient.prototype, "runcodeaction");
-request(ReactiveClient.prototype, "signatureHelp");
-request(ReactiveClient.prototype, "gettestcontext");
-request(ReactiveClient.prototype, "typelookup");
-request(ReactiveClient.prototype, "updatebuffer");
-request(ReactiveClient.prototype, "project");
-request(ReactiveClient.prototype, "projects");
-request(ReactiveClient.prototype, "checkalivestatus");
-request(ReactiveClient.prototype, "checkreadystatus");
-request(ReactiveClient.prototype, "stopserver");
-response(ReactiveClientEvents.prototype, "getteststartinfo", "/v2/getteststartinfo");
-response(ReactiveClientEvents.prototype, "runtest", "/v2/runtest");
-response(ReactiveClientEvents.prototype, "autocomplete", "/autocomplete");
-response(ReactiveClientEvents.prototype, "changebuffer", "/changebuffer");
-response(ReactiveClientEvents.prototype, "codecheck", "/codecheck");
-response(ReactiveClientEvents.prototype, "codeformat", "/codeformat");
-response(ReactiveClientEvents.prototype, "diagnostics", "/diagnostics");
-response(ReactiveClientEvents.prototype, "close", "/close");
-response(ReactiveClientEvents.prototype, "open", "/open");
-response(ReactiveClientEvents.prototype, "filesChanged", "/filesChanged");
-response(ReactiveClientEvents.prototype, "findimplementations", "/findimplementations");
-response(ReactiveClientEvents.prototype, "findsymbols", "/findsymbols");
-response(ReactiveClientEvents.prototype, "findusages", "/findusages");
-response(ReactiveClientEvents.prototype, "fixusings", "/fixusings");
-response(ReactiveClientEvents.prototype, "formatAfterKeystroke", "/formatAfterKeystroke");
-response(ReactiveClientEvents.prototype, "formatRange", "/formatRange");
-response(ReactiveClientEvents.prototype, "getcodeactions", "/v2/getcodeactions");
-response(ReactiveClientEvents.prototype, "gotodefinition", "/gotodefinition");
-response(ReactiveClientEvents.prototype, "gotofile", "/gotofile");
-response(ReactiveClientEvents.prototype, "gotoregion", "/gotoregion");
-response(ReactiveClientEvents.prototype, "highlight", "/highlight");
-response(ReactiveClientEvents.prototype, "currentfilemembersasflat", "/currentfilemembersasflat");
-response(ReactiveClientEvents.prototype, "currentfilemembersastree", "/currentfilemembersastree");
-response(ReactiveClientEvents.prototype, "metadata", "/metadata");
-response(ReactiveClientEvents.prototype, "navigatedown", "/navigatedown");
-response(ReactiveClientEvents.prototype, "navigateup", "/navigateup");
-response(ReactiveClientEvents.prototype, "packagesearch", "/packagesearch");
-response(ReactiveClientEvents.prototype, "packagesource", "/packagesource");
-response(ReactiveClientEvents.prototype, "packageversion", "/packageversion");
-response(ReactiveClientEvents.prototype, "rename", "/rename");
-response(ReactiveClientEvents.prototype, "runcodeaction", "/v2/runcodeaction");
-response(ReactiveClientEvents.prototype, "signatureHelp", "/signatureHelp");
-response(ReactiveClientEvents.prototype, "gettestcontext", "/gettestcontext");
-response(ReactiveClientEvents.prototype, "typelookup", "/typelookup");
-response(ReactiveClientEvents.prototype, "updatebuffer", "/updatebuffer");
-response(ReactiveClientEvents.prototype, "project", "/project");
-response(ReactiveClientEvents.prototype, "projects", "/projects");
-response(ReactiveClientEvents.prototype, "checkalivestatus", "/checkalivestatus");
-response(ReactiveClientEvents.prototype, "checkreadystatus", "/checkreadystatus");
-response(ReactiveClientEvents.prototype, "stopserver", "/stopserver");
-event(ReactiveClientEvents.prototype, "projectAdded");
-event(ReactiveClientEvents.prototype, "projectChanged");
-event(ReactiveClientEvents.prototype, "projectRemoved");
-event(ReactiveClientEvents.prototype, "error");
-event(ReactiveClientEvents.prototype, "diagnostic");
-event(ReactiveClientEvents.prototype, "msBuildProjectDiagnostics");
-event(ReactiveClientEvents.prototype, "packageRestoreStarted");
-event(ReactiveClientEvents.prototype, "packageRestoreFinished");
-event(ReactiveClientEvents.prototype, "unresolvedDependencies");
+request(ReactiveClient.prototype, 'getteststartinfo');
+request(ReactiveClient.prototype, 'runtest');
+request(ReactiveClient.prototype, 'autocomplete');
+request(ReactiveClient.prototype, 'changebuffer');
+request(ReactiveClient.prototype, 'codecheck');
+request(ReactiveClient.prototype, 'codeformat');
+request(ReactiveClient.prototype, 'diagnostics');
+request(ReactiveClient.prototype, 'close');
+request(ReactiveClient.prototype, 'open');
+request(ReactiveClient.prototype, 'filesChanged');
+request(ReactiveClient.prototype, 'findimplementations');
+request(ReactiveClient.prototype, 'findsymbols');
+request(ReactiveClient.prototype, 'findusages');
+request(ReactiveClient.prototype, 'fixusings');
+request(ReactiveClient.prototype, 'formatAfterKeystroke');
+request(ReactiveClient.prototype, 'formatRange');
+request(ReactiveClient.prototype, 'getcodeactions');
+request(ReactiveClient.prototype, 'gotodefinition');
+request(ReactiveClient.prototype, 'gotofile');
+request(ReactiveClient.prototype, 'gotoregion');
+request(ReactiveClient.prototype, 'highlight');
+request(ReactiveClient.prototype, 'currentfilemembersasflat');
+request(ReactiveClient.prototype, 'currentfilemembersastree');
+request(ReactiveClient.prototype, 'metadata');
+request(ReactiveClient.prototype, 'navigatedown');
+request(ReactiveClient.prototype, 'navigateup');
+request(ReactiveClient.prototype, 'packagesearch');
+request(ReactiveClient.prototype, 'packagesource');
+request(ReactiveClient.prototype, 'packageversion');
+request(ReactiveClient.prototype, 'rename');
+request(ReactiveClient.prototype, 'runcodeaction');
+request(ReactiveClient.prototype, 'signatureHelp');
+request(ReactiveClient.prototype, 'gettestcontext');
+request(ReactiveClient.prototype, 'typelookup');
+request(ReactiveClient.prototype, 'updatebuffer');
+request(ReactiveClient.prototype, 'project');
+request(ReactiveClient.prototype, 'projects');
+request(ReactiveClient.prototype, 'checkalivestatus');
+request(ReactiveClient.prototype, 'checkreadystatus');
+request(ReactiveClient.prototype, 'stopserver');
+response(ReactiveClientEvents.prototype, 'getteststartinfo', '/v2/getteststartinfo');
+response(ReactiveClientEvents.prototype, 'runtest', '/v2/runtest');
+response(ReactiveClientEvents.prototype, 'autocomplete', '/autocomplete');
+response(ReactiveClientEvents.prototype, 'changebuffer', '/changebuffer');
+response(ReactiveClientEvents.prototype, 'codecheck', '/codecheck');
+response(ReactiveClientEvents.prototype, 'codeformat', '/codeformat');
+response(ReactiveClientEvents.prototype, 'diagnostics', '/diagnostics');
+response(ReactiveClientEvents.prototype, 'close', '/close');
+response(ReactiveClientEvents.prototype, 'open', '/open');
+response(ReactiveClientEvents.prototype, 'filesChanged', '/filesChanged');
+response(ReactiveClientEvents.prototype, 'findimplementations', '/findimplementations');
+response(ReactiveClientEvents.prototype, 'findsymbols', '/findsymbols');
+response(ReactiveClientEvents.prototype, 'findusages', '/findusages');
+response(ReactiveClientEvents.prototype, 'fixusings', '/fixusings');
+response(ReactiveClientEvents.prototype, 'formatAfterKeystroke', '/formatAfterKeystroke');
+response(ReactiveClientEvents.prototype, 'formatRange', '/formatRange');
+response(ReactiveClientEvents.prototype, 'getcodeactions', '/v2/getcodeactions');
+response(ReactiveClientEvents.prototype, 'gotodefinition', '/gotodefinition');
+response(ReactiveClientEvents.prototype, 'gotofile', '/gotofile');
+response(ReactiveClientEvents.prototype, 'gotoregion', '/gotoregion');
+response(ReactiveClientEvents.prototype, 'highlight', '/highlight');
+response(ReactiveClientEvents.prototype, 'currentfilemembersasflat', '/currentfilemembersasflat');
+response(ReactiveClientEvents.prototype, 'currentfilemembersastree', '/currentfilemembersastree');
+response(ReactiveClientEvents.prototype, 'metadata', '/metadata');
+response(ReactiveClientEvents.prototype, 'navigatedown', '/navigatedown');
+response(ReactiveClientEvents.prototype, 'navigateup', '/navigateup');
+response(ReactiveClientEvents.prototype, 'packagesearch', '/packagesearch');
+response(ReactiveClientEvents.prototype, 'packagesource', '/packagesource');
+response(ReactiveClientEvents.prototype, 'packageversion', '/packageversion');
+response(ReactiveClientEvents.prototype, 'rename', '/rename');
+response(ReactiveClientEvents.prototype, 'runcodeaction', '/v2/runcodeaction');
+response(ReactiveClientEvents.prototype, 'signatureHelp', '/signatureHelp');
+response(ReactiveClientEvents.prototype, 'gettestcontext', '/gettestcontext');
+response(ReactiveClientEvents.prototype, 'typelookup', '/typelookup');
+response(ReactiveClientEvents.prototype, 'updatebuffer', '/updatebuffer');
+response(ReactiveClientEvents.prototype, 'project', '/project');
+response(ReactiveClientEvents.prototype, 'projects', '/projects');
+response(ReactiveClientEvents.prototype, 'checkalivestatus', '/checkalivestatus');
+response(ReactiveClientEvents.prototype, 'checkreadystatus', '/checkreadystatus');
+response(ReactiveClientEvents.prototype, 'stopserver', '/stopserver');
+event(ReactiveClientEvents.prototype, 'projectAdded');
+event(ReactiveClientEvents.prototype, 'projectChanged');
+event(ReactiveClientEvents.prototype, 'projectRemoved');
+event(ReactiveClientEvents.prototype, 'error');
+event(ReactiveClientEvents.prototype, 'diagnostic');
+event(ReactiveClientEvents.prototype, 'msBuildProjectDiagnostics');
+event(ReactiveClientEvents.prototype, 'packageRestoreStarted');
+event(ReactiveClientEvents.prototype, 'packageRestoreFinished');
+event(ReactiveClientEvents.prototype, 'unresolvedDependencies');

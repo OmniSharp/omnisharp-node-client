@@ -1,9 +1,9 @@
-import {each} from "lodash";
-import {IOmnisharpPlugin} from "../enums";
+import { each } from 'lodash';
+import { IOmnisharpPlugin } from '../enums';
 /* tslint:disable:no-unused-variable */
-import {Subject, Observable} from "rxjs";
+import { Subject, Observable } from 'rxjs';
 /* tslint:enable:no-unused-variable */
-import {CompositeDisposable, IDisposable} from "ts-disposables";
+import { CompositeDisposable, IDisposable } from 'ts-disposables';
 
 export class PluginManager implements IDisposable {
     private _disposable = new CompositeDisposable();

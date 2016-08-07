@@ -1,8 +1,8 @@
-import * as OmniSharp from "./omnisharp-server";
-import {Observable} from "rxjs";
-import {uniqueId, isObject, cloneDeep} from "lodash";
-import {createObservable} from "./operators/create";
-const stripBom = require("strip-bom");
+import * as OmniSharp from './omnisharp-server';
+import { Observable } from 'rxjs';
+import { uniqueId, isObject, cloneDeep } from 'lodash';
+import { createObservable } from './operators/create';
+const stripBom = require('strip-bom');
 
 export class CommandContext<T> {
     constructor(public command: string, public value: T) { }
@@ -21,7 +21,7 @@ export class RequestContext<T extends OmniSharp.Models.Request> {
         return null;
     }
 
-    constructor(public clientId: string, command: string, request: T, {silent}: OmniSharp.RequestOptions, sequence = uniqueId("__request")) {
+    constructor(public clientId: string, command: string, request: T, {silent}: OmniSharp.RequestOptions, sequence = uniqueId('__request')) {
         if (command) this.command = command.toLowerCase();
 
         if (isObject<OmniSharp.Models.Request>(request)) {
