@@ -16,6 +16,9 @@ export interface ExtendedServerCapabilities {
     extended: {
         getCodeActionsProvider?: boolean;
         runCodeActionProvider?: boolean;
+        implementationProvider?: boolean;
+        navigateProvider?: boolean;
+        highlightProvider?: boolean;
     }
 }
 
@@ -37,6 +40,10 @@ export interface GetCodeActionsParams {
     context: CodeActionContext;
 }
 
+export interface NavigateParams extends TextDocumentPositionParams {
+    direction: 'up' | 'down';
+}
+
 export interface CodeActionList {
     codeActions: CodeAction[];
 }
@@ -45,6 +52,19 @@ export interface CodeAction {
     name: string;
     identifier: string;
 }
+
+export interface PublishHighlightParams {
+    uri: string;
+    highlights: Highlight[];
+}
+
+export interface Highlight {
+    range: Range;
+    kind: string;
+    // projects: string[];
+}
+
+export type Implementation = Location | Location[];
 
 export interface RunCodeActionParams extends GetCodeActionsParams {
     /**
@@ -57,6 +77,9 @@ export namespace Methods {
     export namespace Extended {
         export const GetCodeActionsRequest = '__extended/textDocument/getCodeActions'
         export const RunCodeActionRequest = '__extended/textDocument/runCodeAction'
+        export const ImplementationRequest = '__extended/textDocument/implementation'
+        export const NavigateRequest = '__extended/textDocument/navigate'
+        export const PublishHighlightNotification = '__extended/textDocument/publishHighlight'
     }
 }
 
@@ -72,4 +95,26 @@ export namespace GetCodeActionsRequest {
  */
 export namespace RunCodeActionRequest {
     export const type: RequestType<RunCodeActionParams, WorkspaceEdit, void> = { get method() { return Methods.Extended.RunCodeActionRequest; } };
+}
+
+/**
+ * A request to find implementation
+ */
+export namespace ImplementationRequest {
+    export const type: RequestType<TextDocumentPositionParams, Implementation, void> = { get method() { return Methods.Extended.ImplementationRequest; } };
+}
+
+/**
+ * A request to find implementation
+ */
+export namespace NavigateRequest {
+    export const type: RequestType<NavigateParams, Position, void> = { get method() { return Methods.Extended.NavigateRequest; } };
+}
+
+/**
+ * Diagnostics notification are sent from the server to the client to signal
+ * results of validation runs.
+ */
+export namespace HighlightNotification {
+    export const type: NotificationType<PublishHighlightParams> = { get method() { return Methods.Extended.PublishHighlightNotification; } };
 }

@@ -11,13 +11,24 @@ import {
     CompletionList,
     SignatureHelp, SignatureInformation, ParameterInformation,
     SymbolInformation, SymbolKind, Range, Command, TextEdit,
-    NotificationType, Files, ServerCapabilities
+    NotificationType, Files, ServerCapabilities, Position
 } from "vscode-languageserver";
 
-import { ExtendedServerCapabilities, CodeAction, CodeActionList, GetCodeActionsParams, GetCodeActionsRequest, RunCodeActionParams, RunCodeActionRequest } from './server-extended';
+import { ExtendedServerCapabilities, CodeAction, CodeActionList, GetCodeActionsParams, GetCodeActionsRequest, Highlight, HighlightNotification, ImplementationRequest, NavigateRequest, RunCodeActionParams, RunCodeActionRequest, PublishHighlightParams } from './server-extended';
 
 let connection: IConnection = createConnection(new StreamMessageReader(process.stdin), new StreamMessageWriter(process.stdout));
 let client: ReactiveClient;
+const openEditors = new Set<string>();
+
+const ExcludeClassifications = [
+    Models.HighlightClassification.Number,
+    Models.HighlightClassification.ExcludedCode,
+    Models.HighlightClassification.Comment,
+    Models.HighlightClassification.String,
+    Models.HighlightClassification.Punctuation,
+    Models.HighlightClassification.Operator,
+    Models.HighlightClassification.Keyword
+];
 
 // After the server has started the client sends an initilize request. The server receives
 // in the passed params the rootPath of the workspace plus the client capabilites.
@@ -39,6 +50,23 @@ connection.onInitialize((params) => {
                 uri: toUri(result),
                 diagnostics: _.map(result.QuickFixes, getDiagnostic)
             });
+        });
+    });
+
+    client.observe.updatebuffer.subscribe(context => {
+        if (openEditors.has(context.request.FileName!)) {
+            client.highlight({
+                FileName: context.request.FileName,
+                ExcludeClassifications
+            });
+        }
+    });
+
+    client.observe.highlight.subscribe((context) => {
+        const highlights = getHighlights(context.response.Highlights);
+        connection.sendNotification(HighlightNotification.type, {
+            uri: toUri({ FileName: context.request.FileName! }),
+            highlights
         });
     });
 
@@ -106,7 +134,10 @@ connection.onInitialize((params) => {
                 workspaceSymbolProvider: true,
                 extended: {
                     getCodeActionsProvider: true,
-                    runCodeActionProvider: true
+                    runCodeActionProvider: true,
+                    implementationProvider: true,
+                    navigateProvider: true,
+                    highlightProvider: true
                 }
             }
         }))
@@ -168,12 +199,14 @@ connection.onDidOpenTextDocument(({textDocument}) => {
         FileName: fromUri(textDocument),
         Buffer: textDocument.text
     });
+    openEditors.add(fromUri(textDocument));
 });
 
 connection.onDidCloseTextDocument(({textDocument}) => {
     client.close({
         FileName: fromUri(textDocument)
     });
+    openEditors.delete(fromUri(textDocument));
 });
 
 connection.onDidSaveTextDocument(({textDocument}) => {
@@ -357,6 +390,7 @@ connection.onRenameRequest(({textDocument, position, newName}) => {
         .toPromise();
 });
 
+/* EXTENDED ENDPOINTS */
 connection.onRequest(GetCodeActionsRequest.type, ({textDocument, range, context}) => {
     return client.getcodeactions({
         FileName: fromUri(textDocument),
@@ -387,6 +421,37 @@ connection.onRequest(RunCodeActionRequest.type, ({textDocument, range, context, 
         .toPromise();
 });
 
+connection.onRequest(ImplementationRequest.type, ({textDocument, position}) => {
+    return client.findimplementations({
+        FileName: fromUri(textDocument),
+        Column: position.character,
+        Line: position.line
+    })
+        .map(z => z.QuickFixes)
+        .map(getLocationPoints)
+        .toPromise();
+});
+
+connection.onRequest(NavigateRequest.type, ({textDocument, position, direction}) => {
+    let request: Observable<Models.NavigateResponse>;
+    if (direction === 'up') {
+        request = client.navigateup({
+            FileName: fromUri(textDocument),
+            Column: position.character,
+            Line: position.line
+        });
+    } else {
+        request = client.navigatedown({
+            FileName: fromUri(textDocument),
+            Column: position.character,
+            Line: position.line
+        });
+    }
+    return request
+        .map(getPosition)
+        .toPromise();
+});
+
 // Listen on the connection
 connection.listen();
 
@@ -405,6 +470,21 @@ function getRange(item: { Column?: number; Line?: number; StartColumn?: number; 
     };
 }
 
+function getHighlights(highlights: Models.HighlightSpan[]) {
+    return _.map(highlights, getHighlight);
+}
+
+function getHighlight(highlight: Models.HighlightSpan) {
+    return <Highlight>{
+        range: getRange(highlight),
+        kind: highlight.Kind,
+    };
+}
+
+function getLocationPoints(fix: { Column: number; Line: number; FileName: string; }[]) {
+    return _.map(fix, getLocationPoint);
+}
+
 function getLocationPoint(fix: { Column: number; Line: number; FileName: string; }) {
     return getLocation(_.assign(fix, { EndColumn: fix.Column, EndLine: fix.Line }));
 }
@@ -414,6 +494,10 @@ function getLocation(fix: { Column: number; Line: number; EndColumn: number; End
         uri: toUri(fix),
         range: getRange(fix)
     };
+}
+
+function getPosition(model: Models.NavigateResponse) {
+    return Position.create(model.Line, model.Column)
 }
 
 function getTextEdit(change: Models.LinePositionSpanTextChange) {
