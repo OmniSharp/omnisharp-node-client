@@ -271,7 +271,7 @@ export class StdioDriver implements IDriver {
         if (this._outstandingRequests.has(response.Request_seq)) {
             const observer = this._outstandingRequests.get(response.Request_seq) !;
             this._outstandingRequests.delete(response.Request_seq);
-            if (observer.isUnsubscribed) return;
+            if ((<any>observer).closed) return;
             if (response.Success) {
                 observer.next(response.Body);
                 observer.complete();

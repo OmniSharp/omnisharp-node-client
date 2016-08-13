@@ -1,59 +1,59 @@
 {
-  "compilerOptions": {
-    "target": "es5",
-    "lib": [
-      "es5",
-      "dom",
-      "es2015.core",
-      "es2015.collection",
-      "es2015.generator",
-      "es2015.iterable",
-      "es2015.promise",
-      "es2015.reflect",
-      "es2015.symbol",
-      "es2015.symbol.wellknown"
-    ],
-    "baseUrl": "",
-    "paths": {
-      "rxjs": [
-        "node_modules/rxjs"
-      ]
+    "compilerOptions": {
+        "target": "es5",
+        "lib": [
+            "es5",
+            "dom",
+            "es2015.core",
+            "es2015.collection",
+            "es2015.generator",
+            "es2015.iterable",
+            "es2015.promise",
+            "es2015.reflect",
+            "es2015.symbol",
+            "es2015.symbol.wellknown"
+        ],
+        "baseUrl": "",
+        "paths": {
+            "rxjs": [
+                "node_modules/rxjs"
+            ]
+        },
+        "module": "commonjs",
+        "moduleResolution": "node",
+        "diagnostics": true,
+        "noEmitOnError": false,
+        "preserveConstEnums": true,
+        "noImplicitAny": true,
+        "noImplicitThis": true,
+        "noImplicitReturns": true,
+        "skipLibCheck": true,
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true,
+        "allowSyntheticDefaultImports": true,
+        "inlineSourceMap": true,
+        "inlineSources": true,
+        "strictNullChecks": true
     },
-    "module": "commonjs",
-    "moduleResolution": "node",
-    "diagnostics": true,
-    "noEmitOnError": false,
-    "preserveConstEnums": true,
-    "noImplicitAny": true,
-    "noImplicitThis": true,
-    "noImplicitReturns": true,
-    "skipLibCheck": true,
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "allowSyntheticDefaultImports": true,
-    "inlineSourceMap": true,
-    "inlineSources": true,
-    "strictNullChecks": true
-  },
-  "compileOnSave": true,
-  "formatCodeOptions": {
-    "indentSize": 4,
-    "tabSize": 4,
-    "indentStyle": "smart",
-    "convertTabsToSpaces": true,
-    "insertSpaceAfterCommaDelimiter": true,
-    "insertSpaceAfterSemicolonInForStatements": true,
-    "insertSpaceBeforeAndAfterBinaryOperators": true,
-    "insertSpaceAfterKeywordsInControlFlowStatements": true,
-    "insertSpaceAfterFunctionKeywordForAnonymousFunctions": false,
-    "insertSpaceAfterOpeningAndBeforeClosingNonemptyParenthesis": false,
-    "placeOpenBraceOnNewLineForFunctions": false,
-    "placeOpenBraceOnNewLineForControlBlocks": false
-  },
-  "exclude": [
-    "node_modules",
-    "vendor",
-    "typings/browser",
-    "typings/browser.d.ts"
-  ]
+    "compileOnSave": true,
+    "formatCodeOptions": {
+        "indentSize": 4,
+        "tabSize": 4,
+        "indentStyle": "smart",
+        "convertTabsToSpaces": true,
+        "insertSpaceAfterCommaDelimiter": true,
+        "insertSpaceAfterSemicolonInForStatements": true,
+        "insertSpaceBeforeAndAfterBinaryOperators": true,
+        "insertSpaceAfterKeywordsInControlFlowStatements": true,
+        "insertSpaceAfterFunctionKeywordForAnonymousFunctions": false,
+        "insertSpaceAfterOpeningAndBeforeClosingNonemptyParenthesis": false,
+        "placeOpenBraceOnNewLineForFunctions": false,
+        "placeOpenBraceOnNewLineForControlBlocks": false
+    },
+    "exclude": [
+        "node_modules",
+        "vendor",
+        "typings/browser",
+        "typings/browser.d.ts"
+    ]
 }

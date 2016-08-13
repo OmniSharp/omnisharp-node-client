@@ -2,6 +2,7 @@ import * as _ from 'lodash';
 import { ILogger } from './enums';
 import { join, dirname, sep, normalize } from 'path';
 import { Observable, Scheduler, Subscription } from 'rxjs';
+import { Subscribable } from 'rxjs/Observable';
 import 'rxjs/add/operator/distinctKey';
 import { CompositeDisposable } from 'ts-disposables';
 import { createObservable } from './operators/create';
@@ -60,7 +61,7 @@ export class Candidate {
     }
 }
 
-export const findCandidates = (function () {
+export const findCandidates = (() => {
     function realFindCandidates(location: string, logger: ILogger, options: Options = {}) {
         location = _.trimEnd(location, sep);
 
@@ -122,16 +123,14 @@ function searchForCandidates(location: string, filesToSearch: string[], projectF
 
     locations = locations.slice(0, Math.min(maxDepth, locations.length));
 
-    const rootObservable = Observable.from(locations)
+    return Observable.from(locations)
         .subscribeOn(Scheduler.queue)
-        .map(loc => ({
-            loc,
-            files: filesToSearch.map(fileName => join(loc, fileName))
-        }))
-        .flatMap(function ({loc, files}) {
+        .mergeMap((loc) => {
+            const files = filesToSearch.map(fileName => join(loc, fileName));
+
             logger.log(`Omni Project Candidates: Searching ${loc} for ${filesToSearch}`);
 
-            return Observable.from<string>(files)
+            return Observable.from(files)
                 .flatMap(file => glob([file], { cache: {} }))
                 .map(x => {
                     if (x.length > 1) {
@@ -163,6 +162,4 @@ function searchForCandidates(location: string, filesToSearch: string[], projectF
         .defaultIfEmpty([])
         .first()
         .flatMap(z => z);
-
-    return rootObservable;
 }

@@ -27,11 +27,11 @@ export function flattenArguments<T extends { [index: string]: any; }>(obj: T, pr
     const result: any[] = [];
     _.each(obj, (value, key) => {
         if (_.isObject(value)) {
-            result.push(...flattenArguments(value, `${prefix ? prefix + ':' : ''}${key[0].toUpperCase() + key.substr(1)}`));
+            result.push(...flattenArguments(value, `${prefix ? prefix + ':' : ''}${key}`));
             return;
         }
 
-        result.push(`--${prefix ? prefix + ':' : ''}${key[0].toUpperCase() + key.substr(1)}=${value}`);
+        result.push(`--${prefix ? prefix + ':' : ''}${key}=${value}`);
     });
 
     return result;
