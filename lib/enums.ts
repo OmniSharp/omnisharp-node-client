@@ -77,17 +77,18 @@ export interface CoreClientOptions extends IDriverCoreOptions {
     responseSampleTime?: number;
     concurrency?: number;
     concurrencyTimeout?: number;
-    omnisharp?: {
-        dnx?: {
+    serverOptions?: {
+        dotnet?: {
             alias?: string;
             projects?: string;
-            enablePackageRestore?: string;
+            enablePackageRestore?: boolean;
             packageRestoreTimeout?: number;
         };
         formattingOptions?: {
             newLine?: string;
             useTabs?: boolean;
             tabSize?: number;
+            indentationSize?: number;
         }
     };
 }

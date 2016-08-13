@@ -22,6 +22,10 @@ export interface ExtendedServerCapabilities {
     }
 }
 
+export interface ClientCapabilities {
+    highlightProvider?: boolean;
+    enablePackageRestore?: boolean;
+}
 
 export interface GetCodeActionsParams {
     /**
@@ -55,10 +59,12 @@ export interface CodeAction {
 
 export interface PublishHighlightParams {
     uri: string;
-    highlights: Highlight[];
+    added: Highlight[];
+    removed: string[];
 }
 
 export interface Highlight {
+    id: string;
     range: Range;
     kind: string;
     // projects: string[];

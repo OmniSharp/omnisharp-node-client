@@ -1,5 +1,5 @@
-import * as _ from "lodash";
-import { CoreClientOptions } from "./enums";
+import * as _ from 'lodash';
+import { CoreClientOptions } from './enums';
 
 export function ensureClientOptions(options: CoreClientOptions) {
     if (options.statusSampleTime) options.statusSampleTime = 500;
@@ -15,7 +15,7 @@ export function ensureClientOptions(options: CoreClientOptions) {
     // Keep concurrencyTimeout at a decently high interval.
     options.concurrencyTimeout = Math.max(options.concurrencyTimeout || 0, Math.min(options.timeout * 1000, 5000));
 
-    options.additionalArguments = flattenArguments(options.omnisharp || {});
+    options.additionalArguments = flattenArguments(options.serverOptions || {});
 
     if (!options.plugins) {
         // By default we indicate support no plugins
@@ -23,15 +23,15 @@ export function ensureClientOptions(options: CoreClientOptions) {
     }
 }
 
-export function flattenArguments<T extends { [index: string]: any; }>(obj: T, prefix = "") {
+export function flattenArguments<T extends { [index: string]: any; }>(obj: T, prefix = '') {
     const result: any[] = [];
     _.each(obj, (value, key) => {
         if (_.isObject(value)) {
-            result.push(...flattenArguments(value, `${prefix ? prefix + ":" : ""}${key[0].toUpperCase() + key.substr(1)}`));
+            result.push(...flattenArguments(value, `${prefix ? prefix + ':' : ''}${key[0].toUpperCase() + key.substr(1)}`));
             return;
         }
 
-        result.push(`--${prefix ? prefix + ":" : ""}${key[0].toUpperCase() + key.substr(1)}=${value}`);
+        result.push(`--${prefix ? prefix + ':' : ''}${key[0].toUpperCase() + key.substr(1)}=${value}`);
     });
 
     return result;

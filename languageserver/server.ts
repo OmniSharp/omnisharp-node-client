@@ -14,7 +14,7 @@ import {
     NotificationType, Files, ServerCapabilities, Position
 } from 'vscode-languageserver';
 
-import { ExtendedServerCapabilities, CodeAction, CodeActionList, GetCodeActionsParams, GetCodeActionsRequest, Highlight, HighlightNotification, ImplementationRequest, NavigateRequest, RunCodeActionParams, RunCodeActionRequest, PublishHighlightParams } from './server-extended';
+import { ExtendedServerCapabilities, CodeAction, CodeActionList, GetCodeActionsParams, GetCodeActionsRequest, Highlight, HighlightNotification, ImplementationRequest, NavigateRequest, RunCodeActionParams, RunCodeActionRequest, PublishHighlightParams, ClientCapabilities } from './server-extended';
 
 let connection: IConnection = createConnection(new StreamMessageReader(process.stdin), new StreamMessageWriter(process.stdout));
 let client: ReactiveClient;
@@ -33,16 +33,19 @@ const ExcludeClassifications = [
 // After the server has started the client sends an initilize request. The server receives
 // in the passed params the rootPath of the workspace plus the client capabilites.
 connection.onInitialize((params) => {
+    const enablePackageRestore = (<ClientCapabilities>params.capabilities).enablePackageRestore === undefined || (<ClientCapabilities>params.capabilities).enablePackageRestore;
+
     client = new ReactiveClient({
         projectPath: params.rootPath,
         runtime: Runtime.CoreClr,
         logger: {
             log: (message) => { connection.telemetry.logEvent({ type: 'log', message }); },
             error: (message) => { connection.telemetry.logEvent({ type: 'error', message }); }
+        },
+        serverOptions: {
+            dotnet: { enablePackageRestore }
         }
     });
-
-    client.connect();
 
     client.observe.diagnostic.subscribe(({Results}) => {
         _.each(Results, result => {
@@ -53,22 +56,54 @@ connection.onInitialize((params) => {
         });
     });
 
-    client.observe.updatebuffer.subscribe(context => {
-        if (openEditors.has(context.request.FileName!)) {
-            client.highlight({
-                FileName: context.request.FileName,
-                ExcludeClassifications
-            });
-        }
-    });
+    if ((<ClientCapabilities>params.capabilities).highlightProvider) {
+        const highlightsContext = new Map<string, Highlight[]>();
 
-    client.observe.highlight.subscribe((context) => {
-        const highlights = getHighlights(context.response.Highlights);
-        connection.sendNotification(HighlightNotification.type, {
-            uri: toUri({ FileName: context.request.FileName! }),
-            highlights
+        client.observe.updatebuffer.subscribe(context => {
+            if (openEditors.has(context.request.FileName!)) {
+                client.highlight({
+                    FileName: context.request.FileName,
+                    ExcludeClassifications
+                });
+            }
         });
-    });
+
+        client.observe.close.subscribe(context => {
+            if (highlightsContext.has(context.request.FileName!)) {
+                highlightsContext.delete(context.request.FileName!);
+            }
+        });
+
+        client.observe.highlight
+            .bufferToggle(client.observe.highlight.throttleTime(100), () => Observable.timer(100))
+            .concatMap((items) => {
+                const highlights = _(items)
+                    .reverse()
+                    .uniqBy(x => x.request.FileName!)
+                    .map(context => {
+                        if (!highlightsContext.has(context.request.FileName!)) {
+                            highlightsContext.set(context.request.FileName!, []);
+                        }
+
+                        const newHighlights = getHighlights(context.response.Highlights);
+                        const currentHighlights = highlightsContext.get(context.request.FileName!) !;
+                        const added = _.differenceBy(newHighlights, currentHighlights, x => x.id);
+                        const removeHighlights = _.differenceBy(currentHighlights, newHighlights, x => x.id);
+
+                        highlightsContext.set(context.request.FileName!, newHighlights);
+
+                        return {
+                            uri: toUri({ FileName: context.request.FileName! }),
+                            added,
+                            removed: _.map(removeHighlights, x => x.id)
+                        };
+                    })
+                    .value();
+
+                return Observable.from(highlights).concatMap(x => Observable.of(x).delay(10));
+            })
+            .subscribe(item => connection.sendNotification(HighlightNotification.type, item));
+    }
 
     client.observe.events.subscribe(event => {
         connection.console.info(JSON.stringify(event));
@@ -98,6 +133,8 @@ connection.onInitialize((params) => {
                 });
         })
         .subscribe();
+
+    client.connect();
 
     return client.state
         .filter(x => x === DriverState.Connected)
@@ -475,8 +512,10 @@ function getHighlights(highlights: Models.HighlightSpan[]) {
 }
 
 function getHighlight(highlight: Models.HighlightSpan) {
+    const range = getRange(highlight);
     return <Highlight>{
-        range: getRange(highlight),
+        id: `${range.start.line}:${range.start.character}|${range.end.line}:${range.end.character}|${highlight.Kind}`,
+        range: range,
         kind: highlight.Kind,
     };
 }
