@@ -88,12 +88,12 @@ describe('Omnisharp Server', function () {
                     log: (message) => {
                         try {
                             if (_.startsWith(message, 'Arguments:')) {
-                                expect(message).to.contain('--Dotnet:Alias=notdefault');
+                                expect(message.toLowerCase()).to.contain('--dotnet:alias=notdefault');
                                 server.disconnect();
                                 done();
                             }
                         } catch (e) {
-                            done('failed');
+                            done(e);
                         }
                     },
                     error: (message) => { /* */ }
@@ -113,13 +113,13 @@ describe('Omnisharp Server', function () {
                     log: (message) => {
                         try {
                             if (_.startsWith(message, 'Arguments:')) {
-                                expect(message).to.contain('--Dotnet:Alias=beta4');
-                                expect(message).to.contain('--FormattingOptions:NewLine=blah');
+                                expect(message.toLowerCase()).to.contain('--dotnet:alias=beta4');
+                                expect(message.toLowerCase()).to.contain('--formattingoptions:newline=blah');
                                 server.disconnect();
                                 done();
                             }
                         } catch (e) {
-                            done('failed');
+                            done(e);
                         }
                     },
                     error: (message) => { /* */ }
