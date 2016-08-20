@@ -1,15 +1,16 @@
-import * as OmniSharp from "../omnisharp-server";
-import {ReplaySubject, Observable} from "rxjs";
-import {CompositeDisposable, Disposable, IDisposable} from "../disposables";
-import {DriverState, OmnisharpClientStatus} from "../enums";
-import _ from "lodash";
-import {ReactiveClient} from "./reactive-client";
-import {setMergeOrAggregate, getInternalKey, makeObservable} from "../helpers/decorators";
+import * as OmniSharp from '../omnisharp-server';
+import { ReplaySubject, Observable } from 'rxjs';
+import { CompositeDisposable, Disposable, IDisposable } from 'ts-disposables';
+import { DriverState, OmnisharpClientStatus } from '../enums';
+import * as _ from 'lodash';
+import { ReactiveClient } from './reactive-client';
+import { setMergeOrAggregate, getInternalKey, makeObservable } from '../helpers/decorators';
 
 export class ReactiveCombinationClient<TClient extends ReactiveClient> implements IDisposable {
     protected _disposable = new CompositeDisposable();
     private _clientDisposable = new CompositeDisposable();
     public _clientsSubject = new ReplaySubject<TClient[]>(1);
+    [index: string]: any;
 
     constructor(private clients: TClient[] = []) {
         this.next();
@@ -76,10 +77,10 @@ export class ReactiveCombinationClient<TClient extends ReactiveClient> implement
     }
 }
 
-makeObservable(ReactiveCombinationClient.prototype, "state", "state");
-makeObservable(ReactiveCombinationClient.prototype, "status", "status");
+makeObservable(ReactiveCombinationClient.prototype, 'state', 'state');
+makeObservable(ReactiveCombinationClient.prototype, 'status', 'status');
 
-export interface ReactiveCombinationClient extends OmniSharp.Aggregate.Events, OmniSharp.Events.Aggregate.V2 {
+export interface ReactiveCombinationClient<TClient extends ReactiveClient> extends OmniSharp.Aggregate.Events, OmniSharp.Events.Aggregate.V2 {
     /*readonly*/ state: Observable<OmniSharp.CombinationKey<DriverState>[]>;
     /*readonly*/ status: Observable<OmniSharp.CombinationKey<OmnisharpClientStatus>[]>;
 }

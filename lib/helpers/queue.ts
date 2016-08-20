@@ -1,7 +1,7 @@
-import {isPriorityCommand, isNormalCommand, isDeferredCommand} from "./prioritization";
-import {RequestContext, ResponseContext} from "../contexts";
-import {Observable, AsyncSubject} from "rxjs";
-import {pull, bind} from "lodash";
+import { isPriorityCommand, isNormalCommand, isDeferredCommand } from './prioritization';
+import { RequestContext, ResponseContext } from '../contexts';
+import { Observable, AsyncSubject } from 'rxjs';
+import { pull, bind } from 'lodash';
 
 enum QueuePriority {
     Priority,
@@ -13,19 +13,17 @@ function getQueue(context: RequestContext<any>) {
     if (isPriorityCommand(context)) {
         return QueuePriority.Priority;
     }
-    if (isNormalCommand(context)) {
-        return QueuePriority.Normal;
-    }
     if (isDeferredCommand(context)) {
         return QueuePriority.Deferred;
     }
+    return QueuePriority.Normal;
 }
 
 class RequestQueue {
     private queue: AsyncSubject<ResponseContext<any, any>>[] = [];
     private requests: AsyncSubject<ResponseContext<any, any>>[] = [];
 
-    constructor(private concurrency: number, private complete: () => void) {}
+    constructor(private concurrency: number, private complete: () => void) { }
 
     public enqueue(item: AsyncSubject<ResponseContext<any, any>>) {
         this.queue.push(item);
@@ -43,7 +41,7 @@ class RequestQueue {
         let i = 0;
         const slots = this.concurrency - this.requests.length;
         do {
-            const item = this.queue.shift();
+            const item = this.queue.shift() !;
             this.requests.push(item);
             item.subscribe({
                 complete: () => {
@@ -52,7 +50,7 @@ class RequestQueue {
                 }
             });
 
-            item.next(null);
+            item.next(null!);
             item.complete();
 
             if (this.full) return;
@@ -88,9 +86,9 @@ export class Queue<TResponse> {
         // And we will only commit to the promise once someone calls then on it.
         // This way another client, can cast the result to an observable, and gain cancelation
         const promiseLike: PromiseLike<ResponseContext<any, any>> = <any>observable;
-        promiseLike.then = (fulfilled: Function, rejected: Function) => {
+        promiseLike.then = <any>((fulfilled: Function, rejected: Function) => {
             return observable.toPromise().then(<any>fulfilled, <any>rejected);
-        };
+        });
 
         const queue = getQueue(context);
         if (queue === QueuePriority.Priority) this._priority.enqueue(subject);

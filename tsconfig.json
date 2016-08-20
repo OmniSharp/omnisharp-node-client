@@ -1,39 +1,59 @@
 {
-  "externalTranspiler": {
-    "name": "babel",
-    "options": {}
-  },
-  "compilerOptions": {
-    "target": "es6",
-    "module": "es6",
-    "moduleResolution": "node",
-    "declaration": true,
-    "noImplicitAny": true,
-    "removeComments": true,
-    "noLib": false,
-    "preserveConstEnums": true,
-    "experimentalDecorators": true,
-    "suppressImplicitAnyIndexErrors": true,
-    "allowSyntheticDefaultImports": true,
-    "sourceMap": true
-  },
-  "compileOnSave": true,
-  "formatCodeOptions": {
-    "indentSize": 4,
-    "tabSize": 4,
-    "indentStyle": "smart",
-    "convertTabsToSpaces": true,
-    "insertSpaceAfterCommaDelimiter": true,
-    "insertSpaceAfterSemicolonInForStatements": true,
-    "insertSpaceBeforeAndAfterBinaryOperators": true,
-    "insertSpaceAfterKeywordsInControlFlowStatements": true,
-    "insertSpaceAfterFunctionKeywordForAnonymousFunctions": false,
-    "insertSpaceAfterOpeningAndBeforeClosingNonemptyParenthesis": false,
-    "placeOpenBraceOnNewLineForFunctions": false,
-    "placeOpenBraceOnNewLineForControlBlocks": false
-  },
-  "exclude": ["node_modules", "vendor", "typings/browser", "typings/browser.d.ts"],
-  "atom": {
-    "rewriteTsconfig": false
-  }
+    "compilerOptions": {
+        "target": "es5",
+        "lib": [
+            "es5",
+            "dom",
+            "es2015.core",
+            "es2015.collection",
+            "es2015.generator",
+            "es2015.iterable",
+            "es2015.promise",
+            "es2015.reflect",
+            "es2015.symbol",
+            "es2015.symbol.wellknown"
+        ],
+        "baseUrl": "",
+        "paths": {
+            "rxjs": [
+                "node_modules/rxjs"
+            ]
+        },
+        "module": "commonjs",
+        "moduleResolution": "node",
+        "diagnostics": true,
+        "noEmitOnError": false,
+        "preserveConstEnums": true,
+        "noImplicitAny": true,
+        "noImplicitThis": true,
+        "noImplicitReturns": true,
+        "skipLibCheck": true,
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true,
+        "allowSyntheticDefaultImports": true,
+        "inlineSourceMap": true,
+        "inlineSources": true,
+        "strictNullChecks": true
+    },
+    "compileOnSave": true,
+    "formatCodeOptions": {
+        "indentSize": 4,
+        "tabSize": 4,
+        "indentStyle": "smart",
+        "convertTabsToSpaces": true,
+        "insertSpaceAfterCommaDelimiter": true,
+        "insertSpaceAfterSemicolonInForStatements": true,
+        "insertSpaceBeforeAndAfterBinaryOperators": true,
+        "insertSpaceAfterKeywordsInControlFlowStatements": true,
+        "insertSpaceAfterFunctionKeywordForAnonymousFunctions": false,
+        "insertSpaceAfterOpeningAndBeforeClosingNonemptyParenthesis": false,
+        "placeOpenBraceOnNewLineForFunctions": false,
+        "placeOpenBraceOnNewLineForControlBlocks": false
+    },
+    "exclude": [
+        "node_modules",
+        "vendor",
+        "typings/browser",
+        "typings/browser.d.ts"
+    ]
 }

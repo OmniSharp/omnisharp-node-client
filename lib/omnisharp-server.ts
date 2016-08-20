@@ -1,5 +1,5 @@
 /* tslint:disable */
-import {Observable} from "rxjs";
+import { Observable } from "rxjs";
 
 export module Models {
     export const enum HighlightClassification {
@@ -70,9 +70,11 @@ export module Models {
     export interface CodeCheckRequest extends Models.Request {
     }
     export interface CodeFormatRequest extends Models.Request {
+        WantsTextChanges?: boolean;
     }
     export interface CodeFormatResponse {
         Buffer: string;
+        Changes: Models.LinePositionSpanTextChange[];
     }
     export interface DiagnosticLocation extends Models.QuickFix {
         LogLevel: string;
@@ -327,32 +329,6 @@ export module Models {
     export interface UpdateBufferRequest extends Models.Request {
         FromDisk?: boolean;
     }
-    export interface MSBuildDiagnosticsMessage {
-        LogLevel: string;
-        FileName: string;
-        Text: string;
-        StartLine: number;
-        StartColumn: number;
-        EndLine: number;
-        EndColumn: number;
-    }
-    export interface MSBuildProject {
-        ProjectGuid: string;
-        Path: string;
-        AssemblyName: string;
-        TargetPath: string;
-        TargetFramework: string;
-        SourceFiles: string[];
-    }
-    export interface MSBuildProjectDiagnostics {
-        FileName: string;
-        Warnings: Models.MSBuildDiagnosticsMessage[];
-        Errors: Models.MSBuildDiagnosticsMessage[];
-    }
-    export interface MsBuildWorkspaceInformation {
-        SolutionPath: string;
-        Projects: Models.MSBuildProject[];
-    }
 }
 export module Models.V2 {
     export interface OmniSharpCodeAction {
@@ -422,6 +398,32 @@ export module Models {
         Projects: Models.DotNetProjectInformation[];
         RuntimePath: string;
     }
+    export interface MSBuildDiagnosticsMessage {
+        LogLevel: string;
+        FileName: string;
+        Text: string;
+        StartLine: number;
+        StartColumn: number;
+        EndLine: number;
+        EndColumn: number;
+    }
+    export interface MSBuildProject {
+        ProjectGuid: string;
+        Path: string;
+        AssemblyName: string;
+        TargetPath: string;
+        TargetFramework: string;
+        SourceFiles: string[];
+    }
+    export interface MSBuildProjectDiagnostics {
+        FileName: string;
+        Warnings: Models.MSBuildDiagnosticsMessage[];
+        Errors: Models.MSBuildDiagnosticsMessage[];
+    }
+    export interface MsBuildWorkspaceInformation {
+        SolutionPath: string;
+        Projects: Models.MSBuildProject[];
+    }
 }
 export module Roslyn.Models {
     export interface ReferenceModel {
@@ -463,13 +465,14 @@ export module Stdio.Protocol {
         Body: any;
     }
 }
+
 export module ScriptCs {
     export interface ScriptCsContextModel {
         CsxFilesBeingProcessed: string[];
         CsxFileProjects: { [key: string]: Roslyn.Models.ProjectInfoModel; };
         CsxReferences: { [key: string]: Roslyn.Models.ReferenceModel[]; };
         CsxLoadReferences: { [key: string]: Roslyn.Models.ProjectInfoModel[]; };
-        CsxUsings: { [key: string]: string; };
+        CsxUsings: { [key: string]: string[]; };
         ScriptPacks: string[];
         CommonReferences: Roslyn.Models.ReferenceModel[];
         CommonUsings: string[];
@@ -482,8 +485,6 @@ export const enum TestCommandType {
     Fixture = 1,
     Single = 2
 }
-
-
 
 export interface Context<TRequest, TResponse> {
     request: TRequest;

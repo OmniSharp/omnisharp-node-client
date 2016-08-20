@@ -13,7 +13,6 @@ const typescript = require('typescript');
 const ctx = {
     get ts() { return require('gulp-typescript'); },
     get tslint() { return require("gulp-tslint"); },
-    get babel() { return require("gulp-babel"); },
     get sourcemaps() { return require('gulp-sourcemaps'); },
     get through() { return require('through2'); },
     get del() { return require('del'); },
@@ -60,27 +59,13 @@ function tsTranspile() {
     });
 }
 
+// gulp.task('tslint', [], function () {
+//     return gulp.src(metadata.lib)
+//         .pipe(ctx.tslint())
+//         .pipe(ctx.tslint.report('prose'));
+// });
+
 gulp.task('typescript', ['clean'], function () {
-    // var args = ['-p', path.resolve(__dirname.toString())];
-    // var compile = new Promise(function(resolve, reject) {
-    //     var tsc = spawn(path.resolve(__dirname + '/node_modules/.bin/tsc' + (win32 && '.cmd' || '')), args);
-    //     tsc.stdout.pipe(process.stdout);
-    //     tsc.stderr.pipe(process.stderr);
-    //     tsc.on('close', function(code) {
-    //         resolve();
-    //     });
-    // });
-
-    // return compile;
-});
-
-gulp.task('tslint', [], function () {
-    return gulp.src(metadata.lib)
-        .pipe(ctx.tslint())
-        .pipe(ctx.tslint.report('prose'));
-});
-
-gulp.task('typescript-babel', ['tslint', 'typescript'], function () {
     var tsResult = tsProject.src()
         //.pipe(ctx.tslint())
         //.pipe(ctx.tslint.report('prose'))
@@ -91,7 +76,6 @@ gulp.task('typescript-babel', ['tslint', 'typescript'], function () {
         tsResult.dts
             .pipe(gulp.dest('.')),
         tsResult.js
-            .pipe(ctx.babel())
             .pipe(ctx.sourcemaps.write())
             .pipe(gulp.dest('.'))
     );
@@ -118,7 +102,7 @@ gulp.task('clean:test', function (done) {
     });
 });
 
-gulp.task('npm-prepublish', ['typescript-babel']);
+gulp.task('npm-prepublish', ['typescript']);
 
 // The default task (called when you run `gulp` from CLI)
-gulp.task('default', ['typescript-babel']);
+gulp.task('default', ['typescript']);

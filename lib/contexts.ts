@@ -1,8 +1,8 @@
-import * as OmniSharp from "./omnisharp-server";
-import {Observable} from "rxjs";
-import {uniqueId, isObject, cloneDeep} from "lodash";
-import {createObservable} from "./operators/create";
-const stripBom = require("strip-bom");
+import * as OmniSharp from './omnisharp-server';
+import { Observable } from 'rxjs';
+import { uniqueId, isObject, cloneDeep } from 'lodash';
+import { createObservable } from './operators/create';
+const stripBom = require('strip-bom');
 
 export class CommandContext<T> {
     constructor(public command: string, public value: T) { }
@@ -21,17 +21,15 @@ export class RequestContext<T extends OmniSharp.Models.Request> {
         return null;
     }
 
-    constructor(public clientId: string, command: string, request: T, {silent}: OmniSharp.RequestOptions, sequence = uniqueId("__request")) {
+    constructor(public clientId: string, command: string, request: T, {silent}: OmniSharp.RequestOptions, sequence = uniqueId('__request')) {
         if (command) this.command = command.toLowerCase();
 
-        if (isObject(request)) {
-            /* tslint:disable:no-string-literal */
+        if (isObject<OmniSharp.Models.Request>(request)) {
             if (request.Buffer) {
                 request.Buffer = stripBom(request.Buffer);
             }
-            /* tslint:enable:no-string-literal */
             let obj = cloneDeep(request);
-            this.request = Object.freeze(obj);
+            this.request = <any>Object.freeze(obj);
         } else {
             this.request = request;
         }
@@ -76,7 +74,7 @@ export class ResponseContext<TRequest, TResponse> {
         if (command) this.command = command.toLowerCase();
 
         if (isObject(response)) {
-            this.response = Object.freeze(response);
+            this.response = <any>Object.freeze(response);
         } else {
             this.response = response;
         }

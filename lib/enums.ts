@@ -1,7 +1,7 @@
-import * as OmniSharp from "./omnisharp-server";
-import {IDisposable} from "./disposables";
-import {Observable} from "rxjs";
-import {RequestContext, ResponseContext, CommandContext} from "./contexts";
+import { Observable } from 'rxjs';
+import { IDisposable } from 'ts-disposables';
+import * as OmniSharp from './omnisharp-server';
+import { RequestContext, ResponseContext, CommandContext } from './contexts';
 
 export enum DriverState {
     Disconnected,
@@ -77,14 +77,35 @@ export interface CoreClientOptions extends IDriverCoreOptions {
     responseSampleTime?: number;
     concurrency?: number;
     concurrencyTimeout?: number;
-    omnisharp?: {
-        dnx?: {
+    serverOptions?: {
+        dotnet?: {
+            alias?: string;
+            projects?: string;
+            enablePackageRestore?: boolean;
+            packageRestoreTimeout?: number;
+        };
+        formattingOptions?: {
+            newLine?: string;
+            useTabs?: boolean;
+            tabSize?: number;
+            indentationSize?: number;
+        }
+    };
+}
+
+export interface InternalCoreClientOptions extends IDriverCoreOptions {
+    statusSampleTime: number;
+    responseSampleTime: number;
+    concurrency: number;
+    concurrencyTimeout: number;
+    omnisharp: {
+        dnx: {
             alias?: string;
             projects?: string;
             enablePackageRestore?: string;
             packageRestoreTimeout?: number;
         };
-        formattingOptions?: {
+        formattingOptions: {
             newLine?: string;
             useTabs?: boolean;
             tabSize?: number;
@@ -98,6 +119,14 @@ export interface AsyncClientOptions extends CoreClientOptions {
 
 export interface ReactiveClientOptions extends CoreClientOptions {
     driver?: (options: IDriverOptions) => IReactiveDriver;
+}
+
+export interface InternalAsyncClientOptions extends InternalCoreClientOptions {
+    driver: (options: IDriverOptions) => IAsyncDriver;
+}
+
+export interface InternalReactiveClientOptions extends InternalCoreClientOptions {
+    driver: (options: IDriverOptions) => IReactiveDriver;
 }
 
 export interface IOmnisharpPlugin {

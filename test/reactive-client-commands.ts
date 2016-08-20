@@ -16,7 +16,7 @@ describe("Commands", function() {
         it("should throw if FileName is null", function() {
             expect(() => {
                 server.updatebuffer({
-                    FileName: null,
+                    FileName: null!,
                     Buffer: ""
                 });
             }).to.throw(/must not be null/);
@@ -27,7 +27,7 @@ describe("Commands", function() {
         it("should throw if FileName is null", function() {
             expect(() => {
                 server.changebuffer({
-                    FileName: null,
+                    FileName: null!,
                     NewText: "",
                     StartLine: 1,
                     StartColumn: 1,
@@ -40,7 +40,7 @@ describe("Commands", function() {
             expect(() => {
                 server.changebuffer({
                     FileName: "",
-                    NewText: null,
+                    NewText: null!,
                     StartLine: 1,
                     StartColumn: 1,
                     EndLine: 1,
@@ -53,7 +53,7 @@ describe("Commands", function() {
                 server.changebuffer({
                     FileName: "",
                     NewText: "",
-                    StartLine: null,
+                    StartLine: null!,
                     StartColumn: 1,
                     EndLine: 1,
                     EndColumn: 1
@@ -78,7 +78,7 @@ describe("Commands", function() {
                     FileName: "",
                     NewText: "",
                     StartLine: 1,
-                    StartColumn: null,
+                    StartColumn: null!,
                     EndLine: 1,
                     EndColumn: 1
                 });
@@ -103,7 +103,7 @@ describe("Commands", function() {
                     NewText: "",
                     StartLine: 1,
                     StartColumn: 1,
-                    EndLine: null,
+                    EndLine: null!,
                     EndColumn: 1
                 });
             }).to.throw(/must not be null/);
@@ -128,7 +128,7 @@ describe("Commands", function() {
                     StartLine: 1,
                     StartColumn: 1,
                     EndLine: 1,
-                    EndColumn: null
+                    EndColumn: null!
                 });
             }).to.throw(/must not be null/);
         });
@@ -170,7 +170,7 @@ describe("Commands", function() {
         it("should throw if FileName is null", function() {
             expect(() => {
                 server.formatAfterKeystroke({
-                    FileName: null,
+                    FileName: null!,
                     Line: 1,
                     Column: 1,
                     Character: ""
@@ -181,7 +181,7 @@ describe("Commands", function() {
             expect(() => {
                 server.formatAfterKeystroke({
                     FileName: "",
-                    Line: null,
+                    Line: null!,
                     Column: 1,
                     Character: ""
                 });
@@ -202,7 +202,7 @@ describe("Commands", function() {
                 server.formatAfterKeystroke({
                     FileName: "",
                     Line: 1,
-                    Column: null,
+                    Column: null!,
                     Character: ""
                 });
             }).to.throw(/must not be null/);
@@ -221,22 +221,22 @@ describe("Commands", function() {
         it("should throw if Character && Char is null", function() {
             expect(() => {
                 server.formatAfterKeystroke({
-                    FileName: null,
+                    FileName: null!,
                     Line: 1,
                     Column: 1,
-                    Character: null,
-                    Char: null
+                    Character: null!,
+                    Char: null!
                 });
             }).to.throw(/must not be null/);
         });
         it("should not throw of required fields are set", function() {
             expect(() => {
                 server.formatAfterKeystroke({
-                    FileName: null,
+                    FileName: null!,
                     Line: 1,
                     Column: 1,
                     Character: "",
-                    Char: null
+                    Char: null!
                 });
             }).to.not.throw;
         });
@@ -247,7 +247,7 @@ describe("Commands", function() {
         it("should throw if FileName is null", function() {
             expect(() => {
                 server.formatRange({
-                    FileName: null,
+                    FileName: null!,
                     Line: 1,
                     Column: 1,
                     EndLine: 1,
@@ -259,7 +259,7 @@ describe("Commands", function() {
             expect(() => {
                 server.formatRange({
                     FileName: "",
-                    Line: null,
+                    Line: null!,
                     Column: 1,
                     EndLine: 1,
                     EndColumn: 1
@@ -282,7 +282,7 @@ describe("Commands", function() {
                 server.formatRange({
                     FileName: "",
                     Line: 1,
-                    Column: null,
+                    Column: null!,
                     EndLine: 1,
                     EndColumn: 1
                 });
@@ -305,7 +305,7 @@ describe("Commands", function() {
                     FileName: "",
                     Line: 1,
                     Column: 1,
-                    EndLine: null,
+                    EndLine: null!,
                     EndColumn: 1
                 });
             }).to.throw(/must not be null/);
@@ -328,7 +328,7 @@ describe("Commands", function() {
                     Line: 1,
                     Column: 1,
                     EndLine: 1,
-                    EndColumn: null
+                    EndColumn: null!
                 });
             }).to.throw(/must not be null/);
         });
@@ -360,14 +360,14 @@ describe("Commands", function() {
         it("should throw if FileName is null", function() {
             expect(() => {
                 server.codeformat({
-                    FileName: null
+                    FileName: null!
                 });
             }).to.throw(/must not be null/);
         });
         it("should not throw of required fields are set", function() {
             expect(() => {
                 server.codeformat({
-                    FileName: null
+                    FileName: null!
                 });
             }).to.not.throw;
         });
@@ -377,7 +377,7 @@ describe("Commands", function() {
         it("should throw if FileName is null", function() {
             expect(() => {
                 server.autocomplete({
-                    FileName: null,
+                    FileName: null!,
                     Line: 1,
                     Column: 1,
                     WordToComplete: "",
@@ -388,7 +388,7 @@ describe("Commands", function() {
             expect(() => {
                 server.autocomplete({
                     FileName: "",
-                    Line: null,
+                    Line: null!,
                     Column: 1,
                     WordToComplete: ""
                 });
@@ -409,7 +409,7 @@ describe("Commands", function() {
                 server.autocomplete({
                     FileName: "",
                     Line: 1,
-                    Column: null,
+                    Column: null!,
                     WordToComplete: ""
                 });
             }).to.throw(/must not be null/);
@@ -430,14 +430,14 @@ describe("Commands", function() {
                     FileName: "",
                     Line: 1,
                     Column: 1,
-                    WordToComplete: null,
+                    WordToComplete: null!,
                 });
             }).to.throw(/must not be null/);
         });
         it("should not throw of required fields are set", function() {
             expect(() => {
                 server.autocomplete({
-                    FileName: null
+                    FileName: null!
                 });
             }).to.not.throw;
         });
@@ -448,7 +448,7 @@ describe("Commands", function() {
             expect(() => {
                 server.metadata({
                     Language: "C#",
-                    AssemblyName: null,
+                    AssemblyName: null!,
                     TypeName: "",
                     Timeout: 0,
                     ProjectName: "",
@@ -461,7 +461,7 @@ describe("Commands", function() {
                 server.metadata({
                     Language: "C#",
                     AssemblyName: "",
-                    TypeName: null,
+                    TypeName: null!,
                     Timeout: 0,
                     ProjectName: "",
                     VersionNumber: ""
@@ -474,7 +474,7 @@ describe("Commands", function() {
         it("should throw if FileName is null", function() {
             expect(() => {
                 server.findimplementations({
-                    FileName: null,
+                    FileName: null!,
                     Line: 1,
                     Column: 1
                 });
@@ -484,7 +484,7 @@ describe("Commands", function() {
             expect(() => {
                 server.findimplementations({
                     FileName: "",
-                    Line: null,
+                    Line: null!,
                     Column: 1
                 });
             }).to.throw(/must not be null/);
@@ -503,7 +503,7 @@ describe("Commands", function() {
                 server.findimplementations({
                     FileName: "",
                     Line: 1,
-                    Column: null
+                    Column: null!
                 });
             }).to.throw(/must not be null/);
         });
@@ -531,7 +531,7 @@ describe("Commands", function() {
         it("should throw if FileName is null", function() {
             expect(() => {
                 server.findsymbols({
-                    Filter: null
+                    Filter: null!
                 });
             }).to.throw(/must not be null/);
         });
@@ -548,7 +548,7 @@ describe("Commands", function() {
         it("should throw if FileName is null", function() {
             expect(() => {
                 server.findusages({
-                    FileName: null,
+                    FileName: null!,
                     Line: 1,
                     Column: 1
                 });
@@ -558,7 +558,7 @@ describe("Commands", function() {
             expect(() => {
                 server.findusages({
                     FileName: "",
-                    Line: null,
+                    Line: null!,
                     Column: 1
                 });
             }).to.throw(/must not be null/);
@@ -577,7 +577,7 @@ describe("Commands", function() {
                 server.findusages({
                     FileName: "",
                     Line: 1,
-                    Column: null
+                    Column: null!
                 });
             }).to.throw(/must not be null/);
         });
@@ -605,7 +605,7 @@ describe("Commands", function() {
         it("should throw if FileName is null", function() {
             expect(() => {
                 server.gotodefinition({
-                    FileName: null,
+                    FileName: null!,
                     Line: 1,
                     Column: 1
                 });
@@ -615,7 +615,7 @@ describe("Commands", function() {
             expect(() => {
                 server.gotodefinition({
                     FileName: "",
-                    Line: null,
+                    Line: null!,
                     Column: 1
                 });
             }).to.throw(/must not be null/);
@@ -634,7 +634,7 @@ describe("Commands", function() {
                 server.gotodefinition({
                     FileName: "",
                     Line: 1,
-                    Column: null
+                    Column: null!
                 });
             }).to.throw(/must not be null/);
         });
@@ -662,7 +662,7 @@ describe("Commands", function() {
         it("should throw if FileName is null", function() {
             expect(() => {
                 server.navigateup({
-                    FileName: null,
+                    FileName: null!,
                     Line: 1,
                     Column: 1
                 });
@@ -672,7 +672,7 @@ describe("Commands", function() {
             expect(() => {
                 server.navigateup({
                     FileName: "",
-                    Line: null,
+                    Line: null!,
                     Column: 1
                 });
             }).to.throw(/must not be null/);
@@ -691,7 +691,7 @@ describe("Commands", function() {
                 server.navigateup({
                     FileName: "",
                     Line: 1,
-                    Column: null
+                    Column: null!
                 });
             }).to.throw(/must not be null/);
         });
@@ -719,7 +719,7 @@ describe("Commands", function() {
         it("should throw if FileName is null", function() {
             expect(() => {
                 server.navigatedown({
-                    FileName: null,
+                    FileName: null!,
                     Line: 1,
                     Column: 1
                 });
@@ -729,7 +729,7 @@ describe("Commands", function() {
             expect(() => {
                 server.navigatedown({
                     FileName: "",
-                    Line: null,
+                    Line: null!,
                     Column: 1
                 });
             }).to.throw(/must not be null/);
@@ -748,7 +748,7 @@ describe("Commands", function() {
                 server.navigatedown({
                     FileName: "",
                     Line: 1,
-                    Column: null
+                    Column: null!
                 });
             }).to.throw(/must not be null/);
         });
@@ -776,7 +776,7 @@ describe("Commands", function() {
         it("should throw if FileName is null", function() {
             expect(() => {
                 server.rename({
-                    FileName: null,
+                    FileName: null!,
                     Line: 1,
                     Column: 1,
                     RenameTo: ""
@@ -787,7 +787,7 @@ describe("Commands", function() {
             expect(() => {
                 server.rename({
                     FileName: "",
-                    Line: null,
+                    Line: null!,
                     Column: 1,
                     RenameTo: ""
                 });
@@ -808,7 +808,7 @@ describe("Commands", function() {
                 server.rename({
                     FileName: "",
                     Line: 1,
-                    Column: null,
+                    Column: null!,
                     RenameTo: ""
                 });
             }).to.throw(/must not be null/);
@@ -829,7 +829,7 @@ describe("Commands", function() {
                     FileName: "",
                     Line: 1,
                     Column: 1,
-                    RenameTo: null
+                    RenameTo: null!
                 });
             }).to.throw(/must not be null/);
         });
@@ -849,7 +849,7 @@ describe("Commands", function() {
         it("should throw if FileName is null", function() {
             expect(() => {
                 server.signatureHelp({
-                    FileName: null,
+                    FileName: null!,
                     Line: 1,
                     Column: 1
                 });
@@ -859,7 +859,7 @@ describe("Commands", function() {
             expect(() => {
                 server.signatureHelp({
                     FileName: "",
-                    Line: null,
+                    Line: null!,
                     Column: 1
                 });
             }).to.throw(/must not be null/);
@@ -878,7 +878,7 @@ describe("Commands", function() {
                 server.signatureHelp({
                     FileName: "",
                     Line: 1,
-                    Column: null
+                    Column: null!
                 });
             }).to.throw(/must not be null/);
         });
@@ -906,7 +906,7 @@ describe("Commands", function() {
         it("should throw if FileName is null", function() {
             expect(() => {
                 server.typelookup({
-                    FileName: null,
+                    FileName: null!,
                     Line: 1,
                     Column: 1
                 });
@@ -916,7 +916,7 @@ describe("Commands", function() {
             expect(() => {
                 server.typelookup({
                     FileName: "",
-                    Line: null,
+                    Line: null!,
                     Column: 1
                 });
             }).to.throw(/must not be null/);
@@ -935,7 +935,7 @@ describe("Commands", function() {
                 server.typelookup({
                     FileName: "",
                     Line: 1,
-                    Column: null
+                    Column: null!
                 });
             }).to.throw(/must not be null/);
         });
@@ -963,7 +963,7 @@ describe("Commands", function() {
         it("should throw if FileName is null", function() {
             expect(() => {
                 server.getcodeactions({
-                    FileName: null,
+                    FileName: null!,
                     Line: 1,
                     Column: 1
                 });
@@ -973,7 +973,7 @@ describe("Commands", function() {
             expect(() => {
                 server.getcodeactions({
                     FileName: "",
-                    Line: null,
+                    Line: null!,
                     Column: 1
                 });
             }).to.throw(/must not be null/);
@@ -992,7 +992,7 @@ describe("Commands", function() {
                 server.getcodeactions({
                     FileName: "",
                     Line: 1,
-                    Column: null
+                    Column: null!
                 });
             }).to.throw(/must not be null/);
         });
@@ -1020,7 +1020,7 @@ describe("Commands", function() {
                     FileName: "",
                     Selection: {
                         Start: {
-                            Line: null,
+                            Line: null!,
                             Column: 1
                         },
                         End: {
@@ -1055,7 +1055,7 @@ describe("Commands", function() {
                     Selection: {
                         Start: {
                             Line: 1,
-                            Column: null
+                            Column: null!
                         },
                         End: {
                             Line: 1,
@@ -1088,7 +1088,7 @@ describe("Commands", function() {
                     FileName: "",
                     Selection: {
                         End: {
-                            Line: null,
+                            Line: null!,
                             Column: 1
                         },
                         Start: {
@@ -1123,7 +1123,7 @@ describe("Commands", function() {
                     Selection: {
                         End: {
                             Line: 1,
-                            Column: null
+                            Column: null!
                         },
                         Start: {
                             Line: 1,
@@ -1189,7 +1189,7 @@ describe("Commands", function() {
         it("should throw if FileName is null", function() {
             expect(() => {
                 server.currentfilemembersastree({
-                    FileName: null
+                    FileName: null!
                 });
             }).to.throw(/must not be null/);
         });
@@ -1206,7 +1206,7 @@ describe("Commands", function() {
         it("should throw if FileName is null", function() {
             expect(() => {
                 server.currentfilemembersasflat({
-                    FileName: null
+                    FileName: null!
                 });
             }).to.throw(/must not be null/);
         });
@@ -1222,7 +1222,7 @@ describe("Commands", function() {
     describe("filesChanged", function() {
         it("should throw if request is null", function() {
             expect(() => {
-                server.filesChanged(null);
+                server.filesChanged(null!);
             }).to.throw(/must not be null/);
         });
         it("should not throw of required fields are set", function() {
@@ -1244,7 +1244,7 @@ describe("Commands", function() {
         it("should throw if FileName is null", function() {
             expect(() => {
                 server.project({
-                    FileName: null
+                    FileName: null!
                 });
             }).to.throw(/must not be null/);
         });
@@ -1261,7 +1261,7 @@ describe("Commands", function() {
         it("should throw if FileName is null", function() {
             expect(() => {
                 server.runcodeaction({
-                    FileName: null,
+                    FileName: null!,
                     Line: 1,
                     Column: 1,
                     Identifier: ""
@@ -1272,7 +1272,7 @@ describe("Commands", function() {
             expect(() => {
                 server.runcodeaction({
                     FileName: "",
-                    Line: null,
+                    Line: null!,
                     Column: 1,
                     Identifier: ""
                 });
@@ -1293,7 +1293,7 @@ describe("Commands", function() {
                 server.runcodeaction({
                     FileName: "",
                     Line: 1,
-                    Column: null,
+                    Column: null!,
                     Identifier: ""
                 });
             }).to.throw(/must not be null/);
@@ -1314,7 +1314,7 @@ describe("Commands", function() {
                     FileName: "",
                     Line: 1,
                     Column: 1,
-                    Identifier: null
+                    Identifier: null!
                 });
             }).to.throw(/must not be null/);
         });
@@ -1335,7 +1335,7 @@ describe("Commands", function() {
                     Identifier: "",
                     Selection: {
                         Start: {
-                            Line: null,
+                            Line: null!,
                             Column: 1
                         },
                         End: {
@@ -1372,7 +1372,7 @@ describe("Commands", function() {
                     Selection: {
                         Start: {
                             Line: 1,
-                            Column: null
+                            Column: null!
                         },
                         End: {
                             Line: 1,
@@ -1407,7 +1407,7 @@ describe("Commands", function() {
                     Identifier: "",
                     Selection: {
                         End: {
-                            Line: null,
+                            Line: null!,
                             Column: 1
                         },
                         Start: {
@@ -1444,7 +1444,7 @@ describe("Commands", function() {
                     Selection: {
                         End: {
                             Line: 1,
-                            Column: null
+                            Column: null!
                         },
                         Start: {
                             Line: 1,
@@ -1496,7 +1496,7 @@ describe("Commands", function() {
         it("should throw if FileName is null", function() {
             expect(() => {
                 server.gettestcontext({
-                    FileName: null,
+                    FileName: null!,
                     Line: 1,
                     Column: 1,
                     Type: 1
@@ -1507,7 +1507,7 @@ describe("Commands", function() {
             expect(() => {
                 server.gettestcontext({
                     FileName: "",
-                    Line: null,
+                    Line: null!,
                     Column: 1,
                     Type: 1
                 });
@@ -1528,7 +1528,7 @@ describe("Commands", function() {
                 server.gettestcontext({
                     FileName: "",
                     Line: 1,
-                    Column: null,
+                    Column: null!,
                     Type: 1
                 });
             }).to.throw(/must not be null/);
@@ -1549,13 +1549,13 @@ describe("Commands", function() {
                     FileName: "",
                     Line: 1,
                     Column: 1,
-                    Type: null
+                    Type: null!
                 });
             }).to.throw(/must not be null/);
         });
         it("should throw if Type is less than 0", function() {
             expect(() => {
-                server.gettestcontext({
+                server.gettestcontext(<any>{
                     FileName: "",
                     Line: 1,
                     Column: 1,

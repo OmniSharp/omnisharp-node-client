@@ -1,14 +1,14 @@
-import {RequestContext} from "../contexts";
-import {each} from "lodash";
+import { RequestContext } from '../contexts';
+import { each } from 'lodash';
 
 const normalCommands = [
-    "findimplementations", "findsymbols", "findusages",
-    "gotodefinition", "typelookup", "navigateup",
-    "navigatedown", "getcodeactions", "filesChanged",
-    "runcodeaction", "autocomplete", "signatureHelp"
+    'findimplementations', 'findsymbols', 'findusages',
+    'gotodefinition', 'typelookup', 'navigateup',
+    'navigatedown', 'getcodeactions', 'filesChanged',
+    'runcodeaction', 'autocomplete', 'signatureHelp'
 ];
 const priorityCommands = [
-    "updatebuffer", "changebuffer", "formatAfterKeystroke"
+    'updatebuffer', 'changebuffer', 'formatAfterKeystroke'
 ];
 
 const prioritySet = new Set<string>();

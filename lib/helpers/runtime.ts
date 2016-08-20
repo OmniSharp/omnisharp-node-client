@@ -1,23 +1,23 @@
-import {Observable, Scheduler} from "rxjs";
-import {resolve, join, delimiter} from "path";
-import * as fs from "fs";
-import {ILogger, Runtime} from "../enums";
-import {find, bind, memoize, assignWith, isNull, isUndefined, toLower, delay} from "lodash";
-import {decompress} from "./decompress";
-import {createObservable} from "../operators/create";
-import "rxjs/add/operator/max";
-import "rxjs/add/operator/isEmpty";
-require("rxjs/add/observable/if");
-import {SupportedPlatform, supportedPlatform, getSupportedPlatform} from "./platform";
+import { Observable, Scheduler } from 'rxjs';
+import { resolve, join, delimiter } from 'path';
+import * as fs from 'fs';
+import { ILogger, Runtime } from '../enums';
+import { find, bind, memoize, assignWith, isNull, isUndefined, toLower, delay } from 'lodash';
+import { decompress } from './decompress';
+import { createObservable } from '../operators/create';
+import 'rxjs/add/operator/max';
+import 'rxjs/add/operator/isEmpty';
+require('rxjs/add/observable/if');
+import { SupportedPlatform, supportedPlatform, getSupportedPlatform } from './platform';
 
-const request: { get(url: string): NodeJS.ReadableStream; } = require("request");
-const defaultServerVersion = require(resolve(__dirname, "../../package.json"))["omnisharp-roslyn"];
+const request: { get(url: string): NodeJS.ReadableStream; } = require('request');
+const defaultServerVersion = require(resolve(__dirname, '../../package.json'))['omnisharp-roslyn'];
 const exists = Observable.bindCallback(fs.exists);
 const readFile = Observable.bindNodeCallback(fs.readFile);
-const defaultDest = resolve(__dirname, "../../");
+const defaultDest = resolve(__dirname, '../../');
 
 // Handle the case of homebrew mono
-const PATH: string[] = find<string>(process.env, (v, key) => toLower(key) === "path").split(delimiter).concat(["/usr/local/bin", "/Library/Frameworks/Mono.framework/Commands"]);
+const PATH: string[] = find<string>(process.env, (v, key) => toLower(key) === 'path').split(delimiter).concat(['/usr/local/bin', '/Library/Frameworks/Mono.framework/Commands']);
 
 export interface IRuntimeContext {
     runtime: Runtime;
@@ -41,7 +41,7 @@ export class RuntimeContext {
     private _os: string;
     private _location: string;
 
-    constructor(runtimeContext?: IRuntimeContext, private _logger?: ILogger) {
+    constructor(runtimeContext: IRuntimeContext, private _logger?: ILogger) {
         if (!_logger) {
             this._logger = console;
         }
@@ -69,7 +69,7 @@ export class RuntimeContext {
             this._version = defaultServerVersion;
         }
 
-        this._arch = this._arch === "x86" ? "x86" : "x64";
+        this._arch = this._arch === 'x86' ? 'x86' : 'x64';
 
         this._os = this._getOsName();
         this._key = this._getIdKey();
@@ -100,12 +100,12 @@ export class RuntimeContext {
             return `mono`;
         }
 
-        let runtimeName = "netcoreapp1.0";
+        let runtimeName = 'netcoreapp1.0';
         if (this._runtime === Runtime.ClrOrMono) {
             if (this._platform === SupportedPlatform.Windows) {
-                runtimeName = "net451";
+                runtimeName = 'net451';
             } else {
-                runtimeName = "mono";
+                runtimeName = 'mono';
             }
         }
 
@@ -113,7 +113,7 @@ export class RuntimeContext {
     }
 
     private _getOsName() {
-        if (this._platform === SupportedPlatform.Windows) return "win";
+        if (this._platform === SupportedPlatform.Windows) return 'win';
 
         const name = SupportedPlatform[this._platform];
         if (name) return name.toLowerCase();
@@ -122,14 +122,14 @@ export class RuntimeContext {
 
     /* tslint:disable:no-string-literal */
     private _getRuntimeLocation() {
-        let path: string = process.env["OMNISHARP"];
+        let path: string = process.env['OMNISHARP'];
 
         if (!path) {
-            const omnisharp = process.platform === "win32" || this._runtime === Runtime.ClrOrMono ? "OmniSharp.exe" : "OmniSharp";
-            path = resolve(__dirname, "../../", this._id, omnisharp);
+            const omnisharp = process.platform === 'win32' || this._runtime === Runtime.ClrOrMono ? 'OmniSharp.exe' : 'OmniSharp';
+            path = resolve(__dirname, '../../', this._id, omnisharp);
         }
 
-        if (process.platform !== "win32" && this._runtime === Runtime.ClrOrMono) {
+        if (process.platform !== 'win32' && this._runtime === Runtime.ClrOrMono) {
             return `mono ${path}`;
         }
 
@@ -138,7 +138,7 @@ export class RuntimeContext {
     /* tslint:enable:no-string-literal */
 
     private _checkCurrentVersion() {
-        let filename = join(this._destination, ".version");
+        let filename = join(this._destination, '.version');
 
         return exists(filename)
             .flatMap((isCurrent) =>
@@ -158,7 +158,7 @@ export class RuntimeContext {
                 () => !isCurrent,
                 Observable.defer(() => createObservable(observer => {
                     dest = dest || defaultDest;
-                    require("rimraf")(dest, (err: any) => {
+                    require('rimraf')(dest, (err: any) => {
                         if (err) { observer.error(err); return; }
                         delay(() => {
                             observer.next(isCurrent);
@@ -177,11 +177,11 @@ export class RuntimeContext {
     public downloadRuntime() {
         return Observable.defer(() => Observable.concat(
             // downloadSpecificRuntime("omnisharp.bootstrap", ctx, logger, dest),
-            this._downloadSpecificRuntime("omnisharp")
+            this._downloadSpecificRuntime('omnisharp')
         ))
             .subscribeOn(Scheduler.async)
             .toArray()
-            .concatMap(() => Observable.bindCallback<string, any, any>(fs.writeFile)(join(this._destination, ".version"), this._version), (result) => result);
+            .concatMap(() => Observable.bindCallback<string, any, any>(fs.writeFile)(join(this._destination, '.version'), this._version), (result) => result);
     }
 
     public downloadRuntimeIfMissing() {
@@ -195,7 +195,7 @@ export class RuntimeContext {
     }
 
     private _downloadSpecificRuntime(name: string) {
-        const filename = `${name}-${this._key}.${this._platform === SupportedPlatform.Windows ? "zip" : "tar.gz"}`;
+        const filename = `${name}-${this._key}.${this._platform === SupportedPlatform.Windows ? 'zip' : 'tar.gz'}`;
         const destination = this._destination;
         try {
             if (!fs.existsSync(destination))
@@ -215,26 +215,32 @@ export class RuntimeContext {
     }
 
     public downloadFile(url: string, path: string) {
-        this._logger.log(`Downloading ${path}`);
+        if (this._logger) {
+            this._logger.log(`Downloading ${path}`);
+        }
         return createObservable<void>((observer) => {
             request.get(url)
                 .pipe(fs.createWriteStream(path))
-                .on("error", bind(observer.error, observer))
-                .on("finish", () => {
-                    this._logger.log(`Finished downloading ${path}`);
-                    observer.next(null);
+                .on('error', bind(observer.error, observer))
+                .on('finish', () => {
+                    if (this._logger) {
+                        this._logger.log(`Finished downloading ${path}`);
+                    }
+                    observer.next(void 0);
                     observer.complete();
                 });
         });
     }
 
     private _extract(win32: boolean, path: string, dest: string) {
-        this._logger.log(`Extracting ${path}`);
-        return decompress(path, dest, { mode: "755" });
+        if (this._logger) {
+            this._logger.log(`Extracting ${path}`);
+        }
+        return decompress(path, dest, { mode: '755' });
     }
 }
 
-export const isSupportedRuntime = memoize(function(ctx: RuntimeContext) {
+export const isSupportedRuntime = memoize(function (ctx: RuntimeContext) {
     return Observable.defer(() => {
         // On windows we'll just use the clr, it's there
         // On mac / linux if we've picked CoreClr stick with that
@@ -245,7 +251,7 @@ export const isSupportedRuntime = memoize(function(ctx: RuntimeContext) {
         // We need to check if mono exists on the system
         // If it doesn't we'll just run CoreClr
         return Observable.from(<string[]>PATH)
-            .map(path => join(path, "mono"))
+            .map(path => join(path, 'mono'))
             .concatMap(path => exists(path).map(e => ({ exists: e, path })))
             .filter(x => x.exists)
             .map(x => ({ runtime: Runtime.ClrOrMono, path: [x.path].concat(PATH).join(delimiter) }))
@@ -254,12 +260,12 @@ export const isSupportedRuntime = memoize(function(ctx: RuntimeContext) {
     })
         //.do(ct => console.log(`Supported runtime for "${Runtime[ct.runtime]}" was: ${Runtime[ct.runtime]}`))
         .cache(1);
-}, function({platform, arch, runtime, version}: RuntimeContext) { return `${arch}-${platform}:${Runtime[runtime]}:${version}`; });
+}, function ({platform, arch, runtime, version}: RuntimeContext) { return `${arch}-${platform}:${Runtime[runtime]}:${version}`; });
 
 function findOmnisharpExecuable(runtimeId: string, location: string): Observable<boolean> {
     return Observable.merge(
-        exists(resolve(location, runtimeId, "OmniSharp.exe")),
-        exists(resolve(location, runtimeId, "OmniSharp"))
+        exists(resolve(location, runtimeId, 'OmniSharp.exe')),
+        exists(resolve(location, runtimeId, 'OmniSharp'))
     )
         .filter(x => x)
         .take(1)

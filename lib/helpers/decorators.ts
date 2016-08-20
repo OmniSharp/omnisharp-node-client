@@ -1,7 +1,7 @@
-import * as OmniSharp from "../omnisharp-server";
-import _ from "lodash";
-import {Subject, Observable} from "rxjs";
-import {ResponseContext} from "../contexts";
+import * as OmniSharp from '../omnisharp-server';
+import * as _ from 'lodash';
+import { Subject, Observable } from 'rxjs';
+import { ResponseContext } from '../contexts';
 
 export function getInternalKey(path: string) {
     return `__${path}__`.toLowerCase();
@@ -13,7 +13,7 @@ export function getInternalValue(context: any, path: string) {
 
 export function setEventOrResponse(context: any, path: string) {
     const instance = context._client || context;
-    const isEvent = !_.startsWith(path, "/");
+    const isEvent = !_.startsWith(path, '/');
     const internalKey = getInternalKey(path);
     if (isEvent) {
         const eventKey = path[0].toUpperCase() + path.substr(1);
@@ -43,12 +43,15 @@ export function request(target: Object, propertyKey: string) {
     const descriptor: TypedPropertyDescriptor<any> = {};
     const version = OmniSharp.Api.getVersion(propertyKey);
     let format = (name: string) => `/${name}`;
-    if (version !== "v1") {
+    if (version !== 'v1') {
         format = (name) => `/${version}/${name}`;
     }
 
     const name = format(propertyKey);
-    descriptor.value = function(request: OmniSharp.Models.Request, options: any) {
+    descriptor.value = function (this: {
+        _fixup: (propery: string, request: OmniSharp.Models.Request, options: any) => any;
+        request: (name: string, request: OmniSharp.Models.Request, options: any) => any;
+    }, request: OmniSharp.Models.Request, options: any) {
         if (request && (<any>request).silent) {
             options = request;
             request = {};
@@ -65,7 +68,7 @@ export function request(target: Object, propertyKey: string) {
 export function response(target: Object, propertyKey: string, path: string) {
     const descriptor: TypedPropertyDescriptor<any> = {};
     const internalKey = getInternalKey(path);
-    descriptor.get = function() {
+    descriptor.get = function (this: { [index: string]: any; }) {
         if (!this[internalKey]) {
             setEventOrResponse(this, path);
         }
@@ -79,7 +82,7 @@ export function response(target: Object, propertyKey: string, path: string) {
 export function event(target: Object, path: string) {
     const descriptor: TypedPropertyDescriptor<any> = {};
     const internalKey = getInternalKey(path);
-    descriptor.get = function() {
+    descriptor.get = function (this: { [index: string]: any; }) {
         if (!this[internalKey]) {
             setEventOrResponse(this, path);
         }
@@ -94,7 +97,7 @@ export function makeObservable(target: Object, propertyKey: string, path: string
     const descriptor: TypedPropertyDescriptor<any> = {};
     const internalKey = getInternalKey(path);
     const method = (c: any) => c.observe[propertyKey] || c[propertyKey];
-    descriptor.get = function() {
+    descriptor.get = function (this: { [index: string]: any; makeObservable: (method: Function) => any; }) {
         if (!this[internalKey]) {
             const value = this.makeObservable(method);
             this[internalKey] = value;
@@ -107,7 +110,6 @@ export function makeObservable(target: Object, propertyKey: string, path: string
 
 export function reference(target: Object, propertyKey: string, path: string) {
     const descriptor: TypedPropertyDescriptor<any> = {};
-    descriptor.get = function() { return this._client[propertyKey]; };
+    descriptor.get = function (this: { [index: string]: any; _client: { [index: string]: any; } }) { return this._client[propertyKey]; };
     Object.defineProperty(target, propertyKey, descriptor);
 }
-

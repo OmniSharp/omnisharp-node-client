@@ -1,4 +1,4 @@
-import child_process from "child_process";
+import * as child_process from 'child_process';
 
 export enum SupportedPlatform {
     None,
@@ -25,7 +25,7 @@ export function getSupportedPlatform(platform: string = process.platform) {
         const text = child_process.execSync('cat /etc/os-release').toString();
         const lines = text.split('\n');
 
-        function getValue(name: string) {
+        const getValue = (name: string) => {
             for (let line of lines) {
                 line = line.trim();
                 if (line.startsWith(name)) {
@@ -44,49 +44,39 @@ export function getSupportedPlatform(platform: string = process.platform) {
             }
 
             return undefined;
-        }
+        };
 
         const id = getValue("ID");
 
         console.log(lines);
         console.log("getValue(\"ID\")", id);
 
-        let result: SupportedPlatform;
-
         switch (id) {
             case 'ubuntu':
                 const versionId = getValue("VERSION_ID");
-                console.log("getValue(\"VERSION_ID\")", versionId);
-                if (versionId.startsWith("14")) {
-                    // This also works for Linux Mint
-                    result = SupportedPlatform.Ubuntu14;
-                } else if (versionId.startsWith("16")) {
-                    result =  SupportedPlatform.Ubuntu16;
+                if (versionId) {
+                    if (versionId.startsWith("14")) {
+                        // This also works for Linux Mint
+                        return SupportedPlatform.Ubuntu14;
+                    } else if (versionId.startsWith("16")) {
+                        return SupportedPlatform.Ubuntu16;
+                    }
                 }
                 break;
             case 'centos':
-                result =  SupportedPlatform.CentOS;
-                break;
+                return SupportedPlatform.CentOS;
             case 'fedora':
-                result =  SupportedPlatform.Fedora;
-                break;
+                return SupportedPlatform.Fedora;
             case 'opensuse':
-                result =  SupportedPlatform.OpenSUSE;
-                break;
+                return SupportedPlatform.OpenSUSE;
             case 'rhel':
-                result =  SupportedPlatform.RHEL;
-                break;
+                return SupportedPlatform.RHEL;
             case 'debian':
-                result =  SupportedPlatform.Debian;
-                break;
+                return SupportedPlatform.Debian;
             case 'ol':
                 // Oracle Linux is binary compatible with CentOS
-                result =  SupportedPlatform.CentOS;
-                break;
+                return SupportedPlatform.CentOS;
         }
-
-        console.log("getSupportedPlatform result", id, SupportedPlatform[id]);
-        return result;
     }
 
     return SupportedPlatform.None;

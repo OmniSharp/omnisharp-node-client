@@ -1,15 +1,15 @@
-import * as OmniSharp from "../omnisharp-server";
-import {Observable, Subject, AsyncSubject, BehaviorSubject, Subscription} from "rxjs";
-import {IDisposable, CompositeDisposable} from "../disposables";
-import {keys, bind, uniqueId, each, defaults, cloneDeep} from "lodash";
-import {IReactiveDriver, IDriverOptions, OmnisharpClientStatus, ReactiveClientOptions} from "../enums";
-import {DriverState, Runtime} from "../enums";
-import {RequestContext, ResponseContext, CommandContext} from "../contexts";
-import {ensureClientOptions} from "../options";
-import {isPriorityCommand, isNormalCommand, isDeferredCommand} from "../helpers/prioritization";
-import {createObservable} from "../operators/create";
-import {getPreconditions} from "../helpers/preconditions";
-import {reference, setEventOrResponse, getInternalValue, request, response, event} from "../helpers/decorators";
+import * as OmniSharp from '../omnisharp-server';
+import { Observable, Subject, AsyncSubject, BehaviorSubject, Subscription } from 'rxjs';
+import { IDisposable, CompositeDisposable } from 'ts-disposables';
+import { keys, bind, uniqueId, each, defaults, cloneDeep } from 'lodash';
+import { IReactiveDriver, IDriverOptions, OmnisharpClientStatus, ReactiveClientOptions, InternalReactiveClientOptions } from '../enums';
+import { DriverState, Runtime } from '../enums';
+import { RequestContext, ResponseContext, CommandContext } from '../contexts';
+import { ensureClientOptions } from '../options';
+import { isPriorityCommand, isNormalCommand, isDeferredCommand } from '../helpers/prioritization';
+import { createObservable } from '../operators/create';
+import { getPreconditions } from '../helpers/preconditions';
+import { reference, setEventOrResponse, getInternalValue, request, response, event } from '../helpers/decorators';
 
 function pausable<T>(incomingStream: Observable<T>, pauser: Observable<boolean>) {
     return createObservable<T>(observer => {
@@ -46,7 +46,7 @@ export class ReactiveClient implements IReactiveDriver, IDisposable {
     private _responseStreams = new Map<string, Subject<ResponseContext<any, any>>>();
     private _statusStream: Observable<OmnisharpClientStatus>;
     private _errorStream = new Subject<CommandContext<any>>();
-    private _uniqueId = uniqueId("client");
+    private _uniqueId = uniqueId('client');
     protected _lowestIndexValue = 0;
     private _disposable = new CompositeDisposable();
     //private _pluginManager: PluginManager;
@@ -100,20 +100,21 @@ export class ReactiveClient implements IReactiveDriver, IDisposable {
     private _observe: ReactiveClientEvents;
     public get observe(): ReactiveClientEvents { return this._observe; }
 
-    private _options: ReactiveClientOptions & IDriverOptions;
+    private _options: InternalReactiveClientOptions & IDriverOptions;
 
     constructor(_options: ReactiveClientOptions) {
         _options.driver = _options.driver || ((options: IDriverOptions) => {
-            const item = require("../drivers/stdio");
+            const item = require('../drivers/stdio');
             const driverFactory = item[keys(item)[0]];
             return new driverFactory(this._options);
         });
 
-        this._options = defaults(_options, <IDriverOptions>{
+        this._options = <any>defaults(_options, <IDriverOptions>{
+            projectPath: '',
             onState: bind(this._stateStream.next, this._stateStream),
             onEvent: bind(this._eventsStream.next, this._eventsStream),
             onCommand: (packet) => {
-                const response = new ResponseContext(new RequestContext(this._uniqueId, packet.Command, {}, {}, "command"), packet.Body);
+                const response = new ResponseContext(new RequestContext(this._uniqueId, packet.Command, {}, {}, 'command'), packet.Body);
                 this._getResponseStream(packet.Command).next(response);
             }
         });
@@ -156,13 +157,13 @@ export class ReactiveClient implements IReactiveDriver, IDisposable {
             this._disposable.add(this._responseStream.subscribe(context => {
                 // log our complete response time
                 this._eventsStream.next({
-                    Event: "log",
+                    Event: 'log',
                     Body: {
                         Message: `/${context.command}  ${context.responseTime}ms (round trip)`,
-                        LogLevel: "INFORMATION"
+                        LogLevel: 'INFORMATION'
                     },
                     Seq: -1,
-                    Type: "log"
+                    Type: 'log'
                 });
             }));
         }
@@ -240,13 +241,11 @@ export class ReactiveClient implements IReactiveDriver, IDisposable {
             this._currentRequests.delete(context);
             if (complete) {
                 complete();
-                complete = null;
             }
         }, () => {
             this._currentRequests.delete(context);
             if (complete) {
                 complete();
-                complete = null;
             }
         });
 
@@ -259,13 +258,13 @@ export class ReactiveClient implements IReactiveDriver, IDisposable {
     public log(message: string, logLevel?: string) {
         // log our complete response time
         this._eventsStream.next({
-            Event: "log",
+            Event: 'log',
             Body: {
                 Message: message,
-                LogLevel: logLevel ? logLevel.toUpperCase() : "INFORMATION"
+                LogLevel: logLevel ? logLevel.toUpperCase() : 'INFORMATION'
             },
             Seq: -1,
-            Type: "log"
+            Type: 'log'
         });
     }
 
@@ -313,7 +312,7 @@ export class ReactiveClient implements IReactiveDriver, IDisposable {
             return <Observable<TResponse>><any>response;
         }
 
-        const context = new RequestContext(this._uniqueId, action, request, options);
+        const context = new RequestContext(this._uniqueId, action, request!, options);
         this._requestStream.next(context);
 
         return context.getResponse<TResponse>(<Observable<any>><any>this._responseStream);
@@ -335,22 +334,12 @@ export class ReactiveClient implements IReactiveDriver, IDisposable {
             return subject;
         }
 
-        return this._responseStreams.get(key);
+        return this._responseStreams.get(key)!;
     }
 
-    /* tslint:disable:no-unused-variable */
     private _fixup<TRequest>(action: string, request: TRequest, options?: OmniSharp.RequestOptions) {
         each(this._fixups, f => f(action, request, options));
     }
-    /* tslint:enable:no-unused-variable */
-
-    /*public addPlugin(plugin: IOmnisharpPlugin) {
-        this._pluginManager.add(plugin);
-    }
-
-    public removePlugin(plugin: IOmnisharpPlugin) {
-        this._pluginManager.remove(plugin);
-    }*/
 }
 
 export interface ReactiveClient extends OmniSharp.Api.V2 { }
@@ -379,13 +368,13 @@ export interface ReactiveClientEvents extends OmniSharp.Events.V2, OmniSharp.Eve
     /*readonly*/ errors: Observable<CommandContext<any>>;
 }
 
-reference(ReactiveClientEvents.prototype, "events", "events");
-reference(ReactiveClientEvents.prototype, "commands", "commands");
-reference(ReactiveClientEvents.prototype, "state", "state");
-reference(ReactiveClientEvents.prototype, "status", "status");
-reference(ReactiveClientEvents.prototype, "requests", "requests");
-reference(ReactiveClientEvents.prototype, "responses", "responses");
-reference(ReactiveClientEvents.prototype, "errors", "errors");
+reference(ReactiveClientEvents.prototype, 'events', 'events');
+reference(ReactiveClientEvents.prototype, 'commands', 'commands');
+reference(ReactiveClientEvents.prototype, 'state', 'state');
+reference(ReactiveClientEvents.prototype, 'status', 'status');
+reference(ReactiveClientEvents.prototype, 'requests', 'requests');
+reference(ReactiveClientEvents.prototype, 'responses', 'responses');
+reference(ReactiveClientEvents.prototype, 'errors', 'errors');
 
 
 // <#GENERATED />
