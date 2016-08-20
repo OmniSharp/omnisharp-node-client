@@ -81,7 +81,7 @@ export const findCandidates = (() => {
             .toArray();
 
         const baseFiles = Observable.concat(solutionsOrProjects, independentSourceFiles)
-            .flatMap(x => x);
+            .flatMap<string>(x => x);
 
         const sourceFiles = searchForCandidates(location, sourceFilesToSearch, [], maxDepth, logger);
 
@@ -115,7 +115,7 @@ function getMinCandidate(candidates: string[]) {
     return _.minBy(_.map(candidates, normalize), z => z.split(sep).length).split(sep).length;
 }
 
-function searchForCandidates(location: string, filesToSearch: string[], projectFilesToSearch: string[], maxDepth: number, logger: ILogger) {
+function searchForCandidates(location: string, filesToSearch: string[], projectFilesToSearch: string[], maxDepth: number, logger: ILogger): Observable<string> {
     let locations = location.split(sep);
     locations = locations.map((loc, index) => {
         return _.take(locations, locations.length - index).join(sep);
@@ -161,5 +161,5 @@ function searchForCandidates(location: string, filesToSearch: string[], projectF
         .filter(z => z.length > 0)
         .defaultIfEmpty([])
         .first()
-        .flatMap(z => z);
+        .flatMap<string>(z => z);
 }
