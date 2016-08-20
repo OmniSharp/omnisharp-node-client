@@ -357,11 +357,7 @@ connection.onCodeLens(({textDocument}) => {
         .map(results => {
             return _.map(results, location => {
                 return <CodeLens>{
-                    data: {
-                        FileName: toUri(location),
-                        Column: location.Column,
-                        Line: location.Line,
-                    },
+                    data: _.defaults({ FileName: fromUri(textDocument) }, location),
                     range: getRange(location)
                 };
             });
@@ -375,7 +371,11 @@ connection.onCodeLensResolve((codeLens) => {
             codeLens.command = {
                 // TODO: ...?
                 title: `References (${x.QuickFixes.length})`,
-                command: `References (${x.QuickFixes.length})`
+                command: `references`
+            };
+
+            codeLens.data = {
+                location: getLocation(codeLens.data)
             };
             return codeLens;
         })
