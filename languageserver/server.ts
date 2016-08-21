@@ -155,7 +155,7 @@ connection.onInitialize((params) => {
                     resolveProvider: true
                 },
                 definitionProvider: true,
-                //documentFormattingProvider: true,
+                documentFormattingProvider: true,
                 documentOnTypeFormattingProvider: {
                     firstTriggerCharacter: '}',
                     moreTriggerCharacter: [';']
@@ -382,14 +382,15 @@ connection.onCodeLensResolve((codeLens) => {
         .toPromise();
 });
 
-/*
 // Requires new endpoint
 connection.onDocumentFormatting(({textDocument, options}) => {
-    return client.formatRange({
-        FileName: getPath(textDocument),
+    return client.codeformat({
+        WantsTextChanges: true,
+        FileName: fromUri(textDocument),
     })
+        .map(getTextEdits)
+        .toPromise();
 });
-*/
 
 connection.onDocumentRangeFormatting(({textDocument, options, range}) => {
     return client.formatRange({
