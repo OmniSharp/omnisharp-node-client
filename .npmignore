@@ -1,8 +1,6 @@
 .DS_Store
 npm-debug.log
 node_modules
-lib/**/*.ts
-!lib/**/*.d.ts
 test
 NuGet.exe
 vendor

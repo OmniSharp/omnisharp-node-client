@@ -23,7 +23,7 @@
     "atom": ">=0.194.0"
   },
   "main": "lib/omnisharp-client.js",
-  "typings": "lib/omnisharp-client.d.ts",
+  "typings": "lib/omnisharp-client.ts",
   "scripts": {
     "prepublish": "typings install && gulp npm-prepublish",
     "do-test": "gulp && npm run test",
