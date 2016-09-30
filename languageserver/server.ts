@@ -145,9 +145,9 @@ connection.onInitialize((params) => {
         })
         .map(() => ({
             capabilities: <ExtendedServerCapabilities & ServerCapabilities>{
-                //textDocumentSync: TextDocumentSyncKind.Full,
-                // Not currently supported
-                textDocumentSync: TextDocumentSyncKind.Incremental,
+                textDocumentSync: TextDocumentSyncKind.Full,
+                // Not currently supported, see issue #289
+                //textDocumentSync: TextDocumentSyncKind.Incremental,
                 completionProvider: {
                     //resolveProvider: true
                 },
