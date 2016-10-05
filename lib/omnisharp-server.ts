@@ -469,7 +469,7 @@ export module Stdio.Protocol {
 export module ScriptCs {
     export interface ScriptCsContextModel {
         CsxFilesBeingProcessed: string[];
-        CsxFileProjects: { [key: string]: Roslyn.Models.ProjectInfoModel; };
+        CsxFileProjects: { [key: string]: { [key: string]: Roslyn.Models.ProjectInfoModel }; };
         CsxReferences: { [key: string]: Roslyn.Models.ReferenceModel[]; };
         CsxLoadReferences: { [key: string]: Roslyn.Models.ProjectInfoModel[]; };
         CsxUsings: { [key: string]: string[]; };

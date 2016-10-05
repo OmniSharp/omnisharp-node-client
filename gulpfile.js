@@ -70,7 +70,7 @@ gulp.task('typescript', ['clean'], function () {
         //.pipe(ctx.tslint())
         //.pipe(ctx.tslint.report('prose'))
         .pipe(ctx.sourcemaps.init())
-        .pipe(ctx.ts(tsProject));
+        .pipe(tsProject());
 
     return merge(
         tsResult.dts
