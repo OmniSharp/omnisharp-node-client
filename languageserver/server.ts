@@ -1,6 +1,6 @@
 import { Models, ReactiveClient, Runtime, DriverState } from '../lib/omnisharp-client';
 import * as _ from 'lodash';
-import { Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 
 import {
     StreamMessageReader, StreamMessageWriter,
@@ -8,17 +8,45 @@ import {
     TextDocuments, TextDocument, Diagnostic, DiagnosticSeverity,
     InitializeParams, InitializeResult, TextDocumentPositionParams,
     CompletionItem, CompletionItemKind, CodeLens, Hover, Location,
-    CompletionList,
+    CompletionList, DidChangeTextDocumentParams,
     SignatureHelp, SignatureInformation, ParameterInformation,
     SymbolInformation, SymbolKind, Range, Command, TextEdit,
     NotificationType, Files, ServerCapabilities, Position
 } from 'vscode-languageserver';
 
 import { ExtendedServerCapabilities, CodeAction, CodeActionList, GetCodeActionsParams, GetCodeActionsRequest, Highlight, HighlightNotification, ImplementationRequest, NavigateRequest, RunCodeActionParams, RunCodeActionRequest, PublishHighlightParams, ClientCapabilities } from './server-extended';
+import { createObservable } from '../lib/operators/create';
 
 let connection: IConnection = createConnection(new StreamMessageReader(process.stdin), new StreamMessageWriter(process.stdout));
 let client: ReactiveClient;
-const openEditors = new Set<string>();
+class OpenEditorManager {
+    private openEditors = new Set<string>();
+    private _subject = new Subject<{ type: 'add', path: string } | { type: 'delete', path: string }>();
+
+    public add(path: string) {
+        this.openEditors.add(path);
+        this._subject.next({
+            type: 'add',
+            path
+        });
+    }
+
+    public delete(path: string) {
+        this.openEditors.delete(path);
+        this._subject.next({
+            type: 'delete',
+            path
+        });
+    }
+
+    public has(path: string) {
+        return this.openEditors.has(path);
+    }
+
+    public get changes() { return this._subject.asObservable(); }
+}
+
+var openEditors = new OpenEditorManager();
 
 const ExcludeClassifications = [
     Models.HighlightClassification.Number,
@@ -201,42 +229,79 @@ connection.onDidChangeWatchedFiles((change) => {
 // connection.onCompletionResolve((item: CompletionItem) => {
 // });
 
-connection.onDidChangeTextDocument(({textDocument, contentChanges}) => {
-    // The editor itself might not support TextDocumentSyncKind.Incremental
-    // So we check to see if we're getting ranges or not.
-    if (contentChanges.length === 1 && !contentChanges[0].range) {
-        // TextDocumentSyncKind.Full
-        client.updatebuffer({
-            FileName: fromUri(textDocument),
-            Buffer: contentChanges[0].text
-        });
-    } else if (contentChanges.length > 0) {
-        // TextDocumentSyncKind.Incremental
-        const changes = _.map(contentChanges, change =>
-            (<Models.LinePositionSpanTextChange>{
-                NewText: change.text,
+let seq = 0;
+const textDocumentChanges = createObservable<DidChangeTextDocumentParams>(observer => {
+    connection.onDidChangeTextDocument((change) => {
+        observer.next(change);
+    });
+})
+    .share();
+
+const openBuffer = textDocumentChanges
+    .filter(x => !openEditors.has(fromUri(x.textDocument)))
+    .groupBy(x => fromUri(x.textDocument))
+    .mergeMap<DidChangeTextDocumentParams>(group => {
+        return group
+            .windowWhen(() => openEditors.changes
+                .filter(x => x.type === 'add')
+                .filter(x => x.path === group.key)
+                .take(1)
+            )
+            .concatAll();
+    });
+
+Observable.merge<DidChangeTextDocumentParams>(
+    textDocumentChanges
+        .filter(x => openEditors.has(fromUri(x.textDocument))),
+    openBuffer
+)
+    .concatMap(({textDocument, contentChanges}) => {
+        // The editor itself might not support TextDocumentSyncKind.Incremental
+        // So we check to see if we're getting ranges or not.
+        if (contentChanges.length === 1 && !contentChanges[0].range) {
+            // TextDocumentSyncKind.Full
+            return client.updatebuffer({
                 FileName: fromUri(textDocument),
-                StartColumn: change.range!.start.character,
-                StartLine: change.range!.start.line,
-                EndColumn: change.range!.end.character,
-                EndLine: change.range!.end.line,
-            }));
-        client.updatebuffer({
-            FileName: fromUri(textDocument),
-            Changes: changes
-        });
-    }
-});
+                Buffer: contentChanges[0].text
+            });
+        } else if (contentChanges.length > 0) {
+            // TextDocumentSyncKind.Incremental
+            const changes = _.map(contentChanges, change =>
+                (<Models.LinePositionSpanTextChange>{
+                    NewText: change.text,
+                    FileName: fromUri(textDocument),
+                    StartColumn: change.range!.start.character,
+                    StartLine: change.range!.start.line,
+                    EndColumn: change.range!.end.character,
+                    EndLine: change.range!.end.line,
+                }));
+            return client.updatebuffer({
+                FileName: fromUri(textDocument),
+                Changes: changes
+            });
+        }
+
+        return Observable.empty<any>();
+    })
+    // .do({
+    //     next() {
+    //         connection.console.info(`sequence ${seq++}`);
+    //     }
+    // })
+    .subscribe();
 
 connection.onDidOpenTextDocument(({textDocument}) => {
     client.open({
         FileName: fromUri(textDocument)
-    });
-    client.updatebuffer({
-        FileName: fromUri(textDocument),
-        Buffer: textDocument.text
-    });
-    openEditors.add(fromUri(textDocument));
+    }).concatMap(() => {
+        return client.updatebuffer({
+            FileName: fromUri(textDocument),
+            Buffer: textDocument.text
+        });
+    })
+        .subscribe(() => {
+            openEditors.add(fromUri(textDocument));
+        });
 });
 
 connection.onDidCloseTextDocument(({textDocument}) => {
