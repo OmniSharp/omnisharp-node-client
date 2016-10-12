@@ -54,7 +54,7 @@
     "codelyzer": "0.0.28",
     "del": "^2.2.2",
     "gulp": "^3.9.1",
-    "gulp-sourcemaps": "^1.6.0",
+    "gulp-sourcemaps": "^1.7.3",
     "gulp-tslint": "^6.1.2",
     "gulp-typescript": "^3.0.2",
     "gulp-util": "^3.0.7",
