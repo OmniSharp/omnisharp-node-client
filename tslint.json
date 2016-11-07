@@ -180,7 +180,6 @@
         "align": [
             true,
             "parameters",
-            "arguments",
             "statements"
         ],
         "curly": true,

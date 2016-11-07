@@ -81,7 +81,7 @@ export const findCandidates = (() => {
             .toArray();
 
         const baseFiles = Observable.concat(solutionsOrProjects, independentSourceFiles)
-            .flatMap<string>(x => x);
+            .flatMap(x => x);
 
         const sourceFiles = searchForCandidates(location, sourceFilesToSearch, [], maxDepth, logger);
 
@@ -89,7 +89,7 @@ export const findCandidates = (() => {
 
         return ifEmpty(baseFiles, sourceFiles)
             .map(file => new Candidate(file, predicate))
-            .distinctKey('path')
+            .distinct(x => x.path)
             .toArray()
             .do(candidates => logger.log(`Omni Project Candidates: Found ${candidates}`));
     }
@@ -161,5 +161,5 @@ function searchForCandidates(location: string, filesToSearch: string[], projectF
         .filter(z => z.length > 0)
         .defaultIfEmpty([])
         .first()
-        .flatMap<string>(z => z);
+        .flatMap(z => z);
 }

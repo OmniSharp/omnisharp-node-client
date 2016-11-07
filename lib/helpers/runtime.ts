@@ -240,8 +240,8 @@ export class RuntimeContext {
     }
 }
 
-export const isSupportedRuntime = memoize(function (ctx: RuntimeContext) {
-    return Observable.defer(() => {
+export const isSupportedRuntime = memoize((ctx: RuntimeContext) => {
+    var result = Observable.defer(() => {
         // On windows we'll just use the clr, it's there
         // On mac / linux if we've picked CoreClr stick with that
         if (ctx.platform === SupportedPlatform.Windows || ctx.runtime === Runtime.CoreClr) {
@@ -250,17 +250,17 @@ export const isSupportedRuntime = memoize(function (ctx: RuntimeContext) {
 
         // We need to check if mono exists on the system
         // If it doesn't we'll just run CoreClr
-        return Observable.from(<string[]>PATH)
+        return Observable.from(PATH)
             .map(path => join(path, 'mono'))
             .concatMap(path => exists(path).map(e => ({ exists: e, path })))
             .filter(x => x.exists)
             .map(x => ({ runtime: Runtime.ClrOrMono, path: [x.path].concat(PATH).join(delimiter) }))
             .take(1)
             .defaultIfEmpty({ runtime: Runtime.CoreClr, path: process.env.PATH });
-    })
-        //.do(ct => console.log(`Supported runtime for "${Runtime[ct.runtime]}" was: ${Runtime[ct.runtime]}`))
-        .cache(1);
-}, function ({platform, arch, runtime, version}: RuntimeContext) { return `${arch}-${platform}:${Runtime[runtime]}:${version}`; });
+    }).publishReplay(1);
+    result.connect();
+    return result;
+}, ({platform, arch, runtime, version}: RuntimeContext) => `${arch}-${platform}:${Runtime[runtime]}:${version}`);
 
 function findOmnisharpExecuable(runtimeId: string, location: string): Observable<boolean> {
     return Observable.merge(

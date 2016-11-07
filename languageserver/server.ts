@@ -7,15 +7,57 @@ import {
     createConnection, IConnection, TextDocumentSyncKind,
     TextDocuments, TextDocument, Diagnostic, DiagnosticSeverity,
     InitializeParams, InitializeResult, TextDocumentPositionParams,
-    CompletionItem, CompletionItemKind, CodeLens, Hover, Location,
+    CompletionItem, CodeLens, Hover, Location,
     CompletionList, DidChangeTextDocumentParams,
     SignatureHelp, SignatureInformation, ParameterInformation,
-    SymbolInformation, SymbolKind, Range, Command, TextEdit,
+    SymbolInformation, Range, Command, TextEdit,
     NotificationType, Files, ServerCapabilities, Position
 } from 'vscode-languageserver';
 
 import { ExtendedServerCapabilities, CodeAction, CodeActionList, GetCodeActionsParams, GetCodeActionsRequest, Highlight, HighlightNotification, ImplementationRequest, NavigateRequest, RunCodeActionParams, RunCodeActionRequest, PublishHighlightParams, ClientCapabilities } from './server-extended';
 import { createObservable } from '../lib/operators/create';
+
+enum CompletionItemKind {
+    Text = 1,
+    Method = 2,
+    Function = 3,
+    Constructor = 4,
+    Field = 5,
+    Variable = 6,
+    Class = 7,
+    Interface = 8,
+    Module = 9,
+    Property = 10,
+    Unit = 11,
+    Value = 12,
+    Enum = 13,
+    Keyword = 14,
+    Snippet = 15,
+    Color = 16,
+    File = 17,
+    Reference = 18,
+}
+
+enum SymbolKind {
+    File = 1,
+    Module = 2,
+    Namespace = 3,
+    Package = 4,
+    Class = 5,
+    Method = 6,
+    Property = 7,
+    Field = 8,
+    Constructor = 9,
+    Enum = 10,
+    Interface = 11,
+    Function = 12,
+    Variable = 13,
+    Constant = 14,
+    String = 15,
+    Number = 16,
+    Boolean = 17,
+    Array = 18,
+}
 
 let connection: IConnection = createConnection(new StreamMessageReader(process.stdin), new StreamMessageWriter(process.stdout));
 let client: ReactiveClient;
@@ -240,7 +282,7 @@ const textDocumentChanges = createObservable<DidChangeTextDocumentParams>(observ
 const openBuffer = textDocumentChanges
     .filter(x => !openEditors.has(fromUri(x.textDocument)))
     .groupBy(x => fromUri(x.textDocument))
-    .mergeMap<DidChangeTextDocumentParams>(group => {
+    .mergeMap(group => {
         return group
             .windowWhen(() => openEditors.changes
                 .filter(x => x.type === 'add')
@@ -250,7 +292,7 @@ const openBuffer = textDocumentChanges
             .concatAll();
     });
 
-Observable.merge<DidChangeTextDocumentParams>(
+Observable.merge(
     textDocumentChanges
         .filter(x => openEditors.has(fromUri(x.textDocument))),
     openBuffer
