@@ -1,5 +1,4 @@
 /// <reference path="typings/globals/node/index.d.ts" />
-/// <reference path="typings/modules/chai/index.d.ts" />
 /// <reference path="typings/modules/lodash/index.d.ts" />
 
 declare module chai {
