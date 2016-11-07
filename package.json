@@ -52,7 +52,6 @@
   "devDependencies": {
     "@types/chai": "^3.4.34",
     "chai": "^3.5.0",
-    "codelyzer": "^1.0.0-beta.3",
     "del": "^2.2.2",
     "gulp": "^3.9.1",
     "gulp-sourcemaps": "^2.2.0",
