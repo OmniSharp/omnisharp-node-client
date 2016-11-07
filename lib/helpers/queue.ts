@@ -1,4 +1,4 @@
-import { isPriorityCommand, isNormalCommand, isDeferredCommand } from './prioritization';
+import { isPriorityCommand, isDeferredCommand } from './prioritization';
 import { RequestContext, ResponseContext } from '../contexts';
 import { Observable, AsyncSubject } from 'rxjs';
 import { pull, bind } from 'lodash';

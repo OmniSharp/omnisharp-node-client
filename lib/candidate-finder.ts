@@ -3,7 +3,6 @@ import { ILogger } from './enums';
 import { join, dirname, sep, normalize } from 'path';
 import { Observable, Scheduler, Subscription } from 'rxjs';
 import { Subscribable } from 'rxjs/Observable';
-import 'rxjs/add/operator/distinctKey';
 import { CompositeDisposable } from 'ts-disposables';
 import { createObservable } from './operators/create';
 import { readFileSync } from 'fs';
