@@ -1,4 +1,4 @@
-import { Observable, Scheduler } from 'rxjs';
+import { AsyncSubject, Observable, Scheduler } from 'rxjs';
 import { resolve, join, delimiter } from 'path';
 import * as fs from 'fs';
 import { ILogger, Runtime } from '../enums';
@@ -103,7 +103,7 @@ export class RuntimeContext {
         let runtimeName = 'netcoreapp1.0';
         if (this._runtime === Runtime.ClrOrMono) {
             if (this._platform === SupportedPlatform.Windows) {
-                runtimeName = 'net451';
+                runtimeName = 'net46';
             } else {
                 runtimeName = 'mono';
             }
@@ -240,8 +240,9 @@ export class RuntimeContext {
     }
 }
 
-export const isSupportedRuntime = memoize(function (ctx: RuntimeContext) {
+export const isSupportedRuntime = memoize((ctx: RuntimeContext) => {
     return Observable.defer(() => {
+        const subject = new AsyncSubject<{ runtime: Runtime; path: string }>();
         // On windows we'll just use the clr, it's there
         // On mac / linux if we've picked CoreClr stick with that
         if (ctx.platform === SupportedPlatform.Windows || ctx.runtime === Runtime.CoreClr) {
@@ -250,17 +251,18 @@ export const isSupportedRuntime = memoize(function (ctx: RuntimeContext) {
 
         // We need to check if mono exists on the system
         // If it doesn't we'll just run CoreClr
-        return Observable.from(<string[]>PATH)
+        Observable.from(PATH)
             .map(path => join(path, 'mono'))
             .concatMap(path => exists(path).map(e => ({ exists: e, path })))
             .filter(x => x.exists)
             .map(x => ({ runtime: Runtime.ClrOrMono, path: [x.path].concat(PATH).join(delimiter) }))
             .take(1)
-            .defaultIfEmpty({ runtime: Runtime.CoreClr, path: process.env.PATH });
-    })
-        //.do(ct => console.log(`Supported runtime for "${Runtime[ct.runtime]}" was: ${Runtime[ct.runtime]}`))
-        .cache(1);
-}, function ({platform, arch, runtime, version}: RuntimeContext) { return `${arch}-${platform}:${Runtime[runtime]}:${version}`; });
+            .defaultIfEmpty({ runtime: Runtime.CoreClr, path: process.env.PATH })
+            .subscribe(subject);
+
+        return subject.asObservable();
+    });
+}, ({platform, arch, runtime, version}: RuntimeContext) => `${arch}-${platform}:${Runtime[runtime]}:${version}`);
 
 function findOmnisharpExecuable(runtimeId: string, location: string): Observable<boolean> {
     return Observable.merge(

@@ -21,11 +21,11 @@ matrix:
       env:
         - TRAVIS_MONO=true
         - LEADER=true
-      mono: 4.2.1
+      mono: 4.6.0
       os: linux
     - language: csharp
       env: TRAVIS_MONO=true
-      mono: 4.2.1
+      mono: 4.6.0
       os: osx
     - env: TRAVIS_CORECLR=true
       os: linux

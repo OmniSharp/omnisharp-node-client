@@ -180,7 +180,6 @@
         "align": [
             true,
             "parameters",
-            "arguments",
             "statements"
         ],
         "curly": true,
@@ -244,10 +243,6 @@
         "no-unexternalized-strings": false, // the VS Code team has a specific localization process that this rule enforces
         // pick one of the two following type-cast formats and use it consistently
         "prefer-type-cast": true,
-        "no-angle-bracket-type-assertion": false,
-        /**
-        * Codelyzer
-        */
-        "import-destructuring-spacing": true
+        "no-angle-bracket-type-assertion": false
     }
 }

@@ -1,4 +1,4 @@
-import { isPriorityCommand, isNormalCommand, isDeferredCommand } from './prioritization';
+import { isPriorityCommand, isDeferredCommand } from './prioritization';
 import { RequestContext, ResponseContext } from '../contexts';
 import { Observable, AsyncSubject } from 'rxjs';
 import { pull, bind } from 'lodash';
@@ -79,7 +79,7 @@ export class Queue<TResponse> {
         const subject = new AsyncSubject<ResponseContext<any, any>>();
         const observable = subject
             .asObservable()
-            .mergeMap<ResponseContext<any, any>>(x => <any>this._requestCallback(context));
+            .mergeMap(x => <any>this._requestCallback(context));
 
         // Doing a little bit of tickery here
         // Going to return this Observable, as if it were promise like.

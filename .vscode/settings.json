@@ -3,12 +3,10 @@
   "files.exclude": {
     "**/.git": true,
     "**/node_modules": true,
-    "**/**.d.ts": true,
     "**/**.js.map": true,
     "**/lib/**/**.js": true,
     "**/languageserver/**/**.js": true,
     "**/test/**/**.js": true,
-    "**/typings": true,
     "**/.DS_Store": true
   },
   "typescript.tsdk": "./node_modules/typescript/lib"
