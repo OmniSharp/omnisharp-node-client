@@ -62,7 +62,7 @@
     "mocha": "^3.1.2",
     "through2": "^2.0.1",
     "tslint": "^3.15.1",
-    "tslint-microsoft-contrib": "^2.0.13",
+    "tslint-microsoft-contrib": "^4.0.0",
     "typescript": "^2.0.7",
     "typings": "^1.5.0"
   }
