@@ -5,9 +5,6 @@ import { ILogger, Runtime } from '../enums';
 import { find, bind, memoize, assignWith, isNull, isUndefined, toLower, delay } from 'lodash';
 import { decompress } from './decompress';
 import { createObservable } from '../operators/create';
-import 'rxjs/add/operator/max';
-import 'rxjs/add/operator/isEmpty';
-require('rxjs/add/observable/if');
 import { SupportedPlatform, supportedPlatform, getSupportedPlatform } from './platform';
 
 const request: { get(url: string): NodeJS.ReadableStream; } = require('request');

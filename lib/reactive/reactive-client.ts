@@ -252,7 +252,7 @@ export class ReactiveClient implements IReactiveDriver, IDisposable {
         return result
             // This timeout doesn't prevent the request from completing
             // It simply unblocks the queue, so we can continue to process items.
-            .timeout(this._options.concurrencyTimeout, Observable.empty<ResponseContext<any, any>>());
+            .timeoutWith(this._options.concurrencyTimeout, Observable.empty<ResponseContext<any, any>>());
     }
 
     public log(message: string, logLevel?: string) {

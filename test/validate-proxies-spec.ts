@@ -1,12 +1,11 @@
 /// <reference path="./tsd.d.ts" />
-import {expect} from "chai";
-declare const xdescribe: Function;
-import {ReactiveClient} from "../lib/reactive/reactive-client";
-import {ReactiveObservationClient} from "../lib/reactive/reactive-observation-client";
-import {ReactiveCombinationClient} from "../lib/reactive/reactive-combination-client";
+import {expect} from 'chai';
+import {ReactiveClient} from '../lib/reactive/reactive-client';
+import {ReactiveObservationClient} from '../lib/reactive/reactive-observation-client';
+import {ReactiveCombinationClient} from '../lib/reactive/reactive-combination-client';
 
-describe("Decorator Methods", function() {
-    it("ReactiveClient", function() {
+describe('Decorator Methods', () => {
+    it('ReactiveClient', () => {
         const client = new ReactiveClient({ projectPath: process.cwd() });
 
         expect(client.updatebuffer).to.equal(client.updatebuffer);
@@ -22,7 +21,7 @@ describe("Decorator Methods", function() {
         expect(client.observe.events).to.equal(client.observe.events);
     });
 
-    it("ReactiveObservationClient", function() {
+    it('ReactiveObservationClient', () => {
         const client = new ReactiveObservationClient();
 
         expect(client.updatebuffer).to.equal(client.updatebuffer);
@@ -33,7 +32,7 @@ describe("Decorator Methods", function() {
         expect(client.signatureHelp).to.equal(client.signatureHelp);
     });
 
-    it("ReactiveCombinationClient", function() {
+    it('ReactiveCombinationClient', () => {
         const client = new ReactiveCombinationClient();
 
         expect(client.updatebuffer).to.equal(client.updatebuffer);

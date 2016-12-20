@@ -6,9 +6,7 @@ import { ReactiveClient as OmnisharpClient } from '../lib/reactive/reactive-clie
 import * as _ from 'lodash';
 import { Observable } from 'rxjs';
 
-declare const xdescribe: Function;
-
-describe('Omnisharp Server', function () {
+describe('Omnisharp Server', () => {
     it('must construct', () => {
         new OmnisharpClient({
             projectPath: process.cwd()
@@ -40,7 +38,7 @@ describe('Omnisharp Server', function () {
             return Observable.timer(1000).toPromise();
         });
 
-        it('must respond to all requests (string)', function () {
+        it('must respond to all requests (string)', () => {
             _.defer(() => {
                 server.request('/checkalivestatus');
                 server.request('/checkalivestatus');
@@ -53,7 +51,7 @@ describe('Omnisharp Server', function () {
                 .toPromise();
         });
 
-        it('must respond to all requests (method)', function () {
+        it('must respond to all requests (method)', () => {
             _.defer(() => {
                 server.checkalivestatus();
                 server.checkalivestatus();
@@ -66,7 +64,7 @@ describe('Omnisharp Server', function () {
                 .toPromise();
         });
 
-        it('must give status', function () {
+        it('must give status', () => {
             _.defer(() => {
                 server.checkalivestatus();
                 server.checkalivestatus();
@@ -81,7 +79,7 @@ describe('Omnisharp Server', function () {
 
     describe('configuration', function (this: Mocha.ITestDefinition) {
         this.timeout(60000);
-        it('should call with given omnisharp parameters', function (done) {
+        it('should call with given omnisharp parameters', (done) => {
             let server = new OmnisharpClient({
                 projectPath: resolve(__dirname, '../'),
                 logger: {
@@ -106,7 +104,7 @@ describe('Omnisharp Server', function () {
             server.connect();
         });
 
-        it('should call with given omnisharp parameters (formatting)', function (done) {
+        it('should call with given omnisharp parameters (formatting)', (done) => {
             let server = new OmnisharpClient({
                 projectPath: resolve(__dirname, '../'),
                 logger: {

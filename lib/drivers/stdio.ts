@@ -230,7 +230,7 @@ export class StdioDriver implements IDriver {
         const subject = new AsyncSubject<TResponse>();
         const response = subject
             .asObservable()
-            .timeout(this._timeout, Observable.throw<any>('Request timed out'));
+            .timeoutWith(this._timeout, Observable.throw('Request timed out'));
 
         // Doing a little bit of tickery here
         // Going to return this Observable, as if it were promise like.

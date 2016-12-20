@@ -8,7 +8,8 @@ import {
     CompletionList,
     SignatureHelp, SignatureInformation, ParameterInformation,
     SymbolInformation, SymbolKind, Range, Command, TextEdit,
-    NotificationType, Files, TextDocumentIdentifier, CodeActionContext, WorkspaceEdit, ServerCapabilities
+    NotificationType, Files, TextDocumentIdentifier, CodeActionContext, WorkspaceEdit, ServerCapabilities,
+    Position
 } from "vscode-languageserver";
 import { /* NotificationType, */ RequestType } from 'vscode-jsonrpc';
 

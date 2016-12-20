@@ -577,21 +577,20 @@ connection.onRequest(ImplementationRequest.type, ({textDocument, position}) => {
         .toPromise();
 });
 
-connection.onRequest(NavigateRequest.type, ({textDocument, position, direction}) => {
-    let request: Observable<Models.NavigateResponse>;
-    if (direction === 'up') {
-        request = client.navigateup({
-            FileName: fromUri(textDocument),
-            Column: position.character,
-            Line: position.line
-        });
-    } else {
-        request = client.navigatedown({
-            FileName: fromUri(textDocument),
-            Column: position.character,
-            Line: position.line
-        });
-    }
+connection.onRequest(NavigateRequest.type, (params) => {
+    const request = (params.direction === 'up' ?
+        client.navigateup({
+            FileName: fromUri(params.textDocument),
+            Column: params.position.character,
+            Line: params.position.line
+        })
+        :
+        client.navigatedown({
+            FileName: fromUri(params.textDocument),
+            Column: params.position.character,
+            Line: params.position.line
+        }));
+
     return request
         .map(getPosition)
         .toPromise();
@@ -644,7 +643,7 @@ function getLocation(fix: { Column: number; Line: number; EndColumn: number; End
 }
 
 function getPosition(model: Models.NavigateResponse) {
-    return Position.create(model.Line, model.Column)
+    return Position.create(model.Line, model.Column);
 }
 
 function getTextEdit(change: Models.LinePositionSpanTextChange) {
