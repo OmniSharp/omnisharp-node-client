@@ -1,3 +1,4 @@
+import { Defer } from 'lodash';
 import * as child_process from 'child_process';
 
 export enum SupportedPlatform {
@@ -48,9 +49,6 @@ export function getSupportedPlatform(platform: string = process.platform) {
 
         const id = getValue("ID");
 
-        console.log(lines);
-        console.log("getValue(\"ID\")", id);
-
         switch (id) {
             case 'ubuntu':
                 const versionId = getValue("VERSION_ID");
@@ -76,6 +74,7 @@ export function getSupportedPlatform(platform: string = process.platform) {
             case 'ol':
                 // Oracle Linux is binary compatible with CentOS
                 return SupportedPlatform.CentOS;
+            default:
         }
     }
 

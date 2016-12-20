@@ -379,7 +379,7 @@ connection.onCompletion(({textDocument, position}: TextDocumentPositionParams) =
             WantDocumentationForEveryCompletionResult: true,
             WantKind: true,
             WantImportableTypes: true,
-            WantMethodHeader: true,
+            // WantMethodHeader: true,
             WantReturnType: true,
             WantSnippet: false,
             WordToComplete: ''
