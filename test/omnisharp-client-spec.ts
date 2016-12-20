@@ -38,7 +38,7 @@ describe('Omnisharp Server', () => {
             return Observable.timer(1000).toPromise();
         });
 
-        it('must respond to all requests (string)', () => {
+        xit('must respond to all requests (string)', () => {
             _.defer(() => {
                 server.request('/checkalivestatus');
                 server.request('/checkalivestatus');
