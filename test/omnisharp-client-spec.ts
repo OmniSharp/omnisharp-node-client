@@ -19,7 +19,8 @@ describe('Omnisharp Server', () => {
 
         beforeEach(() => {
             server = new OmnisharpClient({
-                projectPath: process.cwd()
+                projectPath: process.cwd(),
+                logger: console
             });
 
             server.requests.subscribe(x => console.log('requests', x));
@@ -38,7 +39,7 @@ describe('Omnisharp Server', () => {
             return Observable.timer(1000).toPromise();
         });
 
-        xit('must respond to all requests (string)', () => {
+        it('must respond to all requests (string)', () => {
             _.defer(() => {
                 server.request('/checkalivestatus');
                 server.request('/checkalivestatus');
