@@ -1,4 +1,3 @@
 // TODO: When omnisharp supports websockets
-export class WsDriver {
-
-}
+// tslint:disable-next-line:no-stateless-class
+export class WsDriver { }

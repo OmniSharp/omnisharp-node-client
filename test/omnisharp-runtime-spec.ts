@@ -1,9 +1,9 @@
-/// <reference path="./tsd.d.ts" />
-import {expect} from 'chai';
-import {findRuntimeById, RuntimeContext, isSupportedRuntime} from '../lib/helpers/runtime';
-import {Runtime} from '../lib/enums';
-import {resolve} from 'path';
-import {mkdirSync} from 'fs';
+// tslint:disable:no-require-imports
+import { expect } from 'chai';
+import { mkdirSync } from 'fs';
+import { resolve } from 'path';
+import { Runtime } from '../lib/enums';
+import { findRuntimeById, isSupportedRuntime, RuntimeContext } from '../lib/helpers/runtime';
 
 describe('Omnisharp Runtime', () => {
     it('should get a runtime id', () => {
@@ -17,13 +17,13 @@ describe('Omnisharp Runtime', () => {
     it('should return empty if no runtime', () => {
         return findRuntimeById('dnx-coreclr-solaris-x64', resolve(__dirname, 'fixture/runtimes'))
             .isEmpty()
-            .map((empty) => {
+            .map(empty => {
                 expect(empty).to.be.true;
             })
             .toPromise();
     });
 
-    it('should download the runtimes', function(this: Mocha.ISuiteCallbackContext) {
+    it('should download the runtimes', function (this: Mocha.ISuiteCallbackContext) {
         this.timeout(60000);
         const dir = resolve(__dirname, 'fixture/rtt/default/');
         try { require('rimraf').sync(dir); } catch (e) { /* */ }
@@ -35,13 +35,13 @@ describe('Omnisharp Runtime', () => {
             platform: process.platform,
             destination: dir
         }).downloadRuntime()
-            .do((artifacts) => {
+            .do(artifacts => {
                 expect(artifacts[0]).to.contain('omnisharp');
             })
             .toPromise();
     });
 
-    it('should download a specific runtime', function(this: Mocha.ISuiteCallbackContext) {
+    it('should download a specific runtime', function (this: Mocha.ISuiteCallbackContext) {
         this.timeout(60000);
         const dir = resolve(__dirname, 'fixture/rtt/specific/');
         try { require('rimraf').sync(dir); } catch (e) { /* */ }
@@ -54,7 +54,7 @@ describe('Omnisharp Runtime', () => {
             version: 'v1.9-alpha1',
             destination: dir
         }).downloadRuntime()
-            .do((artifacts) => {
+            .do(artifacts => {
                 expect(artifacts[0]).to.contain('omnisharp');
             })
             .toPromise();
@@ -67,7 +67,7 @@ describe('Omnisharp Runtime', () => {
             platform: process.platform
         }))
             .toPromise()
-            .then(({runtime, path}) => {
+            .then(({ runtime, path }) => {
                 expect(runtime).to.be.equal(Runtime.CoreClr);
                 expect(path).to.be.equal(process.env.PATH);
             });
@@ -80,7 +80,7 @@ describe('Omnisharp Runtime', () => {
             platform: process.platform
         }))
             .toPromise()
-            .then(({runtime, path}) => {
+            .then(({ runtime, path }) => {
                 if (process.platform === 'win32') {
                     expect(Runtime[runtime]).to.be.equal(Runtime[Runtime.ClrOrMono]);
                     expect(path).to.be.equal(process.env.PATH);

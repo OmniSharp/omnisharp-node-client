@@ -1,9 +1,9 @@
-import { CommandContext } from '../contexts/CommandContext';
-import { ResponseContext } from '../contexts/ResponseContext';
-import { RequestContext } from '../contexts/RequestContext';
 import { pull } from 'lodash';
 import { Observable, ReplaySubject } from 'rxjs';
 import { CompositeDisposable, Disposable, IDisposable } from 'ts-disposables';
+import { CommandContext } from '../contexts/CommandContext';
+import { RequestContext } from '../contexts/RequestContext';
+import { ResponseContext } from '../contexts/ResponseContext';
 import { DriverState, IOmnisharpClientStatus } from '../enums';
 import { getInternalKey, makeObservable, setMergeOrAggregate } from '../helpers/decorators';
 import * as OmniSharp from '../omnisharp-server';

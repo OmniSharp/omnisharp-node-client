@@ -1,10 +1,10 @@
 // tslint:disable:interface-name
-import {
-    TextDocumentPositionParams, Location, Range,
-    NotificationType, TextDocumentIdentifier, CodeActionContext, WorkspaceEdit,
-    Position
-} from 'vscode-languageserver';
 import { RequestType } from 'vscode-jsonrpc';
+import {
+    CodeActionContext, Location, NotificationType,
+    Position, Range, TextDocumentIdentifier, TextDocumentPositionParams,
+    WorkspaceEdit
+} from 'vscode-languageserver';
 
 export interface ExtendedServerCapabilities {
     extended: {
@@ -73,6 +73,7 @@ export interface RunCodeActionParams extends GetCodeActionsParams {
     identifier: string;
 }
 
+// tslint:disable:no-mergeable-namespace
 export namespace Methods {
     export namespace Extended {
         // tslint:disable:variable-name

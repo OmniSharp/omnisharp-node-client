@@ -1,5 +1,5 @@
 import { readFileSync } from 'fs';
-import {endsWith, trimEnd, uniq, filter, map, minBy, take, findIndex, trimStart, some} from 'lodash';
+import { endsWith, filter, findIndex, map, minBy, some, take, trimEnd, trimStart, uniq } from 'lodash';
 import { dirname, join, normalize, sep } from 'path';
 import { Observable, Scheduler, Subscription } from 'rxjs';
 import { Subscribable } from 'rxjs/Observable';
@@ -7,6 +7,7 @@ import { CompositeDisposable } from 'ts-disposables';
 import { ILogger } from './enums';
 import { createObservable } from './operators/create';
 
+// tslint:disable-next-line:no-var-requires no-require-imports
 const glob: (file: string[], options?: any) => Promise<string[]> = require('globby');
 
 export interface IOptions {
@@ -110,7 +111,9 @@ function squashCandidates(candidates: string[]) {
 }
 
 function getMinCandidate(candidates: string[]) {
-    if (!candidates.length) return -1;
+    if (!candidates.length) {
+        return -1;
+    }
 
     return minBy(map(candidates, normalize), z => z.split(sep).length).split(sep).length;
 }
@@ -125,7 +128,7 @@ function searchForCandidates(location: string, filesToSearch: string[], projectF
 
     return Observable.from(locations)
         .subscribeOn(Scheduler.queue)
-        .mergeMap((loc) => {
+        .mergeMap(loc => {
             const files = filesToSearch.map(fileName => join(loc, fileName));
 
             logger.log(`Omni Project Candidates: Searching ${loc} for ${filesToSearch}`);

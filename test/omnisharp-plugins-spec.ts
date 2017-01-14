@@ -1,12 +1,12 @@
-/// <reference path="./tsd.d.ts" />
-import {expect} from 'chai';
-import {Runtime} from '../lib/enums';
-import {RuntimeContext} from '../lib/helpers/runtime';
-import {getPluginPath} from '../lib/helpers/plugin';
-import {join} from 'path';
+// tslint:disable
+import { expect } from 'chai';
+import { join } from 'path';
+import { Runtime } from '../lib/enums';
+import { getPluginPath } from '../lib/helpers/plugin';
+import { RuntimeContext } from '../lib/helpers/runtime';
 
 describe('Omnisharp Plugin', () => {
-    before(function(this: Mocha.IBeforeAndAfterContext) {
+    before(function (this: Mocha.IBeforeAndAfterContext) {
         this.timeout(60000);
         return Promise.all([
             new RuntimeContext({ runtime: Runtime.CoreClr, arch: process.arch, platform: process.platform }).downloadRuntimeIfMissing().toPromise(),

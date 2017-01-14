@@ -71,7 +71,7 @@
                 "variable-declaration": "onespace"
             }
         ],
-        "unified-signatures": true,
+        "unified-signatures": false,
         // functionality
         "ban": true,
         "curly": true,
@@ -317,7 +317,7 @@
         "no-string-based-set-immediate": true,
         "no-string-based-set-interval": true,
         "no-string-based-set-timeout": true,
-        "no-suspicious-comment": true,
+        "no-suspicious-comment": false,
         "no-typeof-undefined": true,
         "no-unexternalized-strings": true,
         "no-unnecessary-bind": true,

@@ -1,3 +1,4 @@
+// tslint:disable-next-line:max-file-line-count
 import { expect } from 'chai';
 import { ReactiveClient as OmnisharpClient } from '../lib/reactive/ReactiveClient';
 
@@ -31,7 +32,7 @@ describe('Commands', () => {
                     StartColumn: 1,
                     EndLine: 1,
                     EndColumn: 1
-                });;
+                });
             }).to.throw(/must not be null/);
         });
         it('should throw if NewText is null', () => {

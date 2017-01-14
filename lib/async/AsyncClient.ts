@@ -1,3 +1,4 @@
+// tslint:disable-next-line:max-file-line-count
 /* tslint:disable:no-any */
 import { EventEmitter } from 'events';
 import { bind, cloneDeep, defaults, each, isEqual, keys, uniqueId } from 'lodash';

@@ -26,7 +26,7 @@ describe('Omnisharp Local - Stdio', () => {
 
     describe('properties', function (this: Mocha.ISuiteCallbackContext) {
         this.timeout(60000);
-        it('should implement the interface', (done) => {
+        it('should implement the interface', done => {
             done = once(done);
             const server = new StdioDriver({
                 projectPath: resolve(__dirname, '../'),

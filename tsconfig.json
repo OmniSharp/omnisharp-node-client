@@ -36,7 +36,7 @@
         "strictNullChecks": true,
         "noUnusedLocals": false,
         "noFallthroughCasesInSwitch": true,
-        "declaration": true
+        "declaration": false
     },
     "compileOnSave": true,
     "exclude": [

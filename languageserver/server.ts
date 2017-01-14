@@ -1,4 +1,4 @@
-import { ReactiveClient } from '../lib/reactive/ReactiveClient';
+// tslint:disable-next-line:max-file-line-count
 import { assign, defaults, differenceBy, each, flatMap, groupBy, map, reverse, uniqBy } from 'lodash';
 // import * as _ from 'lodash';
 import { Observable, Subject } from 'rxjs';
@@ -28,6 +28,7 @@ import {
     TextDocumentSyncKind,
     TextEdit,
 } from 'vscode-languageserver';
+import { ReactiveClient } from '../lib/reactive/ReactiveClient';
 
 import { DriverState, Models, Runtime } from '../lib/omnisharp-client';
 import { createObservable } from '../lib/operators/create';
@@ -278,14 +279,14 @@ connection.onInitialize((params: InitializeParams & { capabilities: ClientCapabi
 connection.onExit(() => {
     client.disconnect();
 });
-/* not yet doing this... */
+// not yet doing this...
 // connection.onDidChangeConfiguration((change) => {
 // });
 
 connection.onDidChangeWatchedFiles(change => {
-    each(change.changes, change => {
+    each(change.changes, cng => {
         client.updatebuffer({
-            FileName: fromUri(change),
+            FileName: fromUri(cng),
             FromDisk: true,
         });
     });
@@ -647,7 +648,7 @@ function getHighlight(highlight: Models.HighlightSpan) {
     const range = getRange(highlight);
     return <Highlight>{
         id: `${range.start.line}:${range.start.character}|${range.end.line}:${range.end.character}|${highlight.Kind}`,
-        range: range,
+        range,
         kind: highlight.Kind,
     };
 }
@@ -727,8 +728,8 @@ function toWorkspaceEdit(item: { Changes: Models.ModifiedFileResponse[] }) {
     each(groupBy(item.Changes, x => x.FileName), (result, key) => {
         changes[toUriString(key)] = flatMap(
             result,
-            item => {
-                return map(item.Changes, getTextEdit);
+            i => {
+                return map(i.Changes, getTextEdit);
             });
     });
     return { changes };

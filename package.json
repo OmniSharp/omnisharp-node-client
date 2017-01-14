@@ -25,11 +25,11 @@
   "main": "lib/omnisharp-client.js",
   "typings": "lib/omnisharp-client.ts",
   "scripts": {
-    "prepublish": "typings install",
+    "prepublish": "typings install && tsc --declaration",
     "test": "tsc && npm run lint && mocha",
     "test:watch": "concurrently -r \"mocha --watch\" \"tsc -w\"",
-    "lint": "tslint --config tslint.types.json --project tsconfig.json --type-check languageserver/**/*.ts lib/**/*.ts test/**/*.ts",
-    "lint:fix": "tslint --config tslint.types.json --project tsconfig.json --type-check --fix languageserver/**/*.ts lib/**/*.ts test/**/*.ts",
+    "lint": "tslint languageserver/**/*.ts lib/**/*.ts test/**/*.ts",
+    "lint:fix": "tslint --fix languageserver/**/*.ts lib/**/*.ts test/**/*.ts",
     "compile:watch": "concurrently -r \"tsc -w\" \"tslint \"",
     "tsc:w": "tsc -w"
   },

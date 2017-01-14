@@ -1,4 +1,3 @@
 // Connect via http to remote server
-export class HttpDriver {
-
-}
+// tslint:disable-next-line:no-stateless-class
+export class HttpDriver { }
