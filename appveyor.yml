@@ -1,7 +1,7 @@
 init:
   - git config --global core.autocrlf true
 environment:
-  nodejs_version: "4"
+  nodejs_version: "6"
 install:
   - npm install
 test_script:

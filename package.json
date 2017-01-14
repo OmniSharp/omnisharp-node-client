@@ -23,7 +23,7 @@
     "atom": ">=0.194.0"
   },
   "main": "lib/omnisharp-client.js",
-  "typings": "lib/omnisharp-client.ts",
+  "typings": "types/lib/omnisharp-client.d.ts",
   "scripts": {
     "prepublish": "typings install && tsc --declaration",
     "test": "tsc && npm run lint && mocha",
