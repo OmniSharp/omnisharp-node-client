@@ -40,10 +40,9 @@
         "declarationDir": "types"
     },
     "compileOnSave": true,
-    "exclude": [
-        "node_modules",
-        "vendor",
-        "typings/browser",
-        "typings/browser.d.ts"
+    "include": [
+        "languageserver",
+        "lib",
+        "test"
     ]
 }
