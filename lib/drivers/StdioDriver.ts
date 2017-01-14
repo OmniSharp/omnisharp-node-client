@@ -107,7 +107,8 @@ export class StdioDriver implements IDriver {
     }
 
     public disconnect() {
-        if (this._process !== null && this._process.pid) {
+        // tslint:disable-next-line:triple-equals
+        if (this._process != null && this._process.pid) {
             this._process.kill('SIGTERM');
         }
         this._process = null;
@@ -312,7 +313,8 @@ export class StdioDriver implements IDriver {
         });
 
         const ref = s.match(/Detected an OmniSharp instance already running on port/);
-        if ((ref !== null ? ref.length : 0) > 0) {
+        // tslint:disable-next-line:triple-equals
+        if ((ref != null ? ref.length : 0) > 0) {
             this.disconnect();
         }
     }
