@@ -23,7 +23,7 @@ function getQueue(context: RequestContext<any>) {
 
 type DELAYED_OBSERVABLE = Observable<ResponseContext<any, any>>;
 
-export class Queue<TResponse> {
+export class QueueProcessor<TResponse> {
     private _priority: RequestQueue;
     private _normal: RequestQueue;
     private _deferred: RequestQueue;

@@ -9,7 +9,7 @@ import { RequestContext } from '../contexts/RequestContext';
 import { ResponseContext } from '../contexts/ResponseContext';
 import { IAsyncClientOptions, IAsyncDriver, IDriverOptions, IOmnisharpClientStatus } from '../enums';
 import { DriverState, Runtime } from '../enums';
-import { Queue } from '../helpers/Queue';
+import { QueueProcessor } from '../helpers/QueueProcessor';
 import { request } from '../helpers/decorators';
 import { getPreconditions } from '../helpers/preconditions';
 import * as OmniSharp from '../omnisharp-server';
@@ -24,7 +24,7 @@ import * as AsyncEvents from './AsyncEvents';
 export class AsyncClient implements IAsyncDriver, IDisposable {
     private _lowestIndexValue = 0;
     private _emitter = new EventEmitter();
-    private _queue: Queue<PromiseLike<ResponseContext<any, any>>>;
+    private _queue: QueueProcessor<PromiseLike<ResponseContext<any, any>>>;
 
     private _driver: IAsyncDriver;
     private _uniqueId = uniqueId('client');
@@ -77,7 +77,7 @@ export class AsyncClient implements IAsyncDriver, IDisposable {
 
         this._emitter.on(AsyncEvents.request, emitStatus);
         this._emitter.on(AsyncEvents.response, emitStatus);
-        this._queue = new Queue<PromiseLike<ResponseContext<any, any>>>(this._options.concurrency, bind(this._handleResult, this));
+        this._queue = new QueueProcessor<PromiseLike<ResponseContext<any, any>>>(this._options.concurrency, bind(this._handleResult, this));
 
         if (this._options.debug) {
             this._emitter.on(AsyncEvents.response, (context: ResponseContext<any, any>) => {
