@@ -1,11 +1,11 @@
-/// <reference path="./tsd.d.ts" />
-import {expect} from 'chai';
-import {resolve} from 'path';
-import {StdioDriver} from '../lib/drivers/stdio';
-import {noop, once} from 'lodash';
+import { expect } from 'chai';
+import { noop, once } from 'lodash';
+import { resolve } from 'path';
+import { StdioDriver } from '../lib/drivers/StdioDriver';
 
 describe('Omnisharp Local - Stdio', () => {
     it('must construct', () => {
+        // tslint:disable-next-line:no-unused-new
         new StdioDriver({
             projectPath: resolve(__dirname, '../'),
             onEvent: noop,
@@ -15,6 +15,7 @@ describe('Omnisharp Local - Stdio', () => {
     });
 
     it('must construct with a specific driver', () => {
+        // tslint:disable-next-line:no-unused-new
         new StdioDriver({
             projectPath: resolve(__dirname, '../'),
             onEvent: noop,
@@ -23,7 +24,7 @@ describe('Omnisharp Local - Stdio', () => {
         });
     });
 
-    describe('properties', function(this: Mocha.ITestDefinition) {
+    describe('properties', function (this: Mocha.ISuiteCallbackContext) {
         this.timeout(60000);
         it('should implement the interface', (done) => {
             done = once(done);

@@ -1,13 +1,13 @@
-/// <reference path="./tsd.d.ts" />
 import { expect } from 'chai';
-import { DriverState } from '../lib/enums';
+import { defer, startsWith } from 'lodash';
 import { resolve } from 'path';
-import { ReactiveClient as OmnisharpClient } from '../lib/reactive/reactive-client';
-import {} from 'lodash';
 import { Observable } from 'rxjs';
+import { DriverState } from '../lib/enums';
+import { ReactiveClient as OmnisharpClient } from '../lib/reactive/ReactiveClient';
 
 describe('Omnisharp Server', () => {
     it('must construct', () => {
+        // tslint:disable-next-line:no-unused-new
         new OmnisharpClient({
             projectPath: process.cwd()
         });
@@ -80,11 +80,11 @@ describe('Omnisharp Server', () => {
 
     describe('configuration', function (this: Mocha.ISuiteCallbackContext) {
         this.timeout(60000);
-        it('should call with given omnisharp parameters', (done) => {
-            let server = new OmnisharpClient({
+        it('should call with given omnisharp parameters', done => {
+            const server = new OmnisharpClient({
                 projectPath: resolve(__dirname, '../'),
                 logger: {
-                    log: (message) => {
+                    log: message => {
                         try {
                             if (startsWith(message, 'Arguments:')) {
                                 expect(message.toLowerCase()).to.contain('--dotnet:alias=notdefault');
@@ -95,7 +95,7 @@ describe('Omnisharp Server', () => {
                             done(e);
                         }
                     },
-                    error: (message) => { /* */ }
+                    error: message => { /* */ }
                 },
                 serverOptions: {
                     dotnet: { alias: 'notdefault' }
@@ -105,11 +105,11 @@ describe('Omnisharp Server', () => {
             server.connect();
         });
 
-        it('should call with given omnisharp parameters (formatting)', (done) => {
-            let server = new OmnisharpClient({
+        it('should call with given omnisharp parameters (formatting)', done => {
+            const server = new OmnisharpClient({
                 projectPath: resolve(__dirname, '../'),
                 logger: {
-                    log: (message) => {
+                    log: message => {
                         try {
                             if (startsWith(message, 'Arguments:')) {
                                 expect(message.toLowerCase()).to.contain('--dotnet:alias=beta4');
@@ -121,7 +121,7 @@ describe('Omnisharp Server', () => {
                             done(e);
                         }
                     },
-                    error: (message) => { /* */ }
+                    error: message => { /* */ }
                 },
                 serverOptions: {
                     formattingOptions: { newLine: 'blah' },

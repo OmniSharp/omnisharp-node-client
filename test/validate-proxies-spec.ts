@@ -1,8 +1,7 @@
-/// <reference path="./tsd.d.ts" />
-import {expect} from 'chai';
-import {ReactiveClient} from '../lib/reactive/reactive-client';
-import {ReactiveObservationClient} from '../lib/reactive/reactive-observation-client';
-import {ReactiveCombinationClient} from '../lib/reactive/reactive-combination-client';
+import { expect } from 'chai';
+import { ReactiveClient } from '../lib/reactive/ReactiveClient';
+import { ReactiveCombinationClient } from '../lib/reactive/ReactiveCombinationClient';
+import { ReactiveObservationClient } from '../lib/reactive/ReactiveObservationClient';
 
 describe('Decorator Methods', () => {
     it('ReactiveClient', () => {

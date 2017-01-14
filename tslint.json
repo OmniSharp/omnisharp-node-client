@@ -84,7 +84,7 @@
         "no-bitwise": true,
         "no-conditional-assignment": true,
         "no-console": [
-            true,
+            false,
             "debug",
             "info",
             "log",
@@ -255,7 +255,7 @@
         ],
         // microsoft contrib
         "chai-prefer-contains-to-index-of": true,
-        "chai-vague-errors": true,
+        "chai-vague-errors": false,
         "export-name": true,
         "function-name": [
             true,
@@ -279,7 +279,7 @@
         ],
         "missing-jsdoc": false,
         "mocha-avoid-only": true,
-        "mocha-no-side-effect-code": true,
+        "mocha-no-side-effect-code": false,
         "mocha-unneeded-done": true,
         "no-backbone-get-set-outside-model": true,
         "no-banned-terms": true,

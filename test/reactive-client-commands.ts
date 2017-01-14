@@ -1,6 +1,5 @@
-/// <reference path="./tsd.d.ts" />
-import {expect} from 'chai';
-import {ReactiveClient as OmnisharpClient} from '../lib/reactive/reactive-client';
+import { expect } from 'chai';
+import { ReactiveClient as OmnisharpClient } from '../lib/reactive/ReactiveClient';
 
 let server: OmnisharpClient;
 
@@ -32,7 +31,7 @@ describe('Commands', () => {
                     StartColumn: 1,
                     EndLine: 1,
                     EndColumn: 1
-                }); ;
+                });;
             }).to.throw(/must not be null/);
         });
         it('should throw if NewText is null', () => {

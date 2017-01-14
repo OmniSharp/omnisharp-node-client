@@ -1,6 +1,7 @@
 import { bind, pull } from 'lodash';
 import { AsyncSubject, Observable } from 'rxjs';
-import { RequestContext, ResponseContext } from '../contexts';
+import { RequestContext } from '../contexts/RequestContext';
+import { ResponseContext } from '../contexts/ResponseContext';
 import { RequestQueue } from './RequestQueue';
 import { isDeferredCommand, isPriorityCommand } from './prioritization';
 

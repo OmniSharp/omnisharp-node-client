@@ -1,5 +1,5 @@
 import { each } from 'lodash';
-import { RequestContext } from '../contexts';
+import { RequestContext } from '../contexts/RequestContext';
 
 const normalCommands = [
     'findimplementations', 'findsymbols', 'findusages',

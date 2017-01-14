@@ -3,7 +3,9 @@ import { EventEmitter } from 'events';
 import { bind, cloneDeep, defaults, each, isEqual, keys, uniqueId } from 'lodash';
 import { CompositeDisposable, IDisposable } from 'ts-disposables';
 
-import { CommandContext, RequestContext, ResponseContext } from '../contexts';
+import { CommandContext } from '../contexts/CommandContext';
+import { RequestContext } from '../contexts/RequestContext';
+import { ResponseContext } from '../contexts/ResponseContext';
 import { IAsyncClientOptions, IAsyncDriver, IDriverOptions, IOmnisharpClientStatus } from '../enums';
 import { DriverState, Runtime } from '../enums';
 import { request } from '../helpers/decorators';

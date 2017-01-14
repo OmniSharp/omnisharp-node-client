@@ -1,7 +1,9 @@
 import { Observable } from 'rxjs';
 import { IDisposable } from 'ts-disposables';
+import { CommandContext } from './contexts/CommandContext';
+import { RequestContext } from './contexts/RequestContext';
+import { ResponseContext } from './contexts/ResponseContext';
 
-import { CommandContext, RequestContext, ResponseContext } from './contexts';
 import * as OmniSharp from './omnisharp-server';
 
 export enum DriverState {
@@ -79,17 +81,17 @@ export interface ICoreClientOptions extends IDriverCoreOptions {
     concurrency: number;
     concurrencyTimeout: number;
     serverOptions: {
-        dotnet: {
-            alias: string;
-            projects: string;
-            enablePackageRestore: boolean;
-            packageRestoreTimeout: number;
+        dotnet?: {
+            alias?: string;
+            projects?: string;
+            enablePackageRestore?: boolean;
+            packageRestoreTimeout?: number;
         };
-        formattingOptions: {
-            newLine: string;
-            useTabs: boolean;
-            tabSize: number;
-            indentationSize: number;
+        formattingOptions?: {
+            newLine?: string;
+            useTabs?: boolean;
+            tabSize?: number;
+            indentationSize?: number;
         }
     };
 }

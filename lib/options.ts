@@ -1,12 +1,12 @@
-import {} from 'lodash';
+import { each, isObject } from 'lodash';
 import { ICoreClientOptions } from './enums';
 
 export function ensureClientOptions(options: ICoreClientOptions) {
-    if (options.statusSampleTime) options.statusSampleTime = 500;
-    if (options.responseSampleTime) options.responseSampleTime = 100;
-    if (options.concurrency) options.concurrency = 4;
-    if (options.timeout) options.timeout = 60;
-    if (options.concurrencyTimeout) options.concurrencyTimeout = Math.ceil(options.timeout / 6) * 1000;
+    if (options.statusSampleTime) { options.statusSampleTime = 500; }
+    if (options.responseSampleTime) { options.responseSampleTime = 100; }
+    if (options.concurrency) { options.concurrency = 4; }
+    if (options.timeout) { options.timeout = 60; }
+    if (options.concurrencyTimeout) { options.concurrencyTimeout = Math.ceil(options.timeout / 6) * 1000; }
 
     // Keep concurrency capped at 2
     // This lets us get around an issue with a single stuck request (that is taking a while to complete)

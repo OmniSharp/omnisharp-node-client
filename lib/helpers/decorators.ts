@@ -1,6 +1,6 @@
 import { startsWith } from 'lodash';
 import { Observable, Subject } from 'rxjs';
-import { ResponseContext } from '../contexts';
+import { ResponseContext } from '../contexts/ResponseContext';
 import * as OmniSharp from '../omnisharp-server';
 
 export function getInternalKey(path: string) {

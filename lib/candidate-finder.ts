@@ -1,12 +1,12 @@
 import { readFileSync } from 'fs';
-import {} from 'lodash';
+import {endsWith, trimEnd, uniq, filter, map, minBy, take, findIndex, trimStart, some} from 'lodash';
 import { dirname, join, normalize, sep } from 'path';
 import { Observable, Scheduler, Subscription } from 'rxjs';
 import { Subscribable } from 'rxjs/Observable';
-
 import { CompositeDisposable } from 'ts-disposables';
 import { ILogger } from './enums';
 import { createObservable } from './operators/create';
+
 const glob: (file: string[], options?: any) => Promise<string[]> = require('globby');
 
 export interface IOptions {

@@ -25,7 +25,7 @@
   "main": "lib/omnisharp-client.js",
   "typings": "lib/omnisharp-client.ts",
   "scripts": {
-    "prepublish": "typings install && gulp npm-prepublish",
+    "prepublish": "typings install",
     "test": "tsc && npm run lint && mocha",
     "test:watch": "concurrently -r \"mocha --watch\" \"tsc -w\"",
     "lint": "tslint --config tslint.types.json --project tsconfig.json --type-check languageserver/**/*.ts lib/**/*.ts test/**/*.ts",

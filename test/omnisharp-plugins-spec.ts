@@ -6,7 +6,7 @@ import {getPluginPath} from '../lib/helpers/plugin';
 import {join} from 'path';
 
 describe('Omnisharp Plugin', () => {
-    before(function(this: Mocha.ITestDefinition) {
+    before(function(this: Mocha.IBeforeAndAfterContext) {
         this.timeout(60000);
         return Promise.all([
             new RuntimeContext({ runtime: Runtime.CoreClr, arch: process.arch, platform: process.platform }).downloadRuntimeIfMissing().toPromise(),

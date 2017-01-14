@@ -1,11 +1,13 @@
+import { CommandContext } from '../contexts/CommandContext';
+import { ResponseContext } from '../contexts/ResponseContext';
+import { RequestContext } from '../contexts/RequestContext';
 import { pull } from 'lodash';
 import { Observable, ReplaySubject } from 'rxjs';
 import { CompositeDisposable, Disposable, IDisposable } from 'ts-disposables';
-import { CommandContext, RequestContext, ResponseContext } from '../contexts';
 import { DriverState, IOmnisharpClientStatus } from '../enums';
 import { getInternalKey, makeObservable, setMergeOrAggregate } from '../helpers/decorators';
 import * as OmniSharp from '../omnisharp-server';
-import { ReactiveClient } from './reactive-client';
+import { ReactiveClient } from './ReactiveClient';
 
 export class ReactiveObservationClient<TClient extends ReactiveClient> implements IDisposable {
     protected _disposable = new CompositeDisposable();

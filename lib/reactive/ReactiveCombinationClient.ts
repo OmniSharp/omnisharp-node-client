@@ -4,7 +4,7 @@ import { CompositeDisposable, Disposable, IDisposable } from 'ts-disposables';
 import { DriverState, IOmnisharpClientStatus } from '../enums';
 import { getInternalKey, makeObservable, setMergeOrAggregate } from '../helpers/decorators';
 import * as OmniSharp from '../omnisharp-server';
-import { ReactiveClient } from './reactive-client';
+import { ReactiveClient } from './ReactiveClient';
 
 export class ReactiveCombinationClient<TClient extends ReactiveClient> implements IDisposable {
     protected _disposable = new CompositeDisposable();

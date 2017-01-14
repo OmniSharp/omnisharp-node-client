@@ -3,7 +3,9 @@ import { bind, cloneDeep, defaults, each, keys, uniqueId } from 'lodash';
 import { AsyncSubject, BehaviorSubject, Observable, Subject, Subscription } from 'rxjs';
 import { CompositeDisposable, IDisposable } from 'ts-disposables';
 
-import { CommandContext, RequestContext, ResponseContext } from '../contexts';
+import { CommandContext } from '../contexts/CommandContext';
+import { RequestContext } from '../contexts/RequestContext';
+import { ResponseContext } from '../contexts/ResponseContext';
 import { IDriverOptions, IOmnisharpClientStatus, IReactiveClientOptions, IReactiveDriver } from '../enums';
 import { DriverState, Runtime } from '../enums';
 import { event, getInternalValue, reference, request, response, setEventOrResponse } from '../helpers/decorators';

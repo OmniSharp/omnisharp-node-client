@@ -46,7 +46,7 @@ export class StdioDriver implements IDriver {
         projectPath, serverPath, findProject,
         logger, timeout, additionalArguments,
         runtime, plugins, version,
-        onEvent, onState, onCommand }: IDriverOptions) {
+        onEvent, onState, onCommand }: Partial<IDriverOptions> & { projectPath: string; }) {
         this._projectPath = projectPath;
         this._findProject = findProject || false;
         this._logger = logger || console;

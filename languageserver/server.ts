@@ -1,3 +1,4 @@
+import { ReactiveClient } from '../lib/reactive/ReactiveClient';
 import { assign, defaults, differenceBy, each, flatMap, groupBy, map, reverse, uniqBy } from 'lodash';
 // import * as _ from 'lodash';
 import { Observable, Subject } from 'rxjs';
@@ -28,7 +29,7 @@ import {
     TextEdit,
 } from 'vscode-languageserver';
 
-import { DriverState, Models, ReactiveClient, Runtime } from '../lib/omnisharp-client';
+import { DriverState, Models, Runtime } from '../lib/omnisharp-client';
 import { createObservable } from '../lib/operators/create';
 import {
     ClientCapabilities,
