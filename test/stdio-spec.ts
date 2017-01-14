@@ -1,36 +1,35 @@
-/// <reference path="./tsd.d.ts" />
-import {expect} from "chai";
-import {resolve} from "path";
-import {StdioDriver} from "../lib/drivers/stdio";
-import {noop, once} from "lodash";
+import { expect } from 'chai';
+import { noop, once } from 'lodash';
+import { resolve } from 'path';
+import { StdioDriver } from '../lib/drivers/StdioDriver';
 
-declare const xdescribe: Function;
-
-describe("Omnisharp Local - Stdio", function() {
-    it("must construct", () => {
+describe('Omnisharp Local - Stdio', () => {
+    it('must construct', () => {
+        // tslint:disable-next-line:no-unused-new
         new StdioDriver({
-            projectPath: resolve(__dirname, "../"),
+            projectPath: resolve(__dirname, '../'),
             onEvent: noop,
             onState: noop,
             onCommand: noop
         });
     });
 
-    it("must construct with a specific driver", () => {
+    it('must construct with a specific driver', () => {
+        // tslint:disable-next-line:no-unused-new
         new StdioDriver({
-            projectPath: resolve(__dirname, "../"),
+            projectPath: resolve(__dirname, '../'),
             onEvent: noop,
             onState: noop,
             onCommand: noop
         });
     });
 
-    describe("properties", function(this: Mocha.ITestDefinition) {
+    describe('properties', function (this: Mocha.ISuiteCallbackContext) {
         this.timeout(60000);
-        it("should implement the interface", function(done) {
+        it('should implement the interface', done => {
             done = once(done);
             const server = new StdioDriver({
-                projectPath: resolve(__dirname, "../"),
+                projectPath: resolve(__dirname, '../'),
                 onEvent: noop,
                 onState(v) {
                     expect(server.currentState).to.be.not.null;
@@ -44,7 +43,7 @@ describe("Omnisharp Local - Stdio", function() {
         });
     });
 
-    /*describe("properties", function() {
+    /*describe("properties", () => {
         this.timeout(60000);
         it("should disconnect if no an invalid project path is given", function(done) {
             const server = new Stdio({

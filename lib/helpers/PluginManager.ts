@@ -1,9 +1,7 @@
 import { each } from 'lodash';
-import { IOmnisharpPlugin } from '../enums';
-/* tslint:disable:no-unused-variable */
-import { Subject, Observable } from 'rxjs';
-/* tslint:enable:no-unused-variable */
+import { Observable, Subject } from 'rxjs';
 import { CompositeDisposable, IDisposable } from 'ts-disposables';
+import { IOmnisharpPlugin } from '../enums';
 
 export class PluginManager implements IDisposable {
     private _disposable = new CompositeDisposable();
@@ -16,7 +14,7 @@ export class PluginManager implements IDisposable {
     private _plugins = new Set<IOmnisharpPlugin>();
     public get plugins() { return this._plugins; }
 
-    constructor(plugins: IOmnisharpPlugin[]) {
+    public constructor(plugins: IOmnisharpPlugin[]) {
         each(plugins, plugin => {
             this._plugins.add(plugin);
         });

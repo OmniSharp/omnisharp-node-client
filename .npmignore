@@ -5,3 +5,5 @@ test
 NuGet.exe
 vendor
 roslyn
+*.ts
+!*.d.ts

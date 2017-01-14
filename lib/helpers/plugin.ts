@@ -1,16 +1,18 @@
-import { Observable } from 'rxjs';
-import * as fs from 'fs';
 import { exec } from 'child_process';
-import { RuntimeContext } from './runtime';
+import * as fs from 'fs';
 import { join } from 'path';
-import { IOmnisharpPlugin, ILogger } from '../enums';
+import { Observable } from 'rxjs';
+import { ILogger, IOmnisharpPlugin } from '../enums';
 import { createObservable } from '../operators/create';
+import { RuntimeContext } from './runtime';
 
 const bootstrappedPlugins = new Map<string, string>();
-const exists = Observable.bindCallback(fs.exists),
-    readFile: (file: string) => Observable<any> = Observable.bindNodeCallback(fs.readFile);
+const exists = Observable.bindCallback(fs.exists);
+const readFile: (file: string) => Observable<any> = Observable.bindNodeCallback(fs.readFile);
+// tslint:disable-next-line:no-var-requires no-require-imports
 const md5: (value: any) => string = require('md5');
 
+// tslint:disable-next-line:export-name
 export function getPluginPath(solutionLocation: string, ctx: RuntimeContext, requestedPlugins: IOmnisharpPlugin[], logger: ILogger) {
     const plugins: any[] = [];
     const hashStrings: any[] = [];
@@ -50,7 +52,7 @@ export function getPluginPath(solutionLocation: string, ctx: RuntimeContext, req
                             }
                         })).join(' ');
 
-                    exec(command, function (error, stdout) {
+                    exec(command, (error, stdout) => {
                         if (error) {
                             observer.error(error);
                             return;
@@ -68,8 +70,9 @@ export function getPluginPath(solutionLocation: string, ctx: RuntimeContext, req
     })
         .map(path => path && path || ctx.location)
         .do(result => {
-            if (!bootstrappedPlugins.has(hash))
+            if (!bootstrappedPlugins.has(hash)) {
                 bootstrappedPlugins.set(hash, result);
+            }
             logger.log('Finished bootstrapping ' + solutionLocation);
         });
 }

@@ -27,10 +27,10 @@ matrix:
       env: TRAVIS_MONO=true
       mono: 4.6.0
       os: osx
-    - env: TRAVIS_CORECLR=true
-      os: linux
-    - env: TRAVIS_CORECLR=true
-      os: osx
+    #- env: TRAVIS_CORECLR=true
+    #  os: linux
+    #- env: TRAVIS_CORECLR=true
+    #  os: osx
     - env:
         - TRAVIS_MONO=true
         - BREW_MONO=true
@@ -43,7 +43,7 @@ install:
   - rm -rf ~/.nvm
   - git clone https://github.com/creationix/nvm.git ~/.nvm
   - source ~/.nvm/nvm.sh
-  - nvm install 4.2.4
+  - nvm install 6.9.4
   - node --version
   - chmod +x publish.sh
   - if [ "$BREW_MONO" = "true" ]; then brew update; brew install mono; fi

@@ -18,35 +18,22 @@
 */
 
 import * as cp from 'child_process';
-import {existsSync} from 'fs';
-import {extname} from 'path';
-var win32 = 'win32' === process.platform;
+import { existsSync } from 'fs';
+import { extname } from 'path';
+const win32 = 'win32' === process.platform;
 
-/**
- * A windows-compatible spawn method. Succeeds for child exit code === 0.
- * @param {string} cmd
- * @param {string[]} [args]
- * @param {opts} [opts]
- * @param {function} [callback] - standard Node callback, omit if you want to use a promise.
- * @returns {Q.promise|undefined} - returns a promise or undefined if a callback is passed.
- *
- * @typedef {Object} opts
- * @property {boolean} [printCommand=false] - Whether to log the command
- * @property {string} stdio -
- *     'default' is to capture output and returning it as a string to success (same as exec).
- *     'ignore' means don't bother capturing it.
- *     'inherit' means pipe the input & output. This is required for anything that prompts.
- * @property {object} env - Map of extra environment variables.
- * @property {string} cwd - Working directory for the command.
- */
-
-export const spawn: typeof cp.spawn = function spawn(cmd: any, args: any, opts: any) {
+export const spawn: typeof cp.spawn = (cmd: any, args: any, opts: any) => {
     if (win32) {
         // If we couldn't find the file, likely we'll end up failing,
         // but for things like "del", cmd will do the trick.
         if (extname(cmd).toLowerCase() !== '.exe' && cmd.indexOf(' ') !== -1) {
             // We need to use /s to ensure that spaces are parsed properly with cmd spawned content
-            args = [['/s', '/c', `"${[cmd].concat(args).map(function(a) { if (/^[^"].* .*[^"]/.test(a)) return `"${a}"`; return a; }).join(' ')}"`].join(' ')];
+            args = [['/s', '/c', `"${[cmd].concat(args).map(a => {
+                if (/^[^"].* .*[^"]/.test(a)) {
+                    return `"${a}"`;
+                }
+                return a;
+            }).join(' ')}"`].join(' ')];
             cmd = 'cmd';
         } else if (!existsSync(cmd)) { // 'echo', 'dir', 'del', etc
             // We need to use /s to ensure that spaces are parsed properly with cmd spawned content

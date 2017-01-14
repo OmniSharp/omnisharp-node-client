@@ -1,21 +1,47 @@
-import { Models, ReactiveClient, Runtime, DriverState } from '../lib/omnisharp-client';
-import * as _ from 'lodash';
+// tslint:disable-next-line:max-file-line-count
+import { assign, defaults, differenceBy, each, flatMap, groupBy, map, reverse, uniqBy } from 'lodash';
+// import * as _ from 'lodash';
 import { Observable, Subject } from 'rxjs';
-
 import {
-    StreamMessageReader, StreamMessageWriter,
-    createConnection, IConnection, TextDocumentSyncKind,
-    TextDocuments, TextDocument, Diagnostic, DiagnosticSeverity,
-    InitializeParams, InitializeResult, TextDocumentPositionParams,
-    CompletionItem, CodeLens, Hover, Location,
-    CompletionList, DidChangeTextDocumentParams,
-    SignatureHelp, SignatureInformation, ParameterInformation,
-    SymbolInformation, Range, Command, TextEdit,
-    NotificationType, Files, ServerCapabilities, Position
+    createConnection,
+    CodeLens,
+    CompletionItem,
+    CompletionList,
+    Diagnostic,
+    DiagnosticSeverity,
+    DidChangeTextDocumentParams,
+    Files,
+    Hover,
+    InitializeParams,
+    IConnection,
+    Location,
+    ParameterInformation,
+    Position,
+    Range,
+    ServerCapabilities,
+    SignatureHelp,
+    SignatureInformation,
+    StreamMessageReader,
+    StreamMessageWriter,
+    SymbolInformation,
+    TextDocumentPositionParams,
+    TextDocumentSyncKind,
+    TextEdit,
 } from 'vscode-languageserver';
+import { ReactiveClient } from '../lib/reactive/ReactiveClient';
 
-import { ExtendedServerCapabilities, CodeAction, CodeActionList, GetCodeActionsParams, GetCodeActionsRequest, Highlight, HighlightNotification, ImplementationRequest, NavigateRequest, RunCodeActionParams, RunCodeActionRequest, PublishHighlightParams, ClientCapabilities } from './server-extended';
+import { DriverState, Models, Runtime } from '../lib/omnisharp-client';
 import { createObservable } from '../lib/operators/create';
+import {
+    ClientCapabilities,
+    ExtendedServerCapabilities,
+    GetCodeActionsRequest,
+    Highlight,
+    HighlightNotification,
+    ImplementationRequest,
+    NavigateRequest,
+    RunCodeActionRequest,
+} from './server-extended';
 
 enum CompletionItemKind {
     Text = 1,
@@ -59,7 +85,7 @@ enum SymbolKind {
     Array = 18,
 }
 
-let connection: IConnection = createConnection(new StreamMessageReader(process.stdin), new StreamMessageWriter(process.stdout));
+const connection: IConnection = createConnection(new StreamMessageReader(process.stdin), new StreamMessageWriter(process.stdout));
 let client: ReactiveClient;
 class OpenEditorManager {
     private openEditors = new Set<string>();
@@ -69,7 +95,7 @@ class OpenEditorManager {
         this.openEditors.add(path);
         this._subject.next({
             type: 'add',
-            path
+            path,
         });
     }
 
@@ -77,7 +103,7 @@ class OpenEditorManager {
         this.openEditors.delete(path);
         this._subject.next({
             type: 'delete',
-            path
+            path,
         });
     }
 
@@ -88,8 +114,9 @@ class OpenEditorManager {
     public get changes() { return this._subject.asObservable(); }
 }
 
-var openEditors = new OpenEditorManager();
+const openEditors = new OpenEditorManager();
 
+// tslint:disable-next-line:variable-name
 const ExcludeClassifications = [
     Models.HighlightClassification.Number,
     Models.HighlightClassification.ExcludedCode,
@@ -97,31 +124,33 @@ const ExcludeClassifications = [
     Models.HighlightClassification.String,
     Models.HighlightClassification.Punctuation,
     Models.HighlightClassification.Operator,
-    Models.HighlightClassification.Keyword
+    Models.HighlightClassification.Keyword,
 ];
 
 // After the server has started the client sends an initilize request. The server receives
 // in the passed params the rootPath of the workspace plus the client capabilites.
-connection.onInitialize((params) => {
-    const enablePackageRestore = (<ClientCapabilities>params.capabilities).enablePackageRestore === undefined || (<ClientCapabilities>params.capabilities).enablePackageRestore;
+// tslint:disable-next-line:max-func-body-length
+connection.onInitialize((params: InitializeParams & { capabilities: ClientCapabilities }) => {
+    const capabilities = params.capabilities;
+    const enablePackageRestore = capabilities.enablePackageRestore === undefined || capabilities.enablePackageRestore;
 
     client = new ReactiveClient({
         projectPath: params.rootPath,
         runtime: Runtime.CoreClr,
         logger: {
-            log: (message) => { connection.telemetry.logEvent({ type: 'log', message }); },
-            error: (message) => { connection.telemetry.logEvent({ type: 'error', message }); }
+            log: message => { connection.telemetry.logEvent({ type: 'log', message }); },
+            error: message => { connection.telemetry.logEvent({ type: 'error', message }); },
         },
         serverOptions: {
-            dotnet: { enablePackageRestore }
-        }
+            dotnet: { enablePackageRestore },
+        },
     });
 
-    client.observe.diagnostic.subscribe(({Results}) => {
-        _.each(Results, result => {
+    client.observe.diagnostic.subscribe(({ Results }) => {
+        each(Results, result => {
             connection.sendDiagnostics({
                 uri: toUri(result),
-                diagnostics: _.map(result.QuickFixes, getDiagnostic)
+                diagnostics: map(result.QuickFixes, getDiagnostic),
             });
         });
     });
@@ -133,7 +162,7 @@ connection.onInitialize((params) => {
             if (openEditors.has(context.request.FileName!)) {
                 client.highlight({
                     FileName: context.request.FileName,
-                    ExcludeClassifications
+                    ExcludeClassifications,
                 });
             }
         });
@@ -146,29 +175,25 @@ connection.onInitialize((params) => {
 
         client.observe.highlight
             .bufferToggle(client.observe.highlight.throttleTime(100), () => Observable.timer(100))
-            .concatMap((items) => {
-                const highlights = _(items)
-                    .reverse()
-                    .uniqBy(x => x.request.FileName!)
-                    .map(context => {
+            .concatMap(items => {
+                const highlights = map(uniqBy(reverse(items), x => x.request.FileName!), context => {
                         if (!highlightsContext.has(context.request.FileName!)) {
                             highlightsContext.set(context.request.FileName!, []);
                         }
 
                         const newHighlights = getHighlights(context.response.Highlights);
-                        const currentHighlights = highlightsContext.get(context.request.FileName!) !;
-                        const added = _.differenceBy(newHighlights, currentHighlights, x => x.id);
-                        const removeHighlights = _.differenceBy(currentHighlights, newHighlights, x => x.id);
+                        const currentHighlights = highlightsContext.get(context.request.FileName!)!;
+                        const added = differenceBy(newHighlights, currentHighlights, x => x.id);
+                        const removeHighlights = differenceBy(currentHighlights, newHighlights, x => x.id);
 
                         highlightsContext.set(context.request.FileName!, newHighlights);
 
                         return {
                             uri: toUri({ FileName: context.request.FileName! }),
                             added,
-                            removed: _.map(removeHighlights, x => x.id)
+                            removed: map(removeHighlights, x => x.id),
                         };
-                    })
-                    .value();
+                });
 
                 return Observable.from(highlights).concatMap(x => Observable.of(x).delay(10));
             })
@@ -199,7 +224,7 @@ connection.onInitialize((params) => {
                 .take(1)
                 .mergeMap(() => {
                     // TODO: Add a nicer way to queue many files here to omnisharp...
-                    return Observable.merge(..._.map(rename.response.Changes, item => client.diagnostics({ FileName: item.FileName })));
+                    return Observable.merge(...map(rename.response.Changes, item => client.diagnostics({ FileName: item.FileName })));
                 });
         })
         .subscribe();
@@ -222,13 +247,13 @@ connection.onInitialize((params) => {
                     //resolveProvider: true
                 },
                 codeLensProvider: {
-                    resolveProvider: true
+                    resolveProvider: true,
                 },
                 definitionProvider: true,
                 documentFormattingProvider: true,
                 documentOnTypeFormattingProvider: {
                     firstTriggerCharacter: '}',
-                    moreTriggerCharacter: [';']
+                    moreTriggerCharacter: [';'],
                 },
                 documentRangeFormattingProvider: true,
                 //documentSymbolProvider: true,
@@ -236,7 +261,7 @@ connection.onInitialize((params) => {
                 referencesProvider: true,
                 renameProvider: true,
                 signatureHelpProvider: {
-                    triggerCharacters: ['(']
+                    triggerCharacters: ['('],
                 },
                 workspaceSymbolProvider: true,
                 extended: {
@@ -244,9 +269,9 @@ connection.onInitialize((params) => {
                     runCodeActionProvider: true,
                     implementationProvider: true,
                     navigateProvider: true,
-                    highlightProvider: true
-                }
-            }
+                    highlightProvider: true,
+                },
+            },
         }))
         .toPromise();
 });
@@ -254,15 +279,15 @@ connection.onInitialize((params) => {
 connection.onExit(() => {
     client.disconnect();
 });
-/* not yet doing this... */
+// not yet doing this...
 // connection.onDidChangeConfiguration((change) => {
 // });
 
-connection.onDidChangeWatchedFiles((change) => {
-    _.each(change.changes, change => {
+connection.onDidChangeWatchedFiles(change => {
+    each(change.changes, cng => {
         client.updatebuffer({
-            FileName: fromUri(change),
-            FromDisk: true
+            FileName: fromUri(cng),
+            FromDisk: true,
         });
     });
 });
@@ -271,9 +296,9 @@ connection.onDidChangeWatchedFiles((change) => {
 // connection.onCompletionResolve((item: CompletionItem) => {
 // });
 
-let seq = 0;
+const seq = 0;
 const textDocumentChanges = createObservable<DidChangeTextDocumentParams>(observer => {
-    connection.onDidChangeTextDocument((change) => {
+    connection.onDidChangeTextDocument(change => {
         observer.next(change);
     });
 })
@@ -287,28 +312,28 @@ const openBuffer = textDocumentChanges
             .windowWhen(() => openEditors.changes
                 .filter(x => x.type === 'add')
                 .filter(x => x.path === group.key)
-                .take(1)
-            )
+                .take(1),
+        )
             .concatAll();
     });
 
 Observable.merge(
     textDocumentChanges
         .filter(x => openEditors.has(fromUri(x.textDocument))),
-    openBuffer
+    openBuffer,
 )
-    .concatMap(({textDocument, contentChanges}) => {
+    .concatMap(({ textDocument, contentChanges }) => {
         // The editor itself might not support TextDocumentSyncKind.Incremental
         // So we check to see if we're getting ranges or not.
         if (contentChanges.length === 1 && !contentChanges[0].range) {
             // TextDocumentSyncKind.Full
             return client.updatebuffer({
                 FileName: fromUri(textDocument),
-                Buffer: contentChanges[0].text
+                Buffer: contentChanges[0].text,
             });
         } else if (contentChanges.length > 0) {
             // TextDocumentSyncKind.Incremental
-            const changes = _.map(contentChanges, change =>
+            const changes = map(contentChanges, change =>
                 (<Models.LinePositionSpanTextChange>{
                     NewText: change.text,
                     FileName: fromUri(textDocument),
@@ -319,7 +344,7 @@ Observable.merge(
                 }));
             return client.updatebuffer({
                 FileName: fromUri(textDocument),
-                Changes: changes
+                Changes: changes,
             });
         }
 
@@ -332,13 +357,13 @@ Observable.merge(
     // })
     .subscribe();
 
-connection.onDidOpenTextDocument(({textDocument}) => {
+connection.onDidOpenTextDocument(({ textDocument }) => {
     client.open({
-        FileName: fromUri(textDocument)
+        FileName: fromUri(textDocument),
     }).concatMap(() => {
         return client.updatebuffer({
             FileName: fromUri(textDocument),
-            Buffer: textDocument.text
+            Buffer: textDocument.text,
         });
     })
         .subscribe(() => {
@@ -346,31 +371,31 @@ connection.onDidOpenTextDocument(({textDocument}) => {
         });
 });
 
-connection.onDidCloseTextDocument(({textDocument}) => {
+connection.onDidCloseTextDocument(({ textDocument }) => {
     client.close({
-        FileName: fromUri(textDocument)
+        FileName: fromUri(textDocument),
     });
     openEditors.delete(fromUri(textDocument));
 });
 
-connection.onDidSaveTextDocument(({textDocument}) => {
+connection.onDidSaveTextDocument(({ textDocument }) => {
     client.updatebuffer({
         FileName: fromUri(textDocument),
-        FromDisk: true
+        FromDisk: true,
     });
 });
 
-connection.onDefinition(({textDocument, position}) => {
+connection.onDefinition(({ textDocument, position }) => {
     return client.gotodefinition({
         FileName: fromUri(textDocument),
         Column: position.character,
-        Line: position.line
+        Line: position.line,
     })
         .map(getLocationPoint)
         .toPromise();
 });
 
-connection.onCompletion(({textDocument, position}: TextDocumentPositionParams) => {
+connection.onCompletion(({ textDocument, position }: TextDocumentPositionParams) => {
     return client
         .autocomplete({
             FileName: fromUri(textDocument),
@@ -379,32 +404,33 @@ connection.onCompletion(({textDocument, position}: TextDocumentPositionParams) =
             WantDocumentationForEveryCompletionResult: true,
             WantKind: true,
             WantImportableTypes: true,
-            WantMethodHeader: true,
+            // WantMethodHeader: true,
             WantReturnType: true,
             WantSnippet: false,
-            WordToComplete: ''
-        }).map(x => _.map(x, value => {
+            WordToComplete: '',
+        })
+        .map(x => map(x, value => {
             return <CompletionItem>{
                 label: value.DisplayText,
                 detail: value.Description,
                 documentation: value.MethodHeader,
                 filterText: value.CompletionText,
                 kind: <any>CompletionItemKind[<any>value.Kind],
-                sortText: value.DisplayText
+                sortText: value.DisplayText,
             };
         }))
         .map(items => (<CompletionList>{
-            isIncomplete: false, items
+            isIncomplete: false, items,
         }))
         .toPromise();
 });
 //connection.onCompletionResolve((x) => {});
 
-connection.onHover(({textDocument, position}) => {
+connection.onHover(({ textDocument, position }) => {
     return client.typelookup({
         FileName: fromUri(textDocument),
         Column: position.character,
-        Line: position.line
+        Line: position.line,
     })
         .map(result => (<Hover>{
             contents: `${result.Type || ''} ${result.Documentation || ''}`,
@@ -412,77 +438,77 @@ connection.onHover(({textDocument, position}) => {
         .toPromise();
 });
 
-connection.onSignatureHelp(({textDocument, position}) => {
+connection.onSignatureHelp(({ textDocument, position }) => {
     return client.signatureHelp({
         FileName: fromUri(textDocument),
         Column: position.character,
-        Line: position.line
+        Line: position.line,
     })
         .map(result => (<SignatureHelp>{
             activeParameter: result.ActiveParameter,
             activeSignature: result.ActiveSignature,
-            signatures: _.map(result.Signatures, z => (<SignatureInformation>{
+            signatures: map(result.Signatures, z => (<SignatureInformation>{
                 documentation: z.Documentation,
                 label: z.Label,
-                parameters: _.map(z.Parameters, param => (<ParameterInformation>{
+                parameters: map(z.Parameters, param => (<ParameterInformation>{
                     documentation: param.Documentation,
                     label: param.Label,
-                }))
-            }))
+                })),
+            })),
         }))
         .toPromise();
 });
 
-connection.onReferences(({context, textDocument, position}) => {
+connection.onReferences(({ context, textDocument, position }) => {
     return client.findusages({
         FileName: fromUri(textDocument),
         Column: position.character,
         Line: position.line,
-        ExcludeDefinition: !context.includeDeclaration
+        ExcludeDefinition: !context.includeDeclaration,
     })
-        .map(result => _.map(<Models.DiagnosticLocation[]>result.QuickFixes, getLocation))
+        .map(result => map(<Models.DiagnosticLocation[]>result.QuickFixes, getLocation))
         .toPromise();
 });
 
 //connection.onDocumentHighlight((x) => {});
 //connection.onDocumentSymbol((x) => {});
 
-connection.onWorkspaceSymbol(({query}) => {
+connection.onWorkspaceSymbol(({ query }) => {
     return client.findsymbols({ Filter: query })
-        .map(results => _.map(<Models.SymbolLocation[]>results.QuickFixes, fix => (<SymbolInformation>{
+        .map(results => map(<Models.SymbolLocation[]>results.QuickFixes, fix => (<SymbolInformation>{
             kind: <any>SymbolKind[<any>fix.Kind] || SymbolKind.Variable,
             name: fix.Text,
-            location: getLocation(fix)
+            location: getLocation(fix),
         })))
         .toPromise();
 });
 
-connection.onCodeLens(({textDocument}) => {
+connection.onCodeLens(({ textDocument }) => {
     return client.currentfilemembersasflat({
-        FileName: fromUri(textDocument)
+        FileName: fromUri(textDocument),
     })
         .map(results => {
-            return _.map(results, location => {
+            return map(results, location => {
                 return <CodeLens>{
-                    data: _.defaults({ FileName: fromUri(textDocument) }, location),
-                    range: getRange(location)
+                    data: defaults({ FileName: fromUri(textDocument) }, location),
+                    range: getRange(location),
                 };
             });
         })
         .toPromise();
 });
 
-connection.onCodeLensResolve((codeLens) => {
+connection.onCodeLensResolve(codeLens => {
     return client.findusages(codeLens.data)
         .map(x => {
             codeLens.command = {
                 // TODO: ...?
                 title: `References (${x.QuickFixes.length})`,
-                command: `references`
+                command: `references`,
             };
 
             codeLens.data = {
-                location: getLocation(codeLens.data)
+                location: getLocation(codeLens.data),
             };
             return codeLens;
         })
@@ -490,7 +516,7 @@ connection.onCodeLensResolve((codeLens) => {
 });
 
 // Requires new endpoint
-connection.onDocumentFormatting(({textDocument, options}) => {
+connection.onDocumentFormatting(({ textDocument, options }) => {
     return client.codeformat({
         WantsTextChanges: true,
         FileName: fromUri(textDocument),
@@ -499,7 +525,7 @@ connection.onDocumentFormatting(({textDocument, options}) => {
         .toPromise();
 });
 
-connection.onDocumentRangeFormatting(({textDocument, options, range}) => {
+connection.onDocumentRangeFormatting(({ textDocument, options, range }) => {
     return client.formatRange({
         FileName: fromUri(textDocument),
         Column: range.start.character,
@@ -511,41 +537,41 @@ connection.onDocumentRangeFormatting(({textDocument, options, range}) => {
         .toPromise();
 });
 
-connection.onDocumentOnTypeFormatting(({textDocument, options, position, ch}) => {
+connection.onDocumentOnTypeFormatting(({ textDocument, options, position, ch }) => {
     return client.formatAfterKeystroke({
         FileName: fromUri(textDocument),
         Character: ch,
         Line: position.line,
-        Column: position.character
+        Column: position.character,
     })
         .map(getTextEdits)
         .toPromise();
 });
 
-connection.onRenameRequest(({textDocument, position, newName}) => {
+connection.onRenameRequest(({ textDocument, position, newName }) => {
     return client.rename({
         FileName: fromUri(textDocument),
         Line: position.line,
         Column: position.character,
         RenameTo: newName,
         ApplyTextChanges: false,
-        WantsTextChanges: true
+        WantsTextChanges: true,
     })
         .map(toWorkspaceEdit)
         .toPromise();
 });
 
 /* EXTENDED ENDPOINTS */
-connection.onRequest(GetCodeActionsRequest.type, ({textDocument, range, context}) => {
+connection.onRequest(GetCodeActionsRequest.type, ({ textDocument, range, context }) => {
     return client.getcodeactions({
         FileName: fromUri(textDocument),
-        Selection: fromRange(range)
+        Selection: fromRange(range),
     })
         .map(item => {
-            const codeActions = _.map(item.CodeActions, codeAction => {
+            const codeActions = map(item.CodeActions, codeAction => {
                 return {
                     name: codeAction.Name,
-                    identifier: codeAction.Identifier
+                    identifier: codeAction.Identifier,
                 };
             });
 
@@ -554,44 +580,43 @@ connection.onRequest(GetCodeActionsRequest.type, ({textDocument, range, context}
         .toPromise();
 });
 
-connection.onRequest(RunCodeActionRequest.type, ({textDocument, range, context, identifier}) => {
+connection.onRequest(RunCodeActionRequest.type, ({ textDocument, range, context, identifier }) => {
     return client.runcodeaction({
         FileName: fromUri(textDocument),
         Selection: fromRange(range),
         Identifier: identifier,
         WantsTextChanges: true,
-        ApplyTextChanges: false
+        ApplyTextChanges: false,
     })
         .map(toWorkspaceEdit)
         .toPromise();
 });
 
-connection.onRequest(ImplementationRequest.type, ({textDocument, position}) => {
+connection.onRequest(ImplementationRequest.type, ({ textDocument, position }) => {
     return client.findimplementations({
         FileName: fromUri(textDocument),
         Column: position.character,
-        Line: position.line
+        Line: position.line,
     })
         .map(z => z.QuickFixes)
         .map(getLocationPoints)
         .toPromise();
 });
 
-connection.onRequest(NavigateRequest.type, ({textDocument, position, direction}) => {
-    let request: Observable<Models.NavigateResponse>;
-    if (direction === 'up') {
-        request = client.navigateup({
-            FileName: fromUri(textDocument),
-            Column: position.character,
-            Line: position.line
-        });
-    } else {
-        request = client.navigatedown({
-            FileName: fromUri(textDocument),
-            Column: position.character,
-            Line: position.line
-        });
-    }
+connection.onRequest(NavigateRequest.type, params => {
+    const request = (params.direction === 'up' ?
+        client.navigateup({
+            FileName: fromUri(params.textDocument),
+            Column: params.position.character,
+            Line: params.position.line,
+        })
+        :
+        client.navigatedown({
+            FileName: fromUri(params.textDocument),
+            Column: params.position.character,
+            Line: params.position.line,
+        }));
+
     return request
         .map(getPosition)
         .toPromise();
@@ -606,45 +631,45 @@ function getRange(item: { Column?: number; Line?: number; StartColumn?: number; 
     return <Range>{
         start: {
             character: item.Column || item.StartColumn || 0,
-            line: item.Line || item.StartLine || 0
+            line: item.Line || item.StartLine || 0,
         },
         end: {
             character: item.EndColumn,
-            line: item.EndLine
-        }
+            line: item.EndLine,
+        },
     };
 }
 
 function getHighlights(highlights: Models.HighlightSpan[]) {
-    return _.map(highlights, getHighlight);
+    return map(highlights, getHighlight);
 }
 
 function getHighlight(highlight: Models.HighlightSpan) {
     const range = getRange(highlight);
     return <Highlight>{
         id: `${range.start.line}:${range.start.character}|${range.end.line}:${range.end.character}|${highlight.Kind}`,
-        range: range,
+        range,
         kind: highlight.Kind,
     };
 }
 
 function getLocationPoints(fix: { Column: number; Line: number; FileName: string; }[]) {
-    return _.map(fix, getLocationPoint);
+    return map(fix, getLocationPoint);
 }
 
 function getLocationPoint(fix: { Column: number; Line: number; FileName: string; }) {
-    return getLocation(_.assign(fix, { EndColumn: fix.Column, EndLine: fix.Line }));
+    return getLocation(assign(fix, { EndColumn: fix.Column, EndLine: fix.Line }));
 }
 
 function getLocation(fix: { Column: number; Line: number; EndColumn: number; EndLine: number; FileName: string; }) {
     return <Location>{
         uri: toUri(fix),
-        range: getRange(fix)
+        range: getRange(fix),
     };
 }
 
 function getPosition(model: Models.NavigateResponse) {
-    return Position.create(model.Line, model.Column)
+    return Position.create(model.Line, model.Column);
 }
 
 function getTextEdit(change: Models.LinePositionSpanTextChange) {
@@ -655,7 +680,7 @@ function getTextEdit(change: Models.LinePositionSpanTextChange) {
 }
 
 function getTextEdits(response: { Changes: Models.LinePositionSpanTextChange[] }) {
-    return _.map(response.Changes, getTextEdit);
+    return map(response.Changes, getTextEdit);
 }
 
 function getDiagnostic(item: Models.DiagnosticLocation) {
@@ -673,7 +698,7 @@ function getDiagnostic(item: Models.DiagnosticLocation) {
     return <Diagnostic>{
         severity: sev,
         message: item.Text,
-        range: getRange(item)
+        range: getRange(item),
     };
 }
 
@@ -685,12 +710,12 @@ function fromRange(range: Range): Models.V2.Range {
     return {
         Start: {
             Column: range.start.character,
-            Line: range.start.line
+            Line: range.start.line,
         },
         End: {
             Column: range.end.character,
-            Line: range.end.line
-        }
+            Line: range.end.line,
+        },
     };
 }
 
@@ -700,11 +725,11 @@ function toUri(result: { FileName: string; }) {
 
 function toWorkspaceEdit(item: { Changes: Models.ModifiedFileResponse[] }) {
     const changes: { [uri: string]: TextEdit[]; } = {};
-    _.each(_.groupBy(item.Changes, x => x.FileName), (result, key) => {
-        changes[toUriString(key)] = _.flatMap(
+    each(groupBy(item.Changes, x => x.FileName), (result, key) => {
+        changes[toUriString(key)] = flatMap(
             result,
-            item => {
-                return _.map(item.Changes, getTextEdit);
+            i => {
+                return map(i.Changes, getTextEdit);
             });
     });
     return { changes };

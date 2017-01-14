@@ -1,27 +1,26 @@
-/// <reference path="./tsd.d.ts" />
 import { expect } from 'chai';
-import { DriverState } from '../lib/enums';
+import { defer, startsWith } from 'lodash';
 import { resolve } from 'path';
-import { ReactiveClient as OmnisharpClient } from '../lib/reactive/reactive-client';
-import * as _ from 'lodash';
 import { Observable } from 'rxjs';
+import { DriverState } from '../lib/enums';
+import { ReactiveClient as OmnisharpClient } from '../lib/reactive/ReactiveClient';
 
-declare const xdescribe: Function;
-
-describe('Omnisharp Server', function () {
+describe('Omnisharp Server', () => {
     it('must construct', () => {
+        // tslint:disable-next-line:no-unused-new
         new OmnisharpClient({
             projectPath: process.cwd()
         });
     });
 
-    describe('state', function (this: Mocha.ITestDefinition) {
+    describe('state', function (this: Mocha.ISuiteCallbackContext) {
         this.timeout(60000);
         let server: OmnisharpClient;
 
         beforeEach(() => {
             server = new OmnisharpClient({
-                projectPath: process.cwd()
+                projectPath: process.cwd(),
+                logger: console
             });
 
             server.requests.subscribe(x => console.log('requests', x));
@@ -40,8 +39,8 @@ describe('Omnisharp Server', function () {
             return Observable.timer(1000).toPromise();
         });
 
-        it('must respond to all requests (string)', function () {
-            _.defer(() => {
+        it('must respond to all requests (string)', () => {
+            defer(() => {
                 server.request('/checkalivestatus');
                 server.request('/checkalivestatus');
                 server.request('/checkalivestatus');
@@ -53,8 +52,8 @@ describe('Omnisharp Server', function () {
                 .toPromise();
         });
 
-        it('must respond to all requests (method)', function () {
-            _.defer(() => {
+        it('must respond to all requests (method)', () => {
+            defer(() => {
                 server.checkalivestatus();
                 server.checkalivestatus();
                 server.checkalivestatus();
@@ -66,8 +65,8 @@ describe('Omnisharp Server', function () {
                 .toPromise();
         });
 
-        it('must give status', function () {
-            _.defer(() => {
+        it('must give status', () => {
+            defer(() => {
                 server.checkalivestatus();
                 server.checkalivestatus();
             });
@@ -79,15 +78,15 @@ describe('Omnisharp Server', function () {
         });
     });
 
-    describe('configuration', function (this: Mocha.ITestDefinition) {
+    describe('configuration', function (this: Mocha.ISuiteCallbackContext) {
         this.timeout(60000);
-        it('should call with given omnisharp parameters', function (done) {
-            let server = new OmnisharpClient({
+        it('should call with given omnisharp parameters', done => {
+            const server = new OmnisharpClient({
                 projectPath: resolve(__dirname, '../'),
                 logger: {
-                    log: (message) => {
+                    log: message => {
                         try {
-                            if (_.startsWith(message, 'Arguments:')) {
+                            if (startsWith(message, 'Arguments:')) {
                                 expect(message.toLowerCase()).to.contain('--dotnet:alias=notdefault');
                                 server.disconnect();
                                 done();
@@ -96,7 +95,7 @@ describe('Omnisharp Server', function () {
                             done(e);
                         }
                     },
-                    error: (message) => { /* */ }
+                    error: message => { /* */ }
                 },
                 serverOptions: {
                     dotnet: { alias: 'notdefault' }
@@ -106,13 +105,13 @@ describe('Omnisharp Server', function () {
             server.connect();
         });
 
-        it('should call with given omnisharp parameters (formatting)', function (done) {
-            let server = new OmnisharpClient({
+        it('should call with given omnisharp parameters (formatting)', done => {
+            const server = new OmnisharpClient({
                 projectPath: resolve(__dirname, '../'),
                 logger: {
-                    log: (message) => {
+                    log: message => {
                         try {
-                            if (_.startsWith(message, 'Arguments:')) {
+                            if (startsWith(message, 'Arguments:')) {
                                 expect(message.toLowerCase()).to.contain('--dotnet:alias=beta4');
                                 expect(message.toLowerCase()).to.contain('--formattingoptions:newline=blah');
                                 server.disconnect();
@@ -122,7 +121,7 @@ describe('Omnisharp Server', function () {
                             done(e);
                         }
                     },
-                    error: (message) => { /* */ }
+                    error: message => { /* */ }
                 },
                 serverOptions: {
                     formattingOptions: { newLine: 'blah' },

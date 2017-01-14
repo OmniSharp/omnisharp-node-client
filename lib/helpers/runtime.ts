@@ -1,23 +1,25 @@
-import { AsyncSubject, Observable, Scheduler } from 'rxjs';
-import { resolve, join, delimiter } from 'path';
 import * as fs from 'fs';
+import { assignWith, bind, delay, find, isNull, isUndefined, memoize, toLower } from 'lodash';
+import { delimiter, join, resolve } from 'path';
+import { AsyncSubject, Observable, Scheduler } from 'rxjs';
 import { ILogger, Runtime } from '../enums';
-import { find, bind, memoize, assignWith, isNull, isUndefined, toLower, delay } from 'lodash';
-import { decompress } from './decompress';
 import { createObservable } from '../operators/create';
-import 'rxjs/add/operator/max';
-import 'rxjs/add/operator/isEmpty';
-require('rxjs/add/observable/if');
-import { SupportedPlatform, supportedPlatform, getSupportedPlatform } from './platform';
+import { decompress } from './decompress';
+import { getSupportedPlatform, supportedPlatform, SupportedPlatform } from './platform';
 
+// tslint:disable:no-var-requires no-require-imports
 const request: { get(url: string): NodeJS.ReadableStream; } = require('request');
+// tslint:disable-next-line:non-literal-require
 const defaultServerVersion = require(resolve(__dirname, '../../package.json'))['omnisharp-roslyn'];
 const exists = Observable.bindCallback(fs.exists);
 const readFile = Observable.bindNodeCallback(fs.readFile);
 const defaultDest = resolve(__dirname, '../../');
+// tslint:enable:no-var-requires no-require-imports
 
 // Handle the case of homebrew mono
-const PATH: string[] = find<string>(process.env, (v, key) => toLower(key) === 'path').split(delimiter).concat(['/usr/local/bin', '/Library/Frameworks/Mono.framework/Commands']);
+const PATH: string[] = find(process.env, (v, key) => toLower(key) === 'path')
+    .split(delimiter)
+    .concat(['/usr/local/bin', '/Library/Frameworks/Mono.framework/Commands']);
 
 export interface IRuntimeContext {
     runtime: Runtime;
@@ -26,7 +28,7 @@ export interface IRuntimeContext {
     bootstrap?: boolean;
     version?: string;
     destination?: string;
-};
+}
 
 export class RuntimeContext {
     private _runtime: Runtime;
@@ -41,7 +43,7 @@ export class RuntimeContext {
     private _os: string;
     private _location: string;
 
-    constructor(runtimeContext: IRuntimeContext, private _logger?: ILogger) {
+    public constructor(runtimeContext: IRuntimeContext, private _logger?: ILogger) {
         if (!_logger) {
             this._logger = console;
         }
@@ -86,7 +88,7 @@ export class RuntimeContext {
         Object.freeze(this);
     }
 
-    public get runtime() { return this._runtime; };
+    public get runtime() { return this._runtime; }
     public get platform() { return this._platform; }
     public get arch() { return this._arch; }
     public get bootstrap() { return this._bootstrap; }
@@ -94,6 +96,48 @@ export class RuntimeContext {
     public get destination() { return this._destination; }
     public get id() { return this._id; }
     public get location() { return this._location; }
+
+    public findRuntime(location: string = resolve(defaultDest)) {
+        return findRuntimeById(this._id, location);
+    }
+
+    public downloadRuntime() {
+        return Observable.defer(() => Observable.concat(
+            // downloadSpecificRuntime("omnisharp.bootstrap", ctx, logger, dest),
+            this._downloadSpecificRuntime('omnisharp')
+        ))
+            .subscribeOn(Scheduler.async)
+            .toArray()
+            .concatMap(() => Observable.bindCallback<string, any, any>(fs.writeFile)(join(this._destination, '.version'), this._version), result => result);
+    }
+
+    public downloadRuntimeIfMissing() {
+        return this._ensureCurrentVersion()
+            .flatMap(isCurrent =>
+                this.findRuntime().isEmpty())
+            .flatMap(empty => Observable.if(
+                () => empty,
+                this.downloadRuntime()
+            ));
+    }
+
+    public downloadFile(url: string, path: string) {
+        if (this._logger) {
+            this._logger.log(`Downloading ${path}`);
+        }
+        return createObservable<void>(observer => {
+            request.get(url)
+                .pipe(fs.createWriteStream(path))
+                .on('error', bind(observer.error, observer))
+                .on('finish', () => {
+                    if (this._logger) {
+                        this._logger.log(`Finished downloading ${path}`);
+                    }
+                    observer.next(void 0);
+                    observer.complete();
+                });
+        });
+    }
 
     private _getIdKey() {
         if (this._platform !== SupportedPlatform.Windows && this._runtime === Runtime.ClrOrMono) {
@@ -113,10 +157,10 @@ export class RuntimeContext {
     }
 
     private _getOsName() {
-        if (this._platform === SupportedPlatform.Windows) return 'win';
+        if (this._platform === SupportedPlatform.Windows) { return 'win'; }
 
         const name = SupportedPlatform[this._platform];
-        if (name) return name.toLowerCase();
+        if (name) { return name.toLowerCase(); }
         return name;
     }
 
@@ -138,10 +182,10 @@ export class RuntimeContext {
     /* tslint:enable:no-string-literal */
 
     private _checkCurrentVersion() {
-        let filename = join(this._destination, '.version');
+        const filename = join(this._destination, '.version');
 
         return exists(filename)
-            .flatMap((isCurrent) =>
+            .flatMap(isCurrent =>
                 this.findRuntime().isEmpty(), (ex, isEmpty) => ex && !isEmpty)
             .flatMap(ex => Observable.if(
                 () => ex,
@@ -158,6 +202,7 @@ export class RuntimeContext {
                 () => !isCurrent,
                 Observable.defer(() => createObservable(observer => {
                     dest = dest || defaultDest;
+                    // tslint:disable-next-line:no-require-imports
                     require('rimraf')(dest, (err: any) => {
                         if (err) { observer.error(err); return; }
                         delay(() => {
@@ -170,36 +215,13 @@ export class RuntimeContext {
             ));
     }
 
-    public findRuntime(location: string = resolve(defaultDest)) {
-        return findRuntimeById(this._id, location);
-    }
-
-    public downloadRuntime() {
-        return Observable.defer(() => Observable.concat(
-            // downloadSpecificRuntime("omnisharp.bootstrap", ctx, logger, dest),
-            this._downloadSpecificRuntime('omnisharp')
-        ))
-            .subscribeOn(Scheduler.async)
-            .toArray()
-            .concatMap(() => Observable.bindCallback<string, any, any>(fs.writeFile)(join(this._destination, '.version'), this._version), (result) => result);
-    }
-
-    public downloadRuntimeIfMissing() {
-        return this._ensureCurrentVersion()
-            .flatMap((isCurrent) =>
-                this.findRuntime().isEmpty())
-            .flatMap(empty => Observable.if(
-                () => empty,
-                this.downloadRuntime()
-            ));
-    }
-
     private _downloadSpecificRuntime(name: string) {
         const filename = `${name}-${this._key}.${this._platform === SupportedPlatform.Windows ? 'zip' : 'tar.gz'}`;
         const destination = this._destination;
         try {
-            if (!fs.existsSync(destination))
+            if (!fs.existsSync(destination)) {
                 fs.mkdirSync(destination);
+            }
         } catch (e) { /* */ }
 
         const url = `https://github.com/OmniSharp/omnisharp-roslyn/releases/download/${this._version}/${filename}`;
@@ -212,24 +234,6 @@ export class RuntimeContext {
             .do({ complete: () => { try { fs.unlinkSync(path); } catch (e) { /* */ } } })
             .subscribeOn(Scheduler.async))
             .map(() => name);
-    }
-
-    public downloadFile(url: string, path: string) {
-        if (this._logger) {
-            this._logger.log(`Downloading ${path}`);
-        }
-        return createObservable<void>((observer) => {
-            request.get(url)
-                .pipe(fs.createWriteStream(path))
-                .on('error', bind(observer.error, observer))
-                .on('finish', () => {
-                    if (this._logger) {
-                        this._logger.log(`Finished downloading ${path}`);
-                    }
-                    observer.next(void 0);
-                    observer.complete();
-                });
-        });
     }
 
     private _extract(win32: boolean, path: string, dest: string) {
@@ -262,7 +266,7 @@ export const isSupportedRuntime = memoize((ctx: RuntimeContext) => {
 
         return subject.asObservable();
     });
-}, ({platform, arch, runtime, version}: RuntimeContext) => `${arch}-${platform}:${Runtime[runtime]}:${version}`);
+}, ({ platform, arch, runtime, version }: RuntimeContext) => `${arch}-${platform}:${Runtime[runtime]}:${version}`);
 
 function findOmnisharpExecuable(runtimeId: string, location: string): Observable<boolean> {
     return Observable.merge(

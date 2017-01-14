@@ -1,7 +1,7 @@
+import { startsWith } from 'lodash';
+import { Observable, Subject } from 'rxjs';
+import { ResponseContext } from '../contexts/ResponseContext';
 import * as OmniSharp from '../omnisharp-server';
-import * as _ from 'lodash';
-import { Subject, Observable } from 'rxjs';
-import { ResponseContext } from '../contexts';
 
 export function getInternalKey(path: string) {
     return `__${path}__`.toLowerCase();
@@ -13,7 +13,7 @@ export function getInternalValue(context: any, path: string) {
 
 export function setEventOrResponse(context: any, path: string) {
     const instance = context._client || context;
-    const isEvent = !_.startsWith(path, '/');
+    const isEvent = !startsWith(path, '/');
     const internalKey = getInternalKey(path);
     if (isEvent) {
         const eventKey = path[0].toUpperCase() + path.substr(1);
@@ -44,14 +44,17 @@ export function request(target: Object, propertyKey: string) {
     const version = OmniSharp.Api.getVersion(propertyKey);
     let format = (name: string) => `/${name}`;
     if (version !== 'v1') {
-        format = (name) => `/${version}/${name}`;
+        format = name => `/${version}/${name}`;
     }
 
     const name = format(propertyKey);
-    descriptor.value = function (this: {
-        _fixup: (propery: string, request: OmniSharp.Models.Request, options: any) => any;
-        request: (name: string, request: OmniSharp.Models.Request, options: any) => any;
-    }, request: OmniSharp.Models.Request, options: any) {
+    descriptor.value = function (
+        this: {
+            _fixup: (propery: string, request: OmniSharp.Models.Request, options: any) => any;
+            request: (name: string, request: OmniSharp.Models.Request, options: any) => any;
+        },
+        request: OmniSharp.Models.Request,
+        options: any) {
         if (request && (<any>request).silent) {
             options = request;
             request = {};
