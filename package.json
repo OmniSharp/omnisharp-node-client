@@ -25,7 +25,8 @@
   "main": "lib/omnisharp-client.js",
   "typings": "types/lib/omnisharp-client.d.ts",
   "scripts": {
-    "prepublish": "typings install && tsc --declaration",
+    "prepublish": "tsc",
+    "postinstall": "typings install",
     "test": "tsc && npm run lint && mocha",
     "test:watch": "concurrently -r \"mocha --watch\" \"tsc -w\"",
     "lint": "tslint languageserver/**/*.ts lib/**/*.ts test/**/*.ts",
@@ -53,6 +54,7 @@
   "devDependencies": {
     "@types/chai": "^3.4.34",
     "@types/mocha": "^2.2.37",
+    "@types/node": "^7.0.0",
     "chai": "^3.5.0",
     "concurrently": "^3.1.0",
     "mocha": "^3.2.0",

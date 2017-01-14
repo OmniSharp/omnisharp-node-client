@@ -1,12 +1,6 @@
 {
   "name": "omnisharp-client",
-  "ambientDependencies": {
-    "node": "github:DefinitelyTyped/DefinitelyTyped/node/node.d.ts#ac3a1f059f655059484d6aa5ba1f0f85908ae06c"
-  },
   "dependencies": {
     "lodash": "github:david-driscoll/lodash-ts#ts21"
-  },
-  "globalDependencies": {
-    "node": "registry:env/node#4.0.0+20160507210304"
   }
 }
