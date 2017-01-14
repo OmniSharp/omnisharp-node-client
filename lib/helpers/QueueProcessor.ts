@@ -1,4 +1,4 @@
-import { bind, pull } from 'lodash';
+import { bind, defer, pull } from 'lodash';
 import { AsyncSubject, Observable } from 'rxjs';
 import { RequestContext } from '../contexts/RequestContext';
 import { ResponseContext } from '../contexts/ResponseContext';
@@ -32,16 +32,16 @@ export class QueueProcessor<TResponse> {
     public constructor(private _concurrency: number, private _requestCallback: (context: RequestContext<any>) => TResponse) {
         // Keep deferred concurrency at a min of two, this lets us get around long running requests jamming the pipes.
         const _deferredConcurrency = Math.max(Math.floor(_concurrency / 4), 2);
-        const complete = bind(this._complete, this);
-        this._priority = new RequestQueue(1, complete);
-        this._normal = new RequestQueue(_concurrency, complete);
-        this._deferred = new RequestQueue(_deferredConcurrency, complete);
+        this._priority = new RequestQueue(1);
+        this._normal = new RequestQueue(_concurrency);
+        this._deferred = new RequestQueue(_deferredConcurrency);
     }
 
     public enqueue(context: RequestContext<any>): TResponse {
         const subject = new AsyncSubject<ResponseContext<any, any>>();
         const observable = subject
             .asObservable()
+            .do({ error: this._complete, complete: this._complete })
             .mergeMap(x => <any>this._requestCallback(context));
 
         // Doing a little bit of tickery here
@@ -58,7 +58,7 @@ export class QueueProcessor<TResponse> {
         if (queue === QueuePriority.Normal) { this._normal.enqueue(subject); }
         if (queue === QueuePriority.Deferred) { this._deferred.enqueue(subject); }
 
-        this._drain();
+        defer(() => this._drain());
 
         return <any>observable;
     }
@@ -85,7 +85,7 @@ export class QueueProcessor<TResponse> {
         }
     }
 
-    private _complete() {
+    private _complete = () => {
         this._processing = false;
         this._drain();
     }

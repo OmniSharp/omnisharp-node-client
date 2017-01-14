@@ -1,3 +1,4 @@
+import { QueueProcessor } from '../helpers/QueueProcessor';
 // tslint:disable-next-line:max-file-line-count
 import { bind, cloneDeep, defaults, each, keys, uniqueId } from 'lodash';
 import { AsyncSubject, BehaviorSubject, Observable, Subject, Subscription } from 'rxjs';
@@ -14,34 +15,6 @@ import { isDeferredCommand, isNormalCommand, isPriorityCommand } from '../helper
 import * as OmniSharp from '../omnisharp-server';
 import { createObservable } from '../operators/create';
 import { ensureClientOptions } from '../options';
-
-function pausable<T>(incomingStream: Observable<T>, pauser: Observable<boolean>) {
-    return createObservable<T>(observer => {
-        let paused: boolean;
-        let queue: any[] = [];
-        const sub = new Subscription();
-
-        sub.add(pauser.subscribe(shouldRun => {
-            paused = !shouldRun;
-
-            if (shouldRun && queue.length) {
-                each(queue, r => observer.next(r));
-                queue = [];
-            }
-        }));
-
-        sub.add(incomingStream
-            .subscribe(request => {
-                if (paused) {
-                    queue.push(request);
-                } else {
-                    observer.next(request);
-                }
-            }));
-
-        return sub;
-    });
-}
 
 export class ReactiveClient implements IReactiveDriver, IDisposable {
     private _driver: IReactiveDriver;
@@ -62,6 +35,8 @@ export class ReactiveClient implements IReactiveDriver, IDisposable {
 
     private _stateStream = new BehaviorSubject<DriverState>(DriverState.Disconnected);
     private _state = this._stateStream.asObservable();
+
+    private _queue: QueueProcessor<Observable<ResponseContext<any, any>>>;
 
     public get uniqueId() { return this._uniqueId; }
 
@@ -102,10 +77,9 @@ export class ReactiveClient implements IReactiveDriver, IDisposable {
         });
 
         ensureClientOptions(this._options);
+        this._queue = new QueueProcessor<Observable<ResponseContext<any, any>>>(this._options.concurrency, bind(this._handleResult, this));
 
         this._resetDriver();
-
-        this._disposable.add(this._requestStream.subscribe(x => this._currentRequests.add(x)));
 
         const getStatusValues = () => <IOmnisharpClientStatus>({
             state: this._driver.currentState,
@@ -113,16 +87,14 @@ export class ReactiveClient implements IReactiveDriver, IDisposable {
             hasOutgoingRequests: this.outstandingRequests > 0,
         });
 
-        this._setupRequestStreams();
-
         const status = Observable.merge(
             <Observable<any>><any>this._requestStream,
             <Observable<any>><any>this._responseStream);
 
         this._statusStream = status
-            .delay(10)
             .map(getStatusValues)
             .distinctUntilChanged()
+            .debounceTime(100)
             .share();
 
         this._observe = new ReactiveClientEvents(this);
@@ -211,19 +183,18 @@ export class ReactiveClient implements IReactiveDriver, IDisposable {
         }
         // Handle disconnected requests
         if (this.currentState !== DriverState.Connected && this.currentState !== DriverState.Error) {
-            const response = new AsyncSubject<TResponse>();
-
-            this.state.filter(z => z === DriverState.Connected)
+            return this.state
+                .filter(z => z === DriverState.Connected)
                 .take(1)
-                .subscribe(z => {
-                    this.request<TRequest, TResponse>(action, request, options).subscribe(x => response.next(x));
+                .switchMap(z => {
+                    return this.request<TRequest, TResponse>(action, request, options);
                 });
-
-            return <Observable<TResponse>><any>response;
         }
 
         const context = new RequestContext(this._uniqueId, action, request!, options);
+        this._currentRequests.add(context);
         this._requestStream.next(context);
+        this._queue.enqueue(context);
 
         return context.getResponse<TResponse>(<Observable<any>><any>this._responseStream);
     }
@@ -232,85 +203,18 @@ export class ReactiveClient implements IReactiveDriver, IDisposable {
         this._fixups.push(func);
     }
 
-    private _setupRequestStreams() {
-        const priorityRequests = new BehaviorSubject(0);
-        const priorityResponses = new BehaviorSubject(0);
-
-        const pauser = Observable.combineLatest(
-            <Observable<number>><any>priorityRequests,
-            <Observable<number>><any>priorityResponses,
-            (requests, responses) => {
-                if (requests > 0 && responses === requests) {
-                    priorityRequests.next(0);
-                    priorityResponses.next(0);
-                    return true;
-                } else if (requests > 0) {
-                    return false;
-                }
-
-                return true;
-            })
-            .startWith(true)
-            .debounceTime(120)
-            .share();
-
-        // Keep deferred concurrency at a min of two, this lets us get around long running requests jamming the pipes.
-        const deferredConcurrency = Math.max(Math.floor(this._options.concurrency / 4), 2);
-
-        // These are operations that should wait until after
-        // we have executed all the current priority commands
-        // We also defer silent commands to this queue, as they are generally for "background" work
-
-        this._disposable.add(
-            //deferredQueue
-            pausable(this._requestStream.filter(isDeferredCommand), pauser)
-                .map(request => this._handleResult(request))
-                .merge(deferredConcurrency)
-                .subscribe(),
-
-            //normalQueue
-            // We just pass these operations through as soon as possible
-            pausable(this._requestStream.filter(isNormalCommand), pauser)
-                .map(request => this._handleResult(request))
-                .merge(this._options.concurrency)
-                .subscribe(),
-
-            //priorityQueue
-            // We must wait for these commands
-            this._requestStream
-                .filter(isPriorityCommand)
-                .do(() => priorityRequests.next(priorityRequests.getValue() + 1))
-                .map(request => this._handleResult(request, () => priorityResponses.next(priorityResponses.getValue() + 1)))
-                .concat() // And these commands must run in order.
-                .subscribe(),
-        );
-    }
-
-    private _handleResult(context: RequestContext<any>, complete?: () => void): Observable<ResponseContext<any, any>> {
-        // TODO: Find a way to not repeat the same commands, if there are outstanding (timed out) requests.
-        // In some cases for example find usages has taken over 30 seconds, so we shouldn"t hit the server with multiple of these requests (as we slam the cpU)
-        const result = <Observable<ResponseContext<any, any>>>this._driver.request<any, any>(context.command, context.request);
+    private _handleResult(context: RequestContext<any>): Observable<ResponseContext<any, any>> {
         const responseStream = this._getResponseStream(context.command);
-        result.subscribe(data => {
-            responseStream.next(new ResponseContext(context, data));
-        }, error => {
-            this._errorStream.next(new CommandContext(context.command, error));
-            responseStream.next(new ResponseContext(context, null, true));
-            this._currentRequests.delete(context);
-            if (complete) {
-                complete();
-            }
-        }, () => {
-            this._currentRequests.delete(context);
-            if (complete) {
-                complete();
-            }
-        });
-
-        return result
-            // This timeout doesn't prevent the request from completing
-            // It simply unblocks the queue, so we can continue to process items.
-            .timeoutWith(this._options.concurrencyTimeout, Observable.empty<ResponseContext<any, any>>());
+        return this._driver.request<any, any>(context.command, context.request)
+            .do(data => {
+                responseStream.next(new ResponseContext(context, data));
+            }, error => {
+                this._errorStream.next(new CommandContext(context.command, error));
+                responseStream.next(new ResponseContext(context, null, true));
+                this._currentRequests.delete(context);
+            }, () => {
+                this._currentRequests.delete(context);
+            });
     }
 
     private _resetDriver() {

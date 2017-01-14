@@ -7,7 +7,7 @@ export class RequestQueue {
     private queue: AsyncSubject<ResponseContext<any, any>>[] = [];
     private requests: AsyncSubject<ResponseContext<any, any>>[] = [];
 
-    public constructor(private concurrency: number, private complete: () => void) { }
+    public constructor(private concurrency: number) { }
 
     public enqueue(item: AsyncSubject<ResponseContext<any, any>>) {
         this.queue.push(item);
@@ -28,9 +28,11 @@ export class RequestQueue {
             const item = this.queue.shift()!;
             this.requests.push(item);
             item.subscribe({
+                error: () => {
+                    pull(this.requests, item);
+                },
                 complete: () => {
                     pull(this.requests, item);
-                    this.complete();
                 }
             });
 
