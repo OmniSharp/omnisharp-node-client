@@ -33,23 +33,12 @@
         "allowSyntheticDefaultImports": true,
         "inlineSourceMap": true,
         "inlineSources": true,
-        "strictNullChecks": true
+        "strictNullChecks": true,
+        "noUnusedLocals": false,
+        "noFallthroughCasesInSwitch": true,
+        "declaration": true
     },
     "compileOnSave": true,
-    "formatCodeOptions": {
-        "indentSize": 4,
-        "tabSize": 4,
-        "indentStyle": "smart",
-        "convertTabsToSpaces": true,
-        "insertSpaceAfterCommaDelimiter": true,
-        "insertSpaceAfterSemicolonInForStatements": true,
-        "insertSpaceBeforeAndAfterBinaryOperators": true,
-        "insertSpaceAfterKeywordsInControlFlowStatements": true,
-        "insertSpaceAfterFunctionKeywordForAnonymousFunctions": false,
-        "insertSpaceAfterOpeningAndBeforeClosingNonemptyParenthesis": false,
-        "placeOpenBraceOnNewLineForFunctions": false,
-        "placeOpenBraceOnNewLineForControlBlocks": false
-    },
     "exclude": [
         "node_modules",
         "vendor",

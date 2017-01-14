@@ -3,7 +3,7 @@ import { expect } from 'chai';
 import { DriverState } from '../lib/enums';
 import { resolve } from 'path';
 import { ReactiveClient as OmnisharpClient } from '../lib/reactive/reactive-client';
-import * as _ from 'lodash';
+import {} from 'lodash';
 import { Observable } from 'rxjs';
 
 describe('Omnisharp Server', () => {
@@ -13,7 +13,7 @@ describe('Omnisharp Server', () => {
         });
     });
 
-    describe('state', function (this: Mocha.ITestDefinition) {
+    describe('state', function (this: Mocha.ISuiteCallbackContext) {
         this.timeout(60000);
         let server: OmnisharpClient;
 
@@ -40,7 +40,7 @@ describe('Omnisharp Server', () => {
         });
 
         it('must respond to all requests (string)', () => {
-            _.defer(() => {
+            defer(() => {
                 server.request('/checkalivestatus');
                 server.request('/checkalivestatus');
                 server.request('/checkalivestatus');
@@ -53,7 +53,7 @@ describe('Omnisharp Server', () => {
         });
 
         it('must respond to all requests (method)', () => {
-            _.defer(() => {
+            defer(() => {
                 server.checkalivestatus();
                 server.checkalivestatus();
                 server.checkalivestatus();
@@ -66,7 +66,7 @@ describe('Omnisharp Server', () => {
         });
 
         it('must give status', () => {
-            _.defer(() => {
+            defer(() => {
                 server.checkalivestatus();
                 server.checkalivestatus();
             });
@@ -78,7 +78,7 @@ describe('Omnisharp Server', () => {
         });
     });
 
-    describe('configuration', function (this: Mocha.ITestDefinition) {
+    describe('configuration', function (this: Mocha.ISuiteCallbackContext) {
         this.timeout(60000);
         it('should call with given omnisharp parameters', (done) => {
             let server = new OmnisharpClient({
@@ -86,7 +86,7 @@ describe('Omnisharp Server', () => {
                 logger: {
                     log: (message) => {
                         try {
-                            if (_.startsWith(message, 'Arguments:')) {
+                            if (startsWith(message, 'Arguments:')) {
                                 expect(message.toLowerCase()).to.contain('--dotnet:alias=notdefault');
                                 server.disconnect();
                                 done();
@@ -111,7 +111,7 @@ describe('Omnisharp Server', () => {
                 logger: {
                     log: (message) => {
                         try {
-                            if (_.startsWith(message, 'Arguments:')) {
+                            if (startsWith(message, 'Arguments:')) {
                                 expect(message.toLowerCase()).to.contain('--dotnet:alias=beta4');
                                 expect(message.toLowerCase()).to.contain('--formattingoptions:newline=blah');
                                 server.disconnect();

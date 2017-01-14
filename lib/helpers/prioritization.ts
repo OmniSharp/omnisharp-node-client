@@ -1,5 +1,5 @@
-import { RequestContext } from '../contexts';
 import { each } from 'lodash';
+import { RequestContext } from '../contexts';
 
 const normalCommands = [
     'findimplementations', 'findsymbols', 'findusages',
@@ -28,7 +28,7 @@ each(priorityCommands, x => {
 
 export function isPriorityCommand(request: RequestContext<any>) {
     return prioritySet.has(request.command);
-};
+}
 
 export function isNormalCommand(request: RequestContext<any>) {
     return !isDeferredCommand(request) && normalSet.has(request.command);

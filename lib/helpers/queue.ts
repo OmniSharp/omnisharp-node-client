@@ -1,7 +1,8 @@
-import { isPriorityCommand, isDeferredCommand } from './prioritization';
+import { bind, pull } from 'lodash';
+import { AsyncSubject, Observable } from 'rxjs';
 import { RequestContext, ResponseContext } from '../contexts';
-import { Observable, AsyncSubject } from 'rxjs';
-import { pull, bind } from 'lodash';
+import { RequestQueue } from './RequestQueue';
+import { isDeferredCommand, isPriorityCommand } from './prioritization';
 
 enum QueuePriority {
     Priority,
@@ -19,45 +20,6 @@ function getQueue(context: RequestContext<any>) {
     return QueuePriority.Normal;
 }
 
-class RequestQueue {
-    private queue: AsyncSubject<ResponseContext<any, any>>[] = [];
-    private requests: AsyncSubject<ResponseContext<any, any>>[] = [];
-
-    constructor(private concurrency: number, private complete: () => void) { }
-
-    public enqueue(item: AsyncSubject<ResponseContext<any, any>>) {
-        this.queue.push(item);
-    }
-
-    public get full() {
-        return this.requests.length >= this.concurrency;
-    }
-
-    public get pending() {
-        return this.queue.length > 0;
-    }
-
-    public drain() {
-        let i = 0;
-        const slots = this.concurrency - this.requests.length;
-        do {
-            const item = this.queue.shift() !;
-            this.requests.push(item);
-            item.subscribe({
-                complete: () => {
-                    pull(this.requests, item);
-                    this.complete();
-                }
-            });
-
-            item.next(null!);
-            item.complete();
-
-            if (this.full) return;
-        } while (this.queue.length && ++i < slots);
-    }
-}
-
 type DELAYED_OBSERVABLE = Observable<ResponseContext<any, any>>;
 
 export class Queue<TResponse> {
@@ -66,7 +28,7 @@ export class Queue<TResponse> {
     private _deferred: RequestQueue;
     private _processing = false;
 
-    constructor(private _concurrency: number, private _requestCallback: (context: RequestContext<any>) => TResponse) {
+    public constructor(private _concurrency: number, private _requestCallback: (context: RequestContext<any>) => TResponse) {
         // Keep deferred concurrency at a min of two, this lets us get around long running requests jamming the pipes.
         const _deferredConcurrency = Math.max(Math.floor(_concurrency / 4), 2);
         const complete = bind(this._complete, this);
@@ -91,20 +53,20 @@ export class Queue<TResponse> {
         });
 
         const queue = getQueue(context);
-        if (queue === QueuePriority.Priority) this._priority.enqueue(subject);
-        if (queue === QueuePriority.Normal) this._normal.enqueue(subject);
-        if (queue === QueuePriority.Deferred) this._deferred.enqueue(subject);
+        if (queue === QueuePriority.Priority) { this._priority.enqueue(subject); }
+        if (queue === QueuePriority.Normal) { this._normal.enqueue(subject); }
+        if (queue === QueuePriority.Deferred) { this._deferred.enqueue(subject); }
 
-        this.drain();
+        this._drain();
 
         return <any>observable;
     }
 
-    private drain() {
-        if (this._processing) return;
+    private _drain() {
+        if (this._processing) { return; }
         // Request inflight
-        if (this._priority.full) return;
-        if (this._normal.full && this._deferred.full) return;
+        if (this._priority.full) { return; }
+        if (this._normal.full && this._deferred.full) { return; }
 
         this._processing = true;
 
@@ -124,6 +86,6 @@ export class Queue<TResponse> {
 
     private _complete() {
         this._processing = false;
-        this.drain();
+        this._drain();
     }
 }

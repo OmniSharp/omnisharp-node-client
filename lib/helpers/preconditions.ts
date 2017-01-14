@@ -1,12 +1,13 @@
+// tslint:disable-next-line:max-file-line-count
+import { each, get, isNull, isUndefined, some } from 'lodash';
 import * as OmniSharp from '../omnisharp-server';
-import * as _ from 'lodash';
 
 export type PreconditionMethod = ((request: any) => void);
 
 function isNotNull(property: string) {
-    return function (request: OmniSharp.Models.Request) {
-        const result = _.get(request, property);
-        if (_.isNull(result) || _.isUndefined(result)) {
+    return (request: OmniSharp.Models.Request) => {
+        const result = get(request, property);
+        if (isNull(result) || isUndefined(result)) {
             const errorText = `${property} must not be null.`;
             throw new Error(errorText);
         }
@@ -14,10 +15,10 @@ function isNotNull(property: string) {
 }
 
 function isAboveZero(property: string) {
-    return function (request: OmniSharp.Models.Request) {
+    return (request: OmniSharp.Models.Request) => {
         const minValue = 0;
-        const result = _.get(request, property);
-        if (_.isNull(result) || _.isUndefined(result)) {
+        const result = get(request, property);
+        if (isNull(result) || isUndefined(result)) {
             return;
         }
         if (result < minValue) {
@@ -28,9 +29,9 @@ function isAboveZero(property: string) {
 }
 
 function precondition(property: Function, ...decorators: PreconditionMethod[]) {
-    return function (request: OmniSharp.Models.Request) {
-        if (!!property(request)) {
-            _.each(decorators, decorator => {
+    return (request: OmniSharp.Models.Request) => {
+        if (property(request)) {
+            each(decorators, decorator => {
                 decorator(request);
             });
         }
@@ -38,9 +39,9 @@ function precondition(property: Function, ...decorators: PreconditionMethod[]) {
 }
 
 function any(...properties: string[]) {
-    return function (request: OmniSharp.Models.Request) {
-        const anyMatch = _.some(properties, property => {
-            const result = _.get(request, property);
+    return (request: OmniSharp.Models.Request) => {
+        const anyMatch = some(properties, property => {
+            const result = get(request, property);
             if (result === null || result === undefined) {
                 return false;
             }
@@ -277,7 +278,7 @@ preconditions['/fileschanged'] = [
             const errorText = `fileschanged must not be null.`;
             throw new Error(errorText);
         }
-        if (_.some(request, x => !x.FileName)) {
+        if (some(request, x => !x.FileName)) {
             const errorText = `fileschanged[].FileName must not be null.`;
             throw new Error(errorText);
         }

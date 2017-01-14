@@ -26,9 +26,11 @@
   "typings": "lib/omnisharp-client.ts",
   "scripts": {
     "prepublish": "typings install && gulp npm-prepublish",
-    "do-test": "gulp && npm run test",
-    "test": "mocha",
-    "tsc": "tsc",
+    "test": "tsc && npm run lint && mocha",
+    "test:watch": "concurrently -r \"mocha --watch\" \"tsc -w\"",
+    "lint": "tslint --config tslint.types.json --project tsconfig.json --type-check languageserver/**/*.ts lib/**/*.ts test/**/*.ts",
+    "lint:fix": "tslint --config tslint.types.json --project tsconfig.json --type-check --fix languageserver/**/*.ts lib/**/*.ts test/**/*.ts",
+    "compile:watch": "concurrently -r \"tsc -w\" \"tslint \"",
     "tsc:w": "tsc -w"
   },
   "author": "",
@@ -52,18 +54,12 @@
     "@types/chai": "^3.4.34",
     "@types/mocha": "^2.2.37",
     "chai": "^3.5.0",
-    "del": "^2.2.2",
-    "gulp": "^3.9.1",
-    "gulp-sourcemaps": "^2.4.0",
-    "gulp-tslint": "^7.0.1",
-    "gulp-typescript": "^3.1.4",
-    "gulp-util": "^3.0.8",
-    "merge-stream": "^1.0.1",
+    "concurrently": "^3.1.0",
     "mocha": "^3.2.0",
-    "through2": "^2.0.3",
     "tslint": "^4.3.1",
+    "tslint-eslint-rules": "^3.2.3",
     "tslint-microsoft-contrib": "^4.0.0",
-    "typescript": "^2.1.5",
+    "typescript": "^2.2.0-dev.20170113",
     "typings": "^2.1.0"
   }
 }

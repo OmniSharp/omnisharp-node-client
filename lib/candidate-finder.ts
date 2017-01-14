@@ -1,18 +1,19 @@
-import * as _ from 'lodash';
-import { ILogger } from './enums';
-import { join, dirname, sep, normalize } from 'path';
+import { readFileSync } from 'fs';
+import {} from 'lodash';
+import { dirname, join, normalize, sep } from 'path';
 import { Observable, Scheduler, Subscription } from 'rxjs';
 import { Subscribable } from 'rxjs/Observable';
+
 import { CompositeDisposable } from 'ts-disposables';
+import { ILogger } from './enums';
 import { createObservable } from './operators/create';
-import { readFileSync } from 'fs';
 const glob: (file: string[], options?: any) => Promise<string[]> = require('globby');
 
-export interface Options {
+export interface IOptions {
     solutionFilesToSearch?: string[];
     projectFilesToSearch?: string[];
     sourceFilesToSearch?: string[];
-    solutionIndependentSourceFilesToSearch?: string[];
+    independentSourceFilesToSearch?: string[];
     maxDepth?: number;
 }
 
@@ -47,9 +48,9 @@ export class Candidate {
     public originalFile: string;
     public isProject: boolean;
 
-    constructor(originalFile: string, predicate: (path: string) => boolean) {
+    public constructor(originalFile: string, predicate: (path: string) => boolean) {
         this.originalFile = originalFile = normalize(originalFile);
-        this.path = _.endsWith(originalFile, '.sln') ? originalFile : dirname(originalFile);
+        this.path = endsWith(originalFile, '.sln') ? originalFile : dirname(originalFile);
         this.isProject = predicate(originalFile);
 
         Object.freeze(this);
@@ -61,13 +62,13 @@ export class Candidate {
 }
 
 export const findCandidates = (() => {
-    function realFindCandidates(location: string, logger: ILogger, options: Options = {}) {
-        location = _.trimEnd(location, sep);
+    function realFindCandidates(location: string, logger: ILogger, options: IOptions = {}) {
+        location = trimEnd(location, sep);
 
         const solutionFilesToSearch = options.solutionFilesToSearch || (options.solutionFilesToSearch = ['global.json', '*.sln']);
         const projectFilesToSearch = options.projectFilesToSearch || (options.projectFilesToSearch = ['project.json', '*.csproj']);
         const sourceFilesToSearch = options.sourceFilesToSearch || (options.sourceFilesToSearch = ['*.cs']);
-        const solutionIndependentSourceFilesToSearch = options.solutionIndependentSourceFilesToSearch || (options.solutionIndependentSourceFilesToSearch = ['*.csx']);
+        const solutionIndependentSourceFilesToSearch = options.independentSourceFilesToSearch || (options.independentSourceFilesToSearch = ['*.csx']);
         const maxDepth = options.maxDepth || 10;
 
         const solutionsOrProjects = searchForCandidates(location, solutionFilesToSearch, projectFilesToSearch, maxDepth, logger)
@@ -84,7 +85,7 @@ export const findCandidates = (() => {
 
         const sourceFiles = searchForCandidates(location, sourceFilesToSearch, [], maxDepth, logger);
 
-        const predicate = (path: string) => _.some(solutionFilesToSearch.concat(projectFilesToSearch), pattern => _.endsWith(path, _.trimStart(pattern, '*')));
+        const predicate = (path: string) => some(solutionFilesToSearch.concat(projectFilesToSearch), pattern => endsWith(path, trimStart(pattern, '*')));
 
         return ifEmpty(baseFiles, sourceFiles)
             .map(file => new Candidate(file, predicate))
@@ -93,31 +94,31 @@ export const findCandidates = (() => {
             .do(candidates => logger.log(`Omni Project Candidates: Found ${candidates}`));
     }
 
-    function findCandidates(location: string, logger: ILogger, options: Options = {}) {
+    function findCandidates(location: string, logger: ILogger, options: IOptions = {}) {
         return realFindCandidates(location, logger, options)
             .map(z => z.map(x => x.toString()));
     }
 
     (<any>findCandidates).withCandidates = realFindCandidates;
 
-    return <{ (location: string, logger: ILogger, options?: Options): Observable<string[]>; withCandidates: typeof realFindCandidates }>findCandidates;
+    return <{ (location: string, logger: ILogger, options?: IOptions): Observable<string[]>; withCandidates: typeof realFindCandidates }>findCandidates;
 })();
 
 function squashCandidates(candidates: string[]) {
     const rootCandidateCount = getMinCandidate(candidates);
-    return _.uniq(_.filter(_.map(candidates, normalize), z => z.split(sep).length === rootCandidateCount));
+    return uniq(filter(map(candidates, normalize), z => z.split(sep).length === rootCandidateCount));
 }
 
 function getMinCandidate(candidates: string[]) {
     if (!candidates.length) return -1;
 
-    return _.minBy(_.map(candidates, normalize), z => z.split(sep).length).split(sep).length;
+    return minBy(map(candidates, normalize), z => z.split(sep).length).split(sep).length;
 }
 
 function searchForCandidates(location: string, filesToSearch: string[], projectFilesToSearch: string[], maxDepth: number, logger: ILogger): Observable<string> {
     let locations = location.split(sep);
     locations = locations.map((loc, index) => {
-        return _.take(locations, locations.length - index).join(sep);
+        return take(locations, locations.length - index).join(sep);
     });
 
     locations = locations.slice(0, Math.min(maxDepth, locations.length));
@@ -135,12 +136,12 @@ function searchForCandidates(location: string, filesToSearch: string[], projectF
                     if (x.length > 1) {
                         // Handle the unity project case
                         // Also handle optional solutions that may also exist with the unity ones.
-                        const unitySolutionIndex = _.findIndex(x, z => _.endsWith(z, '-csharp.sln'));
+                        const unitySolutionIndex = findIndex(x, z => endsWith(z, '-csharp.sln'));
                         if (unitySolutionIndex > -1) {
                             const unitySolution = x[unitySolutionIndex];
                             const baseSolution = unitySolution.substr(0, unitySolution.indexOf('-csharp.sln')) + '.sln';
 
-                            const baseSolutionIndex = _.findIndex(x, z => z.toLowerCase() === baseSolution.toLowerCase());
+                            const baseSolutionIndex = findIndex(x, z => z.toLowerCase() === baseSolution.toLowerCase());
                             if (baseSolutionIndex > -1) {
                                 // Remove the index
                                 x.splice(baseSolutionIndex, 1);
@@ -148,10 +149,10 @@ function searchForCandidates(location: string, filesToSearch: string[], projectF
                         }
                     }
 
-                    if (_.some(x, file => _.endsWith(file, '.sln'))) {
+                    if (some(x, file => endsWith(file, '.sln'))) {
                         return x.filter(file => {
                             const content = readFileSync(file).toString();
-                            return _.some(projectFilesToSearch, path => content.indexOf(_.trimStart(path, '*')) > -1);
+                            return some(projectFilesToSearch, path => content.indexOf(trimStart(path, '*')) > -1);
                         });
                     }
                     return x;

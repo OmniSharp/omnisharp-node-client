@@ -1,17 +1,10 @@
-
+// tslint:disable:interface-name
 import {
-    StreamMessageReader, StreamMessageWriter,
-    createConnection, IConnection, TextDocumentSyncKind,
-    TextDocuments, TextDocument, Diagnostic, DiagnosticSeverity,
-    InitializeParams, InitializeResult, TextDocumentPositionParams,
-    CompletionItem, CompletionItemKind, CodeLens, Hover, Location,
-    CompletionList,
-    SignatureHelp, SignatureInformation, ParameterInformation,
-    SymbolInformation, SymbolKind, Range, Command, TextEdit,
-    NotificationType, Files, TextDocumentIdentifier, CodeActionContext, WorkspaceEdit, ServerCapabilities,
+    TextDocumentPositionParams, Location, Range,
+    NotificationType, TextDocumentIdentifier, CodeActionContext, WorkspaceEdit,
     Position
-} from "vscode-languageserver";
-import { /* NotificationType, */ RequestType } from 'vscode-jsonrpc';
+} from 'vscode-languageserver';
+import { RequestType } from 'vscode-jsonrpc';
 
 export interface ExtendedServerCapabilities {
     extended: {
@@ -20,7 +13,7 @@ export interface ExtendedServerCapabilities {
         implementationProvider?: boolean;
         navigateProvider?: boolean;
         highlightProvider?: boolean;
-    }
+    };
 }
 
 export interface ClientCapabilities {
@@ -82,11 +75,13 @@ export interface RunCodeActionParams extends GetCodeActionsParams {
 
 export namespace Methods {
     export namespace Extended {
-        export const GetCodeActionsRequest = '__extended/textDocument/getCodeActions'
-        export const RunCodeActionRequest = '__extended/textDocument/runCodeAction'
-        export const ImplementationRequest = '__extended/textDocument/implementation'
-        export const NavigateRequest = '__extended/textDocument/navigate'
-        export const PublishHighlightNotification = '__extended/textDocument/publishHighlight'
+        // tslint:disable:variable-name
+        export const GetCodeActionsRequest = '__extended/textDocument/getCodeActions';
+        export const RunCodeActionRequest = '__extended/textDocument/runCodeAction';
+        export const ImplementationRequest = '__extended/textDocument/implementation';
+        export const NavigateRequest = '__extended/textDocument/navigate';
+        export const PublishHighlightNotification = '__extended/textDocument/publishHighlight';
+        // tslint:enable:variable-name
     }
 }
 

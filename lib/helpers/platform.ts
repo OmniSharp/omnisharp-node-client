@@ -1,5 +1,5 @@
-import { Defer } from 'lodash';
 import * as child_process from 'child_process';
+import { Defer } from 'lodash';
 
 export enum SupportedPlatform {
     None,
@@ -14,7 +14,7 @@ export enum SupportedPlatform {
     Ubuntu16
 }
 
-/* tslint:disable:quotemark */
+/* tslint:disable:quotemark no-unexternalized-strings */
 export function getSupportedPlatform(platform: string = process.platform) {
     if (process.platform === 'win32') {
         return SupportedPlatform.Windows;

@@ -4,8 +4,28 @@
     "version": "0.1.0",
     "command": "npm",
     "isShellCommand": true,
-    "args": ["run", "tsc:w"],
-    "showOutput": "silent",
-    "isWatching": true,
-    "problemMatcher": "$tsc-watch"
+    "args": [
+        "run"
+    ],
+    "tasks": [
+        {
+            "taskName": "tsc:w",
+            "isBuildCommand": true,
+            "isWatching": true,
+            "problemMatcher": "$tsc-watch",
+            "showOutput": "always"
+        },
+        {
+            "taskName": "test",
+            "isTestCommand": true,
+            "problemMatcher": "$eslint-stylish",
+            "showOutput": "always"
+        },
+        {
+            "taskName": "lint",
+            "isTestCommand": true,
+            "problemMatcher": "$eslint-stylish",
+            "showOutput": "always"
+        }
+    ]
 }

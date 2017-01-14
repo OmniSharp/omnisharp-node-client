@@ -1,7 +1,7 @@
-import * as _ from 'lodash';
-import { CoreClientOptions } from './enums';
+import {} from 'lodash';
+import { ICoreClientOptions } from './enums';
 
-export function ensureClientOptions(options: CoreClientOptions) {
+export function ensureClientOptions(options: ICoreClientOptions) {
     if (options.statusSampleTime) options.statusSampleTime = 500;
     if (options.responseSampleTime) options.responseSampleTime = 100;
     if (options.concurrency) options.concurrency = 4;
@@ -25,8 +25,8 @@ export function ensureClientOptions(options: CoreClientOptions) {
 
 export function flattenArguments<T extends { [index: string]: any; }>(obj: T, prefix = '') {
     const result: any[] = [];
-    _.each(obj, (value, key) => {
-        if (_.isObject(value)) {
+    each(obj, (value, key) => {
+        if (isObject(value)) {
             result.push(...flattenArguments(value, `${prefix ? prefix + ':' : ''}${key}`));
             return;
         }
