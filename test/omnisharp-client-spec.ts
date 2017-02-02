@@ -41,8 +41,8 @@ describe('Omnisharp Server', () => {
 
         it('must respond to all requests (string)', () => {
             defer(() => {
-                server.request('/checkalivestatus');
-                server.request('/checkalivestatus');
+                server.request('/checkalivestatus').subscribe();
+                server.request('/checkalivestatus').subscribe();
                 server.request('/checkalivestatus');
                 server.request('/checkalivestatus');
             });
@@ -54,8 +54,8 @@ describe('Omnisharp Server', () => {
 
         it('must respond to all requests (method)', () => {
             defer(() => {
-                server.checkalivestatus();
-                server.checkalivestatus();
+                server.checkalivestatus().subscribe();
+                server.checkalivestatus().subscribe();
                 server.checkalivestatus();
                 server.checkalivestatus();
             });

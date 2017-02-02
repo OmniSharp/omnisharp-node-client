@@ -1,8 +1,8 @@
-import { QueueProcessor } from '../helpers/QueueProcessor';
 // tslint:disable-next-line:max-file-line-count
 import { bind, cloneDeep, defaults, each, keys, uniqueId } from 'lodash';
 import { AsyncSubject, BehaviorSubject, Observable, Subject, Subscription } from 'rxjs';
 import { CompositeDisposable, IDisposable } from 'ts-disposables';
+import { QueueProcessor } from '../helpers/QueueProcessor';
 
 import { CommandContext } from '../contexts/CommandContext';
 import { RequestContext } from '../contexts/RequestContext';
@@ -194,9 +194,13 @@ export class ReactiveClient implements IReactiveDriver, IDisposable {
         const context = new RequestContext(this._uniqueId, action, request!, options);
         this._currentRequests.add(context);
         this._requestStream.next(context);
-        this._queue.enqueue(context);
+        const response = this._queue.enqueue(context);
+        // By default the request will only be made if the response is subscribed to...
+        // This is a breaking change for clients, potentially a very big one, so this subscribe
+        // avoids the problem for the moment
+        response.subscribe();
 
-        return context.getResponse<TResponse>(<Observable<any>><any>this._responseStream);
+        return <Observable<TResponse>><any>response;
     }
 
     public registerFixup(func: (action: string, request: any, options?: OmniSharp.RequestOptions) => void) {

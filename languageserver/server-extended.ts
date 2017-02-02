@@ -90,28 +90,28 @@ export namespace Methods {
  * A request to rename a symbol.
  */
 export namespace GetCodeActionsRequest {
-    export const type: RequestType<GetCodeActionsParams, CodeActionList, void> = { get method() { return Methods.Extended.GetCodeActionsRequest; } };
+    export const type = new RequestType<GetCodeActionsParams, CodeActionList, void, void>(Methods.Extended.GetCodeActionsRequest);
 }
 
 /**
  * A request to rename a symbol.
  */
 export namespace RunCodeActionRequest {
-    export const type: RequestType<RunCodeActionParams, WorkspaceEdit, void> = { get method() { return Methods.Extended.RunCodeActionRequest; } };
+    export const type = new RequestType<RunCodeActionParams, WorkspaceEdit, void, void>(Methods.Extended.RunCodeActionRequest);
 }
 
 /**
  * A request to find implementation
  */
 export namespace ImplementationRequest {
-    export const type: RequestType<TextDocumentPositionParams, Implementation, void> = { get method() { return Methods.Extended.ImplementationRequest; } };
+    export const type = new RequestType<TextDocumentPositionParams, Implementation, void, void>(Methods.Extended.ImplementationRequest);
 }
 
 /**
  * A request to find implementation
  */
 export namespace NavigateRequest {
-    export const type: RequestType<NavigateParams, Position, void> = { get method() { return Methods.Extended.NavigateRequest; } };
+    export const type = new RequestType<NavigateParams, Position, void, void>(Methods.Extended.NavigateRequest);
 }
 
 /**
@@ -119,5 +119,5 @@ export namespace NavigateRequest {
  * results of validation runs.
  */
 export namespace HighlightNotification {
-    export const type: NotificationType<PublishHighlightParams> = { get method() { return Methods.Extended.PublishHighlightNotification; } };
+    export const type = new NotificationType<PublishHighlightParams, void>(Methods.Extended.PublishHighlightNotification);
 }
