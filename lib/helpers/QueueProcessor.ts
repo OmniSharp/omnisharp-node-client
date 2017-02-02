@@ -58,8 +58,8 @@ export class QueueProcessor<TResponse> {
 
             return innerObservable
                 .do({ error: this._complete, complete: this._complete })
-                .subscribe();
-        }).publishLast().refCount();
+                .subscribe(observer);
+        });
 
         // Doing a little bit of tickery here
         // Going to return this Observable, as if it were promise like.

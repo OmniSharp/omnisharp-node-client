@@ -32,6 +32,7 @@
     "lint": "tslint languageserver/**/*.ts lib/**/*.ts test/**/*.ts",
     "lint:fix": "tslint --fix languageserver/**/*.ts lib/**/*.ts test/**/*.ts",
     "compile:watch": "concurrently -r \"tsc -w\" \"tslint \"",
+    "tsc": "tsc",
     "tsc:w": "tsc -w"
   },
   "author": "",

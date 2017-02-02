@@ -32,6 +32,8 @@
         "experimentalDecorators": true,
         "allowSyntheticDefaultImports": true,
         "sourceMap": true,
+        "mapRoot": "./",
+        "sourceRoot": "./",
         "strictNullChecks": true,
         "noUnusedLocals": false,
         "noFallthroughCasesInSwitch": true,
