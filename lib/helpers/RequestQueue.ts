@@ -4,12 +4,12 @@ import { ResponseContext } from '../contexts/ResponseContext';
 import { isDeferredCommand, isPriorityCommand } from './prioritization';
 
 export class RequestQueue {
-    private queue: AsyncSubject<ResponseContext<any, any>>[] = [];
-    private requests: AsyncSubject<ResponseContext<any, any>>[] = [];
+    private queue: Observable<ResponseContext<any, any>>[] = [];
+    private requests: Observable<ResponseContext<any, any>>[] = [];
 
     public constructor(private concurrency: number) { }
 
-    public enqueue(item: AsyncSubject<ResponseContext<any, any>>) {
+    public enqueue(item: Observable<ResponseContext<any, any>>) {
         this.queue.push(item);
     }
 
@@ -35,9 +35,6 @@ export class RequestQueue {
                     pull(this.requests, item);
                 }
             });
-
-            item.next(null!);
-            item.complete();
 
             if (this.full) { return; }
         } while (this.queue.length && ++i < slots);

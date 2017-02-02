@@ -1,7 +1,8 @@
 import { bind, defer, pull } from 'lodash';
-import { AsyncSubject, Observable } from 'rxjs';
+import { AsyncSubject, Observable, Subscriber } from 'rxjs';
 import { RequestContext } from '../contexts/RequestContext';
 import { ResponseContext } from '../contexts/ResponseContext';
+import { createObservable } from '../omnisharp-client';
 import { RequestQueue } from './RequestQueue';
 import { isDeferredCommand, isPriorityCommand } from './prioritization';
 
@@ -23,11 +24,11 @@ function getQueue(context: RequestContext<any>) {
 
 type DELAYED_OBSERVABLE = Observable<ResponseContext<any, any>>;
 
+
 export class QueueProcessor<TResponse> {
     private _priority: RequestQueue;
     private _normal: RequestQueue;
     private _deferred: RequestQueue;
-    private _processing = false;
 
     public constructor(private _concurrency: number, private _requestCallback: (context: RequestContext<any>) => TResponse) {
         // Keep deferred concurrency at a min of two, this lets us get around long running requests jamming the pipes.
@@ -38,11 +39,27 @@ export class QueueProcessor<TResponse> {
     }
 
     public enqueue(context: RequestContext<any>): TResponse {
-        const subject = new AsyncSubject<ResponseContext<any, any>>();
-        const observable = subject
-            .asObservable()
-            .do({ error: this._complete, complete: this._complete })
-            .mergeMap(x => <any>this._requestCallback(context));
+        // const observable = createObservable<any>(observer => {
+        //     return Observable.from((<Observable<any>><any>this._requestCallback(context))).subscribe();
+        // })
+        //     .publishLast()
+        //     .refCount()
+        //     .do({ error: this._complete, complete: this._complete });
+
+        const observable = createObservable<any>(observer => {
+            const innerObservable = Observable.from((<Observable<any>><any>this._requestCallback(context)));
+
+            const queue = getQueue(context);
+            if (queue === QueuePriority.Priority) { this._priority.enqueue(innerObservable); }
+            if (queue === QueuePriority.Normal) { this._normal.enqueue(innerObservable); }
+            if (queue === QueuePriority.Deferred) { this._deferred.enqueue(innerObservable); }
+
+            defer(() => this._drain());
+
+            return innerObservable
+                .do({ error: this._complete, complete: this._complete })
+                .subscribe();
+        }).publishLast().refCount();
 
         // Doing a little bit of tickery here
         // Going to return this Observable, as if it were promise like.
@@ -53,23 +70,18 @@ export class QueueProcessor<TResponse> {
             return observable.toPromise().then(<any>fulfilled, <any>rejected);
         });
 
-        const queue = getQueue(context);
-        if (queue === QueuePriority.Priority) { this._priority.enqueue(subject); }
-        if (queue === QueuePriority.Normal) { this._normal.enqueue(subject); }
-        if (queue === QueuePriority.Deferred) { this._deferred.enqueue(subject); }
-
-        defer(() => this._drain());
+        // const queue = getQueue(context);
+        // if (queue === QueuePriority.Priority) { this._priority.enqueue(observable); }
+        // if (queue === QueuePriority.Normal) { this._normal.enqueue(observable); }
+        // if (queue === QueuePriority.Deferred) { this._deferred.enqueue(observable); }
 
         return <any>observable;
     }
 
     private _drain() {
-        if (this._processing) { return; }
         // Request inflight
         if (this._priority.full) { return; }
         if (this._normal.full && this._deferred.full) { return; }
-
-        this._processing = true;
 
         if (this._priority.pending) {
             this._priority.drain();
@@ -86,7 +98,6 @@ export class QueueProcessor<TResponse> {
     }
 
     private _complete = () => {
-        this._processing = false;
         this._drain();
     }
 }

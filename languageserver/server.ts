@@ -24,9 +24,11 @@ import {
     StreamMessageReader,
     StreamMessageWriter,
     SymbolInformation,
+    TextDocumentEdit,
     TextDocumentPositionParams,
     TextDocumentSyncKind,
     TextEdit,
+    VersionedTextDocumentIdentifier,
 } from 'vscode-languageserver';
 import { ReactiveClient } from '../lib/reactive/ReactiveClient';
 
@@ -135,7 +137,7 @@ connection.onInitialize((params: InitializeParams & { capabilities: ClientCapabi
     const enablePackageRestore = capabilities.enablePackageRestore === undefined || capabilities.enablePackageRestore;
 
     client = new ReactiveClient({
-        projectPath: params.rootPath,
+        projectPath: params.rootPath!,
         runtime: Runtime.CoreClr,
         logger: {
             log: message => { connection.telemetry.logEvent({ type: 'log', message }); },
@@ -177,22 +179,22 @@ connection.onInitialize((params: InitializeParams & { capabilities: ClientCapabi
             .bufferToggle(client.observe.highlight.throttleTime(100), () => Observable.timer(100))
             .concatMap(items => {
                 const highlights = map(uniqBy(reverse(items), x => x.request.FileName!), context => {
-                        if (!highlightsContext.has(context.request.FileName!)) {
-                            highlightsContext.set(context.request.FileName!, []);
-                        }
+                    if (!highlightsContext.has(context.request.FileName!)) {
+                        highlightsContext.set(context.request.FileName!, []);
+                    }
 
-                        const newHighlights = getHighlights(context.response.Highlights);
-                        const currentHighlights = highlightsContext.get(context.request.FileName!)!;
-                        const added = differenceBy(newHighlights, currentHighlights, x => x.id);
-                        const removeHighlights = differenceBy(currentHighlights, newHighlights, x => x.id);
+                    const newHighlights = getHighlights(context.response.Highlights);
+                    const currentHighlights = highlightsContext.get(context.request.FileName!) !;
+                    const added = differenceBy(newHighlights, currentHighlights, x => x.id);
+                    const removeHighlights = differenceBy(currentHighlights, newHighlights, x => x.id);
 
-                        highlightsContext.set(context.request.FileName!, newHighlights);
+                    highlightsContext.set(context.request.FileName!, newHighlights);
 
-                        return {
-                            uri: toUri({ FileName: context.request.FileName! }),
-                            added,
-                            removed: map(removeHighlights, x => x.id),
-                        };
+                    return {
+                        uri: toUri({ FileName: context.request.FileName! }),
+                        added,
+                        removed: map(removeHighlights, x => x.id),
+                    };
                 });
 
                 return Observable.from(highlights).concatMap(x => Observable.of(x).delay(10));
@@ -548,12 +550,12 @@ connection.onDocumentOnTypeFormatting(({ textDocument, options, position, ch }) 
         .toPromise();
 });
 
-connection.onRenameRequest(({ textDocument, position, newName }) => {
+connection.onRenameRequest(context => {
     return client.rename({
-        FileName: fromUri(textDocument),
-        Line: position.line,
-        Column: position.character,
-        RenameTo: newName,
+        FileName: fromUri(context.textDocument),
+        Line: context.position.line,
+        Column: context.position.character,
+        RenameTo: context.newName,
         ApplyTextChanges: false,
         WantsTextChanges: true,
     })
@@ -684,7 +686,7 @@ function getTextEdits(response: { Changes: Models.LinePositionSpanTextChange[] }
 }
 
 function getDiagnostic(item: Models.DiagnosticLocation) {
-    let sev = DiagnosticSeverity.Error;
+    let sev: DiagnosticSeverity = DiagnosticSeverity.Error;
     if (item.LogLevel === 'Warning') {
         sev = DiagnosticSeverity.Warning;
     }
@@ -703,7 +705,7 @@ function getDiagnostic(item: Models.DiagnosticLocation) {
 }
 
 function fromUri(document: { uri: string; }) {
-    return Files.uriToFilePath(document.uri);
+    return Files.uriToFilePath(document.uri) !;
 }
 
 function fromRange(range: Range): Models.V2.Range {
@@ -724,13 +726,15 @@ function toUri(result: { FileName: string; }) {
 }
 
 function toWorkspaceEdit(item: { Changes: Models.ModifiedFileResponse[] }) {
-    const changes: { [uri: string]: TextEdit[]; } = {};
-    each(groupBy(item.Changes, x => x.FileName), (result, key) => {
-        changes[toUriString(key)] = flatMap(
-            result,
-            i => {
-                return map(i.Changes, getTextEdit);
-            });
+    const changes = map(groupBy(item.Changes, x => x.FileName), (result, key) => {
+        return TextDocumentEdit.create(
+            // TODO: Version?
+            VersionedTextDocumentIdentifier.create(toUriString(key), 0),
+            flatMap(
+                result,
+                i => map(i.Changes, getTextEdit)
+            )
+        );
     });
     return { changes };
 }
