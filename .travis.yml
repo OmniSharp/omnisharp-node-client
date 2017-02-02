@@ -27,10 +27,10 @@ matrix:
       env: TRAVIS_MONO=true
       mono: 4.6.0
       os: osx
-    - env: TRAVIS_CORECLR=true
-      os: linux
-    - env: TRAVIS_CORECLR=true
-      os: osx
+    #- env: TRAVIS_CORECLR=true
+    #  os: linux
+    #- env: TRAVIS_CORECLR=true
+    #  os: osx
     - env:
         - TRAVIS_MONO=true
         - BREW_MONO=true
