@@ -26,8 +26,7 @@
   "typings": "types/lib/omnisharp-client.d.ts",
   "scripts": {
     "prepublish": "tsc",
-    "postinstall": "typings install",
-    "test": "tsc && npm run lint && mocha",
+    "test": "typings install && tsc && npm run lint && mocha",
     "test:watch": "concurrently -r \"mocha --watch\" \"tsc -w\"",
     "lint": "tslint languageserver/**/*.ts lib/**/*.ts test/**/*.ts",
     "lint:fix": "tslint --fix languageserver/**/*.ts lib/**/*.ts test/**/*.ts",
