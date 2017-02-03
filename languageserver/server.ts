@@ -138,7 +138,7 @@ connection.onInitialize((params: InitializeParams & { capabilities: ClientCapabi
 
     client = new ReactiveClient({
         projectPath: params.rootPath!,
-        runtime: Runtime.CoreClr,
+        runtime: Runtime.ClrOrMono,
         logger: {
             log: message => { connection.telemetry.logEvent({ type: 'log', message }); },
             error: message => { connection.telemetry.logEvent({ type: 'error', message }); },
@@ -232,6 +232,10 @@ connection.onInitialize((params: InitializeParams & { capabilities: ClientCapabi
         .subscribe();
 
     client.connect();
+
+    process.on('uncaughtException', (error: any) => {
+        connection.telemetry.logEvent({ type: 'error', message: error });
+    });
 
     return client.state
         .filter(x => x === DriverState.Connected)
