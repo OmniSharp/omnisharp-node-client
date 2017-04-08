@@ -29,6 +29,7 @@ import {
     TextDocumentSyncKind,
     TextEdit,
     VersionedTextDocumentIdentifier,
+    WorkspaceEdit,
 } from 'vscode-languageserver';
 import { ReactiveClient } from '../lib/reactive/ReactiveClient';
 
@@ -740,8 +741,17 @@ function toUri(result: { FileName: string; }) {
     return toUriString(result.FileName);
 }
 
-function toWorkspaceEdit(item: { Changes: Models.ModifiedFileResponse[] }) {
-    const changes = map(groupBy(item.Changes, x => x.FileName), (result, key) => {
+function toWorkspaceEdit(item: { Changes: Models.ModifiedFileResponse[] }): WorkspaceEdit {
+    const changes: { [uri: string]: TextEdit[]; } = {};
+    each(groupBy(item.Changes, x => x.FileName), (result, key) => {
+        changes[toUriString(key)] = flatMap(
+            result,
+            i => {
+                return map(i.Changes, getTextEdit);
+            });
+    });
+
+    const documentChanges = map(groupBy(item.Changes, x => x.FileName), (result, key) => {
         return TextDocumentEdit.create(
             // TODO: Version?
             VersionedTextDocumentIdentifier.create(toUriString(key), 0),
@@ -751,7 +761,8 @@ function toWorkspaceEdit(item: { Changes: Models.ModifiedFileResponse[] }) {
             )
         );
     });
-    return { changes };
+
+    return { documentChanges, changes };
 }
 
 // TODO: this code isn't perfect
