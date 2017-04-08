@@ -18,6 +18,7 @@ describe('Omnisharp Runtime', () => {
         return findRuntimeById('dnx-coreclr-solaris-x64', resolve(__dirname, 'fixture/runtimes'))
             .isEmpty()
             .map(empty => {
+                // tslint:disable-next-line:no-unused-expression
                 expect(empty).to.be.true;
             })
             .toPromise();

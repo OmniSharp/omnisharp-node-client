@@ -1,6 +1,7 @@
 // tslint:disable-next-line:max-file-line-count
 import { expect } from 'chai';
 import { ReactiveClient as OmnisharpClient } from '../lib/reactive/ReactiveClient';
+// tslint:disable:no-unused-expression
 
 let server: OmnisharpClient;
 

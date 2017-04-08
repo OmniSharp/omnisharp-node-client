@@ -478,7 +478,7 @@ connection.onReferences(({ context, textDocument, position }) => {
         .toPromise();
 });
 
-connection.onDocumentHighlight((x) => {
+connection.onDocumentHighlight(x => {
     return client.findusages({
         OnlyThisFile: true,
         Line: x.position.line,
