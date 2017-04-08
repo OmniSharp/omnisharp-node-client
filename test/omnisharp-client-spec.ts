@@ -7,7 +7,7 @@ import { ReactiveClient as OmnisharpClient } from '../lib/reactive/ReactiveClien
 
 describe('Omnisharp Server', () => {
     it('must construct', () => {
-        // tslint:disable-next-line:no-unused-new
+        // tslint:disable-next-line:no-unused-expression
         new OmnisharpClient({
             projectPath: process.cwd()
         });
