@@ -184,7 +184,7 @@ connection.onInitialize((params: InitializeParams & { capabilities: ClientCapabi
                     }
 
                     const newHighlights = getHighlights(context.response.Highlights);
-                    const currentHighlights = highlightsContext.get(context.request.FileName!) !;
+                    const currentHighlights = highlightsContext.get(context.request.FileName!)!;
                     const added = differenceBy(newHighlights, currentHighlights, x => x.id);
                     const removeHighlights = differenceBy(currentHighlights, newHighlights, x => x.id);
 
@@ -261,6 +261,7 @@ connection.onInitialize((params: InitializeParams & { capabilities: ClientCapabi
                     firstTriggerCharacter: '}',
                     moreTriggerCharacter: [';'],
                 },
+                documentHighlightProvider: true,
                 documentRangeFormattingProvider: true,
                 //documentSymbolProvider: true,
                 hoverProvider: true,
@@ -476,7 +477,17 @@ connection.onReferences(({ context, textDocument, position }) => {
         .toPromise();
 });
 
-//connection.onDocumentHighlight((x) => {});
+connection.onDocumentHighlight((x) => {
+    return client.findusages({
+        OnlyThisFile: true,
+        Line: x.position.line,
+        Column: x.position.character,
+        FileName: fromUri(x.textDocument)
+    })
+        .map(result => map(<Models.DiagnosticLocation[]>result.QuickFixes, getLocation))
+        .toPromise();
+});
+
 //connection.onDocumentSymbol((x) => {});
 
 connection.onWorkspaceSymbol(({ query }) => {
@@ -709,7 +720,7 @@ function getDiagnostic(item: Models.DiagnosticLocation) {
 }
 
 function fromUri(document: { uri: string; }) {
-    return Files.uriToFilePath(document.uri) !;
+    return Files.uriToFilePath(document.uri)!;
 }
 
 function fromRange(range: Range): Models.V2.Range {
