@@ -117,7 +117,7 @@ export class StdioDriver implements IDriver {
 
     public request<TRequest, TResponse>(command: string, request?: TRequest): PromiseLike<TResponse> {
         if (!this._process) {
-            return <any>Observable.throw<any>(new Error('Server is not connected, erroring out'));
+            return <any>Observable.throw(new Error('Server is not connected, erroring out'));
         }
 
         const sequence = this._seq++;

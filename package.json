@@ -2,7 +2,7 @@
   "name": "omnisharp-client",
   "description": "A node client for omnisharp-roslyn",
   "version": "7.0.3",
-  "omnisharp-roslyn": "v1.9-beta23",
+  "omnisharp-roslyn": "v1.14.0",
   "bugs": {
     "url": "https://github.com/OmniSharp/omnisharp-node-client/issues"
   },
@@ -54,15 +54,15 @@
     "typings": "^2.1.0"
   },
   "devDependencies": {
-    "@types/chai": "^3.4.34",
-    "@types/mocha": "^2.2.38",
-    "@types/node": "^7.0.4",
+    "@types/chai": "^3.4.35",
+    "@types/mocha": "^2.2.40",
+    "@types/node": "^7.0.12",
     "chai": "^3.5.0",
     "concurrently": "^3.1.0",
     "mocha": "^3.2.0",
-    "tslint": "^4.4.2",
-    "tslint-eslint-rules": "^3.2.3",
-    "tslint-microsoft-contrib": "^4.0.0",
-    "typescript": "^2.1.5"
+    "tslint": "^5.0.0",
+    "tslint-eslint-rules": "^4.0.0",
+    "tslint-microsoft-contrib": "^4.0.1",
+    "typescript": "^2.2.2"
   }
 }

@@ -29,6 +29,7 @@ import {
     TextDocumentSyncKind,
     TextEdit,
     VersionedTextDocumentIdentifier,
+    WorkspaceEdit,
 } from 'vscode-languageserver';
 import { ReactiveClient } from '../lib/reactive/ReactiveClient';
 
@@ -184,7 +185,7 @@ connection.onInitialize((params: InitializeParams & { capabilities: ClientCapabi
                     }
 
                     const newHighlights = getHighlights(context.response.Highlights);
-                    const currentHighlights = highlightsContext.get(context.request.FileName!) !;
+                    const currentHighlights = highlightsContext.get(context.request.FileName!)!;
                     const added = differenceBy(newHighlights, currentHighlights, x => x.id);
                     const removeHighlights = differenceBy(currentHighlights, newHighlights, x => x.id);
 
@@ -261,6 +262,7 @@ connection.onInitialize((params: InitializeParams & { capabilities: ClientCapabi
                     firstTriggerCharacter: '}',
                     moreTriggerCharacter: [';'],
                 },
+                documentHighlightProvider: true,
                 documentRangeFormattingProvider: true,
                 //documentSymbolProvider: true,
                 hoverProvider: true,
@@ -476,7 +478,17 @@ connection.onReferences(({ context, textDocument, position }) => {
         .toPromise();
 });
 
-//connection.onDocumentHighlight((x) => {});
+connection.onDocumentHighlight(x => {
+    return client.findusages({
+        OnlyThisFile: true,
+        Line: x.position.line,
+        Column: x.position.character,
+        FileName: fromUri(x.textDocument)
+    })
+        .map(result => map(<Models.DiagnosticLocation[]>result.QuickFixes, getLocation))
+        .toPromise();
+});
+
 //connection.onDocumentSymbol((x) => {});
 
 connection.onWorkspaceSymbol(({ query }) => {
@@ -709,7 +721,7 @@ function getDiagnostic(item: Models.DiagnosticLocation) {
 }
 
 function fromUri(document: { uri: string; }) {
-    return Files.uriToFilePath(document.uri) !;
+    return Files.uriToFilePath(document.uri)!;
 }
 
 function fromRange(range: Range): Models.V2.Range {
@@ -729,8 +741,17 @@ function toUri(result: { FileName: string; }) {
     return toUriString(result.FileName);
 }
 
-function toWorkspaceEdit(item: { Changes: Models.ModifiedFileResponse[] }) {
-    const changes = map(groupBy(item.Changes, x => x.FileName), (result, key) => {
+function toWorkspaceEdit(item: { Changes: Models.ModifiedFileResponse[] }): WorkspaceEdit {
+    const changes: { [uri: string]: TextEdit[]; } = {};
+    each(groupBy(item.Changes, x => x.FileName), (result, key) => {
+        changes[toUriString(key)] = flatMap(
+            result,
+            i => {
+                return map(i.Changes, getTextEdit);
+            });
+    });
+
+    const documentChanges = map(groupBy(item.Changes, x => x.FileName), (result, key) => {
         return TextDocumentEdit.create(
             // TODO: Version?
             VersionedTextDocumentIdentifier.create(toUriString(key), 0),
@@ -740,7 +761,8 @@ function toWorkspaceEdit(item: { Changes: Models.ModifiedFileResponse[] }) {
             )
         );
     });
-    return { changes };
+
+    return { documentChanges, changes };
 }
 
 // TODO: this code isn't perfect

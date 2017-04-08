@@ -5,7 +5,7 @@ import { StdioDriver } from '../lib/drivers/StdioDriver';
 
 describe('Omnisharp Local - Stdio', () => {
     it('must construct', () => {
-        // tslint:disable-next-line:no-unused-new
+        // tslint:disable-next-line:no-unused-expression
         new StdioDriver({
             projectPath: resolve(__dirname, '../'),
             onEvent: noop,
@@ -15,7 +15,7 @@ describe('Omnisharp Local - Stdio', () => {
     });
 
     it('must construct with a specific driver', () => {
-        // tslint:disable-next-line:no-unused-new
+        // tslint:disable-next-line:no-unused-expression
         new StdioDriver({
             projectPath: resolve(__dirname, '../'),
             onEvent: noop,
@@ -32,7 +32,9 @@ describe('Omnisharp Local - Stdio', () => {
                 projectPath: resolve(__dirname, '../'),
                 onEvent: noop,
                 onState(v) {
+                    // tslint:disable-next-line:no-unused-expression
                     expect(server.currentState).to.be.not.null;
+                    // tslint:disable-next-line:no-unused-expression
                     expect(server.outstandingRequests).to.be.not.null;
                     server.disconnect();
                     done();
