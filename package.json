@@ -58,7 +58,7 @@
     "@types/mocha": "^2.2.40",
     "@types/node": "^7.0.12",
     "chai": "^3.5.0",
-    "concurrently": "^3.1.0",
+    "concurrently": "^3.4.0",
     "mocha": "^3.2.0",
     "tslint": "^5.0.0",
     "tslint-eslint-rules": "^4.0.0",
