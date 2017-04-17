@@ -144,7 +144,7 @@ export class RuntimeContext {
             return `mono`;
         }
 
-        let runtimeName = 'netcoreapp1.0';
+        let runtimeName = 'netcoreapp1.1';
         if (this._runtime === Runtime.ClrOrMono) {
             if (this._platform === SupportedPlatform.Windows) {
                 runtimeName = 'net46';
