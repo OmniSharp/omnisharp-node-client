@@ -216,13 +216,13 @@ export class StdioDriver implements IDriver {
         this._onState(DriverState.Downloading);
         return isSupportedRuntime(this._runtimeContext)
             .toPromise()
-            .then(ctx => {
+            .then((ctx: any) => {
                 this._runtime = ctx.runtime;
                 this._PATH = ctx.path;
                 this._runtimeContext = this._getRuntimeContext();
                 return ctx;
             })
-            .then(runtime =>
+            .then((runtime: any) =>
                 this._runtimeContext.downloadRuntimeIfMissing()
                     .toPromise()
                     .then(() => { this._onState(DriverState.Downloaded); })
