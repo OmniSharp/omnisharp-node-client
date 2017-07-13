@@ -244,7 +244,7 @@ export class RuntimeContext {
     }
 }
 
-export const isSupportedRuntime = memoize((ctx: RuntimeContext) => {
+export const isSupportedRuntime = memoize((ctx: RuntimeContext): any => {
     return Observable.defer(() => {
         const subject = new AsyncSubject<{ runtime: Runtime; path: string }>();
         // On windows we'll just use the clr, it's there

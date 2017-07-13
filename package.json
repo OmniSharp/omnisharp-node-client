@@ -2,7 +2,7 @@
   "name": "omnisharp-client",
   "description": "A node client for omnisharp-roslyn",
   "version": "7.0.6",
-  "omnisharp-roslyn": "v1.14.0",
+  "omnisharp-roslyn": "v1.21.0",
   "bugs": {
     "url": "https://github.com/OmniSharp/omnisharp-node-client/issues"
   },
@@ -25,15 +25,15 @@
   "main": "lib/omnisharp-client.js",
   "typings": "types/lib/omnisharp-client.d.ts",
   "scripts": {
-    "prepublish": "tsc",
+    "prepublish": "./node_modules/typescript/bin/tsc",
     "install": "typings install",
-    "test": "tsc && npm run lint && mocha",
-    "test:watch": "concurrently -r \"mocha --watch\" \"tsc -w\"",
+    "test": "./node_modules/typescript/bin/tsc && npm run lint && mocha",
+    "test:watch": "concurrently -r \"mocha --watch\" \"./node_modules/typescript/bin/tsc -w\"",
     "lint": "tslint languageserver/**/*.ts lib/**/*.ts test/**/*.ts",
     "lint:fix": "tslint --fix languageserver/**/*.ts lib/**/*.ts test/**/*.ts",
     "compile:watch": "concurrently -r \"tsc -w\" \"tslint \"",
-    "tsc": "tsc",
-    "tsc:w": "tsc -w"
+    "tsc": "./node_modules/typescript/bin/tsc",
+    "tsc:w": "./node_modules/typescript/bin/tsc -w"
   },
   "author": "",
   "license": "MIT",
@@ -49,9 +49,9 @@
     "rxjs": "^5.1.0",
     "strip-bom": "^3.0.0",
     "ts-disposables": "^2.2.3",
+    "typings": "^2.1.0",
     "vscode-jsonrpc": "^3.0.3",
-    "vscode-languageserver": "^3.0.4",
-    "typings": "^2.1.0"
+    "vscode-languageserver": "^3.0.4"
   },
   "devDependencies": {
     "@types/chai": "^3.4.35",

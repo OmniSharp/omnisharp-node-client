@@ -68,7 +68,7 @@ describe('Omnisharp Runtime', () => {
             platform: process.platform
         }))
             .toPromise()
-            .then(({ runtime, path }) => {
+            .then(({ runtime, path }: any) => {
                 expect(runtime).to.be.equal(Runtime.CoreClr);
                 expect(path).to.be.equal(process.env.PATH);
             });
@@ -81,7 +81,7 @@ describe('Omnisharp Runtime', () => {
             platform: process.platform
         }))
             .toPromise()
-            .then(({ runtime, path }) => {
+            .then(({ runtime, path }: any) => {
                 if (process.platform === 'win32') {
                     expect(Runtime[runtime]).to.be.equal(Runtime[Runtime.ClrOrMono]);
                     expect(path).to.be.equal(process.env.PATH);
