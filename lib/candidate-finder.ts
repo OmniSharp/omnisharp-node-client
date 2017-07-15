@@ -95,14 +95,14 @@ export const findCandidates = (() => {
             .do(candidates => logger.log(`Omni Project Candidates: Found ${candidates}`));
     }
 
-    function findCandidates(location: string, logger: ILogger, options: IOptions = {}) {
+    function findCanditatesInner(location: string, logger: ILogger, options: IOptions = {}) {
         return realFindCandidates(location, logger, options)
             .map(z => z.map(x => x.toString()));
     }
 
-    (<any>findCandidates).withCandidates = realFindCandidates;
+    (<any>findCanditatesInner).withCandidates = realFindCandidates;
 
-    return <{ (location: string, logger: ILogger, options?: IOptions): Observable<string[]>; withCandidates: typeof realFindCandidates }>findCandidates;
+    return <{ (location: string, logger: ILogger, options?: IOptions): Observable<string[]>; withCandidates: typeof realFindCandidates }>findCanditatesInner;
 })();
 
 function squashCandidates(candidates: string[]) {

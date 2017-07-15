@@ -17,7 +17,7 @@ const defaultDest = resolve(__dirname, '../../');
 // tslint:enable:no-var-requires no-require-imports
 
 // Handle the case of homebrew mono
-const PATH: string[] = find(process.env, (v, key) => toLower(key) === 'path')
+const PATH: string[] = find<any, string>(process.env, (v, key) => toLower(key) === 'path')
     .split(delimiter)
     .concat(['/usr/local/bin', '/Library/Frameworks/Mono.framework/Commands']);
 
@@ -166,7 +166,7 @@ export class RuntimeContext {
 
     /* tslint:disable:no-string-literal */
     private _getRuntimeLocation() {
-        let path: string = process.env['OMNISHARP'];
+        let path: string = process.env['OMNISHARP']!;
 
         if (!path) {
             const omnisharp = process.platform === 'win32' || this._runtime === Runtime.ClrOrMono ? 'OmniSharp.exe' : 'OmniSharp';
@@ -244,7 +244,7 @@ export class RuntimeContext {
     }
 }
 
-export const isSupportedRuntime = memoize((ctx: RuntimeContext) => {
+export const isSupportedRuntime = (ctx: RuntimeContext) => {
     return Observable.defer(() => {
         const subject = new AsyncSubject<{ runtime: Runtime; path: string }>();
         // On windows we'll just use the clr, it's there
@@ -266,7 +266,7 @@ export const isSupportedRuntime = memoize((ctx: RuntimeContext) => {
 
         return subject.asObservable();
     });
-}, ({ platform, arch, runtime, version }: RuntimeContext) => `${arch}-${platform}:${Runtime[runtime]}:${version}`);
+};
 
 function findOmnisharpExecuable(runtimeId: string, location: string): Observable<boolean> {
     return Observable.merge(

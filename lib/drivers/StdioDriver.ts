@@ -218,7 +218,7 @@ export class StdioDriver implements IDriver {
             .toPromise()
             .then(ctx => {
                 this._runtime = ctx.runtime;
-                this._PATH = ctx.path;
+                this._PATH = ctx.path!;
                 this._runtimeContext = this._getRuntimeContext();
                 return ctx;
             })
@@ -317,4 +317,5 @@ export class StdioDriver implements IDriver {
             this.disconnect();
         }
     }
+// tslint:disable-next-line:max-file-line-count
 }

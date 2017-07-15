@@ -101,7 +101,7 @@
         "no-inferred-empty-object-type": false,
         "no-invalid-this": false,
         "no-null-keyword": false,
-        "no-shadowed-variable": true,
+        "no-shadowed-variable": false,
         "no-string-literal": false,
         "no-string-throw": true,
         "no-unsafe-finally": true,
@@ -133,7 +133,7 @@
             1
         ],
         "max-file-line-count": [
-            true,
+            false,
             300
         ],
         "max-line-length": [
