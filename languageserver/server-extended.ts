@@ -77,11 +77,13 @@ export interface RunCodeActionParams extends GetCodeActionsParams {
 export namespace Methods {
     export namespace Extended {
         // tslint:disable:variable-name
+        // tslint:disable:no-shadowed-variable
         export const GetCodeActionsRequest = '__extended/textDocument/getCodeActions';
         export const RunCodeActionRequest = '__extended/textDocument/runCodeAction';
         export const ImplementationRequest = '__extended/textDocument/implementation';
         export const NavigateRequest = '__extended/textDocument/navigate';
         export const PublishHighlightNotification = '__extended/textDocument/publishHighlight';
+        // tslint:enable:no-shadowed-variable
         // tslint:enable:variable-name
     }
 }

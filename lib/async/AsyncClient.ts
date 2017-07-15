@@ -122,10 +122,10 @@ export class AsyncClient implements IAsyncDriver, IDisposable {
         this._driver.disconnect();
     }
 
-    public request<TRequest, TResponse>(action: string, request: TRequest, options?: OmniSharp.RequestOptions): Promise<TResponse> {
+    public request<TRequest, TResponse>(action: string, req: TRequest, options?: OmniSharp.RequestOptions): Promise<TResponse> {
         const conditions = getPreconditions(action);
         if (conditions) {
-            each(conditions, x => x(request));
+            each(conditions, x => x(req));
         }
 
         if (!options) {
@@ -137,14 +137,14 @@ export class AsyncClient implements IAsyncDriver, IDisposable {
                 const disposable = this.onState(state => {
                     if (state === DriverState.Connected) {
                         disposable.dispose();
-                        this.request<TRequest, TResponse>(action, request, options)
+                        this.request<TRequest, TResponse>(action, req, options)
                             .then(resolve, reject);
                     }
                 });
             });
         }
 
-        const context = new RequestContext(this._uniqueId, action, request, options);
+        const context = new RequestContext(this._uniqueId, action, req, options);
         return new Promise<TResponse>((resolve, reject) => {
             this._queue.enqueue(context).then(response => resolve(response.response), reject);
         });
@@ -171,13 +171,13 @@ export class AsyncClient implements IAsyncDriver, IDisposable {
             duration: number;
         }[] = [];
 
-        this._currentRequests.forEach(request => {
+        this._currentRequests.forEach(req => {
             response.push({
-                command: request.command,
-                sequence: cloneDeep(request.sequence),
-                request: request.request,
-                silent: request.silent,
-                duration: Date.now() - request.time.getTime(),
+                command: req.command,
+                sequence: cloneDeep(req.sequence),
+                request: req.request,
+                silent: req.silent,
+                duration: Date.now() - req.time.getTime(),
             });
         });
 
@@ -215,7 +215,7 @@ export class AsyncClient implements IAsyncDriver, IDisposable {
         this._disposable.dispose();
     }
 
-    private _listen(event: string, callback: Function): IDisposable {
+    private _listen(event: string, callback: any): IDisposable {
         this._emitter.addListener(AsyncEvents.event, callback);
         return { dispose: () => this._emitter.removeListener(AsyncEvents.event, callback) };
     }
@@ -269,8 +269,8 @@ export class AsyncClient implements IAsyncDriver, IDisposable {
     }
 
     /* tslint:disable:no-unused-variable */
-    private _fixup<TRequest>(action: string, request: TRequest, options?: OmniSharp.RequestOptions) {
-        each(this._fixups, f => f(action, request, options));
+    private _fixup<TRequest>(action: string, req: TRequest, options?: OmniSharp.RequestOptions) {
+        each(this._fixups, f => f(action, req, options));
     }
     /* tslint:enable:no-unused-variable */
 }
@@ -315,4 +315,5 @@ request(AsyncClient.prototype, 'project');
 request(AsyncClient.prototype, 'projects');
 request(AsyncClient.prototype, 'checkalivestatus');
 request(AsyncClient.prototype, 'checkreadystatus');
+// tslint:disable-next-line:max-file-line-count
 request(AsyncClient.prototype, 'stopserver');

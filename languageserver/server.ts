@@ -768,4 +768,5 @@ function toWorkspaceEdit(item: { Changes: Models.ModifiedFileResponse[] }): Work
 // TODO: this code isn't perfect
 function toUriString(path: string) {
     return `file://${process.platform === 'win32' ? '/' : ''}${path.replace(':', encodeURIComponent(':'))}`;
+// tslint:disable-next-line:max-file-line-count
 }
