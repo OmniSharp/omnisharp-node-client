@@ -184,6 +184,7 @@ export class StdioDriver implements IDriver {
 
         if (startsWith(path, 'mono ')) {
             serverArguments.unshift(path.substr(5));
+            serverArguments.splice(0, 0, '--assembly-loader=strict');
             path = 'mono';
         }
 
