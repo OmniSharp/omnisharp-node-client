@@ -1,3 +1,4 @@
+import * as child_process from 'child_process';
 import * as fs from 'fs';
 import { assignWith, bind, delay, find, isNull, isUndefined, memoize, toLower } from 'lodash';
 import { delimiter, join, resolve } from 'path';
@@ -282,4 +283,23 @@ export function findRuntimeById(runtimeId: string, location: string): Observable
     return findOmnisharpExecuable(runtimeId, location)
         .map(x => resolve(location, runtimeId))
         .share();
+}
+
+/* @returns {Number} major "mono" version(for example '4.8'), or returns -1 in case failed. */
+export function getMonoMajorVersion(): Number {
+    const spawn = child_process.spawnSync('mono', ['--version']);
+    if (!spawn || !spawn.stderr || spawn.stderr.toString().trim().length > 0) {
+        return -1;
+    }
+
+    const output = spawn.stdout.toString().trim();
+
+    const majorVersionMonoRegExp = new RegExp(/(version) (\d+\.\d+)/);
+    const match = majorVersionMonoRegExp.exec(output);
+    let version;
+    if (match) {
+        version = Number(match[0].substring(8));
+    }
+
+    return version || -1;
 }

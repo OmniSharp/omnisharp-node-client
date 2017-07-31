@@ -7,7 +7,7 @@ import { CompositeDisposable, Disposable } from 'ts-disposables';
 
 import { IDriver, IDriverOptions, ILogger, IOmnisharpPlugin, Runtime } from '../enums';
 import { DriverState } from '../enums';
-import { isSupportedRuntime, RuntimeContext } from '../helpers/runtime';
+import { getMonoMajorVersion, isSupportedRuntime, RuntimeContext } from '../helpers/runtime';
 import * as OmniSharp from '../omnisharp-server';
 
 let spawn = cp.spawn;
@@ -184,7 +184,9 @@ export class StdioDriver implements IDriver {
 
         if (startsWith(path, 'mono ')) {
             serverArguments.unshift(path.substr(5));
-            serverArguments.splice(0, 0, '--assembly-loader=strict');
+            if (getMonoMajorVersion() >= 5.2) {
+                serverArguments.splice(0, 0, '--assembly-loader=strict');
+            }
             path = 'mono';
         }
 
