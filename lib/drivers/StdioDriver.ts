@@ -9,6 +9,7 @@ import { IDriver, IDriverOptions, ILogger, IOmnisharpPlugin, Runtime } from '../
 import { DriverState } from '../enums';
 import { getMonoMajorVersion, isSupportedRuntime, RuntimeContext } from '../helpers/runtime';
 import * as OmniSharp from '../omnisharp-server';
+import { SupportedPlatform } from '../helpers/platform';
 
 let spawn = cp.spawn;
 if (process.platform === 'win32') {
@@ -184,7 +185,7 @@ export class StdioDriver implements IDriver {
 
         if (startsWith(path, 'mono ')) {
             serverArguments.unshift(path.substr(5));
-            if (getMonoMajorVersion() >= 5.2) {
+            if (this._getRuntimeContext().platform !== SupportedPlatform.Windows && getMonoMajorVersion() >= 5.2) {
                 serverArguments.splice(0, 0, '--assembly-loader=strict');
             }
             path = 'mono';
