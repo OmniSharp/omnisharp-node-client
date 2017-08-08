@@ -144,6 +144,10 @@ export class RuntimeContext {
             return `mono`;
         }
 
+        if (this._platform === SupportedPlatform.OSX) {
+            return 'osx';
+        }
+
         return `${this._os}-${this._arch}`;
     }
 
@@ -262,7 +266,7 @@ export const isSupportedRuntime = (ctx: RuntimeContext) => {
 function findOmnisharpExecuable(runtimeId: string, location: string): Observable<boolean> {
     return Observable.merge(
         exists(resolve(location, runtimeId, 'OmniSharp.exe')),
-        exists(resolve(location, runtimeId, 'OmniSharp'))
+        exists(resolve(location, runtimeId, 'run'))
     )
         .filter(x => x)
         .take(1)
