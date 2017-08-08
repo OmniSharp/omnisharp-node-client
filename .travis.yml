@@ -19,22 +19,22 @@ matrix:
   include:
     - language: csharp
       env:
-        - TRAVIS_MONO=true
-        - LEADER=true
-      mono: 4.8.0
+      - TRAVIS_MONO=true
+      - LEADER=true
+      mono: beta
       os: linux
     - language: csharp
       env: TRAVIS_MONO=true
-      mono: 4.8.0
+      mono: beta
       os: osx
-    #- env: TRAVIS_CORECLR=true
-    #  os: linux
-    #- env: TRAVIS_CORECLR=true
-    #  os: osx
-    - env:
-        - TRAVIS_MONO=true
-        - BREW_MONO=true
+    - env: TRAVIS_CORECLR=true
+      os: linux
+    - env: TRAVIS_CORECLR=true
       os: osx
+    # - env:
+    #     - TRAVIS_MONO=true
+    #     - BREW_MONO=true
+    #   os: osx
 env:
   global:
     - secure: JG+808gsJ65N/BE7yzCbVVtQYkZd2KmI5ErsS6qWF3vMzk8fewQbS0BdPl/D1dWW7Ty1cd6RTC0nTYaUovKERj7LEURjVubR97rDPR8TjukmmQthI6X/K7MkOFO9xh90q/rqDhtXbYBZQzk3fGDjTszENOJruSitAbFI6QMzcX4=
