@@ -144,16 +144,7 @@ export class RuntimeContext {
             return `mono`;
         }
 
-        let runtimeName = 'netcoreapp1.1';
-        if (this._runtime === Runtime.ClrOrMono) {
-            if (this._platform === SupportedPlatform.Windows) {
-                runtimeName = 'net46';
-            } else {
-                runtimeName = 'mono';
-            }
-        }
-
-        return `${this._os}-${this._arch}-${runtimeName}`;
+        return `${this._os}-${this._arch}`;
     }
 
     private _getOsName() {
@@ -169,7 +160,7 @@ export class RuntimeContext {
         let path: string = process.env['OMNISHARP']!;
 
         if (!path) {
-            const omnisharp = process.platform === 'win32' || this._runtime === Runtime.ClrOrMono ? 'OmniSharp.exe' : 'OmniSharp';
+            const omnisharp = process.platform === 'win32' || this._runtime === Runtime.ClrOrMono ? 'OmniSharp.exe' : 'run';
             path = resolve(__dirname, '../../', this._id, omnisharp);
         }
 
