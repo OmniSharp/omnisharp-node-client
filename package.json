@@ -1,7 +1,7 @@
 {
   "name": "omnisharp-client",
   "description": "A node client for omnisharp-roslyn",
-  "version": "7.1.0",
+  "version": "7.1.1",
   "omnisharp-roslyn": "v1.23.1",
   "bugs": {
     "url": "https://github.com/OmniSharp/omnisharp-node-client/issues"
@@ -25,8 +25,7 @@
   "main": "lib/omnisharp-client.js",
   "typings": "types/lib/omnisharp-client.d.ts",
   "scripts": {
-    "prepublish": "tsc",
-    "install": "typings install",
+    "prepublish": "typings install && tsc",
     "test": "tsc && npm run lint && mocha",
     "test:watch": "concurrently -r \"mocha --watch\" \"tsc -w\"",
     "lint": "tslint languageserver/**/*.ts lib/**/*.ts test/**/*.ts",

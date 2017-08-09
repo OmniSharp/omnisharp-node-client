@@ -7,3 +7,4 @@ vendor
 roslyn
 *.ts
 !*.d.ts
+omnisharp-*
