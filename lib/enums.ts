@@ -17,11 +17,6 @@ export enum DriverState {
     Error,
 }
 
-export enum Runtime {
-    ClrOrMono,
-    CoreClr,
-}
-
 export interface ILogger {
     log(...values: any[]): void;
     error(...values: any[]): void;
@@ -35,7 +30,6 @@ export interface IDriverCoreOptions {
     findProject: boolean; // Should try and find the project using the project finder
     logger: ILogger;
     timeout: number; // timeout in seconds
-    runtime: Runtime;
     additionalArguments: string[];
     plugins: IOmnisharpPlugin[];
     version: string;
@@ -52,7 +46,6 @@ export interface IDriver extends IDisposable {
     currentState: DriverState;
     serverPath: string;
     projectPath: string;
-    runtime: Runtime;
     connect(): void;
     disconnect(): void;
 }

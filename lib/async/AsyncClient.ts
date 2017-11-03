@@ -8,7 +8,7 @@ import { CommandContext } from '../contexts/CommandContext';
 import { RequestContext } from '../contexts/RequestContext';
 import { ResponseContext } from '../contexts/ResponseContext';
 import { IAsyncClientOptions, IAsyncDriver, IDriverOptions, IOmnisharpClientStatus } from '../enums';
-import { DriverState, Runtime } from '../enums';
+import { DriverState } from '../enums';
 import { QueueProcessor } from '../helpers/QueueProcessor';
 import { request } from '../helpers/decorators';
 import { getPreconditions } from '../helpers/preconditions';
@@ -158,7 +158,6 @@ export class AsyncClient implements IAsyncDriver, IDisposable {
     public get id() { return this._driver.id; }
     public get serverPath() { return this._driver.serverPath; }
     public get projectPath() { return this._driver.projectPath; }
-    public get runtime(): Runtime { return this._driver.runtime; }
     public get outstandingRequests() { return this._currentRequests.size; }
     public get currentState() { return this._currentState; }
 

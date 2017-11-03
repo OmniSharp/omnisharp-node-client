@@ -8,7 +8,7 @@ import { CommandContext } from '../contexts/CommandContext';
 import { RequestContext } from '../contexts/RequestContext';
 import { ResponseContext } from '../contexts/ResponseContext';
 import { IDriverOptions, IOmnisharpClientStatus, IReactiveClientOptions, IReactiveDriver } from '../enums';
-import { DriverState, Runtime } from '../enums';
+import { DriverState } from '../enums';
 import { event, getInternalValue, reference, request, response, setEventOrResponse } from '../helpers/decorators';
 import { getPreconditions } from '../helpers/preconditions';
 import { isDeferredCommand, isNormalCommand, isPriorityCommand } from '../helpers/prioritization';
@@ -43,7 +43,6 @@ export class ReactiveClient implements IReactiveDriver, IDisposable {
     public get id() { return this._driver.id; }
     public get serverPath() { return this._driver.serverPath; }
     public get projectPath() { return this._driver.projectPath; }
-    public get runtime(): Runtime { return this._driver.runtime; }
     public get events(): Observable<OmniSharp.Stdio.Protocol.EventPacket> { return this._events; }
     public get currentState() { return this._stateStream.getValue(); }
     public get state(): Observable<DriverState> { return this._state; }

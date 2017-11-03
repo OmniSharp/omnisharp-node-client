@@ -33,7 +33,7 @@ import {
 } from 'vscode-languageserver';
 import { ReactiveClient } from '../lib/reactive/ReactiveClient';
 
-import { DriverState, Models, Runtime } from '../lib/omnisharp-client';
+import { DriverState, Models } from '../lib/omnisharp-client';
 import { createObservable } from '../lib/operators/create';
 import {
     ClientCapabilities,
@@ -139,7 +139,6 @@ connection.onInitialize((params: InitializeParams & { capabilities: ClientCapabi
 
     client = new ReactiveClient({
         projectPath: params.rootPath!,
-        runtime: Runtime.ClrOrMono,
         logger: {
             log: message => { connection.telemetry.logEvent({ type: 'log', message }); },
             error: message => { connection.telemetry.logEvent({ type: 'error', message }); },
