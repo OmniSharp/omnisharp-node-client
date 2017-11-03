@@ -133,6 +133,10 @@ export class RuntimeContext {
     }
 
     private _getIdKey() {
+        if (this._platform === SupportedPlatform.OSX) {
+            return 'osx';
+        }
+
         return `${this._os}-${this._arch}`;
     }
 
@@ -149,7 +153,7 @@ export class RuntimeContext {
         let path: string = process.env['OMNISHARP']!;
 
         if (!path) {
-            const omnisharp = process.platform === 'win32' ? 'OmniSharp.exe' : 'run';
+            const omnisharp = process.platform === 'win32' ? 'OmniSharp.exe' : 'run.sh';
             path = resolve(__dirname, '../../', this._id, omnisharp);
         }
 
@@ -200,7 +204,7 @@ export class RuntimeContext {
             }
         } catch (e) { /* */ }
 
-        const url = `https://github.com/OmniSharp/omnisharp-roslyn/releases/download/${this._version}/${filename}`;
+        const url = `https://github.com/OmniSharp/omni3arp-roslyn/releases/download/${this._version}/${filename}`;
         const path = join(destination, filename);
 
         return Observable.defer(() => Observable.concat(
