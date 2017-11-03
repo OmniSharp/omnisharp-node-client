@@ -133,10 +133,6 @@ export class RuntimeContext {
     }
 
     private _getIdKey() {
-        if (this._platform !== SupportedPlatform.Windows) {
-            return `mono`;
-        }
-
         return `${this._os}-${this._arch}`;
     }
 
@@ -153,7 +149,7 @@ export class RuntimeContext {
         let path: string = process.env['OMNISHARP']!;
 
         if (!path) {
-            const omnisharp = process.platform === 'win32' ? 'OmniSharp.exe' : 'run.sh';
+            const omnisharp = process.platform === 'win32' ? 'OmniSharp.exe' : 'run';
             path = resolve(__dirname, '../../', this._id, omnisharp);
         }
 
