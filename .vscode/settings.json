@@ -3,7 +3,7 @@
   "files.exclude": {
     "**/.git": true,
     "**/node_modules": true,
-    "**/**.js.map": true,
+    "**/*.js.map": true,
     "**/*.js": true,
     "**/languageserver/**/*.d.ts": true,
     "**/test/**/*.d.ts": true,

@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import { assignWith, bind, delay, find, isNull, isUndefined, memoize, toLower } from 'lodash';
 import { delimiter, join, resolve } from 'path';
 import { AsyncSubject, Observable, Scheduler } from 'rxjs';
-import { ILogger, Runtime } from '../enums';
+import { ILogger } from '../enums';
 import { createObservable } from '../operators/create';
 import { decompress } from './decompress';
 import { getSupportedPlatform, supportedPlatform, SupportedPlatform } from './platform';
@@ -22,7 +22,6 @@ const PATH: string[] = find<any, string>(process.env, (v, key) => toLower(key) =
     .concat(['/usr/local/bin', '/Library/Frameworks/Mono.framework/Commands']);
 
 export interface IRuntimeContext {
-    runtime: Runtime;
     platform: string;
     arch: string;
     bootstrap?: boolean;
@@ -31,7 +30,6 @@ export interface IRuntimeContext {
 }
 
 export class RuntimeContext {
-    private _runtime: Runtime;
     private _platform: SupportedPlatform;
     private _arch: string;
     private _bootstrap: string;
@@ -52,10 +50,6 @@ export class RuntimeContext {
         assignWith(self, runtimeContext || {}, (obj, src, key) => {
             self[`_${key}`] = obj || src;
         });
-
-        if (isNull(this._runtime) || isUndefined(this._runtime)) {
-            this._runtime = Runtime.ClrOrMono;
-        }
 
         if (isNull(this._platform) || isUndefined(this._platform)) {
             this._platform = supportedPlatform;
@@ -88,7 +82,6 @@ export class RuntimeContext {
         Object.freeze(this);
     }
 
-    public get runtime() { return this._runtime; }
     public get platform() { return this._platform; }
     public get arch() { return this._arch; }
     public get bootstrap() { return this._bootstrap; }
@@ -140,10 +133,6 @@ export class RuntimeContext {
     }
 
     private _getIdKey() {
-        if (this._platform !== SupportedPlatform.Windows && this._runtime === Runtime.ClrOrMono) {
-            return `mono`;
-        }
-
         if (this._platform === SupportedPlatform.OSX) {
             return 'osx';
         }
@@ -164,12 +153,8 @@ export class RuntimeContext {
         let path: string = process.env['OMNISHARP']!;
 
         if (!path) {
-            const omnisharp = process.platform === 'win32' || this._runtime === Runtime.ClrOrMono ? 'OmniSharp.exe' : 'run';
+            const omnisharp = process.platform === 'win32' ? 'OmniSharp.exe' : 'run';
             path = resolve(__dirname, '../../', this._id, omnisharp);
-        }
-
-        if (process.platform !== 'win32' && this._runtime === Runtime.ClrOrMono) {
-            return `mono ${path}`;
         }
 
         return path;
@@ -241,25 +226,9 @@ export class RuntimeContext {
 
 export const isSupportedRuntime = (ctx: RuntimeContext) => {
     return Observable.defer(() => {
-        const subject = new AsyncSubject<{ runtime: Runtime; path: string }>();
         // On windows we'll just use the clr, it's there
         // On mac / linux if we've picked CoreClr stick with that
-        if (ctx.platform === SupportedPlatform.Windows || ctx.runtime === Runtime.CoreClr) {
-            return Observable.of({ runtime: ctx.runtime, path: process.env.PATH });
-        }
-
-        // We need to check if mono exists on the system
-        // If it doesn't we'll just run CoreClr
-        Observable.from(PATH)
-            .map(path => join(path, 'mono'))
-            .concatMap(path => exists(path).map(e => ({ exists: e, path })))
-            .filter(x => x.exists)
-            .map(x => ({ runtime: Runtime.ClrOrMono, path: [x.path].concat(PATH).join(delimiter) }))
-            .take(1)
-            .defaultIfEmpty({ runtime: Runtime.CoreClr, path: process.env.PATH })
-            .subscribe(subject);
-
-        return subject.asObservable();
+        return Observable.of({ path: process.env.PATH });
     });
 };
 

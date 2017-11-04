@@ -2,7 +2,6 @@
 import { expect } from 'chai';
 import { mkdirSync } from 'fs';
 import { resolve } from 'path';
-import { Runtime } from '../lib/enums';
 import { findRuntimeById, isSupportedRuntime, RuntimeContext } from '../lib/helpers/runtime';
 
 describe('Omnisharp Runtime', () => {
@@ -31,7 +30,6 @@ describe('Omnisharp Runtime', () => {
         try { mkdirSync(resolve(__dirname, 'fixture/rtt')); } catch (e) { /* */ }
         try { mkdirSync(dir); } catch (e) { /* */ }
         return new RuntimeContext({
-            runtime: Runtime.ClrOrMono,
             arch: process.arch,
             platform: process.platform,
             destination: dir
@@ -49,7 +47,6 @@ describe('Omnisharp Runtime', () => {
         try { mkdirSync(resolve(__dirname, 'fixture/rtt')); } catch (e) { /* */ }
         try { mkdirSync(dir); } catch (e) { /* */ }
         return new RuntimeContext({
-            runtime: Runtime.ClrOrMono,
             arch: process.arch,
             platform: process.platform,
             version: 'v1.9-alpha1',
@@ -61,35 +58,18 @@ describe('Omnisharp Runtime', () => {
             .toPromise();
     });
 
-    it('should support coreclr in an environment specific way', () => {
-        return isSupportedRuntime(new RuntimeContext({
-            runtime: Runtime.CoreClr,
-            arch: process.arch,
-            platform: process.platform
-        }))
-            .toPromise()
-            .then(({ runtime, path }) => {
-                expect(runtime).to.be.equal(Runtime.CoreClr);
-                expect(path).to.be.equal(process.env.PATH);
-            });
-    });
-
     it('should support mono or the clr in an environment specific way', () => {
         return isSupportedRuntime(new RuntimeContext({
-            runtime: Runtime.ClrOrMono,
             arch: process.arch,
             platform: process.platform
         }))
             .toPromise()
-            .then(({ runtime, path }) => {
+            .then(({ path }) => {
                 if (process.platform === 'win32') {
-                    expect(Runtime[runtime]).to.be.equal(Runtime[Runtime.ClrOrMono]);
                     expect(path).to.be.equal(process.env.PATH);
                 } else if (process.env.TRAVIS_MONO) {
-                    expect(Runtime[runtime]).to.be.equal(Runtime[Runtime.ClrOrMono]);
                     expect(path).to.not.be.equal(process.env.PATH);
                 } else {
-                    expect(Runtime[runtime]).to.be.equal(Runtime[Runtime.CoreClr]);
                     expect(path).to.be.equal(process.env.PATH);
                 }
             });

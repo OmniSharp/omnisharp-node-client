@@ -5,7 +5,7 @@ import * as readline from 'readline';
 import { AsyncSubject, Observable } from 'rxjs';
 import { CompositeDisposable, Disposable } from 'ts-disposables';
 
-import { IDriver, IDriverOptions, ILogger, IOmnisharpPlugin, Runtime } from '../enums';
+import { IDriver, IDriverOptions, ILogger, IOmnisharpPlugin } from '../enums';
 import { DriverState } from '../enums';
 import { isSupportedRuntime, RuntimeContext } from '../helpers/runtime';
 import * as OmniSharp from '../omnisharp-server';
@@ -33,7 +33,6 @@ export class StdioDriver implements IDriver {
     private _findProject: boolean;
     private _logger: ILogger;
     private _timeout: number;
-    private _runtime: Runtime;
     private _version: string | undefined;
     private _PATH: string;
     private _runtimeContext: RuntimeContext;
@@ -45,14 +44,13 @@ export class StdioDriver implements IDriver {
     public constructor({
         projectPath, serverPath, findProject,
         logger, timeout, additionalArguments,
-        runtime, plugins, version,
+        plugins, version,
         onEvent, onState, onCommand }: Partial<IDriverOptions> & { projectPath: string; }) {
         this._projectPath = projectPath;
         this._findProject = findProject || false;
         this._logger = logger || console;
         this._serverPath = serverPath;
         this._timeout = (timeout || 60) * 1000;
-        this._runtime = runtime || Runtime.ClrOrMono;
         this._additionalArguments = additionalArguments || [];
         this._plugins = plugins || [];
         this._version = version;
@@ -94,7 +92,6 @@ export class StdioDriver implements IDriver {
     }
 
     public get projectPath() { return this._projectPath; }
-    public get runtime() { return this._runtime; }
     public get outstandingRequests() { return this._outstandingRequests.size; }
 
     public connect() {
@@ -122,7 +119,8 @@ export class StdioDriver implements IDriver {
 
         const sequence = this._seq++;
         const packet: OmniSharp.Stdio.Protocol.RequestPacket = {
-            Command: trimStart(command, '/'),
+            // Command: trimStart(command, '/'),
+            Command: command,
             Seq: sequence,
             Arguments: request
         };
@@ -154,7 +152,6 @@ export class StdioDriver implements IDriver {
 
     private _getRuntimeContext() {
         return new RuntimeContext({
-            runtime: this.runtime,
             platform: process.platform,
             arch: process.arch,
             version: this._version || undefined
@@ -218,7 +215,6 @@ export class StdioDriver implements IDriver {
         return isSupportedRuntime(this._runtimeContext)
             .toPromise()
             .then(ctx => {
-                this._runtime = ctx.runtime;
                 this._PATH = ctx.path!;
                 this._runtimeContext = this._getRuntimeContext();
                 return ctx;
