@@ -17,20 +17,19 @@ notifications:
     on_failure: change
 matrix:
   include:
-    - language: csharp
-      env:
-      - TRAVIS_MONO=true
-      - LEADER=true
-      mono: beta
+    # - language: csharp
+    #   env:
+    #   - TRAVIS_MONO=true
+    #   - LEADER=true
+    #   mono: beta
+    #   os: linux
+    # - language: csharp
+    #   env: TRAVIS_MONO=true
+    #   mono: beta
+    #   os: osx
+    - env: LEADER=true
       os: linux
-    - language: csharp
-      env: TRAVIS_MONO=true
-      mono: beta
-      os: osx
-    - env: TRAVIS_CORECLR=true
-      os: linux
-    - env: TRAVIS_CORECLR=true
-      os: osx
+    - os: osx
     # - env:
     #     - TRAVIS_MONO=true
     #     - BREW_MONO=true
